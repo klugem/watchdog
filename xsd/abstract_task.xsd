@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- absolute path type for internal use -->
+	<x:simpleType name="absolutePathType">
+		<x:restriction base="x:string">
+			<x:pattern value="/([^/]+/+)*"/>
+			<x:pattern value="[A-Z]:\\([^\\]+\\+)*"/>
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- absolute no replace type -->
+	<x:simpleType name="absolutePathTypeNoreplace">
+		<x:restriction base="absolutePathType">
+			<x:pattern value="/([^/]+/+)*"/>
+			<x:pattern value="[A-Z]:\\([^\\]+\\+)*"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- relative path type for internal use -->
+	<x:simpleType name="relativePathType">
+		<x:restriction base="x:string">
+			<x:pattern value="([^/]+/+)*"/>
+			<x:pattern value="([^\\]+\\+)*"/>
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- absolute path of a file type for internal use -->
+	<x:simpleType name="absoluteFileType">
+		<x:restriction base="x:string">
+			<x:pattern value="/([^/]+/+)*[^/]+"/>
+			<x:pattern value="[A-Z]:\\([^\\]+\\+)*[^\\]+"/>
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- absolute path of a file type for internal use -->
+	<x:simpleType name="relativeFileType">
+		<x:restriction base="x:string">
+			<x:pattern value="([^/]+/+)*[^/]+"/>
+			<x:pattern value="([^\\]+\\+)*[^\\]+"/>
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- absolute or relative path type for internal use -->
+	<x:simpleType name="absoluteOrRelativePathType">
+		<x:union memberTypes="relativePathType absolutePathType" />
+	</x:simpleType>
+
+	<!-- absolute or relative file type for internal use -->
+	<x:simpleType name="absoluteOrRelativeFileType">
+		<x:union memberTypes="relativeFileType absoluteFileType" />
+	</x:simpleType>
+
+	<!-- absolute log file type (stdout / stderr) --> 
+	<x:complexType name="absoluteLogFileType">
+		<x:simpleContent>
+			<x:extension base="absoluteFileType">
+				<x:attribute name="append" type="x:boolean" default="false" />
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- absolute stdin file type -->
+	<x:complexType name="absoluteStdinFileType">
+		<x:simpleContent>
+			<x:extension base="absoluteFileType">
+				<x:attribute name="disableExistenceCheck" type="x:boolean" default="false" />
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- types for calculation in stream tag -->
+	<x:simpleType name="absoluteCalculatePathType">
+		<x:restriction base="x:string">
+			<x:pattern value="/([^/]+/+)*"/>
+			<x:pattern value="[A-Z]:\\([^\\]+\\+)*"/>
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+			<x:pattern value="(.*\$\(.+\).*)+"/>
+		</x:restriction>
+	</x:simpleType>
+	<x:simpleType name="absoluteOrRelativeCalculateFileType">
+		<x:restriction base="x:string">
+			<x:pattern value="/?([^/]+/+)*[^/]+"/>
+			<x:pattern value="([A-Z]:\\)?([^\\]+\\+)*"/>
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+			<x:pattern value="(.*\$\(.+\).*)+"/>
+		</x:restriction>
+	</x:simpleType>
+	<x:complexType name="absoluteOrRelativeCalculateLogFileType">
+		<x:simpleContent>
+			<x:extension base="absoluteOrRelativeCalculateFileType">
+				<x:attribute name="append" type="x:boolean" default="false" />
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+	<x:complexType name="absoluteOrRelativeCalculateStdinFileType">
+		<x:simpleContent>
+			<x:extension base="absoluteOrRelativeCalculateFileType">
+				<x:attribute name="disableExistenceCheck" type="x:boolean" default="false" />
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+	<!-- ################################### -->
+
+	<!-- integer ranging from minus one to ... -->
+	<x:simpleType name="boundIntegerMinusOneToUnboundedType">
+		<x:restriction base="x:integer">
+			<x:minInclusive value="-1"/>
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+|-?[0-9]+"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- integer ranging from zero to ... -->
+	<x:simpleType name="boundIntegerZeroToUnboundedType">
+		<x:restriction base="x:integer">
+			<x:minInclusive value="0"/>
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- integer ranging from one to ... -->
+	<x:simpleType name="boundIntegerOneToUnboundedType">
+		<x:restriction base="x:integer">
+			<x:minInclusive value="1"/>
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+|[0-9]+"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- mail definition -->
+	<x:simpleType name="mailType">
+	    <x:restriction base="x:string">
+		<x:pattern value="([0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})"/>
+		<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+	    </x:restriction>
+	</x:simpleType>
+
+	<!-- prefix replace pattern -->
+	<x:simpleType name="prefixNameType">
+		<x:restriction base="x:string">
+			<x:pattern value="\[[0-9]*\]" />
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- pattern for notify -->
+	<x:simpleType name="actionType">
+		<x:restriction base="x:string">
+			<x:enumeration value="enabled"/>
+			<x:enumeration value="subtask"/>
+			<x:enumeration value="disabled"/>
+			<x:pattern value="((.*(\$\{[A-Za-z_]+\}).*)+)|enabled|subtask|disabled"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- prefix replace pattern -->
+	<x:simpleType name="numericOrAlphabet">
+		<x:restriction base="x:string">
+			<x:pattern value="[0-9]+" />
+			<x:pattern value="[A-Za-z][a-zA-z0-9a-zA-Z_\- ]*"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- depend definition -->
+	<x:complexType name="dependsType">
+		<x:simpleContent>
+			<x:extension base="numericOrAlphabet">
+				<x:attribute name="separate" type="x:boolean" default="false"/>
+				<x:attribute name="prefixName" type="prefixNameType" default="[]" />
+				<x:attribute name="sep" type="x:string" default="." />
+			</x:extension>
+		</x:simpleContent>				
+	</x:complexType>
+
+	<!-- dependencies definition -->
+	<x:complexType name="dependenciesType">
+		<x:all>
+			<x:element name="depends" type="dependsType" minOccurs="1" maxOccurs="unbounded"/>
+		</x:all>				
+	</x:complexType>
+
+	<!-- streams definition -->
+	<x:complexType name="streamsType">
+		<x:all>
+			<x:element name="workingDir" type="absoluteCalculatePathType" minOccurs="0" maxOccurs="1" default="/usr/local/storage/"/>
+			<x:element name="stdout" type="absoluteOrRelativeCalculateLogFileType" minOccurs="0" maxOccurs="1"/>
+			<x:element name="stderr" type="absoluteOrRelativeCalculateLogFileType" minOccurs="0" maxOccurs="1"/>
+			<x:element name="stdin" type="absoluteOrRelativeCalculateStdinFileType" minOccurs="0" maxOccurs="1"/>
+		</x:all>		
+	</x:complexType>
+
+	<x:simpleType name="absoluteCompiledJavaFileType">
+		<x:restriction base="x:string">
+			<x:pattern value="/([^/]+/)*.+.class"/>
+			<x:pattern value="[A-Z]:\\([^\\]+\\)*.+.class"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<x:simpleType name="checkerTypeType">
+		<x:restriction base="x:string">
+			<x:enumeration value="error"/>
+			<x:enumeration value="success"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<x:simpleType name="constructorTypeType">
+		<x:restriction base="x:string">
+			<x:enumeration value="string"/>
+			<x:enumeration value="double"/>
+			<x:enumeration value="integer"/>
+			<x:enumeration value="boolean"/>
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- arguments for constructor -->
+	<x:complexType name="constructorType">
+		<x:simpleContent>
+        		<x:extension base="paramString">
+				<x:attribute name="type" type="constructorTypeType" default="string"/>			
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- checker base definition -->
+	<x:complexType name="checkerType">
+		<x:all>
+			<x:element name="cArg" type="constructorType" minOccurs="0" maxOccurs="unbounded"/>
+		</x:all>
+		<x:attribute name="className" type="x:string" use="required"/>
+		<x:attribute name="classPath" type="absoluteCompiledJavaFileType" use="required"/>
+		<x:attribute name="type" type="checkerTypeType" use="required"/>	
+	</x:complexType>
+
+	<!-- checker definition -->
+	<x:complexType name="checkerContainerType">
+		<x:all>
+			<x:element name="checker" type="checkerType" minOccurs="1" maxOccurs="unbounded"/>
+		</x:all>				
+	</x:complexType>
+
+	<!-- time definition -->
+	<x:simpleType name="timeType">
+		<x:restriction base="x:string">
+			<x:enumeration value="beforeTask" />
+			<x:enumeration value="afterTask" />
+			<x:enumeration value="onSuccess" />
+			<x:enumeration value="onFailure" />
+			<x:enumeration value="beforeTerminate" />
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- create definition -->
+	<x:complexType name="createFileType">
+		<x:attribute name="file" type="absoluteOrRelativeFileType" use="required"/>
+		<x:attribute name="override" type="x:boolean" default="false" />
+		<x:attribute name="createParent" type="x:boolean" default="true" />			
+	</x:complexType>
+	<x:complexType name="createFolderType">
+		<x:attribute name="folder" type="absoluteOrRelativePathType" use="required"/>
+		<x:attribute name="override" type="x:boolean" default="false" />
+		<x:attribute name="createParent" type="x:boolean" default="true" />			
+	</x:complexType>
+	<!-- copy definition -->
+	<x:complexType name="copyFileType">
+		<x:attribute name="file" type="absoluteOrRelativeFileType" use="required"/>
+		<x:attribute name="destination" type="absoluteOrRelativeFileType" use="required"/>
+		<x:attribute name="override" type="x:boolean" default="false" />
+		<x:attribute name="deleteSource" type="x:boolean" default="false" />
+		<x:attribute name="createParent" type="x:boolean" default="true" />				
+	</x:complexType>
+	<x:complexType name="copyFolderType">
+		<x:attribute name="folder" type="absoluteOrRelativePathType" use="required"/>
+		<x:attribute name="destination" type="absoluteOrRelativePathType" use="required"/>
+		<x:attribute name="override" type="x:boolean" default="false" />
+		<x:attribute name="deleteSource" type="x:boolean" default="false" />
+		<x:attribute name="createParent" type="x:boolean" default="true" />			
+	</x:complexType>
+	<!-- delete definition -->
+	<x:complexType name="deleteFileType">
+		<x:attribute name="file" type="absoluteOrRelativeFileType" use="required"/>			
+	</x:complexType>
+	<x:complexType name="deleteFolderType">
+		<x:attribute name="folder" type="absoluteOrRelativePathType" use="required"/>		
+	</x:complexType>
+
+	<!-- action definition -->
+	<x:complexType name="actionIOType">
+		<x:all>
+			<x:element name="createFile" type="createFileType" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="createFolder" type="createFolderType" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="copyFolder" type="copyFolderType" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="copyFile" type="copyFileType" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="deleteFile" type="deleteFileType" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="deleteFolder" type="deleteFolderType" minOccurs="0" maxOccurs="unbounded"/>
+		</x:all>
+		<x:attribute name="time" type="timeType" use="required"/>
+		<x:attribute name="uncoupleFromExecutor" type="x:boolean" default="false"/>			
+	</x:complexType>
+
+	<!-- base type for finding -->
+	<x:complexType name="taskReturnType"></x:complexType>
+
+	<!-- default task elements each task has -->
+	<x:group name="defaultTaskElements">
+		<x:all>
+			<x:element name="actions" type="actionIOType" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="dependencies" type="dependenciesType" minOccurs="0" maxOccurs="1"/>
+			<x:element name="environment" type="environmentType" minOccurs="0" maxOccurs="1" />
+			<x:element name="streams" type="streamsType" minOccurs="0" maxOccurs="1"/>
+			<x:element name="checkers" type="checkerContainerType" minOccurs="0" maxOccurs="1"/>
+		</x:all>
+	</x:group>
+
+	<!-- base task definition definition -->
+	<x:complexType name="baseAttributeTaskType" abstract="true">	
+		<x:attribute name="name" type="numericOrAlphabet" use="required"/>
+		<x:attribute name="id" type="boundIntegerOneToUnboundedType" use="optional"/>
+		<x:attribute name="processBlock" type="x:string"/>
+		<x:attribute name="executor" type="x:string"/>
+		<x:attribute name="environment" type="x:string"/>
+		<x:attribute name="notify" type="actionType" default="disabled"/>
+		<x:attribute name="checkpoint" type="actionType" default="disabled"/>
+		<x:attribute name="confirmParam" type="actionType" default="disabled"/>
+		<x:attribute ref="maxRunning" default="-1"/>
+		<x:attribute name="posX" type="coordinate" use="optional"/>
+		<x:attribute name="posY" type="coordinate" use="optional"/>
+
+		<!-- attributes every task must have and might want to override -->
+		<!--============================================================-->
+		<x:attribute name="binName" type="x:string" default="binName/not/Overriden.error"/>
+		<x:attribute name="preBinCommand" type="x:string" default=""/>
+		<x:attribute name="isWatchdogModule" type="x:boolean" default="true" />
+		<x:attribute name="returnFilePathParameter" type="x:string" default="returnFilePath"/>
+		<x:attribute ref="paramFormat" default="longShort"/>
+		<x:attribute ref="spacingFormat" default="blankSeparated"/>
+		<x:attribute ref="quoteFormat" default="singleQuoted"/>
+		<!--============================================================-->
+	</x:complexType>
+
+	<!-- element for group substitution -->
+	<x:element name="abstractTask"/>
+
+</x:schema>

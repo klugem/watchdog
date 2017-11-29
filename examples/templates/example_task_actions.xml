@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+
+	<tasks mail="{%MAIL%}">
+		<gzipTask id="1" name="gzip task">
+			<parameter>
+				<!-- path to a file that does not exist yet -->
+				<input>/tmp/watchdog_file_to_compress.tmp</input>
+			</parameter>
+			<!-- action that copies a to the input location --> 
+			<actions time="beforeTask">
+				<copyFile file="{%INSTALL%}examples/example_task_actions.xml" destination="/tmp/watchdog_file_to_compress.tmp" override="true" />
+			</actions>
+		</gzipTask>
+	</tasks>
+</watchdog>

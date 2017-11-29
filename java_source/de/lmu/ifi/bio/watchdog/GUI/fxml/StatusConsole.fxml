@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<ScrollPane fx:id="root" hbarPolicy="ALWAYS" vbarPolicy="ALWAYS" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.StatusConsoleController">
+	<content>
+		<VBox fx:id="messages">
+			<padding>
+				<Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+			</padding>
+		</VBox>
+	</content>
+</ScrollPane>

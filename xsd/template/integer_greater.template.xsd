@@ -1,0 +1,8 @@
+	<x:complexType name="param{%NUMERIC_TYPE%}Greater_{%NAME%}_{%MODULE%}">
+		<x:simpleContent>
+			<x:restriction base="param{%NUMERIC_TYPE%}">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or $value >= {%MIN%}" xerces:message="Parameter with name '{$tag}' must be equal or greater than {%MIN%}." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+

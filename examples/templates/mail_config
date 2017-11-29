@@ -1,0 +1,7 @@
+mail.smtp.starttls.enable	true
+mail.smtp.auth	true
+mail.smtp.host	smtp.googlemail.com
+mail.smtp.port	587
+mail.smtp.user	johns_watchdog@gmail.com
+mail.smtp.pw	r9x74l(klsab
+mail.smtp.from	johns_watchdog@gmail.com

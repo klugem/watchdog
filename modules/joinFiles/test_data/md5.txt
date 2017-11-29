@@ -1,0 +1,3 @@
+080d324554057ceab1ed8e28ccd3aa9d  /tmp/joinFiles.test.result.txt.1
+1d3e7633f6f2323fc1ebefa28feaa840  /tmp/joinFiles.test.result.txt.2
+f48372ced91e35e393aebb3b9469ec44  /tmp/joinFiles.test.result.txt.3

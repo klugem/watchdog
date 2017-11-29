@@ -1,0 +1,5 @@
+#!/bin/bash
+# for macOS only --> as it is at the end of the path, use normal version first, if there!
+if [[ $OSTYPE == darwin* ]]; then
+	md5 -r "$@"
+fi

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+	
+	<settings>
+		<!-- definition of different process blocks -->
+		<processBlock>
+			<processSequence name="sleepTime" start="5" end="15" step="5"/>
+		</processBlock>
+	</settings>
+
+	<!-- begin task block and use that mail to inform the user on success or failure -->
+	<tasks mail="{%MAIL%}">
+		<!-- definition a simple sleep task -->
+		<sleepTask id="1" name="sleep simple" notify="enabled">
+			<parameter>
+				<wait>10s</wait>
+			</parameter>
+		</sleepTask>
+
+		<!-- definition of process sequence sleep tasks -->
+		<sleepTask id="2" name="sleep process sequence" notify="subtask" processBlock="sleepTime">
+			<parameter>
+				<wait>[]s</wait>
+			</parameter>
+		</sleepTask>
+	</tasks>
+</watchdog>

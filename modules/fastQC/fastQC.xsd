@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- definition of the task parameters -->
+	<x:complexType name="fastQCTaskParameterType">
+		<x:all>
+			<x:element name="fastq" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" />
+			<x:element name="outdir" type="paramAbsoluteFolderPath" minOccurs="1" maxOccurs="1" />
+			<x:element name="threads" type="paramIntegerRange_threads_fastQC" minOccurs="0" maxOccurs="1" />
+			<x:element name="contaminants" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1" />
+			<x:element name="adapters" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1" />
+			<x:element name="limits" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1" />
+		</x:all>
+	</x:complexType>
+
+	<!-- change default attributes -->
+	<x:complexType name="fastQCTaskOverrideType">
+		<x:complexContent>
+			<x:restriction base="baseAttributeTaskType">
+				<x:attribute name="binName" type="x:string" fixed="fastQC.sh" />
+			</x:restriction>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of final task -->
+	<x:complexType name="fastQCTaskType">
+		<x:complexContent>
+			<x:extension base="fastQCTaskOverrideType">
+				<x:all>
+					<x:element name="parameter" type="fastQCTaskParameterType" minOccurs="1" maxOccurs="1" />
+					<x:group ref="defaultTaskElements" />
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- make task definition availible via substitution group -->
+	<x:element name="fastQCTask" type="fastQCTaskType" substitutionGroup="abstractTask" />
+
+	<!-- module specific parameter types -->
+	<x:complexType name="paramIntegerRange_threads_fastQC">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or (128 >= $value and 1 &lt;= $value)" xerces:message="Parameter with name '{$tag}' must be between 1 and 128." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+
+</x:schema>

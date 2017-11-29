@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
+
+	<!-- integer ranging from -1 to -->
+	<x:attribute name="maxRunning">
+		<x:simpleType>
+			<x:restriction base="x:integer">
+				<x:minInclusive value="-1" />
+				<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+|-?[0-9]+"/>
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+
+	<x:attribute name="maxSlaveRunning">
+		<x:simpleType>
+			<x:restriction base="x:integer">
+				<x:minInclusive value="-1" />
+				<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+|-?[0-9]+"/>
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+
+	<!-- integer ranging from 1 to 65535 -->
+	<x:attribute name="port">
+		<x:simpleType>
+			<x:restriction base="x:integer">
+				<x:minInclusive value="1" />
+				<x:maxInclusive value="65535" />
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+
+	<!-- integer ranging from 1 to -->
+	<x:attribute name="slots">
+		<x:simpleType>
+			<x:restriction base="x:integer">
+				<x:minInclusive value="1" />
+				<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+|[0-9]+"/>
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+
+	<!-- memory per slot -->
+	<x:attribute name="memory">
+		<x:simpleType>
+			<x:restriction base="x:string">
+				<x:pattern value="[0-9]+[MG]" />
+				<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+
+	<!-- base executor -->
+	<x:complexType name="executorAbstractType" abstract="true">
+		<x:simpleContent>
+			<x:extension base="x:string">
+				<x:attribute name="name" type="x:string" use="required" />
+				<x:attribute name="default" type="x:boolean" default="false" />
+				<x:attribute name="stickToHost" type="x:boolean" default="false" />				
+				<x:attribute ref="maxSlaveRunning" default="1" />
+				<x:attribute name="workingDir" type="absolutePathType" default="/usr/local/storage/" />
+				<x:attribute name="pathToJava" type="absoluteOrRelativeFileType" default="/usr/bin/java" />
+				<x:attribute ref="maxRunning" default="-1" />
+				<x:attribute name="environment" type="x:string" default="" />
+				<x:attribute name="color" type="x:string" default=""/>
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- local executor -->
+	<x:complexType name="executorLocalType">
+		<x:simpleContent>
+			<x:extension base="executorAbstractType">
+				<x:attribute name="type" type="x:string" fixed="local" />
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- remote executor -->
+	<x:complexType name="executorRemoteType">
+		<x:simpleContent>
+			<x:extension base="executorAbstractType">
+				<x:attribute name="host" type="x:string" />
+				<x:attribute ref="port" default="22" />
+				<x:attribute name="user" type="x:string" />
+				<x:attribute name="privateKey" type="x:string" />
+				<x:attribute name="disableStrictHostCheck" type="x:boolean" default="false"/>
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- cluster executor -->
+	<x:complexType name="executorClusterType">
+		<x:simpleContent>
+			<x:extension base="executorAbstractType">
+				<x:attribute name="type" type="x:string" fixed="cluster" />
+				<x:attribute ref="slots" default="1" />
+				<x:attribute ref="memory" default="3000M" />
+				<x:attribute name="queue" type="x:string" />
+				<x:attribute name="disableDefault" type="x:boolean" />
+				<x:attribute name="customParameters" type="x:string" />
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- element for group substitution -->
+	<x:element name="executorType" />
+	<x:element name="local" type="executorLocalType" substitutionGroup="executorType" />
+	<x:element name="remote" type="executorRemoteType" substitutionGroup="executorType" />
+	<x:element name="cluster" type="executorClusterType" substitutionGroup="executorType" />
+
+	<!-- definition of the executors type block -->
+	<x:complexType name="executorsType">
+		<x:all>
+			<x:element ref="executorType" minOccurs="1" maxOccurs="unbounded" />
+		</x:all>
+	</x:complexType>
+
+</x:schema>

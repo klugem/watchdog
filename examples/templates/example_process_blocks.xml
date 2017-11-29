@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+
+	<settings>
+		<!-- definition of different process blocks -->
+		<processBlock>
+			<processSequence name="qualities" start="1" end="9" step="2"/>
+			<processFolder name="specialFiles" folder="{%EXAMPLE_DATA%}/spec/" pattern="*.spec" />
+			<baseFolder folder="{%EXAMPLE_DATA%}/">
+				<processFolder name="txtFiles" folder="txt/" pattern="*.txt" />
+				<processFolder name="txtFiles" folder="other_txt/" pattern="*.txt" append="true" maxDepth="1"/>
+				<processFolder name="gzFiles" folder="txt_zipped/" pattern="*.gz" disableExistenceCheck="true" />
+				<processTable name="sleepTable" table="processTable.input.txt" />
+			</baseFolder>
+		</processBlock>
+	</settings>
+
+	<tasks mail="{%MAIL%}">
+		<!-- compress all files with *.txt ending in /some/base/folder/TXT -->
+		<gzipTask id="1" name="compress files" processBlock="txtFiles" checkpoint="enabled">
+			<parameter>			
+				<input>{}</input>
+				<output>{%EXAMPLE_DATA%}/txt_zipped/[1].gz</output>
+			</parameter>
+		</gzipTask>
+
+		<!-- test quality values 1,3,5,7 and 9 -->
+		<gzipTask id="2" name="quality test" processBlock="qualities" checkpoint="subtask">
+			<dependencies>
+				<depends>1</depends>
+			</dependencies>
+			<parameter>			
+				<input>{%EXAMPLE_DATA%}/txt/txtFile1.txt</input>
+				<output>{%EXAMPLE_DATA%}/qualityTest/txtFile1_q[].gz</output>
+				<quality>[]</quality>
+			</parameter>
+			<environment>
+				<var name="QUALITY">{}</var>
+			</environment>
+		</gzipTask>
+
+		<!-- sleep tasks which are created based on a process table -->
+		<sleepTask id="3" name="table sleep" processBlock="sleepTable">
+			<dependencies>
+				<depends>2</depends>
+			</dependencies>
+			<streams>
+				<stdout>{$OUT, 1}</stdout>
+			</streams>
+			<parameter>			
+				<wait>{$DURATION}</wait>
+			</parameter>
+			<environment>
+				<var name="IMPORTANT_ID_RAW">[$IMPORTANT_ID]</var>
+				<var name="IMPORTANT_ID_CALC">$([$IMPORTANT_ID]*3)</var>
+			</environment>
+		</sleepTask>
+	</tasks>
+</watchdog>

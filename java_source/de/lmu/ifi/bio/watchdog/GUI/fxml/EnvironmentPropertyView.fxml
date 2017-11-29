@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.properties.views.EnvironmentPropertyViewController">
+   <center>
+      <VBox>
+         <children>
+            <TitledPane animated="false" collapsible="false" text="basic settings">
+               <content>
+                  <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="80.0" prefWidth="600.0">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <TextField fx:id="name" GridPane.columnIndex="1" />
+                        <CheckBox fx:id="copy" mnemonicParsing="false" prefHeight="18.0" prefWidth="340.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label text="name of environment" />
+                        <Label text="copy environment of host running Watchdog" GridPane.rowIndex="1" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </GridPane>
+               </content>
+            </TitledPane>
+            <TitledPane fx:id="advancedProp" expanded="false" text="advanced external export settings">
+               <content>
+                  <GridPane fx:id="gridAdvanced" maxHeight="110.0" minHeight="110.0" prefHeight="110.0" prefWidth="600.0">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <CheckBox fx:id="externalExport" mnemonicParsing="false" selected="true" GridPane.columnIndex="1" />
+                        <TextField fx:id="exportHeader" text="#!/bin/bash" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label text="shebang for export script" GridPane.rowIndex="1" />
+                        <Label text="export command" GridPane.rowIndex="2" />
+                        <TextField fx:id="exportCommand" text="export {$NAME}=&quot;{$VALUE}&quot;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label text="use external export option" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </GridPane>
+               </content>
+            </TitledPane>
+            <TitledPane animated="false" collapsible="false" focusTraversable="false" text="environment variables">
+               <content>
+                  <ScrollPane hbarPolicy="NEVER" minHeight="200.0" vbarPolicy="ALWAYS">
+                     <content>
+                        <VBox fx:id="envs" spacing="5.0">
+                           <children>
+                              <HBox fx:id="label_box" maxWidth="583.0" minWidth="583.0" spacing="15.0">
+                                 <children>
+                                    <Label fx:id="l_name" alignment="CENTER" prefWidth="125.0" text="name">
+                                       <font>
+                                          <Font name="System Bold" size="13.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="l_value" alignment="CENTER" prefWidth="200.0" text="value">
+                                       <font>
+                                          <Font name="System Bold" size="13.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="l_copy" alignment="CENTER" prefWidth="50.0" text="copy">
+                                       <font>
+                                          <Font name="System Bold" size="13.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="l_update" alignment="CENTER" prefWidth="100.0" text="append value">
+                                       <font>
+                                          <Font name="System Bold" size="13.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="l_sep" alignment="CENTER" prefWidth="75.0" text="seperator">
+                                       <font>
+                                          <Font name="System Bold" size="13.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                                 <padding>
+                                    <Insets left="5.0" right="5.0" />
+                                 </padding>
+                              </HBox>
+                           </children>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+               </content>
+            </TitledPane>
+         </children>
+      </VBox>
+   </center>
+   <bottom>
+      <HBox alignment="CENTER_RIGHT" prefHeight="17.0" prefWidth="600.0" spacing="15.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="deleteEmptyButton" layoutX="352.0" layoutY="20.0" mnemonicParsing="false" text="delete empty variables" />
+            <Button fx:id="addButton" mnemonicParsing="false" text="add variable" />
+            <Button fx:id="saveButton" maxHeight="26.0" mnemonicParsing="false" text="save environment" />
+         </children>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+         <padding>
+            <Insets bottom="10.0" right="35.0" top="10.0" />
+         </padding>
+      </HBox>
+   </bottom>
+</BorderPane>

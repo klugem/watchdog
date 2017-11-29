@@ -1,0 +1,1 @@
+906cb5575494c14be8c91a36c1d13e96  /tmp/compressionTest.txt

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- definition of the task parameters -->
+	<x:complexType name="cutadaptTaskParameterType">
+		<x:all>
+			<x:element name="fastq" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" />
+			<x:element name="prim3" type="paramStringAdapter_cutadapt" minOccurs="0" maxOccurs="unbounded" />
+			<x:element name="prim5" type="paramStringAdapter_cutadapt" minOccurs="0" maxOccurs="unbounded" />
+			<x:element name="adapter" type="paramStringAdapter_cutadapt" minOccurs="0" maxOccurs="unbounded" />
+			<x:element name="errorRate" type="paramDoubleRange_errorRate_cutadapt" minOccurs="0" maxOccurs="1" />
+			<x:element name="repeat" type="paramIntegerRange_repeat_cutadapt" minOccurs="0" maxOccurs="1" />
+			<x:element name="minOverlap" type="paramIntegerGreater_minOverlap_cutadapt" minOccurs="0" maxOccurs="1" />
+			<x:element name="minLength" type="paramIntegerRange_minLength_cutadapt" minOccurs="0" maxOccurs="1" />
+			<x:element name="maxLength" type="paramIntegerRange_maxLength_cutadapt" minOccurs="0" maxOccurs="1" />
+			<x:element name="outfile" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" />
+			<x:element name="infofile" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1" />
+			<x:element name="cutFixedLength" type="paramIntegerRange_cutFixedLength_cutadapt" minOccurs="0" maxOccurs="1" />
+			<x:element name="qualityCutoff" type="paramDouble" minOccurs="0" maxOccurs="1" />
+			<x:element name="qualityBase" type="paramInteger" minOccurs="0" maxOccurs="1" />
+			<x:element name="noIndels" type="paramBoolean" minOccurs="0" maxOccurs="1" />
+			<x:element name="discardTrimmed" type="paramBoolean" minOccurs="0" maxOccurs="1" />
+			<x:element name="discardUntrimmed" type="paramBoolean" minOccurs="0" maxOccurs="1" />
+			<x:element name="maskAdapters" type="paramBoolean" minOccurs="0" maxOccurs="1" />
+		</x:all>
+	</x:complexType>
+
+	<!-- change default attributes -->
+	<x:complexType name="cutadaptTaskOverrideType">
+		<x:complexContent>
+			<x:restriction base="baseAttributeTaskType">
+				<x:attribute name="binName" type="x:string" fixed="cutadapt.sh" />
+			</x:restriction>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of final task -->
+	<x:complexType name="cutadaptTaskType">
+		<x:complexContent>
+			<x:extension base="cutadaptTaskOverrideType">
+				<x:all>
+					<x:element name="parameter" type="cutadaptTaskParameterType" minOccurs="1" maxOccurs="1" />
+					<x:element name="return" type="cutadaptTaskReturnType" minOccurs="0" maxOccurs="0" />
+					<x:group ref="defaultTaskElements" />
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<x:complexType name="cutadaptTaskReturnType">
+		<x:complexContent>
+			<x:extension base="taskReturnType">
+				<x:all>
+					<x:element name="cutadaptTrimFile" type="x:string"/>
+					<x:element name="cutadaptInfoFile" type="x:string"/>
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- make task definition availible via substitution group -->
+	<x:element name="cutadaptTask" type="cutadaptTaskType" substitutionGroup="abstractTask" />
+
+	<!-- module specific parameter types -->
+	<x:complexType name="paramStringAdapter_cutadapt">
+		<x:simpleContent>
+			<x:restriction base="paramString">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or matches($value, '^\^?[ATCGNU]+\$?$')" xerces:message="Parameter with name '{$tag}' must match pattern '^[ATCGNU]+$'." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+	<x:complexType name="paramDoubleRange_errorRate_cutadapt">
+		<x:simpleContent>
+			<x:restriction base="paramDouble">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or (1.0 >= $value and 0.0 &lt;= $value)" xerces:message="Parameter with name '{$tag}' must be between 0 and 1." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+	<x:complexType name="paramIntegerRange_repeat_cutadapt">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or (100 >= $value and 1 &lt;= $value)" xerces:message="Parameter with name '{$tag}' must be between 1 and 100." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+	<x:complexType name="paramIntegerGreater_minOverlap_cutadapt">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or $value >= 1" xerces:message="Parameter with name '{$tag}' must be equal or greater than 1." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+	<x:complexType name="paramIntegerRange_minLength_cutadapt">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or (100000 >= $value and 1 &lt;= $value)" xerces:message="Parameter with name '{$tag}' must be between 1 and 100000." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+	<x:complexType name="paramIntegerRange_maxLength_cutadapt">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or (100000 >= $value and 1 &lt;= $value)" xerces:message="Parameter with name '{$tag}' must be between 1 and 100000." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+	<x:complexType name="paramIntegerRange_cutFixedLength_cutadapt">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or (1000000 >= $value and -1000000 &lt;= $value)" xerces:message="Parameter with name '{$tag}' must be between -1000000 and 1000000." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+
+</x:schema>

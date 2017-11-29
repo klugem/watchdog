@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+
+	<settings>
+		<!-- definition of two process blocks -->
+		<processBlock>
+			<processSequence name="sleepTime" start="1" end="5" step="1.5"/>
+			<processFolder name="txtFiles" folder="{%EXAMPLE_DATA%}/txt/" pattern="*.txt" />
+		</processBlock>
+	</settings>
+
+	<tasks mail="{%MAIL%}">
+		<!-- sleep task with a simple calculation -->
+		<sleepTask id="1" name="sleep" processBlock="sleepTime">
+			<parameter>			
+				<wait>$((i+1)^2-1)s</wait>
+			</parameter>
+		</sleepTask>
+
+		<!-- compress txt files and write log files to ()/log/* -->
+		<gzipTask id="2" name="quality test" processBlock="txtFiles">
+			<streams>
+				<stdout>()/log/$(x).out</stdout>
+			</streams>
+			<parameter>			
+				<input>{}</input>
+				<output>{}.gz</output>
+				<quality>3</quality>
+			</parameter>
+		</gzipTask>
+	</tasks>
+</watchdog>

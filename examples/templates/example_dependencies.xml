@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+
+	<settings>
+		<!-- definition of two process folders -->
+		<processBlock>
+			<baseFolder folder="{%EXAMPLE_DATA%}/">
+				<processFolder name="txtFiles" folder="txt/" pattern="*.txt" />
+				<processFolder name="gzFiles" folder="txt_zipped/" pattern="*.gz" disableExistenceCheck="true" />
+			</baseFolder>
+		</processBlock>
+	</settings>
+
+	<tasks mail="{%MAIL%}">
+		<!-- definition a simple sleep task -->
+		<sleepTask id="1" name="sleep">
+			<parameter>
+				<wait>30s</wait>
+			</parameter>
+		</sleepTask>
+
+		<!-- compress all files with *.txt ending in /some/base/folder/TXT -->
+		<gzipTask id="2" name="compress" processBlock="txtFiles">
+			<parameter>
+				<input>{}</input>
+				<output>{%EXAMPLE_DATA%}/txt_zipped/[1].gz</output>
+			</parameter>
+			<!-- dependency definition -->
+			<dependencies>
+				<depends>1</depends>
+			</dependencies>
+		</gzipTask>
+
+		<!-- decompress all files with *.gz ending in /some/base/folder/TXT_ZIPPED -->
+		<gzipTask id="3" name="decompress" processBlock="gzFiles">
+			<parameter>
+				<input>{}</input>
+				<output>{%EXAMPLE_DATA%}/txt_decompressed/[1].txt</output>
+				<decompress>true</decompress>
+			</parameter>
+			<!-- dependency definition -->
+			<dependencies>
+				<depends separate="true" prefixName="[1]">2</depends>
+			</dependencies>
+		</gzipTask>
+	</tasks>
+</watchdog>

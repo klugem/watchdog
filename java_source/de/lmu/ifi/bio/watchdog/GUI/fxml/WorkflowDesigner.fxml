@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane fx:id="root" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController">
+   <top>
+      <MenuBar prefHeight="0.0" prefWidth="300.0" BorderPane.alignment="CENTER">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem fx:id="newItem" mnemonicParsing="false" text="New" />
+              <MenuItem fx:id="open" mnemonicParsing="false" text="Open" />
+              <Menu fx:id="openRecent" mnemonicParsing="false" text="Open recent" />
+              <SeparatorMenuItem />			  
+              <MenuItem fx:id="save" mnemonicParsing="false" text="Save" />
+              <MenuItem fx:id="saveAs" mnemonicParsing="false" text="Save as..." />
+              <SeparatorMenuItem />
+              <MenuItem fx:id="close" mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edit">
+            <items>
+              <MenuItem fx:id="updateGridSize" mnemonicParsing="false" text="Adjust grid size" />
+              <MenuItem fx:id="validateWorkflow" mnemonicParsing="false" text="Validate workflow" />
+              <MenuItem fx:id="preferences" mnemonicParsing="false" text="Preferences" />
+            </items>
+          </Menu>
+           <Menu mnemonicParsing="false" text="Views">
+            <items>
+              <MenuItem fx:id="modifyView" mnemonicParsing="false" text="Modify view" />
+              <MenuItem fx:id="executeView" mnemonicParsing="false" text="Execution view" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem fx:id="about" mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </top>
+   <bottom>
+		<VBox fx:id="bottomBox">
+			<fx:include fx:id="additionalBar" source="AdditionalBar.fxml" />
+		</VBox>
+   </bottom>
+   <center>
+	 <fx:include fx:id="workflow" source="Workflow.fxml" BorderPane.alignment="CENTER" />
+   </center>
+   <left>
+     <fx:include fx:id="toolLib" source="ToolLibrary.fxml" BorderPane.alignment="CENTER" />
+   </left>
+   <right>
+     <ScrollPane fx:id="rootPropertyManager"><VBox fx:id="propertyManager" BorderPane.alignment="CENTER" /></ScrollPane>
+   </right>
+</BorderPane>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- definition of the task parameters -->
+	<x:complexType name="bamContigtDistributionTaskParameterType">
+		<x:all>
+			<x:element name="bamMergedStats" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1"/>
+			<x:element name="outputFile" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1"/>
+		</x:all>
+	</x:complexType>
+
+	<!-- change default attributes -->
+	<x:complexType name="bamContigtDistributionTaskOverrideType">
+		<x:complexContent>
+			<x:restriction base="baseAttributeTaskType">
+				<x:attribute name="binName" type="x:string" fixed="bamContigtDistribution.sh"/>
+			</x:restriction>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of final task -->
+	<x:complexType name="bamContigtDistributionTaskType">
+		<x:complexContent>
+			<x:extension base="bamContigtDistributionTaskOverrideType">
+				<x:all>
+					<x:element name="parameter" type="bamContigtDistributionTaskParameterType" minOccurs="1" maxOccurs="1" />
+					<x:group ref="defaultTaskElements" />
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- make task definition availible via substitution group -->
+	<x:element name="bamContigtDistributionTask" type="bamContigtDistributionTaskType" substitutionGroup="abstractTask" />
+
+	<!-- module specific parameter types -->	
+</x:schema>

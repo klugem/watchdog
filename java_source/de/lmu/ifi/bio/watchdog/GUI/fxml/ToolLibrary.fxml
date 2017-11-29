@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeTableColumn?>
+<?import javafx.scene.control.TreeTableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="toolLibVbox" minWidth="275.0" prefWidth="275.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.ToolLibraryController">
+   <children>
+      <HBox prefWidth="250.0">
+         <children>
+            <Label fx:id="filterLabel" prefHeight="26.0" prefWidth="140.0" text="Filter modules:">
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding>
+            </Label>
+            <TextField fx:id="search" prefHeight="26.0" prefWidth="170.0" />
+         </children>
+      </HBox>
+      <TreeTableView fx:id="modules" focusTraversable="false" prefWidth="250.0" showRoot="false">
+      <placeholder>
+        <Label text="No modules match the search pattern." />
+	   </placeholder>
+        <columns>
+          <TreeTableColumn fx:id="names" editable="false" minWidth="0.0" prefWidth="274.0" sortable="false" text="Module library" />
+        </columns>
+      </TreeTableView>
+   </children>
+</VBox>

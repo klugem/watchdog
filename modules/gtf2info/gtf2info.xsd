@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- definition of the task parameters -->
+	<x:complexType name="gtf2infoTaskParameterType">
+		<x:all>
+			<x:element name="gtf" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1"/>
+			<x:element name="output" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1"/>
+		</x:all>
+	</x:complexType>
+
+	<!-- change default attributes -->
+	<x:complexType name="gtf2infoTaskOverrideType">
+		<x:complexContent>
+			<x:restriction base="baseAttributeTaskType">
+				<x:attribute name="binName" type="x:string" fixed="gtf2info.pl"/>
+				<x:attribute name="returnFilePathParameter" type="x:string" fixed="returnfilepath" />
+			</x:restriction>
+		</x:complexContent>
+	</x:complexType>
+
+	<x:complexType name="gtf2infoTaskReturnType">
+		<x:complexContent>
+			<x:extension base="taskReturnType">
+				<x:all>
+					<x:element name="geneInfoFile" type="x:string"/>
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of final task -->
+	<x:complexType name="gtf2infoTaskType">
+		<x:complexContent>
+			<x:extension base="gtf2infoTaskOverrideType">
+				<x:all>
+					<x:element name="parameter" type="gtf2infoTaskParameterType" minOccurs="1" maxOccurs="1" />
+					<x:element name="return" type="gtf2infoTaskReturnType" minOccurs="0" maxOccurs="0" />
+					<x:group ref="defaultTaskElements" />
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- make task definition availible via substitution group -->
+	<x:element name="gtf2infoTask" type="gtf2infoTaskType" substitutionGroup="abstractTask" />
+
+</x:schema>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
+
+	<!-- include the semantic structure of the XSD format -->
+	<x:include schemaLocation="base_param_types.xsd" />
+	<x:include schemaLocation="param_types.xsd" />
+	<x:include schemaLocation="settings.environment.xsd" />
+	<x:include schemaLocation="settings.executor.xsd" />
+	<x:include schemaLocation="settings.processBlock.xsd" />
+	<x:include schemaLocation="settings.constants.xsd" />
+	<x:include schemaLocation="settings.modules.xsd" />
+	<x:include schemaLocation="gui_info.xsd" />
+	<x:include schemaLocation="abstract_task.xsd" />
+
+	<!-- include all activated modules -->
+	<!-- @!JAVA_REPLACE_INCLUDE!@ -->
+
+	<!-- root element -->
+	<x:element name="watchdog">
+		<x:complexType>
+			<x:sequence>
+				<x:element name="settings" minOccurs="0" maxOccurs="1">
+					<x:complexType>
+						<x:all>
+							<x:element name="processBlock" type="processBlockType" minOccurs="0" maxOccurs="1" />
+							<x:element name="environments" type="globalEnvironmentType" minOccurs="0" maxOccurs="1" />
+							<x:element name="executors" type="executorsType" minOccurs="0" maxOccurs="1" />
+							<x:element name="constants" type="constantsType" minOccurs="0" maxOccurs="1" />
+							<x:element name="modules" type="modulesType" minOccurs="0" maxOccurs="1" />
+						</x:all>
+					</x:complexType>
+				</x:element>
+				<x:element name="tasks" minOccurs="1" maxOccurs="1">
+					<x:complexType>
+						<x:sequence>
+							<x:element ref="abstractTask" minOccurs="0" maxOccurs="unbounded" />
+						</x:sequence>
+						<x:attribute name="projectName" type="x:string" />
+						<x:attribute name="mail" type="mailType" use="optional" />
+					</x:complexType>
+				</x:element>
+			</x:sequence>
+			<x:attribute name="watchdogBase" type="absolutePathTypeNoreplace" use="required" />
+			<x:attribute name="isTemplate" type="x:boolean" default="false" use="optional" />
+		</x:complexType>
+	</x:element>
+
+</x:schema>

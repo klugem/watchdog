@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- documented example workflow that can be used to easily process the example dataset with watchdog -->
+<!-- at the beginning of the file the most details are provided while at the end only new constructs are explained -->
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+	<!-- Created by WorkflowDesigner of Watchdog v. Watchdog - version: release candidate 1.1 (1060r) -->
+	<!-- define settings that are valid within the complete workflow -->
+	<settings>
+		<!-- constants that are replaced with $\{CONSTANT_NAME\} -->
+		<constants>
+			<!-- base folder the dataset is located -->
+			<const name="BASE">{%INSTALL%}examples/test_data/complex</const>
+			<!-- TODO: you can adjust the output folder, if you want to -->
+			<const name="OUTPUT">{%INSTALL%}examples/workflow_output/workflow1</const>
+		</constants>
+		<!-- execute workflow on the local system with a maximum of 4 tasks running at the same time TODO: adjust that if you want to run the workflow on distributed hardware -->
+		<executors>
+			<local name="localhost" default="true" maxRunning="4" color="0xffff00ff" />
+		</executors>
+		<processBlock>
+			<!-- process folders that create the variable input sets based on file patterns -->
+			<processFolder name="fastq_gz" folder="${BASE}/FASTQ/gz/" pattern="*.fastq.gz" color="0xffa500ff" />
+			<processFolder name="split" folder="${OUTPUT}/split/" pattern="*.txt" disableExistenceCheck="true" color="0x6495edff" />
+			<!-- additionally two process input blocks are used that take as input the output variables of tasks the task depends on -->
+			<processInput name="input" color="0x5f9ea0ff" />
+		</processBlock>
+		<!-- instruct watchdog to copy all environment variables that are set on the local system; set "useExternalExport" to true if it is not working in your system environment (see online documentation)-->
+		<environments>
+			<environment name="local" copyLocalValue="true" useExternalExport="true" shebang="#!/bin/bash" exportCommand="export {$NAME}=&amp;quot;{$VALUE}&amp;quot;" color="0xbdb76bff" />
+		</environments>
+	</settings>
+	<tasks mail="{%MAIL%}">
+		<!-- decompress the files -->
+		<gzipTask id="1" name="decompress" environment="local" processBlock="fastq_gz" posX="2" posY="3">
+			<parameter>
+				<decompress>true</decompress>
+				<delete>false</delete>
+				<input>{}</input>
+				<output>${OUTPUT}/FASTQ/[1]</output>
+				<verify>true</verify>
+			</parameter>
+			<streams>
+				<stderr>${OUTPUT}/FASTQ/.[].decompress.err</stderr>
+				<stdout>${OUTPUT}/FASTQ/.[].decompress.out</stdout>
+			</streams>
+		</gzipTask>
+		<!-- search for fastq header lines -->
+		<grepTask id="2" name="grep header" environment="local" processBlock="input" posX="4" posY="2">
+			<dependencies>
+				<!-- add a dependency on subtask level; no other arguments are required as the same process block is used as input -->
+				<depends separate="true">1</depends>
+			</dependencies>
+			<parameter>
+				<file>{$createdGzipFile}</file>
+				<options>-E</options>
+				<outputFile>($createdGzipFile,1,/)/split/[$createdGzipFile,1,.].ids.txt</outputFile>
+				<pattern>^@HWI.+:[ATCGN]{6}$</pattern>
+			</parameter>
+		</grepTask>
+		<!-- search for fastq sequence lines -->
+		<grepTask id="3" name="grep sequences" environment="local" processBlock="input" posX="4" posY="4">
+			<dependencies>
+				<depends separate="true">1</depends>
+			</dependencies>
+			<parameter>
+				<file>{$createdGzipFile}</file>
+				<options>-E</options>
+				<outputFile>($createdGzipFile,1,/)/split/[$createdGzipFile,1,.].sequences.txt</outputFile>
+				<pattern>^[ATCGN]+$</pattern>
+			</parameter>
+		</grepTask>
+		<!-- compress the created files -->
+		<gzipTask id="4" name="compress" environment="local" processBlock="split" posX="6" posY="3">
+			<dependencies>
+				<depends>2</depends>
+				<depends>3</depends>
+			</dependencies>
+			<parameter>
+				<decompress>false</decompress>
+				<delete>true</delete>
+				<input>{}</input>
+				<output>${OUTPUT}/split/[1].gz</output>
+				<quality>9</quality>
+				<verify>false</verify>
+			</parameter>
+			<streams>
+				<stderr>${OUTPUT}/split/.[1].compress.err</stderr>
+				<stdout>${OUTPUT}/split/.[1].compress.out</stdout>
+			</streams>
+		</gzipTask>
+		<!-- combine the archives -->
+		<joinFilesTask id="5" name="combine gz" environment="local" processBlock="input" posX="5" posY="6">
+			<dependencies>
+				<depends>4</depends>
+			</dependencies>
+			<parameter>
+				<convertPairedEnd>false</convertPairedEnd>
+				<input>${OUTPUT}/split/[$createdGzipFile,2,.].ids.gz</input>
+				<input>${OUTPUT}/split/[$createdGzipFile,2,.].sequences.gz</input>
+				<output>${OUTPUT}/[$createdGzipFile,2,.].ids_before_sequences.gz</output>
+			</parameter>
+		</joinFilesTask>
+	</tasks>
+</watchdog>

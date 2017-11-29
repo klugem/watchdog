@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.paint.LinearGradient?>
+<?import javafx.scene.paint.Stop?>
+<?import javafx.scene.shape.Rectangle?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="260.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.LaunchController">
+   <children>
+      <Rectangle arcHeight="5.0" arcWidth="5.0" height="260.0" opacity="0.9" stroke="BLACK" strokeLineCap="ROUND" strokeLineJoin="ROUND" strokeType="INSIDE" strokeWidth="1.5" width="400.0">
+         <fill>
+            <LinearGradient endX="1.0" endY="1.0" startX="0.7307692307692307" startY="0.033653846153846145">
+               <stops>
+                  <Stop color="#46758d" />
+                  <Stop color="WHITE" offset="1.0" />
+               </stops>
+            </LinearGradient>
+         </fill>
+      </Rectangle>
+      <ImageView fitHeight="150.0" fitWidth="200.0" layoutX="244.0" layoutY="55.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../png/watchdog.png" />
+         </image>
+      </ImageView>
+      <ImageView fitHeight="41.0" fitWidth="241.0" layoutX="31.0" layoutY="34.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../png/title.png" />
+         </image>
+      </ImageView>
+      <ProgressBar fx:id="loading" layoutX="82.0" layoutY="226.0" prefHeight="20.0" prefWidth="150.0" progress="0.0" />
+      <Label layoutX="14.0" layoutY="228.0" text="Loading..." />
+      <ImageView fitHeight="20.0" fitWidth="58.0" layoutX="319.0" layoutY="227.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../png/version.png" />
+         </image>
+      </ImageView>
+   </children>
+</AnchorPane>

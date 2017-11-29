@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- definition of the task parameters -->
+	<x:complexType name="DETestTaskParameterType">
+		<x:all>
+			<x:element name="controlCondition" type="paramString" minOccurs="1" maxOccurs="1"/>
+			<x:element name="testCondition" type="paramString" minOccurs="1" maxOccurs="1"/>
+			<x:element name="countFile" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1"/>
+			<x:element name="sampleAnnotation" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1"/>
+			<x:element name="featureAnnotation" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1"/>
+			<x:element name="featureAnnotationID" type="paramString" minOccurs="0" maxOccurs="1"/>
+			<x:element name="featureAnnotationType" type="paramString" minOccurs="0" maxOccurs="1"/>
+			<x:element name="excludeSamples" type="paramString" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="pValueCutoff" type="paramPValueCutoff_DETest" minOccurs="0" maxOccurs="1"/>
+			<x:element name="minKeepReads" type="paramMinKeepReads_DETest" minOccurs="0" maxOccurs="1"/>
+			<x:element name="foldchangeCutoff" type="paramInteger" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="foldchangeCutoffNames" type="paramString" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="output" type="paramAbsoluteFolderPath" minOccurs="1" maxOccurs="1"/>
+			<x:element name="method" type="paramMethod_DETest" minOccurs="0" maxOccurs="1"/>
+		</x:all>
+	</x:complexType>
+
+	<!-- change default attributes -->
+	<x:complexType name="DETestTaskOverrideType">
+		<x:complexContent>
+			<x:restriction base="baseAttributeTaskType">
+				<x:attribute name="binName" type="x:string" fixed="DETest.sh"/>
+			</x:restriction>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of final task -->
+	<x:complexType name="DETestTaskType">
+		<x:complexContent>
+			<x:extension base="DETestTaskOverrideType">
+				<x:all>
+					<x:element name="parameter" type="DETestTaskParameterType" minOccurs="1" maxOccurs="1" />
+					<x:group ref="defaultTaskElements" />
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- make task definition availible via substitution group -->
+	<x:element name="DETestTask" type="DETestTaskType" substitutionGroup="abstractTask" />
+
+	<!-- module specific parameter types -->	
+	<x:complexType name="paramPValueCutoff_DETest">
+		<x:simpleContent>
+			<x:restriction base="paramDouble">
+				<x:assertion test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or ($value >= 0 and $value &lt;= 2)"  xerces:message="Parameter with name '{$tag}' must be between 0 and 1." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+
+	<x:complexType name="paramMinKeepReads_DETest">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or $value >= 1" xerces:message="Parameter with name '{$tag}' must be equal or greater than 1." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+
+	<x:complexType name="paramMethod_DETest">
+		<x:simpleContent>
+			<x:restriction base="paramString">
+				<x:enumeration value="all"/>
+				<x:enumeration value="DESeq2"/>
+				<x:enumeration value="DESeq"/>
+				<x:enumeration value="limma"/>
+				<x:enumeration value="edgeR"/>
+				<x:pattern value="((.*(\$\{[A-Za-z_]+\}).*)+)|all|DESeq2|limma|edgeR"/>
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+</x:schema>

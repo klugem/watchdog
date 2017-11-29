@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+
+	<settings>
+		<!-- TODO: modify one of these folders {%INSTALL%}myCustomFolder/ or -->
+		<!-- /home/TODO/additionalModules/ to match a folder that contains the 'sleep' module -->
+		<modules defaultFolder="myCustomFolder/">
+			<folder>/home/TODO/additionalModules/</folder>
+		</modules>
+	</settings>
+
+	<!-- begin task block and use that mail to inform the user on success or failure -->
+	<tasks mail="{%MAIL%}">
+		<!-- definition a simple sleep task -->
+		<sleepTask id="1" name="sleep">
+			<parameter>
+				<wait>30s</wait>
+			</parameter>
+		</sleepTask>
+	</tasks>
+</watchdog>

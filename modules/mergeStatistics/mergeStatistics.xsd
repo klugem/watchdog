@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- definition of the task parameters -->
+	<x:complexType name="mergeStatisticsTaskParameterType">
+		<x:all>
+			<x:element name="type" type="paramType_mergeStatistics" minOccurs="1" maxOccurs="1" />
+			<x:element name="inputDir" type="paramAbsoluteFolderPath" minOccurs="1" maxOccurs="1" />
+			<x:element name="outputDir" type="paramAbsoluteFolderPath" minOccurs="1" maxOccurs="1" />
+		</x:all>
+	</x:complexType>
+
+	<!-- change default attributes -->
+	<x:complexType name="mergeStatisticsTaskOverrideType">
+		<x:complexContent>
+			<x:restriction base="baseAttributeTaskType">
+				<x:attribute name="binName" type="x:string" fixed="StatisticMerger.jar" />
+				<x:attribute name="preBinCommand" type="x:string" fixed="java -jar" />
+				<x:attribute ref="paramFormat" fixed="shortOnly"/>
+				<x:attribute ref="quoteFormat" fixed="doubleQuoted"/>
+			</x:restriction>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of final task -->
+	<x:complexType name="mergeStatisticsTaskType">
+		<x:complexContent>
+			<x:extension base="mergeStatisticsTaskOverrideType">
+				<x:all>
+					<x:element name="parameter" type="mergeStatisticsTaskParameterType" minOccurs="1" maxOccurs="1" />
+					<x:element name="return" type="mergeStatisticsTaskReturnType" minOccurs="0" maxOccurs="0" />
+					<x:group ref="defaultTaskElements" />
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<x:complexType name="mergeStatisticsTaskReturnType">
+		<x:complexContent>
+			<x:extension base="taskReturnType">
+				<x:all>
+					<x:element name="mergedType" type="x:string"/>
+					<x:element name="mergedFile" type="x:string"/>
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- make task definition availible via substitution group -->
+	<x:element name="mergeStatisticsTask" type="mergeStatisticsTaskType" substitutionGroup="abstractTask" />
+
+	<!-- module specific parameter types -->
+	<x:complexType name="paramType_mergeStatistics">
+		<x:simpleContent>
+			<x:restriction base="paramString">
+				<x:enumeration value="FastQC"/>
+				<x:enumeration value="Star"/>
+				<x:enumeration value="BamstatsMerger"/>
+				<x:enumeration value="CutadaptMerger"/>
+				<x:enumeration value="FeatureCounts"/>
+				<x:enumeration value="FlagstatMerger"/>
+				<x:pattern value="((.*(\$\{[A-Za-z_]+\}).*)+)|FastQC|Star|BamstatsMerger|CutadaptMerger|FeatureCounts|FlagstatMerger"/>
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+</x:schema>

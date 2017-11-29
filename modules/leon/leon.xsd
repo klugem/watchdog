@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- definition of the task parameters -->
+	<x:complexType name="leonTaskParameterType">
+		<x:all>
+			<x:element name="input" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" />
+			<x:element name="outputFolder" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" />
+			<x:element name="threads" type="paramIntegerRange_threads_leon" minOccurs="0" maxOccurs="1" />
+			<x:element name="kmerSize" type="paramIntegerRange_kmerSize_leon" minOccurs="0" maxOccurs="1" />
+		</x:all>
+	</x:complexType>
+
+	<!-- change default attributes -->
+	<x:complexType name="leonTaskOverrideType">
+		<x:complexContent>
+			<x:restriction base="baseAttributeTaskType">
+				<x:attribute name="binName" type="x:string" fixed="leon.sh" />
+			</x:restriction>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of final task -->
+	<x:complexType name="leonTaskType">
+		<x:complexContent>
+			<x:extension base="leonTaskOverrideType">
+				<x:all>
+					<x:element name="parameter" type="leonTaskParameterType" minOccurs="1" maxOccurs="1" />
+					<x:element name="return" type="leonTaskReturnType" minOccurs="0" maxOccurs="0" />
+					<x:group ref="defaultTaskElements" />
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of the return variables -->	
+	<x:complexType name="leonTaskReturnType">
+		<x:complexContent>
+			<x:extension base="taskReturnType">
+				<x:all>
+					<x:element name="createdFile" type="x:string"/>
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- make task definition availible via substitution group -->
+	<x:element name="leonTask" type="leonTaskType" substitutionGroup="abstractTask" />
+
+	<x:complexType name="paramIntegerRange_threads_leon">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or (32 >= $value and 1 &lt;= $value)" xerces:message="Parameter with name '{$tag}' must be between 1 and 32." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+	<x:complexType name="paramIntegerRange_kmerSize_leon">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or (64 >= $value and 16 &lt;= $value)" xerces:message="Parameter with name '{$tag}' must be between 16 and 64." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+
+</x:schema>

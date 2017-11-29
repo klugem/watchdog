@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+
+	<settings>
+		<!-- examples of different execution environments -->
+		<executors>
+			<local name="localhost" maxRunning="2"/>
+			<cluster name="defaultCluster" default="true" memory="1G" queue="short.q"/>
+			<cluster name="highPerformanceCluster" slots="4" memory="3G" maxRunning="4" queue="short.q"/>
+			<remote name="superComputer" user="mustermann" host="superComputer" privateKey="/path/to/private/auth/key" port="22" disableStrictHostCheck="false"/>
+		</executors>
+	</settings>
+
+	<tasks mail="{%MAIL%}">
+		<!-- execute this task on the localhost -->
+		<sleepTask id="1" name="sleep" executor="localhost">
+			<parameter>
+				<wait>30s</wait>
+			</parameter>
+		</sleepTask>
+	</tasks>
+</watchdog>

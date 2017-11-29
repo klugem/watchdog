@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<x:simpleType name="coordinate">
+		<x:restriction base="x:integer">
+			<x:minInclusive value="1"/>
+		</x:restriction>
+	</x:simpleType>
+
+</x:schema>

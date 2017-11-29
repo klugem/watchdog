@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Arc?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<StackPane maxHeight="25.0" maxWidth="25.0" minHeight="25.0" minWidth="25.0" prefHeight="25.0" prefWidth="25.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.properties.PropertyController">
+   <children>
+      <Pane fx:id="movePane">
+         <children>
+            <Rectangle fx:id="rect" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="25.0" stroke="BLACK" strokeType="INSIDE" width="25.0" />
+            <Label fx:id="number" alignment="CENTER" contentDisplay="CENTER" text="1">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font>
+               <padding>
+                  <Insets left="7.0" top="1.0" />
+               </padding>
+            </Label>
+         </children></Pane>
+      <Arc fx:id="arc" fill="#eb7852" length="360.0" radiusX="4.0" radiusY="4.0" startAngle="360.0" stroke="BLACK" strokeType="INSIDE" translateY="1.0" type="CHORD" visible="false" />
+   </children>
+</StackPane>

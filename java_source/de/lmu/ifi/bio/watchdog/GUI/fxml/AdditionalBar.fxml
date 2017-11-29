@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+
+<StackPane fx:id="root" alignment="TOP_RIGHT" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.AdditionalBarController">
+   <children>
+      <TabPane fx:id="tabpane" maxHeight="150" minHeight="150" prefHeight="150" tabClosingPolicy="UNAVAILABLE">
+         <StackPane.margin>
+            <Insets />
+         </StackPane.margin></TabPane>
+      <HBox fx:id="buttons" alignment="TOP_RIGHT" maxHeight="28" fillHeight="false" spacing="5.0" StackPane.alignment="TOP_RIGHT">
+         <StackPane.margin>
+            <Insets bottom="3.0" right="10.0" top="3.0" />
+         </StackPane.margin>
+         <children>
+            <Button fx:id="copy" accessibleHelp="copy messages to clipboard" mnemonicParsing="false" />
+            <Button fx:id="clear" accessibleHelp="clear log messages" mnemonicParsing="false" />
+            <ToggleButton fx:id="lock" accessibleHelp="autoscroll lock" mnemonicParsing="false" />
+         </children>
+      </HBox>
+   </children>
+</StackPane>

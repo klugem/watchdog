@@ -1,0 +1,42 @@
+################################## MANUAL ##################################
+
+The manual can be found online at https://www.bio.ifi.lmu.de/files/Software/Watchdog/Watchdog-manual.html
+and also in the folder named documentation.
+
+
+############################## INSTALLATION ################################
+
+Simply extract the provided archive into a folder of your choice:
+
+tar xfvz watchdog.tar.gz
+
+################################## CALLS ###################################
+
+In order to run a xml-file using the command line tool, call
+
+./watchdog.sh -x xml-file
+
+The workflow designer can be started using 
+
+./workflowDesigner.sh
+
+################################## CONTACT #################################
+
+If you have any questions or suggestions, please feel free to contact me:
+michael.kluge@bio.ifi.lmu.de
+
+################################## LICENCE #################################
+Watchdog is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Watchdog is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Watchdog.  If not, see <http://www.gnu.org/licenses/>.
+
+############################################################################

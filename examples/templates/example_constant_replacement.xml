@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+
+	<settings>
+		<!-- definition of a constant named WAIT_TIME -->
+		<constants>
+			<const name="WAIT_TIME">30s</const>
+			<const name="FILE_NAME">sleep</const>
+			<const name="LOG_BASE">/tmp</const>
+		</constants>
+	</settings>
+
+	<tasks mail="{%MAIL%}">
+
+		<!-- definition a simple sleep task with constant replacement -->
+		<sleepTask id="1" name="sleep test">
+			<streams>
+				<stdout>${LOG_BASE}/${FILE_NAME}.out</stdout>
+			</streams>
+			<parameter>
+				<wait>${WAIT_TIME}</wait>
+			</parameter>
+		</sleepTask>
+	</tasks>
+</watchdog>

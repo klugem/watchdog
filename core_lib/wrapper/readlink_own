@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# detect macOS for readlink -m switch
+if [[ $OSTYPE == darwin* ]]; then
+	COUNT=$(readlink --version 2>/dev/null | grep "(GNU coreutils)" -c)
+	if [ "$?" -ne "0" ] || [ "$COUNT" -eq "0" ]; then
+		# filter -m or -f on macOS (/ all parameters)
+		declare -a PARAMS
+		for p in "$@"; do
+		    if [[ "$p" == -* ]]; then
+			continue
+		    fi
+		    PARAMS[${#PARAMS[@]}]="$p"
+		done
+		# make call with filtered arguments
+		RET=$(stat -f%Y "${PARAMS[@]}" 2>/dev/null)
+		if [ "$?" -ne "0" ] || [ "$RET" == "" ]; then
+			echo ${PARAMS[0]}
+		else
+			echo $RET
+		fi
+	else
+		# call it unchanged
+		readlink "$@"
+	fi
+else
+	# call it unchanged
+	readlink "$@"
+fi

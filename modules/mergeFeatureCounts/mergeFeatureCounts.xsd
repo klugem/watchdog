@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- definition of the task parameters -->
+	<x:complexType name="mergeFeatureCountsTaskParameterType">
+		<x:all>
+			<x:element name="searchFolder" type="paramAbsoluteFolderPath" minOccurs="1" maxOccurs="1" />
+			<x:element name="output" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" /> 
+			<x:element name="statsFolder" type="paramAbsoluteFolderPath" minOccurs="0" maxOccurs="1" />
+			<x:element name="featureAnnotation" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1" />
+			<x:element name="featureAnnotationID" type="paramString" minOccurs="0" maxOccurs="1" />
+			<x:element name="featureAnnotationType" type="paramString" minOccurs="0" maxOccurs="1" />
+			<x:element name="featureAnnotationExonLength" type="paramString" minOccurs="0" maxOccurs="1" />
+			<x:element name="noPlotting" type="paramBoolean" minOccurs="0" maxOccurs="1" />
+			<x:element name="prefixNames" type="paramBoolean" minOccurs="0" maxOccurs="1" />
+		</x:all>
+	</x:complexType>
+
+	<!-- change default attributes -->
+	<x:complexType name="mergeFeatureCountsTaskOverrideType">
+		<x:complexContent>
+			<x:restriction base="baseAttributeTaskType">
+				<x:attribute name="binName" type="x:string" fixed="mergeFeatureCounts.sh" />
+			</x:restriction>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of final task -->
+	<x:complexType name="mergeFeatureCountsTaskType">
+		<x:complexContent>
+			<x:extension base="mergeFeatureCountsTaskOverrideType">
+				<x:all>
+					<x:element name="parameter" type="mergeFeatureCountsTaskParameterType" minOccurs="1" maxOccurs="1" />
+					<x:element name="return" type="mergeFeatureCountsTaskReturnType" minOccurs="0" maxOccurs="0" />
+					<x:group ref="defaultTaskElements" />
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<x:complexType name="mergeFeatureCountsTaskReturnType">
+		<x:complexContent>
+			<x:extension base="taskReturnType">
+				<x:all>
+					<x:element name="mergedCountFile" type="x:string"/>
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- make task definition availible via substitution group -->
+	<x:element name="mergeFeatureCountsTask" type="mergeFeatureCountsTaskType" substitutionGroup="abstractTask" />
+
+	<!-- module specific parameter types -->
+
+
+</x:schema>

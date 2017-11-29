@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+
+	<settings>
+		<!-- definition of a environment -->
+		<environments>
+			<environment name="pathEnv">
+				<var name="PATH" update="true">~/software/bin</var>
+			</environment>
+		</environments>
+	</settings>
+
+	<!-- begin task block and use that mail to inform the user on success or failure -->
+	<tasks mail="{%MAIL%}">
+
+		<!-- definition of a simple sleep task using custom environment variables -->
+		<envTask id="1" name="env" environment="pathEnv">
+			<streams>
+				<stdout>/tmp/env.test</stdout>
+			</streams>
+
+			<!-- definition of a local environment with two variables -->
+			<environment>
+				<var name="SHELL">/bin/sh</var>
+				<var name="TEST" update="true" sep="@">separator test</var>
+			</environment>
+		</envTask>
+	</tasks>
+</watchdog>

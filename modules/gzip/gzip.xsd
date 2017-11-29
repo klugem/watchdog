@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- definition of the task parameters -->
+	<x:complexType name="gzipTaskParameterType">
+		<x:all>
+			<x:element name="input" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1"/>
+			<x:element name="output" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1"/>
+			<x:element name="md5" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1"/>
+			<x:element name="oldPathMd5" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1"/>
+			<x:element name="verify" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
+			<x:element name="decompress" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
+			<x:element name="delete" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
+			<x:element name="quality" type="paramIntegerRange0_9_gzip" minOccurs="0" maxOccurs="1"/>
+		</x:all>
+	</x:complexType>
+
+	<!-- change default attributes --> 
+	<x:complexType name="gzipTaskOverrideType">
+		<x:complexContent>
+			<x:restriction base="baseAttributeTaskType">
+				<x:attribute name="binName" type="x:string" fixed="gzip.sh"/>
+			</x:restriction>
+		</x:complexContent>
+	</x:complexType>
+
+	<x:complexType name="gzipTaskReturnType">
+		<x:complexContent>
+			<x:extension base="taskReturnType">
+				<x:all>
+					<x:element name="processedGzipFile" type="x:string"/>
+					<x:element name="createdGzipFile" type="x:string"/>
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of final task -->
+	<x:complexType name="gzipTaskType">
+		<x:complexContent>
+			<x:extension base="gzipTaskOverrideType">
+				<x:all>
+					<x:element name="parameter" type="gzipTaskParameterType" minOccurs="1" maxOccurs="1" />
+					<x:element name="return" type="gzipTaskReturnType" minOccurs="0" maxOccurs="0" />
+					<x:group ref="defaultTaskElements" />
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- make task definition availible via substitution group -->
+	<x:element name="gzipTask" type="gzipTaskType" substitutionGroup="abstractTask" />
+
+	<!-- module specific parameter types -->
+	<x:complexType name="paramIntegerRange0_9_gzip">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assertion test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or ($value >= 1 and $value &lt;= 9)" xerces:message="Parameter with name '{$tag}' must be equal or greater than 0." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+</x:schema>

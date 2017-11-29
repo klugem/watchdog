@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- constant abstract definition -->
+	<x:complexType name="constType">
+		<x:simpleContent>
+			<x:extension base="x:string">
+				<x:attribute name="name" type="x:string" use="required" />
+				<x:assert test="matches(@name, '^[A-Za-z_0-9]+$')" xerces:message="Name of a constant may only contain following characters as start '[A-Za-z_]' and '[A-Za-z_0-9]' afterwards." />
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- constant parent element definition -->
+	<x:complexType name="constantsType">
+		<x:choice minOccurs="1" maxOccurs="unbounded">
+			<x:element name="const" type="constType" />
+		</x:choice>
+	</x:complexType>
+
+</x:schema>

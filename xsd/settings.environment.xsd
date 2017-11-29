@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
+
+	<!-- environment variable definition -->
+	<x:complexType name="environmentVarType">
+		<x:simpleContent>
+			<x:extension base="x:string">
+				<x:attribute name="name" type="x:string" use="required" />
+				<x:attribute name="update" type="x:boolean" />
+				<x:attribute name="copyLocalValue" type="x:boolean" />
+				<x:attribute name="sep" type="x:string" default=":"/>
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- environment block definition -->
+	<x:complexType name="environmentType">
+		<x:all>
+			<x:element name="var" type="environmentVarType" minOccurs="0" maxOccurs="unbounded" />
+		</x:all>
+		<x:attribute name="name" type="x:string" />
+		<x:attribute name="copyLocalValue" type="x:boolean" />
+		<x:attribute name="shebang" type="x:string" default="#!/bin/bash"/>
+		<x:attribute name="useExternalExport" type="x:boolean" default="true"/>
+		<x:attribute name="exportCommand" type="x:string"/>
+		<x:attribute name="color" type="x:string" default=""/>
+	</x:complexType>
+
+	<!-- global surrounding environment definition -->
+	<x:complexType name="globalEnvironmentType">
+		<x:all>
+			<x:element name="environment" type="environmentType" minOccurs="1" maxOccurs="unbounded" />
+		</x:all>
+	</x:complexType>
+
+</x:schema>

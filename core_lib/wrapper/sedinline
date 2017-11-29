@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# detect macOS for sed inline switch
+if [[ $OSTYPE == darwin* ]]; then
+	COUNT=$(sed --version 2>/dev/null | grep "(GNU sed)" -c)
+	if [ "$?" -ne "0" ] || [ "$COUNT" -eq "0" ]; then
+		sed -i '' "$@"
+	else
+		sed -i "$@"	
+	fi
+else
+	sed -i "$@"
+fi

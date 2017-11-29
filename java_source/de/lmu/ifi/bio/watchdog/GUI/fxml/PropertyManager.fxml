@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="root" minWidth="250.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.properties.PropertyManagerController">
+   <children>
+      <TitledPane fx:id="pane" alignment="TOP_LEFT">
+      	<VBox fx:id="properties" spacing="10.0" />
+      </TitledPane>
+   </children>
+</VBox>

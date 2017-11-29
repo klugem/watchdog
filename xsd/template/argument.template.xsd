@@ -1,0 +1,1 @@
+			<x:element name="{%NAME%}" type="{%TYPE%}" minOccurs="{%MIN%}" maxOccurs="{%MAX%}" />

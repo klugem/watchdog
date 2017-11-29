@@ -1,0 +1,1 @@
+			<x:element name="{%NAME%}" type="paramBoolean" minOccurs="0" maxOccurs="1" />

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+
+	<!-- begin task block and use that mail to inform the user on success or failure -->
+	<tasks mail="{%MAIL%}">
+
+		<!-- definition a simple sleep task -->
+		<sleepTask id="1" name="sleep">
+			<parameter>
+				<wait>30s</wait>
+			</parameter>
+			<checkers> 
+				<!-- load a success checker with one additional constructor argument -->
+				<!-- it will check, if the file {%INSTALL%}examples/mail_config exists and is not empty -->
+				<checker classPath="{%EXAMPLE_DATA%}/OutputFileExistsSuccessChecker.class" className="de.lmu.ifi.bio.watchdog.successChecker.OutputFileExistsSuccessChecker" type="success">
+					<cArg type="string">{%INSTALL%}examples/mail_config</cArg>
+				</checker>
+			</checkers>
+		</sleepTask>
+	</tasks>
+</watchdog>

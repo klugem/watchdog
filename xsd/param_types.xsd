@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- file pattern -->
+	<x:complexType name="paramFilename">
+		<x:simpleContent>
+			<x:restriction base="paramString">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or matches($value, '^[^/\\]+$')" xerces:message="Parameter with name '{$tag}' must be a name of a file without '/' and '\'." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- absolute folder pattern -->
+	<x:complexType name="paramAbsoluteFolderPath">
+		<x:simpleContent>
+			<x:restriction base="paramString">
+				<x:assertion test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or matches($value, '(^/([^/]+/+)*$)|(^[A-Z]:\\([^\\]+\\+)*$)')" xerces:message="Parameter with name '{$tag}' must be an absolute path to a folder." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- absolute file pattern -->
+	<x:complexType name="paramAbsoluteFilePath">
+		<x:simpleContent>
+			<x:restriction base="paramString">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or matches($value, '(^/([^/]+/+)*[^/]+$)|(^[A-Z]:\\([^\\]+\\+)*[^\\]+$)')" xerces:message="Parameter with name '{$tag}' must be an absolute path to a file." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- relative folder pattern -->
+	<x:complexType name="paramRelativeFolderPath">
+		<x:simpleContent>
+			<x:restriction base="paramString">
+				<x:assertion test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or matches($value, '(^([^/]+/+)*$)|(^([^\\]+\\+)*$)')" xerces:message="Parameter with name '{$tag}' must be an relative path to a folder." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- relative file pattern -->
+	<x:complexType name="paramRelativeFilePath">
+		<x:simpleContent>
+			<x:restriction base="paramString">
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or matches($value, '(^([^/]+/+)*[^/]+$)|(^([^\\]+\\+)*[^\\]+$)')" xerces:message="Parameter with name '{$tag}' must be an relative path to a file." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+</x:schema>
