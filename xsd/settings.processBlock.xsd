@@ -25,7 +25,6 @@
 			</x:extension>
 		</x:simpleContent>
 	</x:complexType>
-	<x:element name="processblockInBase" type="childOfbaseFolderType" abstract="true"  substitutionGroup="processblockInBaseType" />
 
 	<!-- folder with base folder definition -->
 	<x:complexType name="baseFolderType">
@@ -38,13 +37,14 @@
 
 	<!-- element for group substitution -->
 	<x:element name="processblockType" />
-	<x:element name="processblockInBaseType" />
+	<x:element name="processblockInBaseType" type="childOfbaseFolderType" abstract="true" substitutionGroup="processblockType" />
 
 	<!-- definition of the executors type block -->
 	<x:complexType name="processblockType">
-		<x:all>
-			<x:element ref="processblockType" minOccurs="1" maxOccurs="unbounded" />
-		</x:all>
+		<x:choice minOccurs="1" maxOccurs="unbounded">
+			<x:element ref="processblockType"/>
+			<x:element name="baseFolder" type="baseFolderType" />
+		</x:choice>
 	</x:complexType>	
 
 </x:schema>

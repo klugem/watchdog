@@ -4,8 +4,7 @@
 	<!-- process table -->
 	<x:complexType name="processTableType">
 		<x:simpleContent>
-			<x:extension base="processblockAbstractType">
-
+			<x:extension base="childOfbaseFolderType">
 				<x:attribute name="table" type="absoluteOrRelativeFileType" use="required" />
 				<x:attribute name="disableExistenceCheck" type="x:boolean" default="false" />
 				<x:attribute name="compareName" type="x:string" default="" />
@@ -15,5 +14,5 @@
 	</x:complexType>
 
 	<!-- tag for process block in XML file -->
-	<x:element name="processTable" type="processTableType" substitutionGroup="processblockType" />
+	<x:element name="processTable" type="processTableType" substitutionGroup="processblockInBaseType" />
 </x:schema>

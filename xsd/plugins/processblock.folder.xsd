@@ -4,7 +4,7 @@
 	<!-- process folder -->
 	<x:complexType name="processFolderType">
 		<x:simpleContent>
-			<x:extension base="processblockAbstractType">
+			<x:extension base="childOfbaseFolderType">
 				<x:attribute name="folder" type="absoluteOrRelativePathType" use="required" />
 				<x:attribute name="pattern" type="filenamePatternType" use="required" />
 				<x:attribute name="ignore" type="filenamePatternType"/>
@@ -17,5 +17,5 @@
 	</x:complexType>
 
 	<!-- tag for process block in XML file -->
-	<x:element name="processFolder" type="processFolderType" substitutionGroup="processblockType" />
+	<x:element name="processFolder" type="processFolderType" substitutionGroup="processblockInBaseType" />
 </x:schema>

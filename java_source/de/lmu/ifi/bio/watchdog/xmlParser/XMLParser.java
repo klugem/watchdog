@@ -504,6 +504,10 @@ public class XMLParser {
 								String type = el.getTagName();
 								String name = XMLParser.getAttribute(el, NAME);
 								
+								// this was already parsed 
+								if(type.equals(XMLParser.BASE_FOLDER))
+									continue;
+								
 								// get appropriate parser
 								processblock = null;
 								try {
