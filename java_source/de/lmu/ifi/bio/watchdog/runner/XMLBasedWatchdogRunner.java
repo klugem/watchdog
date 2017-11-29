@@ -16,19 +16,18 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ggf.drmaa.DrmaaException;
 import org.xml.sax.SAXException;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
-import de.lmu.ifi.bio.watchdog.GUI.helper.PreferencesStore;
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.HTTPListenerThread;
 import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.Mailer;
-import de.lmu.ifi.bio.watchdog.helper.SSHPassphraseAuth;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessFolder;
+import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
@@ -36,7 +35,6 @@ import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask2TaskThread;
-import javafx.util.Pair;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
@@ -55,10 +53,11 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 	private static final String VERSION = "version: release candidate 1.1";
 	private static final String REVISION = getRevisionNumber();        
 	public static final String LOG_SEP = "#########################################################################################";
-	public static int PORT = PreferencesStore.getPort(); 
-	public final static int SLEEP = 5000; // check every 5s if all tasks are finished!
-		 
-	@SuppressWarnings({ "deprecation", "unchecked" })
+	public static int PORT =  WatchdogThread.DEFAULT_HTTP_PORT;
+	public final static int SLEEP = 500; // check every 0.5s if all tasks are finished!
+	private static final String XML_PATTERN = "*.xml";
+	
+	@SuppressWarnings({ "unchecked" })
 	public static void main(String[] args) throws SAXException, IOException, ParserConfigurationException, DrmaaException, InterruptedException {
 		Logger log = new Logger(LogLevel.DEBUG);
 		Parameters params = new Parameters();
@@ -86,17 +85,20 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 			File xml = new File(params.xml);				
 			// process the complete folder
 			if(xml.isDirectory()) {
-				ProcessFolder p = new ProcessFolder("", xml, "*.xml", null, 0);
+				
 				// check all files in the example folder
-				for(String xmlFile : p.getValues().keySet()) {
-					System.out.println("Validating '" + xmlFile + "'...");
-					XMLParser.parse(xmlFile, findXSDSchema(xmlFile).getAbsolutePath(), params.ignoreExecutor, false, false, true);
+				int succ = 0;
+				for(File xmlFile : xml.listFiles(new PatternFilenameFilter(XML_PATTERN, false))) {
+					String xmlFilename = xmlFile.getAbsolutePath();
+					log.info("Validating '" + xmlFilename + "'...");
+					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading);
+					succ++;
 				}
-				System.out.println("Validation of " + p.getValues().size() + " files stored in '"+ xml.getCanonicalPath() +"' succeeded.");
+				System.out.println("Validation of " + succ + " files stored in '"+ xml.getCanonicalPath() +"' succeeded.");
 			}
 			// process only that file
 			else {				
-				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath()).getAbsolutePath(), params.ignoreExecutor, false, false, true);
+				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath()).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading);
 				System.out.println("Validation of '"+ xml.getCanonicalPath() +"' succeeded!");
 			}
 			System.exit(0);
@@ -177,10 +179,9 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 				log.info("Log file: ** not saved **");
 
 			// parse the XML Tasks
-			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.ignoreExecutor, enforceNameUsage, false, false);
+			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
 			String mail = (String) ret[1];
-			HashMap<String, SSHPassphraseAuth> auth = (HashMap<String, SSHPassphraseAuth>) ret[2];
 			HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = (HashMap<String, Pair<HashMap<String, ReturnType>, String>>) ret[3];
 			HashMap<String, Integer> name2id = (HashMap<String, Integer>) ret[4]; 
 			
@@ -261,11 +262,6 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 			watchdog.setWebserver(control);
 			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, xmlPath, params.mailWaitTime);
 			
-			// add the auth stuff to watchdog
-			for(String executorName : auth.keySet()) {
-				watchdog.addPassphrase(executorName, auth.get(executorName));
-			}
-
 			WatchdogThread.addUpdateThreadtoQue(xml2taskThread, true);
 			Executor.setXml2Thread(xml2taskThread);
 			Executor.setWatchdogBase(watchdogBase);

@@ -1,5 +1,6 @@
 package de.lmu.ifi.bio.watchdog.task;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
@@ -7,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ggf.drmaa.DrmaaException;
 
 import de.lmu.ifi.bio.multithreading.StopableLoopRunnable;
+import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.interfaces.ErrorChecker;
 import de.lmu.ifi.bio.watchdog.interfaces.SuccessChecker;
 import de.lmu.ifi.bio.watchdog.slave.Master;
@@ -21,6 +23,8 @@ public class TaskStatusUpdate extends StopableLoopRunnable implements Serializab
 
 	private static final long serialVersionUID = 4765081705257646851L;
 	private final Task T;
+	private static char NEWLINE = '\n';
+	private static char TAB = '\t';
 	
 	public TaskStatusUpdate(Task t) {
 		super("TaskStatusUpdate_" + t.getID());
@@ -113,6 +117,23 @@ public class TaskStatusUpdate extends StopableLoopRunnable implements Serializab
 						}
 						catch(NullPointerException e) {}
 						catch(NumberFormatException e) {}
+					}
+					// save resources to file if wished
+					File resFile = this.T.getSaveResFilename();
+					if(resFile != null) {
+						StringBuilder b = new StringBuilder("resources used by task ");
+						b.append(this.T.getID()); 
+						b.append(" - ");
+						b.append(this.T.getName());
+						b.append(":");
+						b.append(NEWLINE);
+						for(String key : this.T.USED_RESOURCES.keySet()) {
+							b.append(key);
+							b.append(TAB);
+							b.append(this.T.USED_RESOURCES.get(key));
+							b.append(NEWLINE);
+						}
+						Functions.write(resFile.toPath(), b.toString());
 					}
 				}
 				else if(this.T.info.hasSignaled()){

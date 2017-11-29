@@ -11,7 +11,7 @@ import de.lmu.ifi.bio.watchdog.task.Task;
  * @author Michael Kluge
  *
  */
-public abstract class ScheduledExecutor extends Executor {
+public abstract class ScheduledExecutor<A extends ExecutorInfo> extends Executor<A> {
 
 	protected FileOutputStream fos;
 	protected FileOutputStream fer;
@@ -22,7 +22,7 @@ public abstract class ScheduledExecutor extends Executor {
 	 * @param log
 	 * @param execInfo
 	 */
-	public ScheduledExecutor(Task task, SyncronizedLineWriter log, ExecutorInfo execInfo) {
+	public ScheduledExecutor(Task task, SyncronizedLineWriter log, A execInfo) {
 		super(task, log, execInfo);
 	}
 	

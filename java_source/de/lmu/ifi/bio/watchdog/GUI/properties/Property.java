@@ -1,10 +1,11 @@
 package de.lmu.ifi.bio.watchdog.GUI.properties;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.util.Pair;
 
 public class Property extends Pane {
 	

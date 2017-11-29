@@ -8,7 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
+import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
+import de.lmu.ifi.bio.watchdog.interfaces.XMLPlugin;
 import de.lmu.ifi.bio.watchdog.task.Task;
 
 
@@ -17,7 +19,7 @@ import de.lmu.ifi.bio.watchdog.task.Task;
  * @author Michael Kluge
  *
  */
-public abstract class ExecutorInfo implements XMLDataStore, Cloneable {
+public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin {
 
 	private static final long serialVersionUID = 3363943509420173849L;
 	private final String NAME;
@@ -36,6 +38,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable {
 	private static final String JAVA = "/usr/bin/java"; 
 	private String color;
 	private final Integer MAX_SLAVE_RUNNING;
+	private final String TYPE;
 	
 	/**
 	 * Constructor
@@ -45,7 +48,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable {
 	 * @param watchdogBaseDir
 	 * @param environment
 	 */
-	public ExecutorInfo(String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir) {
+	public ExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir) {
 		// test, if we can use some of the default working dirs
 		if(workingDir == null) {
 			workingDir = ExecutorInfo.getWorkingDir(watchdogBaseDir);
@@ -54,6 +57,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable {
 		if(path2java == null || path2java.length() == 0)
 			path2java = JAVA;
 		
+		this.TYPE = type;
 		this.NAME = name;
 		this.IS_DEFAULT = isDefault;
 		this.MAX_RUNNING = maxRunning;
@@ -71,6 +75,14 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable {
 		
 		this.setEnvironment(environment);
 	}
+	
+	/**
+	 * returns the executor for task t
+	 * @param t
+	 * @param logFile
+	 * @return
+	 */
+	public abstract Executor<?> getExecutorForTask(Task t, SyncronizedLineWriter logFile);
 	
 	public static String getWorkingDir(String watchdogBaseDir) {
 		String workingDir;
@@ -100,6 +112,14 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable {
 	@Override
 	public String getRegisterName() {
 		return XMLDataStore.getRegisterName(this.getName(), ExecutorInfo.class);
+	}
+	
+	/**
+	 * type of the executor
+	 * @return
+	 */
+	public String getType() {
+		return this.TYPE;
 	}
 	
 	/**

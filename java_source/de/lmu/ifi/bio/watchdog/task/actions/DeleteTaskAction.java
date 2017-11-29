@@ -113,4 +113,7 @@ public class DeleteTaskAction extends TaskAction implements Serializable {
 	public String getTarget() {
 		return this.getPath();
 	}
+	
+	@Override
+	public Object[] getDataToLoadOnGUI() { return null; }
 }

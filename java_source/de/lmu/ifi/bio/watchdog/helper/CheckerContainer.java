@@ -6,15 +6,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 
-import de.lmu.ifi.bio.watchdog.GUI.helper.ErrorCheckerStore;
-import de.lmu.ifi.bio.watchdog.GUI.helper.ErrorCheckerType;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
-import javafx.util.Pair;
 
 /**
  * Container class for error or success checker
@@ -49,7 +48,7 @@ public class CheckerContainer {
 		Class c = this.C.getDeclaringClass();
 		LinkedHashSet<Pair<ReturnType, String>> args = new LinkedHashSet<>();
 		for(@SuppressWarnings("rawtypes") Pair<Class, String> p : this.ARGS) {
-			args.add(new Pair<>(ReturnType.getRetunType(p.getKey()) , p.getValue()));
+			args.add(Pair.of(ReturnType.getRetunType(p.getKey()) , p.getValue()));
 		}
 		return new ErrorCheckerStore(c.getCanonicalName(), this.FILE.getAbsolutePath(), this.IS_ERROR_CHECKER ? ErrorCheckerType.ERROR : ErrorCheckerType.SUCCESS, null);
 	}
@@ -71,7 +70,7 @@ public class CheckerContainer {
 
 			// only try to replace parameters
 			if(inputReplacement != null) {
-				value = ReplaceSpecialConstructs.replaceValues(value, inputReplacement, pb != null ? pb.getClass() : null, spawnedTasks + 1, nameMapping, workingDir, false);
+				value = ReplaceSpecialConstructs.replaceValues(value, inputReplacement, pb != null ? pb.getClass() : null, spawnedTasks + 1, nameMapping, workingDir, false, pb.mightContainFilenames());
 			}
 
 			// try to parse the parameter

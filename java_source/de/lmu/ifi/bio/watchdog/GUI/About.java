@@ -1,9 +1,10 @@
 package de.lmu.ifi.bio.watchdog.GUI;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import javafx.application.HostServices;
 import javafx.scene.layout.Pane;
-import javafx.util.Pair;
 
 public class About extends Pane {
 	

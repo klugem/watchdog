@@ -28,7 +28,7 @@ import de.lmu.ifi.bio.watchdog.task.TaskStatus;
  * @author Michael Kluge
  *
  */
-public class LocalExecutor extends ScheduledExecutor {
+public class LocalExecutor extends ScheduledExecutor<LocalExecutorInfo> {
 	
 	private static final String EXEC_NAME = "localhost";
 	private static final Logger LOGGER = new Logger(LogLevel.DEBUG);
@@ -65,7 +65,7 @@ public class LocalExecutor extends ScheduledExecutor {
 		}
 		
 		// add job to local monitor
-		LOCAL_MONITOR.addTaskToMonitor(count_id, this);
+		LOCAL_MONITOR.addTaskToMonitor(Integer.toString(count_id), this);
 	}
 		
 	/**

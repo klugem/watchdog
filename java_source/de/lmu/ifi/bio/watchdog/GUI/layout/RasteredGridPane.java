@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.MessageType;
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.StatusConsole;
@@ -38,7 +40,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeLineCap;
-import javafx.util.Pair;
 
 public class RasteredGridPane extends GridPane {
 
@@ -190,7 +191,7 @@ public class RasteredGridPane extends GridPane {
 			for(String orgin : sortedKeys) {
 				from = RasteredGridPane.getPostion(orgin);
 				if(shiftX != 0 || shiftY != 0) {
-					to = new Pair<Integer, Integer>(from.getKey() + shiftX, from.getValue() + shiftY);
+					to = Pair.of(from.getKey() + shiftX, from.getValue() + shiftY);
 					placed = this.moveModule(from, to, true);
 				}
 				// show the stuff that was not shifted yet
@@ -211,7 +212,7 @@ public class RasteredGridPane extends GridPane {
 		// add the dependencies
 		if(!this.getChildren().contains(DEP))
 			this.getChildren().add(1, this.DEP);
-		return new Pair<>(shiftX, shiftY);
+		return Pair.of(shiftX, shiftY);
 	}
 	
 	private void showContextMenu(MouseEvent event) {
@@ -319,7 +320,7 @@ public class RasteredGridPane extends GridPane {
 	}
 	
 	public void addDependency(int startX, int startY, int endX, int endY, boolean isFirstOutput) {
-		WorkflowDesignController.configureHasChanged();
+		WorkflowDesignController.configureHasChangedStatic();
 		this.addSeperateDependency(startX, startY, endX, endY, isFirstOutput, null, null);
 	}
 	
@@ -334,7 +335,7 @@ public class RasteredGridPane extends GridPane {
 		if (result.get() == ButtonType.OK) {
 		  this.removeDependency(depKey);
 		  StatusConsole.addGlobalMessage(MessageType.INFO, "dependency between "+key1+" and "+key2+" was deleted");
-			WorkflowDesignController.configureHasChanged();
+			WorkflowDesignController.configureHasChangedStatic();
 		  return true;
 		}
 		return false;
@@ -349,7 +350,7 @@ public class RasteredGridPane extends GridPane {
 			Dependency d = this.DEPENDENCIES.remove(depKey);
 			d.finalize();
 			this.DEP.getChildren().remove(d);
-			WorkflowDesignController.configureHasChanged();
+			WorkflowDesignController.configureHasChangedStatic();
 			return d;
 		}
 		return null;
@@ -459,12 +460,12 @@ public class RasteredGridPane extends GridPane {
 	
 	public static Pair<Integer, Integer> getPostion(String key) {
 		String[] split = key.split(SEP);
-		return new Pair<>(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+		return Pair.of(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
 	}
 	
 	public static Pair<String, String> getKeys(String depKey) {
 		String[] split = depKey.split(SEP_DEP);
-		return split.length == 2 ? new Pair<>(split[0], split[1]) : null;
+		return split.length == 2 ? Pair.of(split[0], split[1]) : null;
 	}
 	
 	/**
@@ -508,7 +509,7 @@ public class RasteredGridPane extends GridPane {
 			else if(n instanceof WorkflowModule) {
 				((WorkflowModule) n).updateCoordinates(x, y);
 			}
-			WorkflowDesignController.configureHasChanged();
+			WorkflowDesignController.configureHasChangedStatic();
 			return true;
 		}
 		return false;
@@ -532,7 +533,7 @@ public class RasteredGridPane extends GridPane {
 		double h = this.lastBounds.getHeight();
 		int minXNumber = (int) (w / xSize);
 		int minYNumber = (int) (h / ySize);
-		return new Pair<>(minXNumber, minYNumber);
+		return Pair.of(minXNumber, minYNumber);
 		
 	}
 	
@@ -542,7 +543,7 @@ public class RasteredGridPane extends GridPane {
 	 * @return
 	 */
 	public Pair<Integer, Integer> getPosition(double xCoordinates, double yCoordinates) {
-		Pair<Integer, Integer> p = new Pair<Integer, Integer>((int) (xCoordinates / (double) this.xSize), (int) (yCoordinates / (double) this.ySize));
+		Pair<Integer, Integer> p = Pair.of((int) (xCoordinates / (double) this.xSize), (int) (yCoordinates / (double) this.ySize));
 		// test if coordinates are ok
 		if(p.getKey() >= this.xNumber || p.getKey() < 0)
 			throw new IllegalArgumentException("X coordinate is outside the size of the grid: " + xCoordinates);

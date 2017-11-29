@@ -1,6 +1,8 @@
 package de.lmu.ifi.bio.watchdog.GUI.properties.views;
 
 import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyData;
+import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.ExecutorPropertyView;
+import de.lmu.ifi.bio.watchdog.GUI.properties.views.processblocks.ProcessblockPropertyView;
 import javafx.scene.paint.Color;
 
 public class PropertyViewFactory {

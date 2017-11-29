@@ -1,8 +1,9 @@
 package de.lmu.ifi.bio.watchdog.GUI.layout;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import javafx.scene.layout.Pane;
-import javafx.util.Pair;
 
 public class DependencyProperty extends Pane {
 	

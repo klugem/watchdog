@@ -2,8 +2,9 @@ package de.lmu.ifi.bio.watchdog.GUI.useraction;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.layout.RasteredGridPane;
-import javafx.util.Pair;
 
 public class OriginBasedUseraction extends Useraction implements Serializable {
 
@@ -15,7 +16,7 @@ public class OriginBasedUseraction extends Useraction implements Serializable {
 	}
 	
 	public OriginBasedUseraction(int x, int y) {
-		this.ORIGIN = new Pair<>(x, y);
+		this.ORIGIN = Pair.of(x, y);
 	}
 
 	public Pair<Integer, Integer> getCoordinates() {

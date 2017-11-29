@@ -1,10 +1,11 @@
 package de.lmu.ifi.bio.watchdog.GUI.module;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.StatusConsole;
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import javafx.scene.layout.Pane;
-import javafx.util.Pair;
 
 public class TaskActionWindow extends Pane {
 	

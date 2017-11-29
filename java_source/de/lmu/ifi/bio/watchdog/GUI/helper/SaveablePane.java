@@ -1,7 +1,6 @@
 package de.lmu.ifi.bio.watchdog.GUI.helper;
 
 import de.lmu.ifi.bio.watchdog.GUI.preferences.AbstractPreferencesController;
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;

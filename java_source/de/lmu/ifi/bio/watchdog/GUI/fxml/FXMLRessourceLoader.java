@@ -1,9 +1,10 @@
 package de.lmu.ifi.bio.watchdog.GUI.fxml;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.Pane;
-import javafx.util.Pair;
 
 /**
  * Class that can be used to load fxml files
@@ -26,7 +27,7 @@ public class FXMLRessourceLoader<A extends Pane,B extends Initializable> {
 			FXMLLoader loader = new FXMLLoader(FXMLRessourceLoader.class.getResource(this.FXML));
 			this.PANE.getChildren().add(loader.load());
 			B controller = loader.getController();
-			return new Pair<A,B>(this.PANE, controller);
+			return Pair.of(this.PANE, controller);
 		}
 		catch(Exception e) {
 			e.printStackTrace();

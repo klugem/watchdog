@@ -15,6 +15,7 @@ fi
 # define parameters
 DEFINE_string 'install' '' 'install directory of watchdog' 'i'
 DEFINE_string 'mail' '' '[optional] mail for notification' 'm'
+DEFINE_boolean 'fastTest' 'false' '[optional] replaces all wait parameters of sleep tasks with 1 second.' 'f'
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 
 # parse parameters
@@ -69,6 +70,9 @@ do
 	PATH_I=$(echo "${FLAGS_install}/examples/test_data/simple#g" | sed -E 's|//|/|g') 
 	sedinline 's#{%EXAMPLE_DATA%}#'$PATH_I "$FILE_NEW"
 	sedinline -E 's#isTemplate="[(true)|1]+"##' "$FILE_NEW"
+	if [ $FLAGS_fastTest -eq 0 ]; then
+		sedinline -E 's#<wait>[0-9]+.*</wait>#<wait>1s</wait>#' "$FILE_NEW"
+	fi
 
 	# remove empty mail attribute
 	sedinline 's# mail=""##' "$FILE_NEW"

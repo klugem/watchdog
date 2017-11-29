@@ -3,10 +3,10 @@ package de.lmu.ifi.bio.watchdog.logger;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import de.lmu.ifi.bio.watchdog.helper.DefaultRunnableExecutor;
 import de.lmu.ifi.bio.watchdog.helper.LogMessageEvent;
-import javafx.application.Platform;
-import javafx.event.EventHandler;
-
+import de.lmu.ifi.bio.watchdog.interfaces.BasicEventHandler;
+import de.lmu.ifi.bio.watchdog.interfaces.RunnableExecutor;
 
 /**
  * Simple logger class
@@ -16,14 +16,23 @@ import javafx.event.EventHandler;
 public class Logger implements Serializable {
 
 	private static final long serialVersionUID = 6336667886532225389L;
+	private static RunnableExecutor rex = new DefaultRunnableExecutor();
 	private LogLevel logLevel = LogLevel.INFO;
 	
-	private static final HashMap<EventHandler<LogMessageEvent>, LogLevel> LISTENER = new HashMap<>();
-	
+	private static final HashMap<BasicEventHandler<LogMessageEvent>, LogLevel> LISTENER = new HashMap<>();
+		
 	/**
 	 * default constructor
 	 */
 	public Logger() {}
+	
+	/**
+	 * in order to avoid import from javafx.* packages in non GUI version
+	 * @param ex
+	 */
+	public static void setRunnableExecutor(RunnableExecutor ex) {
+		rex = ex;
+	}
 	
 	/**
 	 * Constructor
@@ -33,19 +42,19 @@ public class Logger implements Serializable {
 		this.setLogLevel(initialLogLevel);
 	}
 	
-	public static void registerListener(EventHandler<LogMessageEvent> e, LogLevel filterLevel) {
+	public static void registerListener(BasicEventHandler<LogMessageEvent> e, LogLevel filterLevel) {
 		LISTENER.put(e, filterLevel);
 	}
 	
-	public static void unregisterListener(EventHandler<LogMessageEvent> e) {
+	public static void unregisterListener(BasicEventHandler<LogMessageEvent> e) {
 		LISTENER.remove(e);
 	}
 	
 	private void processListeners(String message, LogLevel l) {
-		for(EventHandler<LogMessageEvent> e : LISTENER.keySet()) {
+		for(BasicEventHandler<LogMessageEvent> e : LISTENER.keySet()) {
 			LogLevel lLevel = LISTENER.get(e);
 			if(lLevel.printMessage(l)) 
-				Platform.runLater(() -> e.handle(new LogMessageEvent(message, l)));
+				rex.run(() -> e.handle(new LogMessageEvent(message, l)));
 		}
 	}
 

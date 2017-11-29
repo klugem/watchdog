@@ -4,20 +4,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.datastructure.Module;
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ParamValue;
+import de.lmu.ifi.bio.watchdog.GUI.helper.PreferencesStore;
 import de.lmu.ifi.bio.watchdog.GUI.layout.Dependency;
 import de.lmu.ifi.bio.watchdog.GUI.layout.RasteredGridPane;
 import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyLine;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
+import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.task.TaskStatus;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
 import javafx.scene.layout.Pane;
-import javafx.util.Pair;
 
 public class WorkflowModule extends Pane implements XMLDataStore, Cloneable {
 	
@@ -99,6 +102,7 @@ public class WorkflowModule extends Pane implements XMLDataStore, Cloneable {
 
 	@Override
 	public String toXML() {
+		XMLBuilder.setMode(PreferencesStore.getUnsafeSaveXMLValidationMode());
 		return this.controller.toXML();
 	}
 
@@ -158,4 +162,7 @@ public class WorkflowModule extends Pane implements XMLDataStore, Cloneable {
 	public void resetID() {
 		this.controller.resetID();
 	}
+
+	@Override
+	public Object[] getDataToLoadOnGUI() { return null; }
 }

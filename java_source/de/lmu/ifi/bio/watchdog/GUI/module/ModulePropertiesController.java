@@ -7,15 +7,16 @@ import java.util.ResourceBundle;
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.MessageType;
 import de.lmu.ifi.bio.watchdog.GUI.css.CSSRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.helper.AddButtonToTitledPane;
-import de.lmu.ifi.bio.watchdog.GUI.helper.ErrorCheckerStore;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ScreenCenteredStage;
 import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
 import de.lmu.ifi.bio.watchdog.GUI.helper.TextFilter;
 import de.lmu.ifi.bio.watchdog.GUI.interfaces.Validator;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.ValidateViewController;
+import de.lmu.ifi.bio.watchdog.helper.ErrorCheckerStore;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
+import de.lmu.ifi.bio.watchdog.helper.returnType.FileReturnType;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -52,6 +53,7 @@ public class ModulePropertiesController extends ValidateViewController {
 	@FXML protected CheckBox appendOut;
 	@FXML protected CheckBox appendErr;
 	@FXML protected CheckBox enforceStdin;
+	@FXML protected CheckBox saveRes;
 	@FXML protected TextField stdout;
 	@FXML protected TextField stderr;
 	@FXML protected TextField stdin;
@@ -346,6 +348,7 @@ public class ModulePropertiesController extends ValidateViewController {
 		// streams
 		this.appendErr.setSelected(data.appendErr);
 		this.appendOut.setSelected(data.appendOut);
+		this.saveRes.setSelected(data.saveRes);
 		this.stderr.setText(data.stdErr);
 		this.stdout.setText(data.stdOut);
 		this.stdin.setText(data.stdIn);
@@ -354,6 +357,7 @@ public class ModulePropertiesController extends ValidateViewController {
 		// add validate to streams stuff
 		this.stderr.textProperty().addListener(e -> this.validate());
 		this.stdout.textProperty().addListener(e -> this.validate());
+		this.stdout.textProperty().addListener(e -> this.saveRes.setDisable(!FileReturnType.AB_FILE.checkType(this.stdout.getText())));
 		this.stdin.textProperty().addListener(e -> this.validate());
 		this.workingDir.textProperty().addListener(e -> this.validate());
 		
@@ -361,6 +365,7 @@ public class ModulePropertiesController extends ValidateViewController {
 		this.addValidateToControl(this.stdout, f -> this.stdout.getText() == null || this.stdout.getText().isEmpty() || (!this.stdout.getText().isEmpty() && this.isAbsoluteFile(this.stdout, "Standard output must be an absolute file path.")));
 		this.addValidateToControl(this.stdin, f -> this.stdin.getText() == null || this.stdin.getText().isEmpty() || (!this.stdin.getText().isEmpty() && this.isAbsoluteFile(this.stdin, "Standard input must be an absolute file path.")));
 		this.addValidateToControl(this.workingDir, f -> this.workingDir.getText() == null || this.workingDir.getText().isEmpty() || (!this.workingDir.getText().isEmpty() && this.isAbsoluteFolder(this.workingDir, "Working directory must be an absolute folder path.")));
+		
 		
 		// add suggest vars to streams
 		ProcessBlock b = (this.setWorkflowModule.hasProcessBlockProperty() ? this.setWorkflowModule.getProcessBlockProperty() : null);

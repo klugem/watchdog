@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
+
+	<!-- process folder -->
+	<x:complexType name="processFolderType">
+		<x:simpleContent>
+			<x:extension base="processblockAbstractType">
+				<x:attribute name="folder" type="absoluteOrRelativePathType" use="required" />
+				<x:attribute name="pattern" type="filenamePatternType" use="required" />
+				<x:attribute name="ignore" type="filenamePatternType"/>
+				<x:attribute name="disableExistenceCheck" type="x:boolean" default="false" />
+				<x:attribute name="maxDepth" type="boundIntegerMinusOneToUnboundedType" default="-1" />
+				<x:attribute name="append" type="x:boolean" default="false" />
+				<x:attribute name="color" type="x:string" default=""/>
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- tag for process block in XML file -->
+	<x:element name="processFolder" type="processFolderType" substitutionGroup="processblockType" />
+</x:schema>

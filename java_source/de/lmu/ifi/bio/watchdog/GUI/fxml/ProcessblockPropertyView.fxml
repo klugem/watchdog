@@ -3,179 +3,64 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Tab?>
-<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.TitledPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="390.0" prefWidth="475.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.properties.views.ProcessblockPropertyViewController">
-   <center>
-      <TabPane fx:id="selectType" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
-        <tabs>
-          <Tab fx:id="tabSequence" text="process sequence">
-            <content>
-              <AnchorPane>
-                     <children>
-                        <GridPane prefHeight="160.0" prefWidth="475.0" AnchorPane.bottomAnchor="91.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <columnConstraints>
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                          </columnConstraints>
-                          <rowConstraints>
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                          </rowConstraints>
-                           <children>
-                              <Label text="start" />
-                              <Label text="end" GridPane.rowIndex="1" />
-                              <Label text="append" GridPane.rowIndex="3" />
-                              <Label text="step" GridPane.rowIndex="2" />
-                              <CheckBox fx:id="s_append" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                              <TextField fx:id="s_step" text="1" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                              <TextField fx:id="s_start" GridPane.columnIndex="1" />
-                              <TextField fx:id="s_end" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                           </children>
-                           <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                           </padding>
-                        </GridPane>
-                     </children>
-                  </AnchorPane>
-            </content>
-          </Tab>
-          <Tab fx:id="tabFolder" text="process folder">
-            <content>
-              <AnchorPane>
-                     <children>
-                        <GridPane prefHeight="230.0" prefWidth="475.0" AnchorPane.bottomAnchor="21.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <columnConstraints>
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                          </columnConstraints>
-                          <rowConstraints>
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                          </rowConstraints>
-                           <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                           </padding>
-                           <children>
-	                          <TextField fx:id="f_folder" GridPane.columnIndex="1" />
-                              <TextField fx:id="f_pattern" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                              <TextField fx:id="f_ignore" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                              <Label text="parent folder" />
-                              <Label text="file pattern" GridPane.rowIndex="1" />
-                              <Label text="ignore pattern" GridPane.rowIndex="2" />
-                              <Label text="append" GridPane.rowIndex="5" />
-                              <CheckBox fx:id="f_append" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                              <CheckBox fx:id="f_enforce" mnemonicParsing="false" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                              <Label text="enforce existence at execution time" GridPane.rowIndex="3" />
-                              <Label text="include subfolders of depth " GridPane.rowIndex="4" />
-                              <TextField fx:id="f_maxDepth" text="0" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                           </children>
-                        </GridPane>
-                     </children>
-                  </AnchorPane>
-            </content>
-          </Tab>
-            <Tab fx:id="tabTable" text="process table">
-              <content>
-                <AnchorPane>
-                     <children>
-                        <GridPane prefHeight="125.0" prefWidth="475.0" AnchorPane.bottomAnchor="126.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <columnConstraints>
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                          </columnConstraints>
-                          <rowConstraints>
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                          </rowConstraints>
-                           <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                           </padding>
-                           <children>
-                              <Label text="path to table" />
-                              <Label text="enforce existence at execution time" GridPane.rowIndex="1" />
-                              <Label text="compare name" GridPane.rowIndex="2" />
-                              <TextField fx:id="t_path" GridPane.columnIndex="1" />
-                              <TextField fx:id="t_compare" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                              <CheckBox fx:id="t_enforce" mnemonicParsing="false" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                           </children>
-                        </GridPane>
-                     </children>
-                  </AnchorPane>
-              </content>
-            </Tab>
-            <Tab fx:id="tabInput" text="process input">
-              <content>
-                <AnchorPane prefHeight="180.0">
-                     <children>
-                        <GridPane prefHeight="90.0" prefWidth="475.0" AnchorPane.bottomAnchor="161.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                          <columnConstraints>
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                          </columnConstraints>
-                          <rowConstraints>
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                          </rowConstraints>
-                           <padding>
-                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-                           </padding>
-                           <children>
-                              <Label text="compare name" GridPane.rowIndex="1" />
-                              <TextField fx:id="i_compare" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                              <Label text="separator" />
-                              <TextField fx:id="i_seperator" text=":" GridPane.columnIndex="1" />
-                           </children>
-                        </GridPane>
-                     </children>
-                  </AnchorPane>
-              </content>
-            </Tab>
-        </tabs>
-      </TabPane>
-   </center>
+<BorderPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.properties.views.processblocks.ProcessBlockPropertyViewController">
    <bottom>
-      <HBox alignment="CENTER_RIGHT" prefHeight="17.0" prefWidth="475.0" spacing="15.0" BorderPane.alignment="CENTER">
-         <padding>
-            <Insets bottom="10.0" right="35.0" top="10.0" />
-         </padding>
+      <HBox alignment="CENTER_RIGHT" maxHeight="68.0" minHeight="46.0" prefHeight="46.0" prefWidth="600.0" spacing="15.0" BorderPane.alignment="CENTER_RIGHT">
          <children>
             <Button fx:id="saveButton" mnemonicParsing="false" text="save process block" />
          </children>
+         <padding>
+            <Insets bottom="10.0" right="35.0" top="10.0" />
+         </padding>
       </HBox>
    </bottom>
-   <top>
-      <GridPane prefHeight="40.0" prefWidth="455.0">
-        <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-        </columnConstraints>
-        <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-        </rowConstraints>
+   <center>
+      <VBox fx:id="parentBox" BorderPane.alignment="CENTER">
          <children>
-            <Label text="name of process block" />
-            <TextField fx:id="name" GridPane.columnIndex="1" />
+            <TitledPane collapsible="false" prefHeight="120.0" prefWidth="600.0" text="basic settings">
+               <content>
+                  <GridPane maxHeight="95.0" minHeight="95.0" prefHeight="95.0">
+                    <columnConstraints>
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                    </rowConstraints>
+                     <children>
+                        <Label text="name of process block" />
+                        <Label text="process block type" GridPane.rowIndex="2" />
+                        <TextField fx:id="name" GridPane.columnIndex="1" />
+                        <Label text="append" GridPane.rowIndex="1" />
+                        <CheckBox fx:id="append" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <ChoiceBox fx:id="type" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </GridPane>
+               </content>
+            </TitledPane>
+            <TitledPane collapsible="false" prefHeight="250.0" text="process block specific settings" VBox.vgrow="ALWAYS">
+               <content>
+                  <Pane fx:id="specific" prefHeight="250.0" prefWidth="598.0" />
+               </content>
+            </TitledPane>
          </children>
-         <BorderPane.margin>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </BorderPane.margin>
-      </GridPane>
-   </top>
+      </VBox>
+   </center>
 </BorderPane>

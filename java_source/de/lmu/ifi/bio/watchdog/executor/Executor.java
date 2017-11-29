@@ -19,10 +19,11 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask2TaskThread;
 
 /**
  * Executor which can execute tasks
+ * Class must ensure that the corresponding MonitorThread object is created and running!
  * @author Michael Kluge
  *
  */
-public abstract class Executor {
+public abstract class Executor<A extends ExecutorInfo> {
 	
 	public static final String COMMAND_SEP = " && ";
 	public static final String EXECUTE = "execute";
@@ -40,14 +41,14 @@ public abstract class Executor {
 	protected final HashMap<String, String> ENVIRONMENT = new HashMap<>();
 	protected final SyncronizedLineWriter LOG;
 	protected final ArrayList<String> PRE_COMMAND = new ArrayList<>();
-	protected final ExecutorInfo EXEC_INFO;
+	protected final A EXEC_INFO;
 	
 	/**
 	 * Constructor without any checker
 	 * @param task
 	 * @param log
 	 */
-	public  Executor(Task t, SyncronizedLineWriter log, ExecutorInfo execInfo) {
+	public Executor(Task t, SyncronizedLineWriter log, A execInfo) {
 		this.TASK = t;
 		this.LOG = log;
 		this.EXEC_INFO = execInfo;
@@ -199,7 +200,7 @@ public abstract class Executor {
 	 * true, if it is only a single command
 	 * @return
 	 */
-	protected boolean isSingleCommand() {
+	public boolean isSingleCommand() {
 		return this.PRE_COMMAND.size() == 0;
 	}
 	
@@ -207,7 +208,7 @@ public abstract class Executor {
 	 * either returns the command itself, if it is only one command are sum up all command in a script
 	 * @return
 	 */
-	protected String[] getFinalCommand(boolean removeQuoting) {
+	public String[] getFinalCommand(boolean removeQuoting) {
 		ArrayList<String> c = new ArrayList<>();
 		c.addAll(this.PRE_COMMAND);
 		

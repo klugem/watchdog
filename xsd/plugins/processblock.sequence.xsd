@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
+
+	<!-- process sequence -->
+	<x:complexType name="processSequenceType">
+		<x:simpleContent>
+			<x:extension base="processblockAbstractType">
+				<x:attribute name="start" type="x:double" use="required" />
+				<x:attribute name="end" type="x:double" use="required" />
+				<x:attribute name="step" type="x:double" default="1" />
+				<x:attribute name="append" type="x:boolean" default="false" />
+				<x:attribute name="color" type="x:string" default=""/>
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- tag for process block in XML file -->
+	<x:element name="processSequence" type="processSequenceType" substitutionGroup="processblockType" />
+</x:schema>

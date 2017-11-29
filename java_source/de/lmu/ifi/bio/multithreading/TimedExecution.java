@@ -1,6 +1,5 @@
 package de.lmu.ifi.bio.multithreading;
 
-import java.awt.Toolkit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -8,10 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.sun.glass.ui.Application;
-
-import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignerRunner;
-import javafx.application.Platform;
+import de.lmu.ifi.bio.watchdog.helper.DefaultRunnableExecutor;
+import de.lmu.ifi.bio.watchdog.interfaces.RunnableExecutor;
 
 /**
  * Does execute runables after a specific time passed
@@ -23,6 +20,7 @@ import javafx.application.Platform;
  */
 public class TimedExecution extends StopableLoopThread {
 	
+	private static RunnableExecutor rex = new DefaultRunnableExecutor();
 	private long currentTime = -1;
 	private final HashMap<Long, Runnable> JOBS = new HashMap<>();
 	private static TimedExecution SINGLETON;
@@ -32,6 +30,14 @@ public class TimedExecution extends StopableLoopThread {
 	// create timed execution thread
 	static {
 		SINGLETON = new TimedExecution();
+	}
+	
+	/**
+	 * in order to avoid import from javafx.* packages in non GUI version
+	 * @param ex
+	 */
+	public static void setRunnableExecutor(RunnableExecutor ex) {
+		rex = ex;
 	}
 	
 	private TimedExecution() {
@@ -92,11 +98,7 @@ public class TimedExecution extends StopableLoopThread {
 				// if can not be added, start without pool
 				Runnable r = this.JOBS.get(l);
 				it.remove();
-				
-				if(WorkflowDesignerRunner.isGUIRunning())
-					Platform.runLater(r); // let javafx handle that
-				else
-					r.run(); // run in this thread
+				rex.run(r);
 			}
 		}
 		return 1;

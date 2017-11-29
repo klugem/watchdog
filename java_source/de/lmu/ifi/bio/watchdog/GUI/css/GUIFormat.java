@@ -1,5 +1,6 @@
 package de.lmu.ifi.bio.watchdog.GUI.css;
 
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Control;
 import javafx.scene.control.TextField;
@@ -41,6 +42,9 @@ public class GUIFormat {
 			colorTextField((TextField) c, ok);
 		else if(c instanceof ChoiceBox)
 			colorWithDefaultColors(c, ok);
+		else if(c instanceof CheckBox) {
+			// do nothing but throw no error
+		}
 		else {
 			System.err.println("Function colorControl in GUIFormat is not implemented for type '"+c.getClass().getSimpleName()+"'");
 			System.exit(1);

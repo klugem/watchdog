@@ -1,7 +1,6 @@
 package de.lmu.ifi.bio.watchdog.helper;
 
 import java.io.BufferedReader;
-import java.io.Console;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,7 +12,6 @@ import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -28,8 +26,6 @@ import javax.crypto.spec.PBEParameterSpec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
-import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignerRunner;
-import de.lmu.ifi.bio.watchdog.GUI.helper.PasswordRequest;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
@@ -45,11 +41,14 @@ public class SSHPassphraseAuth {
 	private static final String UTF8 = "UTF-8";
 	private static final String METHOD = "PBEWithMD5AndDES";
 	private static final Pattern ENCRYPTION_PATTERN = Pattern.compile("Proc-Type: [0-9]+,ENCRYPTED"); 
+	private static GetPassword requestPassword = new StdinPasswortGetter();
 	
 	private final Cipher CIPTHER_EN;
 	private final Cipher CIPTHER_DE;
 	private String authFile;
-	private String pass;
+	private String pass = null;
+	private String name;
+	private boolean encrypted = false;
 	private boolean wasTestSucc = false;
 
 	/**
@@ -67,6 +66,7 @@ public class SSHPassphraseAuth {
 				LOGGER.error("Can not read auth file '"+authFile+"'!");
 				System.exit(1);
 			}
+			this.name = this.encrypt(char2byte(name.toCharArray()));
 			this.authFile = this.encrypt(char2byte(authFile.toCharArray()));
 			this.pass = null;
 			
@@ -74,47 +74,16 @@ public class SSHPassphraseAuth {
 			BufferedReader bf = new BufferedReader(new FileReader(authFile));
 			String line;		
 			Matcher m;
-			boolean encrypt = false;
 			while((line = bf.readLine()) != null) {
 				m = ENCRYPTION_PATTERN.matcher(line);
 
 				// it is encrypted
 				if(m.matches()) {
-					encrypt = true;
-					// ask for pass-phrase
-					if(!WorkflowDesignerRunner.isGUIRunning()) {
-						Console c = System.console();
-						if(c == null) {
-							LOGGER.error("No console is associated with that java vm. Because of that the pass-phrase for the remote executor can not be entered!");
-							System.exit(1);
-						}
-						else {
-							System.out.println("Your private key for the remote executer '"+name+"' is secured by a passphrase (well done!). Please enter the passphrase to use the key:");
-							char[] p = c.readPassword();
-							this.pass = this.encrypt(char2byte(p));
-							czero(p);
-						}
-					}
-					// try to get it via the GUI
-					else {
-						boolean ok = false;
-						while(!ok) {
-							PasswordRequest request = new PasswordRequest("the remote executer '"+name+"'");
-						    Optional<String> result = request.showAndWait();
-						    if(result.isPresent()) {
-						    	char[] p = result.get().toCharArray();
-						    	this.pass = this.encrypt(char2byte(p));
-						    	result = null;
-								czero(p);
-								ok = true;
-						    }
-						    request = null;
-						}
-					}
+					this.encrypted = true;
 				}
 			}
 			bf.close();
-			if(!encrypt) {
+			if(!this.encrypted) {
 				LOGGER.warn("Your private ssh key for the remote executer '"+name+"' is not protected by a passphrase!");
 			}
 		}
@@ -123,6 +92,10 @@ public class SSHPassphraseAuth {
 			LOGGER.error("SSHPassphraseHandler: Failed to encrypt!");
 			System.exit(1);
 		}
+	}
+	
+	public static void changePasswordRequestType(GetPassword pwgetter) {
+		requestPassword = pwgetter;
 	}
 	
 	/**
@@ -181,13 +154,41 @@ public class SSHPassphraseAuth {
 	 * @param input
 	 * @throws UnsupportedEncodingException 
 	 */
-	public static byte[] char2byte(char[] input) throws UnsupportedEncodingException{
+	public static byte[] char2byte(char[] input) throws UnsupportedEncodingException {
 	    CharBuffer charBuffer = CharBuffer.wrap(input);
 	    ByteBuffer byteBuffer = Charset.forName(UTF8).encode(charBuffer);
 	    byte[] bytes = Arrays.copyOfRange(byteBuffer.array(),  byteBuffer.position(), byteBuffer.limit());
 	    Arrays.fill(byteBuffer.array(), (byte) 0);
 	    Arrays.fill(charBuffer.array(), '\u0000');
 	    return bytes;
+	}
+	
+	/**
+	 * String should be overwritten as soon, as it is not needed anymore and GC called manually
+	 * @return
+	 */
+	public String getAuthFile() {
+		try {
+			return new String(this.decrypt(this.authFile), UTF8);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Failed to decrypt auth file path!");
+			System.exit(1);
+		}
+		return null;
+	}
+	
+	private String getName() {
+		try {
+			return new String(this.decrypt(this.name), UTF8);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Failed to decrypt name of executor!");
+			System.exit(1);
+		}
+		return null;
 	}
 	
 	/**
@@ -202,8 +203,14 @@ public class SSHPassphraseAuth {
 		try {
 			JSch js = new JSch();
 		    Session s = js.getSession(user, host, port);
-	    	String file = new String(this.decrypt(this.authFile), UTF8);
+	    	String file = this.getAuthFile();
 	    	
+	    	// ask for pass-phrase
+	    	if(this.encrypted && this.pass == null) {
+	    		this.pass = this.encrypt(requestPassword.requestPasswortInputFromUser(this.getName(), LOGGER));
+	    		System.gc();
+			}
+
 		    // add pass phrase
 		    if(pass == null)
 		    	js.addIdentity(file);

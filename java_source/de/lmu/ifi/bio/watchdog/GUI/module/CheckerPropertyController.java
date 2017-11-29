@@ -6,20 +6,22 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.ResourceBundle;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.helper.AddButtonToTitledPane;
-import de.lmu.ifi.bio.watchdog.GUI.helper.ErrorCheckerStore;
-import de.lmu.ifi.bio.watchdog.GUI.helper.ErrorCheckerType;
 import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
 import de.lmu.ifi.bio.watchdog.GUI.layout.InsertableGridPane;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.ValidateViewController;
+import de.lmu.ifi.bio.watchdog.helper.ErrorCheckerStore;
+import de.lmu.ifi.bio.watchdog.helper.ErrorCheckerType;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.helper.returnType.BooleanReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.DoubleReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.IntegerReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.StringReturnType;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -33,7 +35,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.util.Pair;
 
 public class CheckerPropertyController extends ValidateViewController {
 
@@ -138,7 +139,7 @@ public class CheckerPropertyController extends ValidateViewController {
 		delete.setGraphic(ImageLoader.getImage(ImageLoader.DELETE_SMALL));
 		delete.setOnAction(event -> {this.deleteParam(newUniqueID); event.consume();});
 		this.PARAM_GRID.insertRow(index, type, value, delete);
-		this.PARAMS.put(newUniqueID, new Pair<>(type, value));
+		this.PARAMS.put(newUniqueID, Pair.of(type, value));
 		uniqParamID++;
 		
 		// set the values if required
@@ -212,7 +213,7 @@ public class CheckerPropertyController extends ValidateViewController {
 		for(Pair<ChoiceBox<ReturnType>, TextField> d : this.PARAMS.values()) {
 			ChoiceBox<ReturnType> c = d.getKey();
 			TextField t = d.getValue();
-			args.add(new Pair<ReturnType, String>(c.getSelectionModel().getSelectedItem(), t.getText()));
+			args.add(Pair.of(c.getSelectionModel().getSelectedItem(), t.getText()));
 		}
 		// create the object
 		this.errorCheckerStore = new ErrorCheckerStore(this.fullClassName.getText(), this.path2file.getText(), (ErrorCheckerType) this.type.getSelectedToggle().getUserData(), args);

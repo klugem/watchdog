@@ -12,8 +12,11 @@
 	<x:include schemaLocation="gui_info.xsd" />
 	<x:include schemaLocation="abstract_task.xsd" />
 
+	<!-- include installed plugins -->
+	<!-- @!JAVA_REPLACE_PLUGIN_INCLUDE!@ -->
+
 	<!-- include all activated modules -->
-	<!-- @!JAVA_REPLACE_INCLUDE!@ -->
+	<!-- @!JAVA_REPLACE_MODULE_INCLUDE!@ -->
 
 	<!-- root element -->
 	<x:element name="watchdog">
@@ -22,7 +25,7 @@
 				<x:element name="settings" minOccurs="0" maxOccurs="1">
 					<x:complexType>
 						<x:all>
-							<x:element name="processBlock" type="processBlockType" minOccurs="0" maxOccurs="1" />
+							<x:element name="processBlock" type="processblockType" minOccurs="0" maxOccurs="1" />
 							<x:element name="environments" type="globalEnvironmentType" minOccurs="0" maxOccurs="1" />
 							<x:element name="executors" type="executorsType" minOccurs="0" maxOccurs="1" />
 							<x:element name="constants" type="constantsType" minOccurs="0" maxOccurs="1" />
@@ -42,6 +45,7 @@
 			</x:sequence>
 			<x:attribute name="watchdogBase" type="absolutePathTypeNoreplace" use="required" />
 			<x:attribute name="isTemplate" type="x:boolean" default="false" use="optional" />
+			<x:attribute name="isNotValidToXSD" type="x:boolean" default="false" use="optional" />
 		</x:complexType>
 	</x:element>
 

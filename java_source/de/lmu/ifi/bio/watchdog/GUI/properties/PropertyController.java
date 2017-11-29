@@ -14,8 +14,7 @@ import de.lmu.ifi.bio.watchdog.GUI.helper.ScreenCenteredStage;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PropertyViewType;
 import de.lmu.ifi.bio.watchdog.GUI.useraction.MovePropertyAction;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessFolder;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessSequence;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
@@ -173,12 +172,7 @@ public class PropertyController implements Initializable {
 			for(PropertyLine check : same) {
 				if(check.hasDataStored() && check.getPropertyData().hasXMLData()) {
 					XMLDataStore x = check.getPropertyData().getXMLData();
-					if(x instanceof ProcessFolder && ((ProcessFolder) x).gui_append == false) {
-						id = check.getPropertyData().getID();
-						parent = check;
-						break;
-					}
-					else if(x instanceof ProcessSequence  && ((ProcessSequence) x).gui_append == false) {
+					if(x instanceof ProcessBlock && ((ProcessBlock) x).gui_append == false) {
 						id = check.getPropertyData().getID();
 						parent = check;
 						break;

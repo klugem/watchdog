@@ -3,13 +3,14 @@ package de.lmu.ifi.bio.watchdog.GUI.AdditionalBar;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
 import de.lmu.ifi.bio.watchdog.GUI.event.StatusConsoleMessageEvent;
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.interfaces.TabableNode;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
-import javafx.util.Pair;
 
 public class StatusConsole extends TabableNode {
 		

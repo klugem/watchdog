@@ -58,56 +58,17 @@
 				<x:attribute name="default" type="x:boolean" default="false" />
 				<x:attribute name="stickToHost" type="x:boolean" default="false" />				
 				<x:attribute ref="maxSlaveRunning" default="1" />
+				<x:attribute name="color" type="x:string" default=""/>
+				<x:attribute ref="maxRunning" default="-1" />
 				<x:attribute name="workingDir" type="absolutePathType" default="/usr/local/storage/" />
 				<x:attribute name="pathToJava" type="absoluteOrRelativeFileType" default="/usr/bin/java" />
-				<x:attribute ref="maxRunning" default="-1" />
 				<x:attribute name="environment" type="x:string" default="" />
-				<x:attribute name="color" type="x:string" default=""/>
-			</x:extension>
-		</x:simpleContent>
-	</x:complexType>
-
-	<!-- local executor -->
-	<x:complexType name="executorLocalType">
-		<x:simpleContent>
-			<x:extension base="executorAbstractType">
-				<x:attribute name="type" type="x:string" fixed="local" />
-			</x:extension>
-		</x:simpleContent>
-	</x:complexType>
-
-	<!-- remote executor -->
-	<x:complexType name="executorRemoteType">
-		<x:simpleContent>
-			<x:extension base="executorAbstractType">
-				<x:attribute name="host" type="x:string" />
-				<x:attribute ref="port" default="22" />
-				<x:attribute name="user" type="x:string" />
-				<x:attribute name="privateKey" type="x:string" />
-				<x:attribute name="disableStrictHostCheck" type="x:boolean" default="false"/>
-			</x:extension>
-		</x:simpleContent>
-	</x:complexType>
-
-	<!-- cluster executor -->
-	<x:complexType name="executorClusterType">
-		<x:simpleContent>
-			<x:extension base="executorAbstractType">
-				<x:attribute name="type" type="x:string" fixed="cluster" />
-				<x:attribute ref="slots" default="1" />
-				<x:attribute ref="memory" default="3000M" />
-				<x:attribute name="queue" type="x:string" />
-				<x:attribute name="disableDefault" type="x:boolean" />
-				<x:attribute name="customParameters" type="x:string" />
 			</x:extension>
 		</x:simpleContent>
 	</x:complexType>
 
 	<!-- element for group substitution -->
 	<x:element name="executorType" />
-	<x:element name="local" type="executorLocalType" substitutionGroup="executorType" />
-	<x:element name="remote" type="executorRemoteType" substitutionGroup="executorType" />
-	<x:element name="cluster" type="executorClusterType" substitutionGroup="executorType" />
 
 	<!-- definition of the executors type block -->
 	<x:complexType name="executorsType">

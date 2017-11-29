@@ -9,18 +9,19 @@ import java.util.LinkedHashMap;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
-import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignerRunner;
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.MessageType;
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.StatusConsole;
 import de.lmu.ifi.bio.watchdog.GUI.css.CSSRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.datastructure.ExtendedClipboardContent;
 import de.lmu.ifi.bio.watchdog.GUI.datastructure.Module;
 import de.lmu.ifi.bio.watchdog.GUI.helper.AddButtonToTitledPane;
-import de.lmu.ifi.bio.watchdog.GUI.helper.ErrorCheckerStore;
 import de.lmu.ifi.bio.watchdog.GUI.helper.LogView;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ParamCounts;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ParamValue;
+import de.lmu.ifi.bio.watchdog.GUI.helper.ParameterToControl;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ScreenCenteredStage;
 import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
 import de.lmu.ifi.bio.watchdog.GUI.layout.Dependency;
@@ -34,17 +35,19 @@ import de.lmu.ifi.bio.watchdog.GUI.useraction.CreateDependencyAction;
 import de.lmu.ifi.bio.watchdog.GUI.useraction.MovePropertyAction;
 import de.lmu.ifi.bio.watchdog.GUI.useraction.MoveWorkflowModuleAction;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
+import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.ActionType;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
+import de.lmu.ifi.bio.watchdog.helper.ErrorCheckerStore;
 import de.lmu.ifi.bio.watchdog.helper.Parameter;
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.helper.returnType.DoubleReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.FileReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.IntegerReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.StringReturnType;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import de.lmu.ifi.bio.watchdog.task.TaskActionTime;
 import de.lmu.ifi.bio.watchdog.task.TaskStatus;
@@ -78,7 +81,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import javafx.util.Pair;
 
 /**
  * Controller for module that is placed in the workflow
@@ -193,7 +195,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 			Button lastAdd = null;
 			// add the elements
 			while(i < minNumber) {
-				final ParamValue pv = new ParamValue(p.getName(), p.getControlElement(), (!onlySingleInstance ? i+1 : null));
+				final ParamValue pv = new ParamValue(p.getName(), ParameterToControl.getControlElement(p.getType()), (!onlySingleInstance ? i+1 : null));
 				params.put(pv.getName(), pv);
 				int c = grid.getRowCount();
 				grid.add(new Label(pv.getName()), 0, c);
@@ -433,6 +435,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 		this.DATA.workingDir = gui.workingDir.getText();
 		this.DATA.appendErr = gui.appendErr.isSelected();
 		this.DATA.appendOut = gui.appendOut.isSelected();
+		this.DATA.saveRes = gui.saveRes.isSelected();
 		
 		// save the parameters
 		for(ParamValue p : this.PARAMETER.values())
@@ -817,7 +820,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 	}
 
 	public Pair<Integer, Integer> getPosition() {
-		return new Pair<Integer, Integer>(this.x, this.y);
+		return Pair.of(this.x, this.y);
 	}
 
 	public void copyProperties(WorkflowModuleController source) {
@@ -907,6 +910,8 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 			XMLBuilder streams = new XMLBuilder();
 			streams.newline();
 			streams.startTag(XMLParser.STREAMS, false);
+			if(this.DATA.saveRes)
+				streams.addQuotedAttribute(XMLParser.SAVE_RESOURCE_USAGE, true);
 			streams.endOpeningTag(false);
 			boolean content = false;
 			if(this.DATA.stdErr != null) {
@@ -930,7 +935,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 				streams.addContentAndCloseTag(XMLParser.ensureAbsoluteFile(this.DATA.stdIn));
 				content = true;
 			}
-			if(this.DATA.workingDir != null && !this.DATA.workingDir.equals(WorkflowDesignerRunner.DEFAULT_WORKDIR)) {
+			if(this.DATA.workingDir != null && !this.DATA.workingDir.equals(WatchdogThread.DEFAULT_WORKDIR)) {
 				streams.startTag(XMLParser.WORKING_DIR, true, true);
 				streams.addContentAndCloseTag(XMLParser.ensureAbsoluteFile(this.DATA.workingDir) + File.separator);
 				content = true;
@@ -948,7 +953,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 			for(TaskAction a : this.DATA.ACTIONS) {
 				TaskActionTime t = a.getActionTime();
 				boolean unc = a.isUncoupledFromExecutor();
-				Pair<TaskActionTime, Boolean> p = new Pair<>(t, unc);
+				Pair<TaskActionTime, Boolean> p = Pair.of(t, unc);
 				if(!groups.containsKey(p))
 					groups.put(p, new ArrayList<TaskAction>());
 				
@@ -1085,4 +1090,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 	public void resetID() {
 		this.DATA.id = null;
 	}
+
+	@Override
+	public Object[] getDataToLoadOnGUI() { return null; }
 }

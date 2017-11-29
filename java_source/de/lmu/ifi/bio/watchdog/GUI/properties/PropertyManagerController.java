@@ -19,9 +19,8 @@ import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Constants;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessFolder;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessSequence;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -42,7 +41,6 @@ public class PropertyManagerController implements Initializable {
 	@FXML private VBox properties;
 	@FXML private TitledPane pane;
 	
-	public static String SUFFIX_SEP = "'+'*'";
 	private Button add = new Button();
 	private PropertyViewType type;
 	private final HashMap<Integer, PropertyLine> PROPERTIES = new HashMap<>();
@@ -123,7 +121,7 @@ public class PropertyManagerController implements Initializable {
 		LinkedHashMap<String, PropertyLine> names = new LinkedHashMap<>();
 		int suffix = 0;
 		for(PropertyLine pl : this.PROPERTIES.values()) {
-			String n = pl.getStoredData().getName() + SUFFIX_SEP + suffix;
+			String n = pl.getStoredData().getName() + XMLParser.SUFFIX_SEP + suffix;
 			names.put(n, pl);
 			suffix++;			
 		}
@@ -247,23 +245,16 @@ public class PropertyManagerController implements Initializable {
 				else if(data instanceof ProcessBlock) {
 					XMLDataStore.unregisterData(data);
 					// special case: process block append
-					if(sameName.size() > 0 && (data instanceof ProcessFolder || data instanceof ProcessSequence)) {
-						boolean isAppend = false;
-						if(data instanceof ProcessFolder)
-							isAppend = ((ProcessFolder) data).gui_append;
-						else if(data instanceof ProcessSequence)
-							isAppend = ((ProcessSequence) data).gui_append;
-						
+					if(sameName.size() > 0 && (data instanceof ProcessBlock)) {
+						boolean isAppend = ((ProcessBlock) data).gui_append;;
+												
 						// if it was the first one --> make another the first one
 						PropertyLine changeTarget = sameName.get(0);
 						XMLDataStore change = null;
 						if(!isAppend) {
 							change = changeTarget.getStoredData();
-							if(change instanceof ProcessFolder) {
-								((ProcessFolder) change).gui_append = false;
-							}
-							else if(change instanceof ProcessSequence) {
-								((ProcessSequence) change).gui_append = false;
+							if(change instanceof ProcessBlock) {
+								((ProcessBlock) change).gui_append = false;
 							}
 						}
 						// GUI update might be needed in order to change color and number

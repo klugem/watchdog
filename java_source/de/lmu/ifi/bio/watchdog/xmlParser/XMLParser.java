@@ -28,31 +28,22 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignerRunner;
-import de.lmu.ifi.bio.watchdog.GUI.helper.GUIInfo;
-import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyManagerController;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
-import de.lmu.ifi.bio.watchdog.executor.cluster.ClusterExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.local.LocalExecutorInfo;
-import de.lmu.ifi.bio.watchdog.executor.remote.RemoteExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.ActionType;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
+import de.lmu.ifi.bio.watchdog.helper.GUIInfo;
 import de.lmu.ifi.bio.watchdog.helper.Parameter;
+import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
 import de.lmu.ifi.bio.watchdog.helper.ReplaceSpecialConstructs;
-import de.lmu.ifi.bio.watchdog.helper.SSHPassphraseAuth;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessFolder;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessInput;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessMultiParam;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessSequence;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessTable;
 import de.lmu.ifi.bio.watchdog.helper.returnType.BooleanReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.DoubleReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.FileReturnType;
@@ -64,14 +55,18 @@ import de.lmu.ifi.bio.watchdog.optionFormat.OptionFormat;
 import de.lmu.ifi.bio.watchdog.optionFormat.ParamFormat;
 import de.lmu.ifi.bio.watchdog.optionFormat.QuoteFormat;
 import de.lmu.ifi.bio.watchdog.optionFormat.SpacingFormat;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessMultiParam;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessReturnValueAdder;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import de.lmu.ifi.bio.watchdog.task.TaskActionTime;
 import de.lmu.ifi.bio.watchdog.task.actions.CopyTaskAction;
 import de.lmu.ifi.bio.watchdog.task.actions.CreateTaskAction;
 import de.lmu.ifi.bio.watchdog.task.actions.DeleteTaskAction;
-import javafx.event.EventHandler;
-import javafx.util.Pair;
+import de.lmu.ifi.bio.watchdog.xmlParser.plugins.XMLPluginTypeLoaderAndProcessor;
+import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser.XMLExecutorProcessor;
+import de.lmu.ifi.bio.watchdog.xmlParser.plugins.processBlockParser.XMLProcessBlockProcessor;
 
 /**
  * Parses an XML file which follows the XSD watchdog schema and creates XMLTask objects based on that information.
@@ -84,7 +79,9 @@ public class XMLParser {
 	public static final Logger LOGGER = new Logger();
 	private static final String BASE_FOLDER_CONST_PREFIX = "BASE_FOLDER_";
 	private static final String IS_TEMPLATE_STRING = "isTemplate"; 
-	private static final Pattern IS_TEMPLATE= Pattern.compile("<"+XMLParser.ROOT+".+\\W+"+IS_TEMPLATE_STRING+"=\"(true|1)\".*>"); 
+	public static final String IS_NOT_VALID_XSD_STRING = "isNotValidToXSD"; 
+	private static final Pattern IS_TEMPLATE = Pattern.compile("<"+XMLParser.ROOT+".+\\W+"+IS_TEMPLATE_STRING+"=\"(true|1)\".*>"); 
+	private static final Pattern IS_NOT_VALID = Pattern.compile("<"+XMLParser.ROOT+".+\\W+"+IS_NOT_VALID_XSD_STRING+"=\"(true|1)\".*>"); 
 	
 	private static final String REPLACE_CHARS = "^[\\[{\\(\\$].*";
 	public static final String NEWLINE = System.lineSeparator();
@@ -100,10 +97,10 @@ public class XMLParser {
 	public static final String OPEN_CLOSE_TAG = "</";
 	public static final String CLOSE_NO_CHILD_TAG = "/>";
 	private static final String DISABLE_FLAG = "no";
+	public static String SUFFIX_SEP = "'+'*'";
 	
 	/* Names of the elements */
 	public static final String ROOT = "watchdog";
-	public static final String PROCESS_LOOP = "processLoop"; // for backward compatibility
 	public static final String PROCESS_SEQUENCE = "processSequence";
 	public static final String PROCESS_INPUT = "processInput";
 	public static final String PROCESS_TABLE = "processTable";
@@ -112,6 +109,8 @@ public class XMLParser {
 	public static final String LOCAL = "local";
 	public static final String REMOTE = "remote";
 	public static final String CLUSTER = "cluster";
+	public static final String CPU = "cpu";
+	public static final String TIMELIMIT = "timelimit";
 	public static final String PROCESS_BLOCK = "processBlock";
 	public static final String PROCESS_FOLDER = "processFolder";
 	public static final String DISABLE_EXISTANCE_CHECK = "disableExistenceCheck";
@@ -157,6 +156,7 @@ public class XMLParser {
 	public static final String WATCHDOG_BASE = "watchdogBase";
 	public static final String PARAM_FORMAT = "paramFormat";
 	public static final String SPACING_FORMAT = "spacingFormat";
+	public static final String SEPARATE_FORMAT = "separateFormat";
 	public static final String QUOTE_FORMAT = "quoteFormat";
 	public static final String MAX_RUNNING = "maxRunning";
 	public static final String MAX_SLAVE_RUNNING = "maxSlaveRunning";
@@ -191,6 +191,7 @@ public class XMLParser {
 	public static final String CLASS_NAME = "className";
 	public static final String C_ARG = "cArg";
 	public static final String STICK2HOST = "stickToHost";
+	public static final String SAVE_RESOURCE_USAGE = "saveResourceUsage";
 	public static final String FILE = "file";
 	public static final String DESTINATION = "destination";
 	public static final String CREATE_PARENT = "createParent";
@@ -247,15 +248,11 @@ public class XMLParser {
 	private static final String SEARCH_CONST = MATCH_RANDOM + REPLACE_CONST + MATCH_RANDOM;
 	public static final Pattern PATTERN_CONST = Pattern.compile(SEARCH_CONST);
 	private static final String REPLACE = "@";
-	private static final String INCLUDE_MODULE = "<x:include schemaLocation=\""+REPLACE+"\" />";
-	private static final String XSD_PATTERN = "*.xsd";
-	private static final String REPLACE_IMPORT = "<!-- @!JAVA_REPLACE_INCLUDE!@ -->";
 	private static final String REPLACE_IMPORT_PATH = "<x:include schemaLocation=\"";
-	
-	// checks if these environment variables are set for cluster
-	private static final HashSet<String> CLUSTER_ENV = new HashSet<>();
-	private static final String SGE_ROOT = "SGE_ROOT";
-	private static final String LD_LIBRARY_PATH = "LD_LIBRARY_PATH";
+	private static final String INCLUDE_XSD = REPLACE_IMPORT_PATH + REPLACE+"\" />";
+	private static final String XSD_PATTERN = "*.xsd";
+	private static final String REPLACE_MODULE_IMPORT = "<!-- @!JAVA_REPLACE_MODULE_INCLUDE!@ -->";
+	private static final String REPLACE_PLUGIN_IMPORT = "<!-- @!JAVA_REPLACE_PLUGIN_INCLUDE!@ -->";
 	private static final HashMap<String, String> BLOCKED_CONST_NAMES = new HashMap<>();
 	private static final ArrayList<String> BASE_ROOT_TYPES = new ArrayList<>();
 	public static final HashMap<String, Object[]> XML_MODULE_INFO = new HashMap<>();
@@ -263,13 +260,23 @@ public class XMLParser {
 	private static boolean isGUILoadAttempt;
 	private static boolean noExitInCaseOfError = false;
 	
+	// XML PLUGINS to load 
+	private static final ArrayList<XMLPluginTypeLoaderAndProcessor<?>> LOADED_PLUGINS = new ArrayList<>();
+	private static HashSet<String> XSD_PLUGIN_FILES = new HashSet<>();
+	private static XMLExecutorProcessor PLUGIN_EXECUTOR_PARSER;
+	private static XMLProcessBlockProcessor PLUGIN_PROCESSBLOCK_PARSER;
+	
 	static {
-		CLUSTER_ENV.add(SGE_ROOT);
-		CLUSTER_ENV.add(LD_LIBRARY_PATH);
 		BLOCKED_CONST_NAMES.put("TMP", "It is internally used for storage of executors working directories (see attribute workingDir of executor).");
 		
 		BASE_ROOT_TYPES.add("param_types.xsd");
 		BASE_ROOT_TYPES.add("base_param_types.xsd");
+		
+		// load all XML plugins that are installed
+		PLUGIN_EXECUTOR_PARSER = new XMLExecutorProcessor();
+		PLUGIN_PROCESSBLOCK_PARSER = new XMLProcessBlockProcessor();
+		LOADED_PLUGINS.add(PLUGIN_EXECUTOR_PARSER);
+		LOADED_PLUGINS.add(PLUGIN_PROCESSBLOCK_PARSER);
 	}
 	
 	public static void setGUILoadAttempt(boolean guiLoadAttempt) {
@@ -299,11 +306,15 @@ public class XMLParser {
 	 * @throws ParserConfigurationException
 	 */
 	@SuppressWarnings({ "rawtypes", "resource", "unchecked" })
-	public static Object[] parse(String filenamePath, String schemaPath, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode) throws SAXException, IOException, ParserConfigurationException {	
+	public static Object[] parse(String filenamePath, String schemaPath, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading) throws SAXException, IOException, ParserConfigurationException {	
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
-		HashMap<String, Integer> name2id = new HashMap<>();
 		String watchdogBaseDir = new File(schemaPath).getParentFile().getParent();
+		
+		// will be executed only once --> init plugins
+		initPlugins(watchdogBaseDir, LOGGER, noExit, isGUILoadAttempt());
+
+		HashMap<String, Integer> name2id = new HashMap<>();
 		String mail = null;
 		
 		// test if not a template was loaded
@@ -335,7 +346,7 @@ public class XMLParser {
 		dbf.setIgnoringElementContentWhitespace(true);
 		dbf.setNamespaceAware(true);
 		
-		/****************** auto-load modules **************************/
+		/****************** auto-load modules and plugins **************************/
 		File xmlFile = new File(filenamePath);
 		// get all module folders
 		ArrayList<String> moduleFolders = getModuleFolders(dbf, xmlFile, watchdogBaseDir);
@@ -346,8 +357,8 @@ public class XMLParser {
 		getModules2LoadAndCheckID(dbf, xmlFile);
 		HashSet<String> modules2load = getModules2Load(dbf, xmlFile);
 		boolean allTasksHaveIDs = !enforceNameUsage && hasAllTasksNumericIDs(dbf, xmlFile) && areAllDependenciesNumeric(dbf, xmlFile);
-
-		Pair<File, HashSet<String>> tmpXSDInfo = createTemporaryXSDFile(schemaPath, modules2load, moduleName2Path, moduleFolders);
+	
+		Pair<File, HashSet<String>> tmpXSDInfo = createTemporaryXSDFile(schemaPath, modules2load, moduleName2Path, moduleFolders, null);
 		if(tmpXSDInfo == null) {
 			if(!noExit) System.exit(1);
 			return null;
@@ -364,58 +375,64 @@ public class XMLParser {
 		Schema schema = schemaFac.newSchema(includedSchemaPath);
 		dbf.setSchema(schema);
 		
-		// get a path for a temporary file
-		Path tmpFile = Files.createTempFile("watchdog_" + new File(filenamePath).getName(), ".xml.tmp");
-		tmpFile.toFile().deleteOnExit();
-
-		// validate the stuff
-		Validator validator = schema.newValidator();
-		try {
-			// validate the XML as it is
-			validator.validate(new StreamSource(new File(filenamePath)));
-			if(!XMLParser.isGUILoadAttempt()) {
-				// parse the constants out of the original file
-				HashMap<String, String> consts = XMLParser.getConstants(XMLParser.getRootElement(dbf, new File(filenamePath)));
-				ArrayList<String> out = new ArrayList<>();
-				for(String line : Files.readAllLines(Paths.get(filenamePath))) {
-					out.add(XMLParser.replaceConstants(line, consts));
+		// validate the file if it is not disabled in order to load incomplete XML files
+		Element docEle = null;
+		if(!forceLoading) {
+			// get a path for a temporary file
+			Path tmpFile = Files.createTempFile("watchdog_" + new File(filenamePath).getName(), ".xml.tmp");
+			tmpFile.toFile().deleteOnExit();
+	
+			// validate the stuff
+			Validator validator = schema.newValidator();
+			try {
+				// validate the XML as it is
+				validator.validate(new StreamSource(new File(filenamePath)));
+				if(!XMLParser.isGUILoadAttempt()) {
+					// parse the constants out of the original file
+					HashMap<String, String> consts = XMLParser.getConstants(XMLParser.getRootElement(dbf, new File(filenamePath)));
+					ArrayList<String> out = new ArrayList<>();
+					for(String line : Files.readAllLines(Paths.get(filenamePath))) {
+						out.add(XMLParser.replaceConstants(line, consts));
+					}
+					// write the changed content to the file
+					Functions.write(tmpFile, StringUtils.join(out, NEWLINE));
+	
+					// validate it again
+					validator.validate(new StreamSource(tmpFile.toFile()));
 				}
-				// write the changed content to the file
-				Functions.write(tmpFile, StringUtils.join(out, NEWLINE));
-
-				// validate it again
-				validator.validate(new StreamSource(tmpFile.toFile()));
+				// do not change anything
+				else 
+					Files.copy(new File(filenamePath).toPath(), tmpFile, StandardCopyOption.REPLACE_EXISTING);
+	
 			}
-			// do not change anything
-			else 
-				Files.copy(new File(filenamePath).toPath(), tmpFile, StandardCopyOption.REPLACE_EXISTING);
-
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-			int lineNumber = -1;
-			// try to get the line number
-			try{
-				StringWriter errorWriter = new StringWriter();
-				e.printStackTrace(new PrintWriter(errorWriter));
-				String error = errorWriter.getBuffer().toString();
-				lineNumber = Integer.parseInt(error.split(System.lineSeparator())[0].split("; ")[2].split(": ")[1]);
-			}
-			catch(Exception ee) { }
-		
-			// remove the trailing trash message
-			String error = e.getMessage().split("\n")[0].replaceFirst("cvc-assertion.failure: ", "");
+			catch(Exception e) {
+				e.printStackTrace();
+				int lineNumber = -1;
+				// try to get the line number
+				try{
+					StringWriter errorWriter = new StringWriter();
+					e.printStackTrace(new PrintWriter(errorWriter));
+					String error = errorWriter.getBuffer().toString();
+					lineNumber = Integer.parseInt(error.split(System.lineSeparator())[0].split("; ")[2].split(": ")[1]);
+				}
+				catch(Exception ee) { }
 			
-			// print the error
-			LOGGER.error("XML file is not valid! (line: " + lineNumber + ")");
-			LOGGER.error(error);
-			if(!noExit) System.exit(1);
-			throw new IllegalArgumentException(error);
+				// remove the trailing trash message
+				String error = e.getMessage().split("\n")[0].replaceFirst("cvc-assertion.failure: ", "");
+				
+				// print the error
+				LOGGER.error("XML file is not valid! (line: " + lineNumber + ")");
+				LOGGER.error(error);
+				if(!noExit) System.exit(1);
+				throw new IllegalArgumentException(error);
+			}
+			
+			// document is valid --> parse it
+			docEle = XMLParser.getRootElement(dbf, tmpFile.toFile());
+			tmpFile.toFile().delete();
 		}
-		
-		// document is valid --> parse it
-		Element docEle = XMLParser.getRootElement(dbf, tmpFile.toFile());
-		tmpFile.toFile().delete();
+		else
+			docEle = XMLParser.getRootElement(dbf, xmlFile);
 		
 		LinkedHashMap<String, ProcessBlock> blocks = new LinkedHashMap<>();
 		LinkedHashMap<String, Element> envs = new LinkedHashMap<>();
@@ -423,9 +440,6 @@ public class XMLParser {
 		LinkedHashMap<String, ExecutorInfo> exec = new LinkedHashMap<>();
 		HashSet<Integer> ids = new HashSet<>();
 		ExecutorInfo defaultExecutor = null;
-		boolean firstCluster = true;
-		HashMap<String, SSHPassphraseAuth> auth = new HashMap<>();
-		HashMap<String, EventHandler> checkRemote = new HashMap<>();
 		
 		// check, if XML has right ROOT node
 		if(ROOT.equals(docEle.getTagName())) {
@@ -438,134 +452,68 @@ public class XMLParser {
 					// get constants
 					consts = XMLParser.getConstants(docEle);
 					
+					
+					/********** check for base folders */
+					ProcessBlock processblock = null;
+					int baseFolderConstCounter = 1;
+					NodeList baseFolder = docEle.getElementsByTagName(BASE_FOLDER);
+					for(int i = 0 ; i < baseFolder.getLength(); i++) {
+						Element elBaseFolder = (Element) baseFolder.item(i);
+						String baseName = ProcessBlock.cleanFilename(XMLParser.getAttribute(elBaseFolder, FOLDER));
+						Integer maxDepth = Integer.parseInt(XMLParser.getAttribute(elBaseFolder, MAX_DEPTH));
+						if(maxDepth == -1) { maxDepth = null; } // erase default value
+						// get process folders within the base folder
+						NodeList tmp = elBaseFolder.getElementsByTagName(PROCESS_FOLDER);
+						for(int ii = 0 ; ii < tmp.getLength(); ii++) {
+							if(tmp.item(ii) instanceof Element) {
+								Element el = (Element)tmp.item(ii);
+								// introduce a new constant, if a GUI load attempt as baseFolders are not supported by the GUI
+								if(isGUILoadAttempt() && !XMLParser.PATTERN_CONST.matcher(baseName).matches()) {
+									String newConstName = null;
+									while(newConstName == null || consts.containsKey(newConstName)) {
+										newConstName = BASE_FOLDER_CONST_PREFIX + baseFolderConstCounter++;
+									}
+									consts.put(newConstName, baseName);
+									baseName = "${" + newConstName + "}";	
+								}
+								processblock = PLUGIN_PROCESSBLOCK_PARSER.parseElement(el, watchdogBaseDir, new Object[] { baseName, consts, validationMode, maxDepth});
+								addProcessBlock(processblock, blocks, noExit);
+							}
+						}
+						// search for process tables
+						tmp = elBaseFolder.getElementsByTagName(PROCESS_TABLE);
+						for(int ii = 0 ; ii < tmp.getLength(); ii++) {
+							if(tmp.item(ii) instanceof Element) {
+								Element el = (Element)tmp.item(ii);
+								processblock = PLUGIN_PROCESSBLOCK_PARSER.parseElement(el, watchdogBaseDir, new Object[] { baseName, consts, validationMode, maxDepth});
+								addProcessBlock(processblock, blocks, noExit);
+							}
+						}
+					}
+					
 					/********** check for the process block tag */
 					NodeList processBlockNodes = docEle.getElementsByTagName(PROCESS_BLOCK);
 					if(processBlockNodes.getLength() == 1) {
-						Element elBlock = (Element) processBlockNodes.item(0);
+						Element el = (Element) processBlockNodes.item(0);
+						NodeList proccessblockList = el.getChildNodes();
 
-						/********** check for process loop blocks */
-						NodeList processLoops = elBlock.getElementsByTagName(PROCESS_LOOP);
-						NodeList processSequence = elBlock.getElementsByTagName(PROCESS_SEQUENCE);
-						ArrayList<NodeList> sequenceNodes = new ArrayList<>();
-						sequenceNodes.add(processLoops);
-						sequenceNodes.add(processSequence);
-						
-						// show warning
-						if(processLoops.getLength() > 0) {
-							LOGGER.warn("The use of <processLoop> is deprecated and might be droppped in further versions. Use <processSequence> instead.");
-						}
-						
-						for(NodeList sequence : sequenceNodes) {
-							for(int i = 0 ; i < sequence.getLength(); i++) {
-								Element el = (Element) sequence.item(i);
-		
-								// get the atrributes
-								String name =  XMLParser.getAttribute(el, NAME);
-								double start = Double.parseDouble(XMLParser.getAttribute(el, START));
-								double end = Double.parseDouble(XMLParser.getAttribute(el, END));
-								double step = Double.parseDouble(XMLParser.getAttribute(el, STEP));
-								boolean append = Boolean.parseBoolean(XMLParser.getAttribute(el, APPEND));
-								String color = XMLParser.getAttribute(el, COLOR);
+						// go through each of the annotated process blocks
+						for(int i = 0 ; i < proccessblockList.getLength(); i++) {
+							if(proccessblockList.item(i) instanceof Element) {
+								el = (Element) proccessblockList.item(i);
+								String type = el.getTagName();
+								String name = XMLParser.getAttribute(el, NAME);
 								
-								if(isGUILoadAttempt()) {
-									ProcessSequence b = new ProcessSequence(name, start, end, step, append);
-									b.setColor(color);
-									blocks.put(name + PropertyManagerController.SUFFIX_SEP + blocks.size(), b);
-								}
-								else {								
-									// check, if a process block with that name is already there
-									if(blocks.containsKey(name)) {
-										if(!append) {
-											LOGGER.error("ProcessBlock with name '" + name + "' was already defined before and append attribute is set to false!");
-											if(!noExit) System.exit(1);
-										}
-										// try to append it
-										else if(blocks.get(name) instanceof ProcessSequence) {
-											ProcessSequence updateBlock = (ProcessSequence) blocks.get(name);
-											updateBlock.append(start, end, step);
-										}
-										else {
-											LOGGER.error("ProcessBlock with name '" + name + "' was already defined before and is not of type ProcessLoop!");
-											if(!noExit) System.exit(1);
-										}
-									}
-									else {
-										ProcessSequence b = new ProcessSequence(name, start, end, step);
-										b.setColor(color);
-										blocks.put(name, b);
-									}
-								}
-							}
-						}
-						/********** check for process input blocks */
-						NodeList processInput = elBlock.getElementsByTagName(PROCESS_INPUT);
-						for(int i = 0 ; i < processInput.getLength(); i++) {
-							Element el = (Element) processInput.item(i);
-	
-							// get the atrributes
-							String name = XMLParser.getAttribute(el, NAME);
-							String sep = XMLParser.getAttribute(el, SEP);
-							String compareName = XMLParser.getAttribute(el, COMPARE_NAME);
-							String color = XMLParser.getAttribute(el, COLOR);
-							
-							// check, if a process block with that name is already there
-							if(blocks.containsKey(name)) {
-									LOGGER.error("ProcessBlock with name '" + name + "' was already defined before and processInput blocks can not be joined with others!");
+								// get appropriate parser
+								processblock = null;
+								try {
+									processblock = PLUGIN_PROCESSBLOCK_PARSER.parseElement(el, watchdogBaseDir, new Object[] { null, consts, validationMode, null});
+									addProcessBlock(processblock, blocks, noExit);
+								} catch(IllegalArgumentException ex) {
+									LOGGER.error("ProcessBlock plugin for process block '"+name+"' of type <"+type+"> was not found.");
+									ex.printStackTrace();
 									if(!noExit) System.exit(1);
-							}
-							else {
-								ProcessInput b = new ProcessInput(name, sep, compareName);
-								b.setColor(color);
-								blocks.put(name, b);
-							}
-						}
-	
-						/********** check for process folder blocks */
-						int baseFolderConstCounter = 1;
-						NodeList baseFolder = elBlock.getElementsByTagName(BASE_FOLDER);
-						for(int i = 0 ; i < baseFolder.getLength(); i++) {
-							Element elBaseFolder = (Element) baseFolder.item(i);
-							String baseName = ProcessBlock.cleanFilename(XMLParser.getAttribute(elBaseFolder, FOLDER));
-							Integer maxDepth = Integer.parseInt(XMLParser.getAttribute(elBaseFolder, MAX_DEPTH));
-							if(maxDepth == -1) { maxDepth = null; } // erase default value
-							// get process folders within the base folder
-							NodeList tmp = elBaseFolder.getElementsByTagName(PROCESS_FOLDER);
-							for(int ii = 0 ; ii < tmp.getLength(); ii++) {
-								if(tmp.item(ii) instanceof Element) {
-									Element el = (Element)tmp.item(ii);
-									// introduce a new constant, if a GUI load attempt as baseFolders are not supported by the GUI
-									if(isGUILoadAttempt() && !XMLParser.PATTERN_CONST.matcher(baseName).matches()) {
-										String newConstName = null;
-										while(newConstName == null || consts.containsKey(newConstName)) {
-											newConstName = BASE_FOLDER_CONST_PREFIX + baseFolderConstCounter++;
-										}
-										consts.put(newConstName, baseName);
-										baseName = "${" + newConstName + "}";	
-									}
-									XMLParser.parseProcessFolder(el, blocks, baseName, maxDepth, validationMode, consts);
-								}
-							}
-							// search for process tables
-							tmp = elBaseFolder.getElementsByTagName(PROCESS_TABLE);
-							for(int ii = 0 ; ii < tmp.getLength(); ii++) {
-								if(tmp.item(ii) instanceof Element) {
-									Element el = (Element)tmp.item(ii);
-									XMLParser.parseProcessTable(el, blocks, baseName, validationMode, consts);
-								}
-							}
-						}
-						/*****a***** check for process folders / process tables outside baseFolders */
-						NodeList childsBlocks = elBlock.getChildNodes();
-						for(int i = 0 ; i < childsBlocks.getLength(); i++) {
-							if(childsBlocks.item(i) instanceof Element) {
-								Element el = (Element) childsBlocks.item(i);
-								// check, if it the correct element we are looking at
-								if(PROCESS_FOLDER.equals(el.getTagName())) {
-									XMLParser.parseProcessFolder(el, blocks, null, null, validationMode, consts);
-								}
-								else if(PROCESS_TABLE.equals(el.getTagName())) {
-									XMLParser.parseProcessTable(el, blocks, null, validationMode, consts);
-								}
+								}	
 							}
 						}
 					}
@@ -573,7 +521,7 @@ public class XMLParser {
 						LOGGER.error("Only one '<" +  PROCESS_BLOCK + "'> tag is allowed but another one was found!");
 						if(!noExit) System.exit(1);
 					}
-					
+										
 					/********** check for environments tag */
 					NodeList environments = docEle.getElementsByTagName(ENVIRONMENTS);
 					if(environments.getLength() == 1) {
@@ -612,14 +560,14 @@ public class XMLParser {
 					
 					// ignore all the executor stuff and use only a local executor!
 					if(ignoreExecutor != 0) {
-						defaultExecutor = new LocalExecutorInfo(DEFAULT_LOCAL_NAME , true, false, null, ignoreExecutor, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null);		
+						defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, ignoreExecutor, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null);		
 					}
 					else {
 						/********** check for executor tag */
 						NodeList executors = docEle.getElementsByTagName(EXECUTORS);
 						// just add the default local executor
 						if(executors.getLength() == 0) {
-							defaultExecutor = new LocalExecutorInfo(DEFAULT_LOCAL_NAME , true, false, null, 1, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null);
+							defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, 1, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null);
 						}
 						else if(executors.getLength() == 1) {
 							Element el = (Element) executors.item(0);
@@ -630,18 +578,10 @@ public class XMLParser {
 								if(executorsList.item(i) instanceof Element) {
 									el = (Element)executorsList.item(i);
 									String type = el.getTagName();
-
-									// default attributes each executor has
 									String name = XMLParser.getAttribute(el, NAME);
-									boolean isDefault = Boolean.parseBoolean(el.getAttribute(DEFAULT));
-									boolean isStick2Host = Boolean.parseBoolean(el.getAttribute(STICK2HOST));
-									String workingDir = el.getAttribute(WORKING_DIR_EXC);
-									String path2java = el.getAttribute(PATH2JAVA);
-									int maxRunning = Integer.parseInt(XMLParser.getAttribute(el, MAX_RUNNING));
-									Integer maxSlaveRunning = Integer.parseInt(XMLParser.getAttribute(el, MAX_SLAVE_RUNNING));
-									String environment =  XMLParser.getAttribute(el, ENVIRONMENT);
-									String color = XMLParser.getAttribute(el, COLOR);
-									
+
+									// get environment is some is set
+									String environment =  XMLParser.getAttribute(el, ENVIRONMENT);					
 									Environment envExecutor = null;
 									// check, if environment is there, if it is set and get the information if it is the case
 									if(environment != null && environment.length() > 0) {
@@ -654,69 +594,21 @@ public class XMLParser {
 											}
 									}
 									
-									ExecutorInfo exinfo = null;
-									// local tag
-									if(LOCAL.equals(type)) {
-										exinfo = new LocalExecutorInfo(name, isDefault, false, null, maxRunning, watchdogBaseDir, envExecutor, workingDir);
-									}
-									// remote tag
-									else if(REMOTE.equals(type)) {
-										// get additional ssh attributes
-										final int port = Integer.parseInt(XMLParser.getAttribute(el, PORT));
-										final String host = XMLParser.getAttribute(el, HOST);
-										final String user = XMLParser.getAttribute(el, USER);
-										final String privKey = XMLParser.getAttribute(el, PRIVATE_KEY);
-										final boolean disableStrictHostCheck = Boolean.parseBoolean(XMLParser.getAttribute(el, DISABLE_STRICT_HOST_CHECK));
-										
-										// test, if connection to all hosts can be established later on if it is really in use!
-										checkRemote.put(name, (e) -> testRemoteCredentials(privKey, user, host, port, disableStrictHostCheck, name, auth));
-																				
-										exinfo = new RemoteExecutorInfo(name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, envExecutor, host, user, port, !disableStrictHostCheck, workingDir);
-										if(WorkflowDesignerRunner.isGUIRunning()) {
-											((RemoteExecutorInfo) exinfo).setPrivKey(privKey);
-										}
-									    System.gc();
-									}
-									// grid tag
-									else if(CLUSTER.equals(type)) {
-										// check, if the cluster env variables are at least set
-										if(firstCluster) {
-											ArrayList<String> missing = new ArrayList<>();
-											for(String envCheck : CLUSTER_ENV) {
-												if(System.getenv(envCheck) == null)
-													missing.add(envCheck);
-											}
-											if(missing.size() > 0) {
-												LOGGER.error("In order to use the SGE cluster extension the following environment variables must be set correctly: '" + StringUtils.join(missing, "','") + "'");
-												if(!noExit) System.exit(1);
-											}
-											firstCluster = false;
-										}
-										
-										// get additional grid attributes
-										int slots = Integer.parseInt(XMLParser.getAttribute(el, SLOTS));
-										String memory = XMLParser.getAttribute(el, MEMORY);
-										String queue = XMLParser.getAttribute(el, QUEUE);
-										String customParams = XMLParser.getAttribute(el, CUSTOM_PARAMETERS); 
-										boolean disableDefault = Boolean.parseBoolean(XMLParser.getAttribute(el, DISABLE_DEFAULT));
-										
-										// bound slots to zero
-										if(slots <= 0) 
-											slots = 1; 
-										
-										exinfo = new ClusterExecutorInfo(name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, envExecutor, slots, memory, queue, workingDir, customParams, disableDefault);
-									}
-									else {
-										LOGGER.error("Invalid executor tag '<"+type+">'!");
-										if(!noExit) System.exit(1);
-									}
 									
+									// get appropriate parser
+									ExecutorInfo exinfo = null;
+									try {
+										exinfo = PLUGIN_EXECUTOR_PARSER.parseElement(el, watchdogBaseDir, new Object[] { envExecutor });
+									} catch(IllegalArgumentException ex) {
+										LOGGER.error("Executor plugin for executor '"+name+"' of type <"+type+"> was not found.");
+										ex.printStackTrace();
+										if(!noExit) System.exit(1);
+									}	
 									// save in list
-									exinfo.setColor(color);
 									exec.put(name, exinfo);
 									
 									// store default executor
-									if(isDefault) {
+									if(exinfo.isDefaultExecutor()) {
 										if(defaultExecutor != null) {
 											LOGGER.error("Only one default executor is allowed but a second one was found!");
 											if(!noExit) System.exit(1);
@@ -733,7 +625,7 @@ public class XMLParser {
 					}
 	
 					/********** check for tasks */
-					HashSet<String> usedExecutors = new HashSet<String>();
+					HashMap<String, HashSet<String>> usedExecutors = new HashMap<>();
 					NodeList rootTask = docEle.getElementsByTagName(TASKS);
 					if(rootTask.getLength() == 1) {
 						ArrayList<XMLTask> parsedTasks = new ArrayList<>();
@@ -780,7 +672,7 @@ public class XMLParser {
 								String environment = XMLParser.getAttribute(task, ENVIRONMENT);
 								String processBlock = XMLParser.getAttribute(task, PROCESS_BLOCK);
 								String notify = XMLParser.getAttribute(task, NOTIFY);
-								String checkpoint = XMLParser.getAttribute(task, CHECKPOINT);
+								String checkpoint = (!disableCheckpoint) ? XMLParser.getAttribute(task, CHECKPOINT) : null;
 								String confirmParam = XMLParser.getAttribute(task, CONFIRM_PARAM);
 								int maxRunning = Integer.parseInt(XMLParser.getAttribute(task, MAX_RUNNING));
 								
@@ -814,7 +706,11 @@ public class XMLParser {
 										if(!noExit) System.exit(1);
 									}
 								}
-								usedExecutors.add(executorInfo.getName());
+								// save executor that are really used
+								String exType = executorInfo.getType();
+								if(!usedExecutors.containsKey(exType))
+									usedExecutors.put(exType, new HashSet<String>());
+								usedExecutors.get(exType).add(executorInfo.getName());
 
 								// check, if environment is there, if it is set and store the information
 								if(environment.length() > 0) {
@@ -833,8 +729,8 @@ public class XMLParser {
 								
 								// try to get the correct enums
 								ActionType notifyEnum = getActionType(notify);
-								ActionType checkpointEnum = getActionType(checkpoint);;
-								ActionType confirmParamEnum = getActionType(confirmParam);;
+								ActionType checkpointEnum = getActionType(checkpoint);
+								ActionType confirmParamEnum = getActionType(confirmParam);
 																
 								// update watchdog call if needed
 								if(isWatchdogModule) {
@@ -857,14 +753,14 @@ public class XMLParser {
 										pb = blocks.get(processBlock);
 										
 										// check, if process block is a processInput and if yes -> create a copy of it!
-										if(pb instanceof ProcessInput) {
+										/*if(pb instanceof ProcessInput) {
 											pb = new ProcessInput(pb.getName(), ((ProcessInput) pb).getGlobalSep(), ((ProcessInput) pb).getReplaceDefaultGroup());
-										}
+										}*/ //TODO: why?!?!?!
 									}
 									else {
 										// find it the hard way
 										boolean valid = false;
-										String withSuffix = processBlock + PropertyManagerController.SUFFIX_SEP;
+										String withSuffix = processBlock + XMLParser.SUFFIX_SEP;
 										for(String key : blocks.keySet()) {
 											if(key.startsWith(withSuffix)) {
 												valid = true;
@@ -944,7 +840,7 @@ public class XMLParser {
 													// get the return values, the task will be able to access
 													String depType = XMLTask.getXMLTask(dId).getTaskType();
 													HashSet<String> returnInfoValues = new HashSet<>();
-													if(retInfo.containsKey(depType) && (pb != null && pb instanceof ProcessInput)) {
+													if(retInfo.containsKey(depType) && (pb != null && pb instanceof ProcessReturnValueAdder)) {
 														returnInfoValues.addAll(retInfo.get(depType).getKey().keySet());
 													}
 													// add the stuff
@@ -998,7 +894,7 @@ public class XMLParser {
 													
 													// store the information for later
 													checkInputVariableNames(x, aValue);
-													parsedArgs.add(new Pair(c, aValue));
+													parsedArgs.add(Pair.of(c, aValue));
 													constructorArguments.add(c);
 												}
 											}
@@ -1039,6 +935,7 @@ public class XMLParser {
 								if(streamTag.getLength() == 1) {
 									el = (Element) streamTag.item(0);
 									boolean wasWorkingDirSet = false;
+									boolean saveResourceUsage = Boolean.parseBoolean(XMLParser.getAttribute(el, SAVE_RESOURCE_USAGE));
 									
 									// read the parameters and add them
 									NodeList streams = el.getChildNodes();
@@ -1092,6 +989,10 @@ public class XMLParser {
 											}
 										}
 									}
+									// ensure that output file is set
+									if(x.getPlainStdOut() == null)
+										saveResourceUsage = false;
+									x.setSaveResourceUsage(saveResourceUsage);
 								}
 								
 								// get local environment tag, might override the stuff which was set before
@@ -1221,23 +1122,19 @@ public class XMLParser {
 								parsedTasks.add(x);
 							}
 						}
+						// test all used executors
+						for(String type : usedExecutors.keySet()) {
+							HashSet<String> namesOfExecutors = (HashSet<String>) usedExecutors.get(type).clone();
+							PLUGIN_EXECUTOR_PARSER.runAdditionalTest(type, namesOfExecutors);
+						}
+						
 						HashMap<String, Environment> enivronments = new HashMap<>();
 						// convert environments
 						for(String n : envs.keySet()) {
 							Element e = envs.get(n);
 							enivronments.put(n, XMLParser.parseEnvironment(n, e, false, null, null));
 						}
-						
-						// test remote ssh connections
-						if(!isGUILoadAttempt() && !validationMode) {
-							for(String name : usedExecutors) {
-								if(checkRemote.containsKey(name))
-									checkRemote.get(name).handle(null);
-							}						
-						}
-						checkRemote.clear();
-						System.gc();
-						return new Object[] {parsedTasks, mail, auth, retInfo, name2id, dbf, blocks, enivronments, exec, watchdogBaseDir, consts};
+						return new Object[] {parsedTasks, mail, null, retInfo, name2id, dbf, blocks, enivronments, exec, watchdogBaseDir, consts}; // third element is not used anymore
 					}
 					else  {
 						LOGGER.error("multiple '<"+TASKS+">' elements!");
@@ -1261,6 +1158,36 @@ public class XMLParser {
 		return null;
 	}
 
+	private static void addProcessBlock(ProcessBlock processblock, LinkedHashMap<String, ProcessBlock> blocks, boolean noExit) {
+		if(processblock != null) {
+			// TODO: check, if some checks were lost during  code mode
+			if(!blocks.containsKey(processblock.getName())) {
+				blocks.put(processblock.getName(), processblock);
+			}
+			else {
+				LOGGER.error("ProcessBlock with name '" + processblock.getName() + "' was already defined before and can not be joined with others!");
+				if(!noExit) System.exit(1);
+			}
+		}
+		else {
+			// TODO: problem here?
+			System.out.println("NULL returned by pb");
+		}
+	}
+
+	/**
+	 * if a new plugin should be used it must be init() here!
+	 */
+	public static void initPlugins(String watchdogBaseDir, Logger l, boolean noExit, boolean isGUILoadAttempt) {
+		HashSet<String> xsd = null;
+		
+		for(XMLPluginTypeLoaderAndProcessor<?> xp : LOADED_PLUGINS) {
+			xsd = xp.init(l, noExit, isGUILoadAttempt, watchdogBaseDir);
+			if(xsd != null) 
+				XSD_PLUGIN_FILES.addAll(xsd);
+		}
+	}
+
 	/**
 	 * checks, if a folder seems to be a watchdog installation
 	 * @param baseDir
@@ -1274,34 +1201,12 @@ public class XMLParser {
 		return check.exists() && check.isFile() && check.canRead();
 	}
 
-	private static void testRemoteCredentials(String privKey, String user, String host, int port, boolean disableStrictHostCheck, String name, HashMap<String, SSHPassphraseAuth> auth) {
-		boolean noExit = false;
-		if(isGUILoadAttempt() || isNoExit())
-			noExit = true;
-		SSHPassphraseAuth authStore = new SSHPassphraseAuth(name, privKey);				
-		if(!isGUILoadAttempt()) {
-			ArrayList<String> hosts = new ArrayList<>();
-			for(String h : host.split(HOST_SEP)) {
-				if(authStore.testCredentials(user, h, port, !disableStrictHostCheck)) {
-					hosts.add(h);
-					LOGGER.info("Testing of remote connection to host '" + h + "' with user '" + user + "' on port '" + port + "' and the given private auth key succeeded.");
-				}
-			}
-			// test, if at least one host was reachable
-			if(hosts.size() == 0) {
-				LOGGER.error("No remote host accepted a connection for executor with name '"+name+"'!");
-				if(!noExit) System.exit(1);
-			}
-		}
-		auth.put(name, authStore); 	
-	}
-
 	/**
 	 * creates a temporary XSD file in which all that modules are loaded
 	 * @param modules2load
 	 * @return
 	 */
-	public static Pair<File, HashSet<String>> createTemporaryXSDFile(String defaultSchemaPath, HashSet<String> modules2load, HashMap<String, String> moduleName2Path, ArrayList<String> moduleFolders) {
+	public static Pair<File, HashSet<String>> createTemporaryXSDFile(String defaultSchemaPath, HashSet<String> modules2load, HashMap<String, String> moduleName2Path, ArrayList<String> moduleFolders, HashSet<String> includePluginFiles) {
 		boolean noExit = false;
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
@@ -1312,6 +1217,11 @@ public class XMLParser {
 			if(!noExit) System.exit(1);
 		}
 		
+		// load all plugin XSD files
+		if(includePluginFiles == null) {
+			includePluginFiles = XSD_PLUGIN_FILES;
+		}
+		
 		ArrayList<String> includeMod = new ArrayList<>();
 		ArrayList<String> missingMod = new ArrayList<>();
 		HashSet<String> includedXSDFiles = new HashSet<>();
@@ -1319,7 +1229,7 @@ public class XMLParser {
 		for(String m : modules2load) {
 			if(moduleName2Path.containsKey(m)) {
 				// add the include info
-				includeMod.add(INCLUDE_MODULE.replace(REPLACE, moduleName2Path.get(m)));
+				includeMod.add(INCLUDE_XSD.replace(REPLACE, moduleName2Path.get(m)));
 				includedXSDFiles.add(moduleName2Path.get(m));
 			}
 			else
@@ -1334,20 +1244,30 @@ public class XMLParser {
 			if(!noExit) System.exit(1);
 		}
 		
+		// prepare plugin import
+		ArrayList<String> includePlugins = new ArrayList<>();
+		for(String pluginFile : includePluginFiles) {
+			includePlugins.add(INCLUDE_XSD.replace(REPLACE, pluginFile));
+		}
+		
 		// prepare the temporary XSD file
 		// get a path for a temporary file
 		try {
 			Path includedSchemaPath = Files.createTempFile("watchdog", ".xsd.tmp");
 			includedSchemaPath.toFile().deleteOnExit();
 
-			boolean beforeModuleImport = true;
+			boolean beforePluginImport = true;
 			ArrayList<String> buf = new ArrayList<>();
 			for(String line : Files.readAllLines(Paths.get(defaultSchemaPath))) {
-				if(line.contains(REPLACE_IMPORT)) {
-					line = line.replace(REPLACE_IMPORT, StringUtils.join(includeMod, NEWLINE));
-					beforeModuleImport = false;
+				if(line.contains(REPLACE_PLUGIN_IMPORT)) {
+					
+					line = line.replace(REPLACE_PLUGIN_IMPORT, StringUtils.join(includePlugins, NEWLINE));
+					beforePluginImport = false;
 				}
-				if(beforeModuleImport) 
+				else if(line.contains(REPLACE_MODULE_IMPORT)) {
+					line = line.replace(REPLACE_MODULE_IMPORT, StringUtils.join(includeMod, NEWLINE));
+				}
+				if(beforePluginImport) 
 					line = line.replace(REPLACE_IMPORT_PATH, REPLACE_IMPORT_PATH + new File(defaultSchemaPath).getParent() + File.separator);
 				
 				// add the line
@@ -1355,7 +1275,7 @@ public class XMLParser {
 	
 			}
 			Functions.write(includedSchemaPath, StringUtils.join(buf, NEWLINE));
-			return new Pair<File, HashSet<String>>(includedSchemaPath.toFile(), includedXSDFiles);
+			return Pair.of(includedSchemaPath.toFile(), includedXSDFiles);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -1374,13 +1294,19 @@ public class XMLParser {
 		boolean noExit = false;
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
-		ProcessFolder xsd = new ProcessFolder();
+		ArrayList<String> xsd = new ArrayList<>();
 		for(String dir : moduleFolders) {
-			xsd.append(new File(dir), XSD_PATTERN, null, Integer.MAX_VALUE);
+			for(File mmf : new File(dir).listFiles()) {
+				if(mmf.isDirectory()) {
+					for(File xsdmmf : mmf.listFiles(new PatternFilenameFilter(XSD_PATTERN, false))) {
+						xsd.add(xsdmmf.getAbsolutePath());
+					}
+				}
+			}
 		}
 		HashMap<String, String> res = new HashMap<>();
 		// get the name of the task defined in that file
-		for(String x : xsd.getValues().keySet()) {
+		for(String x : xsd) {
 			try {
 				String name = getTaskTypeOfModule(dbf, new File(x));
 				
@@ -1413,7 +1339,7 @@ public class XMLParser {
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
 		
-		if(x.hasProcessBlock() && x.getProcessBlock() instanceof ProcessInput) {
+		if(x.hasProcessBlock() && x.getProcessBlock() instanceof ProcessReturnValueAdder) {
 			Matcher m = ReplaceSpecialConstructs.PATTERN_TABLE_COL_NAME.matcher(value);
 			// test, if a var inputProcess block var is set
 			if(m.matches()) {
@@ -1503,181 +1429,22 @@ public class XMLParser {
 		// get argument format stuff
 		String paramFormatString = el.getAttribute(PARAM_FORMAT);
 		String spacingFormatString = el.getAttribute(SPACING_FORMAT);
+		String separateFormatString = el.getAttribute(SEPARATE_FORMAT);
 		String quoteFormatString = el.getAttribute(QUOTE_FORMAT);
 		
 		// check, if any option is set
-		if(paramFormatString.length() > 0 || spacingFormatString.length() > 0 || quoteFormatString.length() > 0) {
+		if(paramFormatString.length() > 0 || spacingFormatString.length() > 0 || quoteFormatString.length() > 0 || separateFormatString.length() > 0) {
 			// get formater
 			ParamFormat pf = ParamFormat.getFormater(paramFormatString);
 			SpacingFormat sf = SpacingFormat.getFormater(spacingFormatString);
 			QuoteFormat qf = QuoteFormat.getFormater(quoteFormatString);
-			
+
 			// get the global parameter formater
-			return new OptionFormat(pf, qf, sf);
+			return new OptionFormat(pf, qf, sf, separateFormatString);
 		}
 		return null;
 	}
 	
-	/**
-	 * Parses a process folder
-	 * @param el
-	 * @blocks HashMap containing all blocks
-	 * @param baseName if element is within a baseFolder otherwise null
-	 * @param maxDepthBase max depth value of the baseFolder or null if no baseFolder is set / value is there
-	 * @return
-	 */
-	public static void parseProcessFolder(Element el, LinkedHashMap<String, ProcessBlock> blocks, String baseName, Integer maxDepthBase, boolean validationMode, HashMap<String, String> consts) {
-		boolean noExit = false;
-		if(isGUILoadAttempt() || isNoExit())
-			noExit = true;
-		String name = XMLParser.getAttribute(el, NAME);
-		String folder = XMLParser.getAttribute(el, FOLDER);
-		String pattern = XMLParser.getAttribute(el, PATTERN);
-		String ignore = XMLParser.getAttribute(el, IGNORE);
-		boolean disableExistenceCheck = Boolean.parseBoolean( XMLParser.getAttribute(el, DISABLE_EXISTANCE_CHECK));
-		boolean append = Boolean.parseBoolean(XMLParser.getAttribute(el, APPEND));
-		Integer maxDepth = Integer.parseInt(XMLParser.getAttribute(el, MAX_DEPTH));
-		File path = null;
-		String color = XMLParser.getAttribute(el, COLOR);
-
-		// test which maxDepth value to set
-		if(maxDepthBase != null) {
-			// no explicit value was set for the process folder --> set maxDepth of base folder
-			if(maxDepth == -1)
-				maxDepth = maxDepthBase;
-		}
-		// ensure that no negative values are allowed
-		maxDepth = Math.max(0, maxDepth);
-
-		if(!isGUILoadAttempt()) {
-			// replace base name if there is a constant.
-			baseName = replaceConstants(baseName, consts);
-			// test, if path begins relative
-			if(baseName != null && (folder.startsWith(File.separator) || folder.matches("^[A-Z]:\\\\.*"))) {
-				LOGGER.error("A processFolder within a baseFolder can not start with '"+File.separator+"' or '[A-Z]:\\' because it must be a relative path ('" + folder + "')!");
-				if(!noExit) System.exit(1);
-			}
-			else if(baseName == null && !(folder.startsWith(File.separator) || folder.matches("^[A-Z]:\\\\.*"))) {
-				LOGGER.error("A processFolder outside a baseFolder must start with '"+File.separator+"' or '[A-Z]:\\' because it must be a absolute path ('" + folder + "')!");
-				if(!noExit) System.exit(1);	
-			}
-		
-			// set the path to the folder
-			if(baseName != null)
-				path = new File(baseName + File.separator + folder + File.separator);
-			else
-				path = new File(folder + File.separator);
-		}
-		
-		// test, if folder exists
-		if(!isGUILoadAttempt()) {
-			if(!(path.exists() && path.isDirectory() && path.canRead() && path.canExecute())) {
-				if(!disableExistenceCheck) {
-					if(!validationMode)
-						LOGGER.error("ProcessFolder with path '" + path.getAbsolutePath() + "' was not found!");
-					else
-						LOGGER.warn("ProcessFolder with path '" + path.getAbsolutePath() + "' was not found. This folder must be created before the workflow is executed or the existence check must be disabled.");
-					if(!noExit) System.exit(1);
-				}
-				// create the folder
-				else
-					path.mkdirs();
-			}
-		}
-		if(isGUILoadAttempt()) {
-			ProcessFolder b = new ProcessFolder(name, folder, baseName, pattern, ignore, maxDepth, append, disableExistenceCheck);
-			b.setColor(color);
-			blocks.put(name + PropertyManagerController.SUFFIX_SEP + blocks.size(), b);
-		}
-		else {
-			// check, if a process block with that name is already there
-			if(blocks.containsKey(name)) {
-				if(!append) {
-					LOGGER.error("ProcessBlock with name '" + name + "' was already defined before and append attribute is set to false!");
-					if(!noExit) System.exit(1);
-				}
-				// try to append it
-				else if(blocks.get(name) instanceof ProcessFolder) {
-					ProcessFolder updateBlock = (ProcessFolder) blocks.get(name);
-					updateBlock.append(path, pattern, ignore, maxDepth);
-				}
-				else {
-					LOGGER.error("ProcessBlock with name '" + name + "' was already defined before and is not of type ProcessFolder!");
-					if(!noExit) System.exit(1);
-				}
-			}
-			// all ok, store it!
-			else {
-				ProcessFolder b = new ProcessFolder(name, path, pattern, ignore, maxDepth);
-				b.setColor(color);
-				blocks.put(name, b);
-			}
-		}
-	}
-	
-	
-	/**
-	 * Parses a process folder
-	 * @param el
-	 * @blocks HashMap containing all blocks
-	 * @param baseName if element is within a baseFolder otherwise null
-	 * @return
-	 */
-	public static void parseProcessTable(Element el, LinkedHashMap<String, ProcessBlock> blocks, String baseName, boolean validationMode, HashMap<String, String> consts) {
-		boolean noExit = false;
-		if(isGUILoadAttempt() || isNoExit())
-			noExit = true;
-		String name = XMLParser.getAttribute(el, NAME);
-		String table = XMLParser.getAttribute(el, TABLE);
-		String compareName = XMLParser.getAttribute(el, COMPARE_NAME);
-		File path = null;
-		boolean disableExistenceCheck = Boolean.parseBoolean( XMLParser.getAttribute(el, DISABLE_EXISTANCE_CHECK));
-		String color = XMLParser.getAttribute(el, COLOR);
-		
-		// test, if path begins relative
-		if(!XMLParser.isGUILoadAttempt()) {
-			// replace base name if there is a constant.
-			baseName = replaceConstants(baseName, consts);
-			if(baseName != null && table.startsWith(File.separator)) {
-				LOGGER.error("A processTable within a baseFolder can not start with '"+File.separator+"' because it must be a relative path ('" + table + "')!");
-				if(!noExit) System.exit(1);
-			}
-			else if(baseName == null && !table.startsWith(File.separator)) {
-				LOGGER.error("A processTable outside a baseFolder must start with '"+File.separator+"' because it must be a absolute path ('" + table + "')!");
-				if(!noExit) System.exit(1);	
-			}
-			// set the path to the folder
-			if(baseName != null)
-				path = new File(baseName + File.separator + table + File.separator);
-			else
-				path = new File(table + File.separator);
-		}
-			
-		// test, if file exists
-		if(!XMLParser.isGUILoadAttempt() && !disableExistenceCheck && !(path.exists() && path.isFile() && path.canRead())) {
-			if(!validationMode)
-				LOGGER.error("File for processTable with path '" + path.getAbsolutePath() + "' was not found!");
-			else
-				LOGGER.warn("File for processTable with path '" + path.getAbsolutePath() + "' was not found during validation. This file must be created before the workflow is executed or the existence check must be disabled.");
-			if(!noExit) System.exit(1);
-		}
-		
-		// check, if a process block with that name is already there
-		if(blocks.containsKey(name)) {
-			LOGGER.error("A processBlock with name '" + name + "' was already defined before!");
-			if(!noExit) System.exit(1);
-		}
-		// all ok, store it!
-		else {
-			ProcessTable b = null;
-			if(XMLParser.isGUILoadAttempt())
-				b = new ProcessTable(name, table, baseName, compareName, disableExistenceCheck);
-			else
-				b = new ProcessTable(name, path, compareName, disableExistenceCheck);
-			b.setColor(color);
-			blocks.put(name, b);
-		}
-	}
 	
 	/**
 	 * replaces constants in values
@@ -1721,7 +1488,7 @@ public class XMLParser {
 	 * @param attrName
 	 * @return
 	 */
-	private static String getAttribute(final Element el, String attrName) {
+	public static String getAttribute(final Element el, String attrName) {
 		return el.getAttribute(attrName);
 	}
 	
@@ -2019,7 +1786,7 @@ public class XMLParser {
 				Pair<HashMap<String, ReturnType>, String> p = ret.get(k);
 
 				if(p.getValue() == null)
-					p = new Pair<HashMap<String, ReturnType>, String>(p.getKey(), defaultReturnName);
+					p = Pair.of(p.getKey(), defaultReturnName);
 				// save it, if we have any values for that module
 				if(p.getKey().size() > 0)
 					ret.put(k, p);
@@ -2124,7 +1891,7 @@ public class XMLParser {
 				}
 			}
 		}
-		return new Pair<HashMap<String, ReturnType>, String>(ret, returnName);
+		return Pair.of(ret, returnName);
 	}
 	
 	/**
@@ -2411,19 +2178,27 @@ public class XMLParser {
 		return last_consts;
 	}
 	
+	public static boolean testIfUnsafe(String xmlPath) {
+		return XMLParser.testIfPattern(xmlPath, XMLParser.IS_NOT_VALID);
+	}
+	
+	public static boolean testIfTemplate(String xmlPath) {
+		return XMLParser.testIfPattern(xmlPath, XMLParser.IS_TEMPLATE);
+	}
 	
 	/**
-	 * tests, if a xml file has a isTemplate tag
+	 * tests, if a xml file contains a specific pattern
 	 * @param xmlPath
+	 * @param testPattern
 	 * @return
 	 */
-	public static boolean testIfTemplate(String xmlPath) {
+	private static boolean testIfPattern(String xmlPath, Pattern testPattern) {
 		try {
 			BufferedReader bf = new BufferedReader(new FileReader(xmlPath));
 			String line;		
 			Matcher m;
 			while((line = bf.readLine()) != null) {
-				m = IS_TEMPLATE.matcher(line);
+				m = testPattern.matcher(line);
 				if(m.matches()) {
 					bf.close();
 					return true;
@@ -2434,5 +2209,4 @@ public class XMLParser {
 		catch(Exception e) {}
 		return false;
 	}
-	
 }

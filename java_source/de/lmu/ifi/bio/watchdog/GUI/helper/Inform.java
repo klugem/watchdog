@@ -17,6 +17,10 @@ public class Inform {
 		alert(AlertType.ERROR, "Error", header, text);
 	}
 	
+	public static void warn(String header, String text) {
+		alert(AlertType.WARNING, "Warning", header, text);
+	}
+	
 	public static Optional<ButtonType> alert(AlertType type, String title, String header, String text) {
 		Alert alert = new Alert(type);
 		alert.setTitle(title);

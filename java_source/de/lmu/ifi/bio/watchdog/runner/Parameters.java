@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 
-import de.lmu.ifi.bio.watchdog.GUI.helper.PreferencesStore;
+import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 
 public class Parameters {
 
@@ -13,7 +13,7 @@ public class Parameters {
 	protected String xml;
 	
 	@Parameter(names={"-port", "-p"}, description="port for the HTTP server", required=false)
-	protected int port = PreferencesStore.DEFAULT_PORT;
+	protected int port = WatchdogThread.DEFAULT_HTTP_PORT;
 	
 	@Parameter(names={"-log", "-l"}, description="path to the log file", required=false)
 	protected String log;
@@ -27,6 +27,9 @@ public class Parameters {
 	@Parameter(names={"-simulate"}, description="only simulate the jobs as far as possible", required=false)
 	protected boolean simulate = false;
 	
+	@Parameter(names={"-disableCheckpoint"}, description="checkpoints are ignored during execution", required=false)
+	protected boolean disableCheckpoint = false;
+	
 	@Parameter(names={"-version"}, description="prints the version number of Watchdog", required=false, help=true)
 	protected boolean version = false;
 	
@@ -35,6 +38,9 @@ public class Parameters {
 	
 	@Parameter(names={"-validate"}, description="validate a XML file or a folder containing *.xml files", required=false)
 	protected boolean validate = false;
+	
+	@Parameter(names={"-forceLoading"}, description="ignores the XSD schema definition file of watchdog and all modules during parsing (might crash)", required=false)
+	protected boolean forceLoading = false;
 	
 	@Parameter(names={"-mailConfig"}, description="config file for the mail server; if none is given SMTP on port 25 on localhost without authentification is used", required=false)
 	protected String mailConfig = null;

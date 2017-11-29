@@ -1,11 +1,11 @@
 package de.lmu.ifi.bio.watchdog.GUI;
 
-import java.awt.MouseInfo;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.xml.sax.SAXException;
 
+import de.lmu.ifi.bio.multithreading.TimedExecution;
 import de.lmu.ifi.bio.watchdog.GUI.css.CSSRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.helper.AddButtonToTitledPane;
@@ -13,6 +13,7 @@ import de.lmu.ifi.bio.watchdog.GUI.helper.CurrentScreen;
 import de.lmu.ifi.bio.watchdog.GUI.helper.PreferencesStore;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ScreenCenteredStage;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
+import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 import javafx.application.Application;
 import javafx.application.HostServices;
@@ -26,7 +27,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.stage.Window;
 
 /**
  * Runner application
@@ -35,7 +35,6 @@ import javafx.stage.Window;
  */
 public class WorkflowDesignerRunner extends Application {
 	
-	public static final String DEFAULT_WORKDIR = "/usr/local/storage/";
 	private static final String DISABLE_LOAD_SCREEN = "-disableLoadScreen";
 	public static final int GRID_SIZE_X = 120;
 	public static final int GRID_SIZE_Y = 80;
@@ -61,15 +60,30 @@ public class WorkflowDesignerRunner extends Application {
 	public static boolean isGUIRunning() {
 		return isGUIRunning;
 	}
+	
+	/**
+	 * in order to avoid import from javafx.* packages in non GUI version
+	 * @param ex
+	 */
+	private void initRunableExecutor() {
+		Logger.setRunnableExecutor(Platform::runLater);
+		TimedExecution.setRunnableExecutor(Platform::runLater);
+	}
  
 	@Override
 	public void start(Stage primaryStage) {
 		try {			
+			// set javafx Platform executor for classes that require that
+			this.initRunableExecutor();
+						
 			// load settings from ini file
 			PreferencesStore.loadSettingsFromFile(PreferencesStore.defaultIniFile);
 		    Parameters p = this.getParameters();
 		    HostServices hs = this.getHostServices();
 		    Launch launch = null;
+		    
+			// will be executed only once --> init plugins
+			XMLParser.initPlugins(PreferencesStore.getWatchdogBaseDir(), new Logger(), true, true);
 		    
 		    // get current screen where window should be spawned
 		    Screen curScreen = CurrentScreen.getScreenWithMouseOnIt();

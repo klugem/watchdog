@@ -9,65 +9,42 @@
 		</x:restriction>
 	</x:simpleType>
 
-	<!-- process sequence type definition -->
-	<x:complexType name="processSequenceType">
-		<x:attribute name="name" type="x:string" use="required" />
-		<x:attribute name="start" type="x:double" use="required" />
-		<x:attribute name="end" type="x:double" use="required" />
-		<x:attribute name="step" type="x:double" default="1" />
-		<x:attribute name="append" type="x:boolean" default="false" />
-		<x:attribute name="color" type="x:string" default=""/>
+	<!-- process block -->
+	<x:complexType name="processblockAbstractType" abstract="true">
+		<x:simpleContent>
+			<x:extension base="x:string">
+				<x:attribute name="name" type="x:string" use="required" />
+			</x:extension>
+		</x:simpleContent>
 	</x:complexType>
 
-	<!-- process input type definition -->
-	<x:complexType name="processInputType">
-		<x:attribute name="name" type="x:string" use="required" />
-		<x:attribute name="sep" type="x:string" default=":" />
-		<x:attribute name="compareName" type="x:string" default="" />
-		<x:attribute name="color" type="x:string" default=""/>
+	<x:complexType name="childOfbaseFolderType" abstract="true">
+		<x:simpleContent>
+			<x:extension base="processblockAbstractType">
+				
+			</x:extension>
+		</x:simpleContent>
 	</x:complexType>
-
-	<!-- folder definition -->
-	<x:complexType name="processFolderType">
-		<x:attribute name="name" type="x:string" use="required" />
-		<x:attribute name="folder" type="absoluteOrRelativePathType" use="required" />
-		<x:attribute name="pattern" type="filenamePatternType" use="required" />
-		<x:attribute name="ignore" type="filenamePatternType"/>
-		<x:attribute name="disableExistenceCheck" type="x:boolean" default="false" />
-		<x:attribute name="maxDepth" type="boundIntegerMinusOneToUnboundedType" default="-1" />
-		<x:attribute name="append" type="x:boolean" default="false" />
-		<x:attribute name="color" type="x:string" default=""/>
-	</x:complexType>
-
-	<!-- table definition -->
-	<x:complexType name="processTableType">
-		<x:attribute name="name" type="x:string" use="required" />
-		<x:attribute name="table" type="absoluteOrRelativeFileType" use="required" />
-		<x:attribute name="disableExistenceCheck" type="x:boolean" default="false" />
-		<x:attribute name="compareName" type="x:string" default="" />
-		<x:attribute name="color" type="x:string" default=""/>
-	</x:complexType>
+	<x:element name="processblockInBase" type="childOfbaseFolderType" abstract="true"  substitutionGroup="processblockInBaseType" />
 
 	<!-- folder with base folder definition -->
 	<x:complexType name="baseFolderType">
 		<x:all>
-			<x:element name="processFolder" type="processFolderType" minOccurs="0" maxOccurs="unbounded" />
-			<x:element name="processTable" type="processTableType" minOccurs="0" maxOccurs="unbounded" />
+			<x:element ref="processblockInBaseType" minOccurs="1" maxOccurs="unbounded" />
 		</x:all>
 		<x:attribute name="folder" type="absolutePathType" use="required" />
 		<x:attribute name="maxDepth" type="boundIntegerMinusOneToUnboundedType" default="-1" />
 	</x:complexType>
 
-	<!-- parent element of these four kinds -->
-	<x:complexType name="processBlockType">
-		<x:choice minOccurs="1" maxOccurs="unbounded">
-			<x:element name="processLoop" type="processSequenceType" /> <!-- deprecated -->
-			<x:element name="processSequence" type="processSequenceType" />
-			<x:element name="processInput" type="processInputType" />
-			<x:element name="processFolder" type="processFolderType" />
-			<x:element name="processTable" type="processTableType" />
-			<x:element name="baseFolder" type="baseFolderType" />
-		</x:choice>
-	</x:complexType>
+	<!-- element for group substitution -->
+	<x:element name="processblockType" />
+	<x:element name="processblockInBaseType" />
+
+	<!-- definition of the executors type block -->
+	<x:complexType name="processblockType">
+		<x:all>
+			<x:element ref="processblockType" minOccurs="1" maxOccurs="unbounded" />
+		</x:all>
+	</x:complexType>	
 
 </x:schema>

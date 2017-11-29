@@ -19,13 +19,13 @@ import de.lmu.ifi.bio.watchdog.task.TaskStatus;
  * @author Michael Kluge
  *
  */
-public abstract class MonitorThread<E extends Executor> extends StopableLoopThread {
+public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopThread {
 	protected static final Logger LOGGER = new Logger(LogLevel.DEBUG);
-	private final LinkedHashMap<Integer, E> MONITOR_TASKS = new LinkedHashMap<>();
+	private final LinkedHashMap<String, E> MONITOR_TASKS = new LinkedHashMap<>();
 	
 	// used for pausing / resume of scheduling
 	private static boolean stopWasCalled = false;
-	private static final Set<MonitorThread<? extends Executor>> CREATED_MONITOR_THREADS = Collections.synchronizedSet(new LinkedHashSet<MonitorThread<? extends Executor>>());
+	private static final Set<MonitorThread<? extends Executor<?>>> CREATED_MONITOR_THREADS = Collections.synchronizedSet(new LinkedHashSet<MonitorThread<? extends Executor<?>>>());
 	private boolean isSchedulingPaused = false;
 	private boolean isDead = false;
 	
@@ -46,10 +46,10 @@ public abstract class MonitorThread<E extends Executor> extends StopableLoopThre
 		if(!stopWasCalled || !nicely) {
 			stopWasCalled = true;
 			// avoid modification while iterating
-			HashSet<MonitorThread<? extends Executor>> copy = new HashSet<>();
+			HashSet<MonitorThread<? extends Executor<?>>> copy = new HashSet<>();
 			copy.addAll(CREATED_MONITOR_THREADS);
 			// remove all that threads
-			for(MonitorThread<? extends Executor> mt : copy) {
+			for(MonitorThread<? extends Executor<?>> mt : copy) {
 				if(nicely) mt.requestStop(5, TimeUnit.SECONDS);
 				else mt.requestForcedStop();
 			}
@@ -72,7 +72,7 @@ public abstract class MonitorThread<E extends Executor> extends StopableLoopThre
 	}
 
 	public static void setPauseSchedulingOnAllMonitorThreads(boolean pause) {
-		for(MonitorThread<? extends Executor> mt : CREATED_MONITOR_THREADS) {
+		for(MonitorThread<? extends Executor<?>> mt : CREATED_MONITOR_THREADS) {
 			mt.setPauseScheduling(pause);
 		}
 	}
@@ -85,12 +85,12 @@ public abstract class MonitorThread<E extends Executor> extends StopableLoopThre
 	 * 
 	 * @return
 	 */
-	protected LinkedHashMap<Integer, E> getMonitorTasks() {
-		LinkedHashMap<Integer, E> ret = new LinkedHashMap<Integer, E>();
-		for(int i  : this.MONITOR_TASKS.keySet()) {
-			E e = this.MONITOR_TASKS.get(i);
+	protected LinkedHashMap<String, E> getMonitorTasks() {
+		LinkedHashMap<String, E> ret = new LinkedHashMap<>();
+		for(String s  : this.MONITOR_TASKS.keySet()) {
+			E e = this.MONITOR_TASKS.get(s);
 			if(!e.getTask().isTaskIgnored())
-				ret.put(i, e);
+				ret.put(s, e);
 		}
 		return ret;
 	}
@@ -99,7 +99,7 @@ public abstract class MonitorThread<E extends Executor> extends StopableLoopThre
 	 * removes a task from being monitored
 	 * @param id
 	 */
-	protected void remove(int id) {
+	protected void remove(String id) {
 		this.MONITOR_TASKS.remove(id);
 	}
 	
@@ -117,6 +117,11 @@ public abstract class MonitorThread<E extends Executor> extends StopableLoopThre
 	}
 	
 	@Override
+	public void beforeLoop() {
+		
+	}
+	
+	@Override
 	public void afterLoop() {
 		// stop all running tasks
 		for(E ex : this.MONITOR_TASKS.values())
@@ -128,7 +133,7 @@ public abstract class MonitorThread<E extends Executor> extends StopableLoopThre
 	 * @param id
 	 * @param executor
 	 */
-	public synchronized void addTaskToMonitor(int id, E executor) {
+	public synchronized void addTaskToMonitor(String id, E executor) {
 		this.MONITOR_TASKS.put(id, executor);
 	}
 	
@@ -138,7 +143,7 @@ public abstract class MonitorThread<E extends Executor> extends StopableLoopThre
 	 */
 	protected boolean monitorJobs() {
 	    for(Iterator<E> iter = this.MONITOR_TASKS.values().iterator(); iter.hasNext();) {
-	    	Executor e = iter.next();
+	    	Executor<?> e = iter.next();
 			Task t = e.getTask();
 			if(t.getExecutionCounter() > 0 && !t.hasJobInfo()) {
 				// check, if the task should be terminated

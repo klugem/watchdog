@@ -13,6 +13,7 @@ public class TextFilter implements UnaryOperator<Change> {
 	public static TextFormatter<String> getPositiveIntFormater() { return new TextFormatter<>(new TextFilter("[0-9]+")); }
 	public static TextFormatter<String> getDoubleFormater() { return new TextFormatter<>(new TextFilter("-?[0-9]*(\\.[0-9]*)?")); }
 	public static TextFormatter<String> getMemoryFormater() { return new TextFormatter<>(new TextFilter("[0-9]+[MG]{0,1}")); }
+	public static TextFormatter<String> getTimelimitFormater() { return new TextFormatter<>(new TextFilter("[0-9]+-[0-9]+:[0-9]+")); }
 	public static TextFormatter<String> getAlpha() { return new TextFormatter<>(new TextFilter("[A-Za-z_]+")); }
 	public static TextFormatter<String> getTaskNameFormater() { return new TextFormatter<>(new TextFilter("[a-zA-z0-9a-zA-Z_\\- ]+")); }
 	public static TextFormatter<String> getAlphaFollowedByAlphaNumber() { return new TextFormatter<>(new TextFilter("[A-Za-z_][A-Za-z_0-9]*")); }

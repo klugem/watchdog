@@ -3,12 +3,13 @@ package de.lmu.ifi.bio.watchdog.GUI.properties;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PropertyViewType;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.util.Pair;
 
 public class PropertyManager extends Pane {
 	

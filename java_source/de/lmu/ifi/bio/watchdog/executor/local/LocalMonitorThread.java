@@ -16,7 +16,7 @@ import de.lmu.ifi.bio.watchdog.task.Task;
  */
 public class LocalMonitorThread extends ScheduledMonitorThread<LocalExecutor> {
 	
-	private static final long SLEEP_MILIS = 500;
+	private static final long SLEEP_MILIS = 25; 
 	private static String TYPE = "Local";
 	
 	public LocalMonitorThread() {
@@ -66,8 +66,8 @@ public class LocalMonitorThread extends ScheduledMonitorThread<LocalExecutor> {
 	protected synchronized boolean monitorJobs() {
 		super.monitorJobs();
 		int finished = 0;
-		HashMap<Integer, LocalExecutor> monitor = this.getMonitorTasks();
-		for(int id : monitor.keySet()) {
+		HashMap<String, LocalExecutor> monitor = this.getMonitorTasks();
+		for(String id : monitor.keySet()) {
 			LocalExecutor e = monitor.get(id);
 			Task t = e.getTask();
 			// check, if job was run and has exited

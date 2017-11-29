@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import de.lmu.ifi.bio.watchdog.helper.ControlAction;
 import de.lmu.ifi.bio.watchdog.helper.HTMLHelper;
@@ -23,7 +24,6 @@ import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.task.TaskStatus;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
 import fi.iki.elonen.NanoHTTPD;
-import javafx.util.Pair;
 import sun.misc.Signal;
 
 /**

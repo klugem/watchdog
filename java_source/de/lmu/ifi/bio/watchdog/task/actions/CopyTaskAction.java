@@ -185,4 +185,7 @@ public class CopyTaskAction extends TaskAction implements Serializable {
 	public String getTarget() {
 		return this.getSrc();
 	}
+
+	@Override
+	public Object[] getDataToLoadOnGUI() { return null; }
 }

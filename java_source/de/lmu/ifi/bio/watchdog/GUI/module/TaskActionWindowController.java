@@ -9,7 +9,7 @@ import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.ValidateViewController;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import de.lmu.ifi.bio.watchdog.task.TaskActionTime;
 import de.lmu.ifi.bio.watchdog.task.actions.CopyTaskAction;

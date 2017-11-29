@@ -1,5 +1,7 @@
 package de.lmu.ifi.bio.watchdog.GUI.layout;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
 import de.lmu.ifi.bio.watchdog.GUI.css.CSSRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ScreenCenteredStage;
@@ -13,7 +15,6 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.StrokeLineCap;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 /**
  * Class, that represents a dependency between two tasks 

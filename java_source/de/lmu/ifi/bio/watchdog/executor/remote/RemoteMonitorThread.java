@@ -44,8 +44,8 @@ public class RemoteMonitorThread extends ScheduledMonitorThread<RemoteExecutor> 
 		
 		HashSet<Task> typeOfTasks = new HashSet<>();
 		// find out what kind of tasks we have here
-		HashMap<Integer, RemoteExecutor> monitor = this.getMonitorTasks();
-		for(int id : monitor.keySet()) {
+		HashMap<String, RemoteExecutor> monitor = this.getMonitorTasks();
+		for(String id : monitor.keySet()) {
 			RemoteExecutor e = monitor.get(id);
 			typeOfTasks.add(e.getTask());
 			

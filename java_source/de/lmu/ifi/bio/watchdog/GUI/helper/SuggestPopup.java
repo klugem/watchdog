@@ -5,15 +5,12 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.sun.glass.ui.Screen;
-
 import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
 import de.lmu.ifi.bio.watchdog.GUI.layout.RasteredGridPane;
 import de.lmu.ifi.bio.watchdog.helper.Constants;
 import de.lmu.ifi.bio.watchdog.helper.ReplaceSpecialConstructs;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessInput;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
@@ -102,10 +99,11 @@ public class SuggestPopup {
 		if(filter.matches("[\\[\\{\\(]") && (selEnd-2 < 0 || text.charAt(selEnd-2) != '$')) {
 			// offer some variables if a process block is set
 			if(b != null) {
-				if(grid != null && key != null && b instanceof ProcessInput)
-					this.getChoisePopup(((ProcessInput) b).getOfferedVariables(grid.getAvailReturnParams(key)), false);
+				ArrayList<String> availParams = new ArrayList<>();
+				if(grid != null && key != null)
+					availParams = grid.getAvailReturnParams(key);
 				else
-					this.getChoisePopup(b.getOfferedVariables(), false);
+					this.getChoisePopup(b.getOfferedVariables(availParams), false);
 			}
 		}
 		// get constants

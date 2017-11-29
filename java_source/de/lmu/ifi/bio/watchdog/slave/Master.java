@@ -117,7 +117,7 @@ public class Master extends Server {
 			}
 
 			// start the new slave
-			XMLTask slave = new XMLTask(Master.slaves--, taskName, exec.getPath2Java() + " -Xms256m -Xmx256m", taskName, "", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.blankSeperated), exec, env);
+			XMLTask slave = new XMLTask(Master.slaves--, taskName, exec.getPath2Java() + " -Xms256m -Xmx256m", taskName, "", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.blankSeperated, null), exec, env);
 			//slave.addParameter("Xms", "256M", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.notSeparated), -1);
 			//slave.addParameter("Xmx", "256M", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.notSeparated), -1); // TODO
 			slave.addParameter("jar", watchdogBase.getAbsolutePath() + File.separator + SLAVE_JAR, null, -1);
@@ -125,7 +125,7 @@ public class Master extends Server {
 			slave.addParameter("p", Integer.toString(Master.master.getPort()), null, -1);
 			slave.addParameter("b", watchdogBase.getAbsolutePath(), null, -1);
 			slave.addParameter("m", Integer.toString((exec.getMaxSlaveRunningTasks() == null ? 1 : exec.getMaxSlaveRunningTasks())), null, -1);
-			slave.addParameter("i", id, new OptionFormat(ParamFormat.shortOnly, QuoteFormat.doubleQuoted, SpacingFormat.blankSeperated), -1);
+			slave.addParameter("i", id, new OptionFormat(ParamFormat.shortOnly, QuoteFormat.doubleQuoted, SpacingFormat.blankSeperated, null), -1);
 			
 			slave.setErrorStream(watchdogBase + File.separator + "tmp" + File.separator + slave + "." + RUN_ID + "." + id + ".err", false);
 			slave.setOutputStream(watchdogBase + File.separator + "tmp" + File.separator + slave + "." + RUN_ID + "." + id + ".out", false);

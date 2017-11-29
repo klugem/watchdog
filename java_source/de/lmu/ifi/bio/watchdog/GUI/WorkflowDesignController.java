@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import de.lmu.ifi.bio.multithreading.TimedExecution;
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.AdditionalBarController;
@@ -26,13 +27,12 @@ import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.StatusConsole;
 import de.lmu.ifi.bio.watchdog.GUI.css.CSSRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.datastructure.Module;
 import de.lmu.ifi.bio.watchdog.GUI.event.TabEvent;
-import de.lmu.ifi.bio.watchdog.GUI.helper.AddButtonToTitledPane;
-import de.lmu.ifi.bio.watchdog.GUI.helper.ErrorCheckerStore;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ExecuteToolbar;
 import de.lmu.ifi.bio.watchdog.GUI.helper.FinishedCheckerThread;
-import de.lmu.ifi.bio.watchdog.GUI.helper.GUIInfo;
+import de.lmu.ifi.bio.watchdog.GUI.helper.GUIPasswortGetter;
 import de.lmu.ifi.bio.watchdog.GUI.helper.Inform;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ParamValue;
+import de.lmu.ifi.bio.watchdog.GUI.helper.ParameterToControl;
 import de.lmu.ifi.bio.watchdog.GUI.helper.PreferencesStore;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ScreenCenteredStage;
 import de.lmu.ifi.bio.watchdog.GUI.interfaces.TabableNode;
@@ -44,7 +44,6 @@ import de.lmu.ifi.bio.watchdog.GUI.module.WorkflowModuleData;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyLine;
 import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyManager;
-import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyManagerController;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PropertyViewType;
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
@@ -53,18 +52,19 @@ import de.lmu.ifi.bio.watchdog.executor.MonitorThread;
 import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.Constants;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
+import de.lmu.ifi.bio.watchdog.helper.ErrorCheckerStore;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
+import de.lmu.ifi.bio.watchdog.helper.GUIInfo;
+import de.lmu.ifi.bio.watchdog.helper.GUISaveHelper;
 import de.lmu.ifi.bio.watchdog.helper.Mailer;
 import de.lmu.ifi.bio.watchdog.helper.Parameter;
 import de.lmu.ifi.bio.watchdog.helper.SSHPassphraseAuth;
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessFolder;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessSequence;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
@@ -99,9 +99,8 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import javafx.util.Pair;
 
-public class WorkflowDesignController implements Initializable {
+public class WorkflowDesignController implements Initializable, GUISaveHelper {
 
 	private static final String DEFAULT_FILE_NAME = "Workflow.watchdog.xml";
 	@FXML private AdditionalBarController additionalBarController;
@@ -149,6 +148,10 @@ public class WorkflowDesignController implements Initializable {
 	public void initialize(URL location, ResourceBundle resources) {
 		WorkflowDesignController.lastInstance = this;
 		
+		// register it on XML DATA store for change updates
+		XMLDataStore.registerNotifyOnRegisterOrUnregisterData((GUISaveHelper) this);
+		SSHPassphraseAuth.changePasswordRequestType(new GUIPasswortGetter());
+		
 		// collect log messages
 		this.GLOBAL_MESSAGE_HANDLER = new LogMessageEventHandler(this.additionalBarController.getGlobalConsole());
 		Logger.registerListener(this.GLOBAL_MESSAGE_HANDLER, LogLevel.INFO);
@@ -188,8 +191,14 @@ public class WorkflowDesignController implements Initializable {
 		// other events
 		this.currentLoadedFile.addListener((a, b, c) -> this.updateTitle());
 		
-		this.save.setDisable(true);
-		this.saveAs.setDisable(true);
+		if(!PreferencesStore.getUnsafeSaveXMLValidationMode()) {
+			this.save.setDisable(true);
+			this.saveAs.setDisable(true); 
+		}
+		else { // let the user save any status
+			this.save.setDisable(false);
+			this.saveAs.setDisable(false); 	
+		}
 		this.validateWorkflow.setDisable(true);
 		this.executeView.setDisable(true);
 		this.modifyView.setDisable(true);
@@ -268,7 +277,7 @@ public class WorkflowDesignController implements Initializable {
 
 	private void configureChanged() {
 		if(!this.isProcessingActive()) {
-			boolean status = !isAllConfiguredReady.get();
+			boolean status = !PreferencesStore.getUnsafeSaveXMLValidationMode() && !isAllConfiguredReady.get();
 			this.save.setDisable(status);
 			this.saveAs.setDisable(status);
 			this.validateWorkflow.setDisable(status);
@@ -279,13 +288,18 @@ public class WorkflowDesignController implements Initializable {
 	public static void bindConfiguredReady(SimpleBooleanProperty s) {		
 		isAllConfiguredReady = isAllConfiguredReady.and(s);
 		isAllConfiguredReady.addListener(x -> WorkflowDesignController.lastInstance.configureChanged());
-		WorkflowDesignController.configureHasChanged();
+		WorkflowDesignController.configureHasChangedStatic();
 	}
 	
-	public static void configureHasChanged() {
+	public static void configureHasChangedStatic() {
+		WorkflowDesignController.lastInstance.configureHasChanged();
+	}
+	
+	@Override
+	public void configureHasChanged() {
 		WorkflowDesignController.lastInstance.configureChanged();
 	}
-	
+
 	private void pressKeyEvent(KeyEvent k) {
 		registerKeyEvent(k);
 		
@@ -326,8 +340,20 @@ public class WorkflowDesignController implements Initializable {
 		
 		// load the new
 		try {
+			// test, if an unsafe workflow
+			boolean xmlTaggedAsUnsafe = XMLParser.testIfUnsafe(f.getAbsolutePath());
+			boolean loadUnsafeFile = PreferencesStore.getUnsafeLoadXMLValidationMode();
+			// ask user if he want's to load the unsafe file
+			if(xmlTaggedAsUnsafe && loadUnsafeFile == false) {
+				Optional<ButtonType> confirm = Inform.confirm("This XML file is not compatible with the XSD definition."+ System.lineSeparator() + System.lineSeparator() +"Do you want to continue anyway?");
+				if(confirm.get() == ButtonType.OK)
+					loadUnsafeFile = true;
+				else
+					return;
+			}
+			
 			XMLParser.setGUILoadAttempt(true);
-			Object[] ret = XMLParser.parse(f.getAbsolutePath(), XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath()).getAbsolutePath(), 0, false, true, false);
+			Object[] ret = XMLParser.parse(f.getAbsolutePath(), XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath()).getAbsolutePath(), 0, false, true, false, false, loadUnsafeFile); // TODO disable checkpoint on GUI
 			if(ret == null) {
 				Inform.error("Failed to parse the workflow", "Check your standard out and error messages in order to identify the problem.\nOr use the command-line tool with the -validate option.");
 				XMLParser.setGUILoadAttempt(false);
@@ -448,6 +474,7 @@ public class WorkflowDesignController implements Initializable {
 				additionalData.appendErr = xt.isErrorAppended();
 				additionalData.enforceStdin = !xt.isStdinExistenceDisabled();
 				
+				additionalData.saveRes = xt.isSaveResourceUsageEnabled();
 				additionalData.stdOut = XMLParser.ensureAbsoluteFile(xt.getPlainStdOut());
 				additionalData.stdErr = XMLParser.ensureAbsoluteFile(xt.getPlainStdErr());
 				additionalData.workingDir = XMLParser.ensureAbsoluteFolder(xt.getPlainWorkingDir());
@@ -474,7 +501,7 @@ public class WorkflowDesignController implements Initializable {
 						booleanIsFalse = true;
 					}
 					
-					ParamValue pv = new ParamValue(key, d.getParameter().get(key).getControlElement(), null);
+					ParamValue pv = new ParamValue(key, ParameterToControl.getControlElement(d.getParameter().get(key).getType()), null);
 					String storeValue = loadedParams.get(key);
 					// handle boolean values
 					if(pv.isBoolean())
@@ -552,15 +579,9 @@ public class WorkflowDesignController implements Initializable {
 				// we loaded this stuff before
 				if(line != null) {
 					String name = b.getName();
-					if(b instanceof ProcessFolder || b instanceof ProcessSequence) {
-						if(b instanceof ProcessFolder && ((ProcessFolder) b).gui_append) {
-							name += PropertyManagerController.SUFFIX_SEP + i;
-						}
-						else if(b instanceof ProcessSequence && ((ProcessSequence) b).gui_append) {
-							name += PropertyManagerController.SUFFIX_SEP + i;
-						}
+					if(b instanceof ProcessBlock && ((ProcessBlock) b ).gui_append) {
+						name += XMLParser.SUFFIX_SEP + i;
 					}
-					
 					blocksProp.put(name, line);
 				}
 				i++;
@@ -581,7 +602,7 @@ public class WorkflowDesignController implements Initializable {
 					PropertyLine d = blocksProp.get(xt.getProcessBlock().getName());
 					// find the first one with that prefix
 					if(d == null) {
-						String withSuffix = xt.getProcessBlock().getName() + PropertyManagerController.SUFFIX_SEP;
+						String withSuffix = xt.getProcessBlock().getName() + XMLParser.SUFFIX_SEP;
 						for(String key : blocksProp.keySet()) {
 							if(key.startsWith(withSuffix)) {
 								d = blocksProp.get(key);
@@ -609,7 +630,7 @@ public class WorkflowDesignController implements Initializable {
 			this.currentLoadedFile.set(f.getAbsolutePath());
 			this.hashOfLastSaveFile = this.getSaveHash(null); // required as formating might be different
 			
-			if(saveWF2Disk) this.saveWorkflow(f, true);
+			if(saveWF2Disk) this.saveWorkflow(f, true, true);
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -691,7 +712,7 @@ public class WorkflowDesignController implements Initializable {
 		boolean delete = false;
 		if(filename == null) {
 			filename = Functions.generateRandomTmpExecutionFile("saveCheck", false);
-			this.saveWorkflow(filename, false);
+			this.saveWorkflow(filename, false, true);
 			delete = true;
 		}
 		String newHash = null;
@@ -742,9 +763,9 @@ public class WorkflowDesignController implements Initializable {
 
 	private boolean validate(boolean afterSave) {
 		File tmpXLMFile = Functions.generateRandomTmpExecutionFile("validate", false);
-		if(this.saveWorkflow(tmpXLMFile, false)) {
+		if(this.saveWorkflow(tmpXLMFile, false, true)) {
 			try {
-				XMLParser.parse(tmpXLMFile.getAbsolutePath(), new File(PreferencesStore.getWatchdogBaseDir()) + File.separator + XMLParser.FILE_CHECK, 0, false, true, true);
+				XMLParser.parse(tmpXLMFile.getAbsolutePath(), new File(PreferencesStore.getWatchdogBaseDir()) + File.separator + XMLParser.FILE_CHECK, 0, false, true, true, false, false); // TODO disable checkpoint on GUI
 				tmpXLMFile.delete();
 				
 				if(!afterSave)
@@ -753,7 +774,7 @@ public class WorkflowDesignController implements Initializable {
 			}
 			catch(Exception e) {
 				if(!afterSave) 
-					Inform.error("Failed to validate workflow", e.getMessage());
+					Inform.warn("Failed to validate workflow."+System.lineSeparator() + System.lineSeparator()+"Saved as workflow not compatible with the XSD definition." , e.getMessage());
 			}
 		}
 		else
@@ -871,7 +892,7 @@ public class WorkflowDesignController implements Initializable {
 		return savenFile ? c.showSaveDialog(rootWindow) : c.showOpenDialog(rootWindow);
 	}
 	
-	private boolean saveWorkflow(File filename, boolean markAsSaved) {
+	private boolean saveWorkflow(File filename, boolean markAsSaved, boolean isValidToXSD) {
 		// try to find a valid execution order
 		ArrayList<WorkflowModule> executionOrder = this.getExecutionOrder();
 		if(executionOrder == null) {
@@ -907,7 +928,7 @@ public class WorkflowDesignController implements Initializable {
 		
 		XMLBuilder b = new XMLBuilder();
 		b.startDocument();
-		b.startWachdog(new File(PreferencesStore.getWatchdogBaseDir()));
+		b.startWachdog(new File(PreferencesStore.getWatchdogBaseDir()), isValidToXSD);
 		b.addComment("Created by WorkflowDesigner of Watchdog v. " + XMLBasedWatchdogRunner.getVersion());
 		
 		ArrayList<XMLDataStore> constants = this.PROP_MANAGER.get(PropertyViewType.CONSTANTS).getXMLData();
@@ -1090,7 +1111,7 @@ public class WorkflowDesignController implements Initializable {
 	 */
 	protected boolean onSave(ActionEvent event, File filename) {
 		// ensure that all modules are configured
-		if(!isAllConfiguredReady.get())
+		if(!PreferencesStore.getUnsafeSaveXMLValidationMode() && !isAllConfiguredReady.get())
 			return false;
 		
 		boolean ret = false;
@@ -1102,13 +1123,15 @@ public class WorkflowDesignController implements Initializable {
 		if(filename == null)
 			return false;
 		
-		ret = this.saveWorkflow(filename, true);
+		boolean validateReturn = this.validate(false);
+		ret = this.saveWorkflow(filename, true, validateReturn);
 		boolean retVal = false;
 		if(ret) {
 			// check, if it also validates according to the XSD
-			retVal = this.validate(true);
+			
+			retVal = PreferencesStore.getUnsafeSaveXMLValidationMode() || this.validate(true);
 			if(retVal == false) {
-				Inform.error("Your XML file is not valid according to Watchdog's XSD definition!", "You won't be able to load or execute the workflow until you fixed the error. Call 'Edit -> Validate workflow' for more details.");
+				Inform.error("Your XML file is not valid according to Watchdog's XSD definition!", "Try to load it in unsafe mode which can be set in the preferences.");
 			}
 			
 			// add file to last used files
@@ -1119,6 +1142,10 @@ public class WorkflowDesignController implements Initializable {
 				this.hashOfLastSaveFile = this.getSaveHash(filename);
 				for(WorkflowModule m : this.workflowController.getActiveModules().values())
 					m.wasSavedToFile();
+			}
+			// add warning
+			if(!validateReturn) {
+				StatusConsole.addGlobalMessage(MessageType.WARNING, "Saved workflow is not compatible with XSD definition. File must be loaded in unsafe mode."); 
 			}
 		}
 		if(event != null) event.consume();
@@ -1189,10 +1216,10 @@ public class WorkflowDesignController implements Initializable {
 			// load the XML file
 			File f = new File(this.currentLoadedFile.get());
 			File xsdSchema = XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath()); 
-			Object[] ret = XMLParser.parse(f.getAbsolutePath(), xsdSchema.getAbsolutePath(), 0, false, true, false);
+			// file is already loaded --> we parse it safe if valid and unsafe if not
+			Object[] ret = XMLParser.parse(f.getAbsolutePath(), xsdSchema.getAbsolutePath(), 0, false, true, false, false, XMLParser.testIfUnsafe(f.getAbsolutePath())); // TODO disable checkpoint on GUI
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
 			String mail = (String) ret[1];		
-			HashMap<String, SSHPassphraseAuth> auth = (HashMap<String, SSHPassphraseAuth>) ret[2];
 			Mailer mailer = new Mailer(mail);
 			Task.setMail(mailer);
 			HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = (HashMap<String, Pair<HashMap<String, ReturnType>, String>>) ret[3];
@@ -1203,18 +1230,7 @@ public class WorkflowDesignController implements Initializable {
 			}
 			
 			WatchdogThread watchdog = new WatchdogThread(false, null, xsdSchema, null);
-			
-			// add the auth stuff to watchdog
-			for(String executorName : auth.keySet()) {
-				SSHPassphraseAuth a = auth.get(executorName);
-				watchdog.addPassphrase(executorName, a);
-				
-				if(!a.wasTestSuccessFull()) {
-					Inform.error("Remote connection failed", "Failed to connect to remote executor '"+executorName+"'.");
-					return false;
-				}
-			}
-			
+						
 			// start the http server
 			int port = PreferencesStore.getPort();
 			Mailer.updatePort(port);

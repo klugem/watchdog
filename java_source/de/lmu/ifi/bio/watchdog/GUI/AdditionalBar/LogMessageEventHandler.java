@@ -1,10 +1,10 @@
 package de.lmu.ifi.bio.watchdog.GUI.AdditionalBar;
 
 import de.lmu.ifi.bio.watchdog.helper.LogMessageEvent;
+import de.lmu.ifi.bio.watchdog.interfaces.BasicEventHandler;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
-import javafx.event.EventHandler;
 
-public class LogMessageEventHandler implements EventHandler<LogMessageEvent> {
+public class LogMessageEventHandler implements BasicEventHandler<LogMessageEvent> {
 	
 	private final StatusConsole C;
 	private final int ID;

@@ -5,9 +5,10 @@
 	<x:complexType name="paramAbstract" abstract="true">
 		<x:simpleContent>
 			<x:extension base="x:string">
-				<x:attribute ref="paramFormat" />
-				<x:attribute ref="spacingFormat" />
-				<x:attribute ref="quoteFormat" />
+				<x:attribute ref="paramFormat"/>
+				<x:attribute ref="spacingFormat"/>
+				<x:attribute ref="quoteFormat"/>
+				<x:attribute ref="separateFormat"/>
 			</x:extension>
 		</x:simpleContent>
 	</x:complexType>
@@ -70,6 +71,16 @@
 			<x:restriction base="x:string">
 				<x:enumeration value="blankSeparated"/>	<!-- parameter and value are separated by a blank (' ') -v 10 [default] -->
 				<x:enumeration value="equalSeparated"/>	<!-- parameter and value are separated by a blank ('=') -v=10 -->
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+
+	<!-- how multiple values are separated in the same paramter (default ',')  -->
+	<x:attribute name="separateFormat">
+		<x:simpleType>
+			<x:restriction base="x:string">
+			<!-- allow anything -->
+			<x:pattern value=".*"/>
 			</x:restriction>
 		</x:simpleType>
 	</x:attribute>

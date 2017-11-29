@@ -39,4 +39,7 @@ public class Constants implements XMLDataStore {
 
 	@Override
 	public void onDeleteProperty() {}
+
+	@Override
+	public Object[] getDataToLoadOnGUI() { return null; }
 }

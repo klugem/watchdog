@@ -2,6 +2,8 @@ package de.lmu.ifi.bio.watchdog.GUI.module;
 
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.interfaces.Validator;
 import javafx.scene.Node;
@@ -17,7 +19,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.util.Pair;
 
 public class ModuleProperties extends Pane {
 	

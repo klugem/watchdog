@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="550.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.properties.views.ExecutorPropertyViewController">
+<BorderPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.ExecutorPropertyViewController">   
    <bottom>
       <HBox alignment="CENTER_RIGHT" maxHeight="68.0" minHeight="46.0" prefHeight="46.0" prefWidth="600.0" spacing="15.0" BorderPane.alignment="CENTER_RIGHT">
          <children>
@@ -90,9 +90,9 @@
                   </GridPane>
                </content>
             </TitledPane>
-            <TitledPane collapsible="false" prefHeight="200.0" text="executor specific settings" VBox.vgrow="ALWAYS">
+            <TitledPane collapsible="false" prefHeight="250.0" text="executor specific settings" VBox.vgrow="ALWAYS">
                <content>
-                  <Pane fx:id="specific" prefHeight="200.0" prefWidth="598.0" />
+                  <Pane fx:id="specific" prefHeight="250.0" prefWidth="598.0" />
                </content>
             </TitledPane>
          </children>

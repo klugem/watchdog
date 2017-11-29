@@ -5,8 +5,6 @@ import java.util.ResourceBundle;
 
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.ValidateViewController;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 

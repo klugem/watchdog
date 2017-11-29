@@ -14,7 +14,6 @@ import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
 import de.lmu.ifi.bio.watchdog.helper.returnType.FileReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
-import javafx.beans.binding.BooleanExpression;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -64,7 +63,7 @@ public abstract class ValidateViewController implements Initializable {
 		}
 		
 		@SuppressWarnings("unchecked")
-		protected void addValidateToControl(Control c, String name, Validator<Control> v, String condition) {
+		public void addValidateToControl(Control c, String name, Validator<Control> v, String condition) {
 			String type;
 			if(c == null)
 				type = Control.class.getName();

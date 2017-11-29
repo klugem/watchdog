@@ -10,31 +10,31 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 
-import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignerRunner;
-import de.lmu.ifi.bio.watchdog.GUI.helper.ErrorCheckerStore;
-import de.lmu.ifi.bio.watchdog.GUI.helper.GUIInfo;
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.HTTPListenerThread;
+import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.ActionType;
 import de.lmu.ifi.bio.watchdog.helper.CheckerContainer;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
+import de.lmu.ifi.bio.watchdog.helper.ErrorCheckerStore;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
+import de.lmu.ifi.bio.watchdog.helper.GUIInfo;
 import de.lmu.ifi.bio.watchdog.helper.ReplaceSpecialConstructs;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessInput;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessMultiParam;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.optionFormat.OptionFormat;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessMultiParam;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import de.lmu.ifi.bio.watchdog.task.TaskStatus;
 import de.lmu.ifi.bio.watchdog.task.actions.CopyTaskAction;
 import de.lmu.ifi.bio.watchdog.task.actions.CreateTaskAction;
 import de.lmu.ifi.bio.watchdog.task.actions.DeleteTaskAction;
-import javafx.util.Pair;
 
 /**
  * XML representation of a task
@@ -43,7 +43,7 @@ import javafx.util.Pair;
  */
 public class XMLTask {
 	
-	public static final String PARAM_SEP = ",";	
+	public static final String DEFAULT_PARAM_SEP = ",";	
 	public static final String INTERNAL_PARAM_SEP = "@-%-§-%-@";
 	private final static String RETURN_PARAM = "returnParam";
 	private static final ConcurrentHashMap<Integer, XMLTask> XML_TASKS = new ConcurrentHashMap<>(); // stores all XML Tasks which were created via the constructor
@@ -97,6 +97,7 @@ public class XMLTask {
 	private boolean forceSingleSlaveMode = false;
 	private boolean isIgnored = false;
 	private GUIInfo guiInfo = null;
+	private boolean setSaveResourceUsage = false;
 	
 	/**
 	 * Constructor
@@ -381,7 +382,7 @@ public class XMLTask {
 	public HashMap<Integer, Pair<Integer, String>> getDetailSeperateDependencies() {
 		HashMap<Integer, Pair<Integer, String>> r = new HashMap<>();
 		for(int id : this.getSeparateDependencies()) {
-			r.put(id, new Pair<>(this.DEPENDS.get(id), this.DEPENDS_SEP.get(id)));
+			r.put(id, Pair.of(this.DEPENDS.get(id), this.DEPENDS_SEP.get(id)));
 		}
 		return r;
 	}
@@ -446,6 +447,10 @@ public class XMLTask {
 	 */
 	public ProcessBlock getProcessBlock() {
 		return this.PROCESS_BLOCK;
+	}
+	
+	public boolean mightProcessblockContainFilenames() {
+		return this.hasProcessBlock() && this.PROCESS_BLOCK.mightContainFilenames();
 	}
 	 
 	/**
@@ -704,7 +709,7 @@ public class XMLTask {
 			for(String name : params.keySet()) {
 				 // flag
 				if(this.PARAM_IS_FLAG.get(name)) {
-					args.put(name, new Pair<Pair<String, String>, String>(new Pair<String, String>(this.OPTION_FORMAT.getFlagPrefix(), this.OPTION_FORMAT.getQuote()), null));
+					args.put(name, Pair.of(Pair.of(this.OPTION_FORMAT.getFlagPrefix(), this.OPTION_FORMAT.getQuote()), null));
 				}
 				//parameter 
 				else {
@@ -720,14 +725,14 @@ public class XMLTask {
 					}
 					
 					// add the parameter and value
-					args.put(name, new Pair<Pair<String, String>, String>(new Pair<String, String>(formater.getParamPrefix() == null ? "" : formater.getParamPrefix(), formater.getQuote() == null ? "" : formater.getQuote()), value));
+					args.put(name, Pair.of(Pair.of(formater.getParamPrefix() == null ? "" : formater.getParamPrefix(), formater.getQuote() == null ? "" : formater.getQuote()), value));
 				}
 			}		
 			// check, if a return parameter file must be added
 			if(this.returnParamName != null) {
 				File tmp = Functions.generateRandomTmpExecutionFile(RETURN_PARAM, false);
 				this.RETURN_FILE_NAME.put(inputReplacement, tmp);
-				args.put(this.returnParamName, new Pair<Pair<String, String>, String>(new Pair<String, String>(this.OPTION_FORMAT.getParamPrefix(), this.OPTION_FORMAT.getQuote()), tmp.getAbsolutePath()));
+				args.put(this.returnParamName, Pair.of(Pair.of(this.OPTION_FORMAT.getParamPrefix(), this.OPTION_FORMAT.getQuote()), tmp.getAbsolutePath()));
 			}
 			// store it
 			this.CACHE.put(inputReplacement, args);
@@ -808,7 +813,7 @@ public class XMLTask {
 			String path = var;
 			// replace the var if some replace value is given
 			if(replacement != null && replacement.length() > 0)
-				path = ReplaceSpecialConstructs.replaceValues(var, replacement, this.getProcessBlock().getClass(), this.SPAWNED_TASKS.size()+1, this.getProcessBlock() instanceof ProcessMultiParam ? ((ProcessMultiParam) this.getProcessBlock()).getNameMapping() : null, this.getExecutor().getWorkingDir(), false);
+				path = ReplaceSpecialConstructs.replaceValues(var, replacement, this.getProcessBlock().getClass(), this.SPAWNED_TASKS.size()+1, this.getProcessBlock() instanceof ProcessMultiParam ? ((ProcessMultiParam) this.getProcessBlock()).getNameMapping() : null, this.getExecutor().getWorkingDir(), false, this.mightProcessblockContainFilenames());
 
 			// check, if a absolute path is set or a relative one
 			if(!path.startsWith(File.separator) && !path.matches("[A-Z]:\\\\.+") && this.getWorkingDir(replacement) != null) {
@@ -1000,10 +1005,18 @@ public class XMLTask {
 		// run through all parameters and flags
 		for(String name : this.PARAM.keySet()) {
 			String value = this.PARAM.get(name);
+			OptionFormat f = this.PARAM_FORMATER.get(name);
+			String sep = null;
+			if(f != null)
+				sep = f.getSeparateString();
+			else if(this.OPTION_FORMAT != null)
+				sep = this.OPTION_FORMAT.getSeparateString();
+			else
+				sep = XMLTask.DEFAULT_PARAM_SEP;
 			
 			// replace internal separator with real separator
 			if(value != null)
-				value = value.replace(INTERNAL_PARAM_SEP, PARAM_SEP);
+				value = value.replace(INTERNAL_PARAM_SEP, sep);
 			
 			// only try to replace parameters
 			if(inputReplacement != null && !this.PARAM_IS_FLAG.get(name)) {
@@ -1025,7 +1038,7 @@ public class XMLTask {
 	 */
 	public String replaceString(String value, String inputReplacement, HashMap<String, Integer> nameMapping) {
 		if(inputReplacement != null)
-			return ReplaceSpecialConstructs.replaceValues(value, inputReplacement, this.getProcessBlock() != null ? this.getProcessBlock().getClass() : null, this.SPAWNED_TASKS.size()+1, nameMapping, this.getExecutor().getWorkingDir(), false);
+			return ReplaceSpecialConstructs.replaceValues(value, inputReplacement, this.getProcessBlock() != null ? this.getProcessBlock().getClass() : null, this.SPAWNED_TASKS.size()+1, nameMapping, this.getExecutor().getWorkingDir(), false, this.mightProcessblockContainFilenames());
 		
 		return value;
 	}
@@ -1340,7 +1353,7 @@ public class XMLTask {
 	 * @return
 	 */
 	public boolean isDependencyNeededForReturnInfo(int depID) {
-		return this.getProcessBlock() != null && this.getProcessBlock() instanceof ProcessInput && this.NEEDED_DEPENDENCIES_4_VARS.contains(depID);
+		return this.getProcessBlock() != null && this.getProcessBlock().addsReturnInfoToTasks() && this.NEEDED_DEPENDENCIES_4_VARS.contains(depID);
 	}
 
 	/**
@@ -1384,12 +1397,24 @@ public class XMLTask {
 	}
 	public String getPlainWorkingDir() {
 		if(this.workingDirectoryString == null || this.workingDirectoryString.length() == 0)
-			return WorkflowDesignerRunner.DEFAULT_WORKDIR;
+			return WatchdogThread.DEFAULT_WORKDIR;
 		return this.workingDirectoryString;
 	}
 	
 	public void releaseAllTasksFromCheckpoint() {
 		for(Task t : this.SPAWNED_TASKS.values()) 
 			t.releaseTask();
+	}
+
+	public void setSaveResourceUsage(boolean save) {
+		this.setSaveResourceUsage = save;
+	}
+	
+	/**
+	 * returns true, if flag is enabled and stdout is set
+	 * @return
+	 */
+	public boolean isSaveResourceUsageEnabled() {
+		return this.setSaveResourceUsage && this.getPlainStdOut() != null;
 	}
 }

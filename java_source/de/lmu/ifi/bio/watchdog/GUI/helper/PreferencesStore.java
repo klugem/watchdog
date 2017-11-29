@@ -8,6 +8,7 @@ import java.util.Locale;
 
 import org.ini4j.Ini;
 
+import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.Mailer;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
@@ -37,7 +38,9 @@ public class PreferencesStore {
 	public static final int DEFAULT_HEIGHT = 900;
 	public static final int DEFAULT_WIDTH = 1050;
 	public static final String DEFAULT_NAME = "provided by bio.ifi.lmu.de";
-	public static final int DEFAULT_PORT = 8080;
+	private static final String SECTION_VALIDATION = "xmlValidation";
+	private static final String UNSAFE_LOAD_NAME = "unsafeLoadXMLValidation";
+	private static final String UNSAFE_SAVE_NAME = "unsafeSaveXMLValidation";
 	
 	// values that are stored in this class
 	private static final LinkedList<File> LAST_SAVE_FILES_STORE = new LinkedList<>();
@@ -45,12 +48,14 @@ public class PreferencesStore {
 	private static String watchdogBaseDir = null;
 	private static boolean isFullScreenMode = false;
 	private static boolean displayGrid = false;
+	private static boolean unsafeLoadXMLValidationMode = true;
+	private static boolean unsafeSaveXMLValidationMode = true;
 	public static File defaultIniFile;
 	public static int width = -1;
 	public static int height = -1;
 	public static String mail = null;
 	private static String smtpConfig = null;
-	public static int port = DEFAULT_PORT;
+	public static int port = WatchdogThread.DEFAULT_HTTP_PORT;
 	
 	// detect application data folder
 	static {
@@ -65,15 +70,16 @@ public class PreferencesStore {
 				appDataDir += File.separator + "Library" + File.separator + "Application Support";
 		}
 		defaultIniFile = new File(appDataDir + File.separator + INI_FILE_NAME);
-		defaultIniFile.getParentFile().mkdirs();
+		defaultIniFile.getParentFile().mkdirs(); 
 	}
 	
-	public static boolean saveSettingsToFile(File file) {
+	public static boolean saveSettingsToFile(File file) { 
 		try {
 			Ini ini = new Ini();
 			ini.add(SECTION_GENERAL);
 			ini.add(SECTION_PATHS);
 			ini.add(SECTION_APPEARANCE);
+			ini.add(SECTION_VALIDATION);
 			
 			// General section
 			Ini.Section general = ini.get(SECTION_GENERAL);
@@ -97,6 +103,11 @@ public class PreferencesStore {
 			appearance.add(DEFAULT_WDITH_NAME, getWidth());
 			appearance.add(DEFAULT_HEIGHT_NAME, getHeight());
 			appearance.add(DISPLAY_GRID, displayGrid);
+			
+			// Validation section
+			Ini.Section validation = ini.get(SECTION_VALIDATION);
+			validation.add(UNSAFE_LOAD_NAME, unsafeLoadXMLValidationMode);
+			validation.add(UNSAFE_SAVE_NAME, unsafeSaveXMLValidationMode);
 			
 			// store the settings in the file
 			ini.store(file);
@@ -150,6 +161,11 @@ public class PreferencesStore {
 			try { displayGrid = Boolean.parseBoolean(appearance.get(DISPLAY_GRID)); } catch(Exception e) {}
 			try { width = Integer.parseInt(appearance.get(DEFAULT_WDITH_NAME)); } catch(Exception e) {}
 			try { height = Integer.parseInt(appearance.get(DEFAULT_HEIGHT_NAME)); } catch(Exception e) {}
+			
+			// Validation section
+			Ini.Section validation = ini.get(SECTION_VALIDATION);
+			try { unsafeLoadXMLValidationMode = Boolean.parseBoolean(validation.get(UNSAFE_LOAD_NAME)); } catch(Exception e) {}
+			try { unsafeSaveXMLValidationMode = Boolean.parseBoolean(validation.get(UNSAFE_SAVE_NAME)); } catch(Exception e) {}
 		}
 		catch(Exception e) { e.printStackTrace(); }
 		return false;
@@ -249,5 +265,21 @@ public class PreferencesStore {
 	}
 	public static String getSMTPConfigPath() {
 		return smtpConfig;
+	}
+
+	public static boolean getUnsafeLoadXMLValidationMode() {
+		return unsafeLoadXMLValidationMode;
+	}
+
+	public static void setUnsafeLoadXMLValidationMode(boolean unsafeLoadMode) {
+		unsafeLoadXMLValidationMode = unsafeLoadMode;
+	}
+	
+	public static boolean getUnsafeSaveXMLValidationMode() {
+		return unsafeSaveXMLValidationMode;
+	}
+
+	public static void setUnsafeSaveXMLValidationMode(boolean unsafeSaveMode) {
+		unsafeSaveXMLValidationMode = unsafeSaveMode;
 	}
 }	

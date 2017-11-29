@@ -1,10 +1,11 @@
 package de.lmu.ifi.bio.watchdog.GUI;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.AdditionalBarController;
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 public class Preferences extends Pane {
 	

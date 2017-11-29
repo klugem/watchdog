@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
+	
+	<!-- time per task -->
+	<x:attribute name="timelimit">
+		<x:simpleType>
+			<x:restriction base="x:string">
+				<x:pattern value="[0-9]+-[0-9]+:[0-9]+" />
+				<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+
+	<!-- integer ranging from 1 to -->
+	<x:attribute name="cpu">
+		<x:simpleType>
+			<x:restriction base="x:integer">
+				<x:minInclusive value="1" />
+				<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+|[0-9]+"/>
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+
+	<!-- slurm executor -->
+	<x:complexType name="executorSlurmType">
+		<x:simpleContent>
+			<x:extension base="executorAbstractType">
+				<x:attribute name="type" type="x:string" fixed="slurm" />
+				<x:attribute ref="cpu" default="1" />
+				<x:attribute ref="memory" default="3000M" />
+				<x:attribute name="cluster" type="x:string" />
+				<x:attribute name="disableDefault" type="x:boolean" />
+				<x:attribute name="customParameters" type="x:string" />
+				<x:attribute ref="timelimit" default="0-12:0"/>
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- tag for executor in XML file -->
+	<x:element name="slurm" type="executorSlurmType" substitutionGroup="executorType" />
+</x:schema>

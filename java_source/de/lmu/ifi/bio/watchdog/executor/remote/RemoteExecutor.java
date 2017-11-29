@@ -10,7 +10,6 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.Session;
 
 import de.lmu.ifi.bio.watchdog.executor.ScheduledExecutor;
-import de.lmu.ifi.bio.watchdog.helper.SSHPassphraseAuth;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
@@ -22,7 +21,7 @@ import de.lmu.ifi.bio.watchdog.task.TaskStatus;
  * @author Michael Kluge
  *
  */
-public class RemoteExecutor extends ScheduledExecutor {
+public class RemoteExecutor extends ScheduledExecutor<RemoteExecutorInfo> {
 
 	private static final String CD = "cd ";
 	private static final String EXEC_NAME = "remote";
@@ -31,7 +30,6 @@ public class RemoteExecutor extends ScheduledExecutor {
 	private static final String EXEC = "exec";
 	private Session session;
 	private ChannelExec channel;
-	private final SSHPassphraseAuth AUTH;
 	private static final String DEV_NULL;
 	private static int count_id = 0;
 	
@@ -51,9 +49,8 @@ public class RemoteExecutor extends ScheduledExecutor {
 	 * @param auth
 	 * @param execinfo
 	 */
-	public RemoteExecutor(Task task, SyncronizedLineWriter log, SSHPassphraseAuth auth, RemoteExecutorInfo execinfo) {
+	public RemoteExecutor(Task task, SyncronizedLineWriter log, RemoteExecutorInfo execinfo) {
 		super(task, log, execinfo);
-		this.AUTH = auth;
 		count_id++;
 	}
 
@@ -71,7 +68,7 @@ public class RemoteExecutor extends ScheduledExecutor {
 		}
 		
 		// add job to remote monitor
-		REMOTE_MONITOR.addTaskToMonitor(count_id, this);
+		REMOTE_MONITOR.addTaskToMonitor(Integer.toString(count_id), this);
 	}
 	
 	/**
@@ -89,7 +86,7 @@ public class RemoteExecutor extends ScheduledExecutor {
 		// select a free host
 		boolean first = true;
 		while(first || (!this.getExecInfo().hasFreeHost())) {
-			this.session = this.AUTH.getSSHSession(this.getExecInfo().getUser(), this.getExecInfo().getFreeHost(), this.getExecInfo().getPort(), this.getExecInfo().isStrictHostCheckingEnabled());
+			this.session = this.EXEC_INFO.getAuth().getSSHSession(this.getExecInfo().getUser(), this.getExecInfo().getFreeHost(), this.getExecInfo().getPort(), this.getExecInfo().isStrictHostCheckingEnabled());
 			// wait until next try
 			if(first)
 				try { Thread.sleep(1000); } catch(Exception e) {}

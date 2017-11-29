@@ -189,7 +189,8 @@
 			<x:element name="stdout" type="absoluteOrRelativeCalculateLogFileType" minOccurs="0" maxOccurs="1"/>
 			<x:element name="stderr" type="absoluteOrRelativeCalculateLogFileType" minOccurs="0" maxOccurs="1"/>
 			<x:element name="stdin" type="absoluteOrRelativeCalculateStdinFileType" minOccurs="0" maxOccurs="1"/>
-		</x:all>		
+		</x:all>
+		<x:attribute name="saveResourceUsage" type="x:boolean" default="false"/>
 	</x:complexType>
 
 	<x:simpleType name="absoluteCompiledJavaFileType">
@@ -336,6 +337,7 @@
 		<x:attribute name="returnFilePathParameter" type="x:string" default="returnFilePath"/>
 		<x:attribute ref="paramFormat" default="longShort"/>
 		<x:attribute ref="spacingFormat" default="blankSeparated"/>
+		<x:attribute ref="separateFormat" default=","/>
 		<x:attribute ref="quoteFormat" default="singleQuoted"/>
 		<!--============================================================-->
 	</x:complexType>

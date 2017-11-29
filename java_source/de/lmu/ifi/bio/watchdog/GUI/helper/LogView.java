@@ -2,9 +2,10 @@ package de.lmu.ifi.bio.watchdog.GUI.helper;
 
 import java.io.File;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import javafx.scene.layout.Pane;
-import javafx.util.Pair;
 
 /**
  * should be constructed using the static method defined in LogView

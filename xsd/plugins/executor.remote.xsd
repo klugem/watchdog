@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
+
+	<!-- remote executor -->
+	<x:complexType name="executorRemoteType">
+		<x:simpleContent>
+			<x:extension base="executorAbstractType">
+				<x:attribute name="host" type="x:string" />
+				<x:attribute ref="port" default="22" />
+				<x:attribute name="user" type="x:string" />
+				<x:attribute name="privateKey" type="x:string" />
+				<x:attribute name="disableStrictHostCheck" type="x:boolean" default="false"/>
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- tag for executor in XML file -->
+	<x:element name="remote" type="executorRemoteType" substitutionGroup="executorType" />
+</x:schema>

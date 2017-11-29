@@ -9,27 +9,28 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.TreeMap;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.ggf.drmaa.JobInfo;
 
 import de.lmu.ifi.bio.network.server.ServerConnectionHandler;
-import de.lmu.ifi.bio.watchdog.GUI.helper.FileWatcherLockguard;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.local.LocalExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.ActionType;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
+import de.lmu.ifi.bio.watchdog.helper.FileWatcherLockguard;
 import de.lmu.ifi.bio.watchdog.helper.Mailer;
 import de.lmu.ifi.bio.watchdog.helper.ReplaceSpecialConstructs;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.interfaces.ErrorChecker;
 import de.lmu.ifi.bio.watchdog.interfaces.SuccessChecker;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.slave.Master;
 import de.lmu.ifi.bio.watchdog.slave.SlaveStatusHandler;
 import de.lmu.ifi.bio.watchdog.slave.clientEvents.TerminateTaskEvent;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
-import javafx.util.Pair;
 
 /**
  * Implements a task which can be executed by different executor classes
@@ -43,8 +44,8 @@ public class Task implements Serializable {
 	protected static Mailer mailer;
 	public static final String SEP = "-";
 	public static final String PFEIL = ">";
+	private static final String RES_ENDING = ".res";
 
-	
 	protected final int TASK_ID;
 	protected final int SUB_TASK_ID;
 	protected final String NAME;
@@ -56,12 +57,11 @@ public class Task implements Serializable {
 	protected final ArrayList<SuccessChecker> SUCCESS_CHECKER = new ArrayList<>();
 	protected final HashSet<String> DEPENDENCIES = new HashSet<>();
 	protected final String GROUP_FILE_NAME;
-	protected final HashMap<String, Double> USED_RESOURCES = new HashMap<>();
+	protected final TreeMap<String, Double> USED_RESOURCES = new TreeMap<>();
 	protected final ArrayList<String> ERRORS = new ArrayList<>();
 	protected final Class<? extends ProcessBlock> PROCESS_BLOCK_CLASS;
 	protected final HashMap<String, Integer> PROCESS_TABLE_MAPPING;
 	protected final HashMap<String, String> RETURN_PARAMS = new HashMap<>();
-	protected final String COMPLETE_PROCESS_BLOCK_INPUT;
 	protected final HashMap<TaskActionTime, ArrayList<TaskAction>> TASK_ACTIONS = new HashMap<>();
 	
 	private String project;
@@ -77,6 +77,7 @@ public class Task implements Serializable {
 	protected File STD_OUT = null;
 	protected File STD_ERR = null;
 	protected File WORKING_DIR = null;
+	private final boolean SAVE_RES;
 	protected boolean STR_OUT_APPEND = false;
 	protected boolean STR_ERR_APPEND = false;
 	protected ActionType notify = null;
@@ -92,6 +93,7 @@ public class Task implements Serializable {
 	private boolean isRunningOnSlave = false;
 	private boolean forceSingleSlaveMode = false; 
 	private boolean taskStatusUpdateFinished = false;
+	private boolean MIGHT_PB_CONTAIN_FILE_NAMES;
 	
 	/**
 	 * Constructor
@@ -115,11 +117,12 @@ public class Task implements Serializable {
 	 * @param env
 	 */
 	public Task(int taskID, String name, ExecutorInfo executor, String command, LinkedHashMap<String, Pair<Pair<String, String>, String>> detailArguments, ArrayList<Task> dependencies,  ArrayList<ErrorChecker> errorChecker, ArrayList<SuccessChecker> successChecker, String groupFileName,
-				 File stdIn, File stdOut, File stdErr, boolean stdOutAppend, boolean stdErrAppend, File workingDir, Class<? extends ProcessBlock> processBlockClass, HashMap<String, Integer> processTableMapping, String completeRawargumentList, Environment env, ArrayList<TaskAction> taskActions) {
+				 File stdIn, File stdOut, File stdErr, boolean stdOutAppend, boolean stdErrAppend, File workingDir, Class<? extends ProcessBlock> processBlockClass, HashMap<String, Integer> processTableMapping, Environment env, ArrayList<TaskAction> taskActions, boolean saveRes, boolean mightPBContainFileNames) {
 		this.TASK_ID = taskID;
 		this.NAME = name;
 		this.executor = executor;
 		this.DETAIL_ARGUMENTS = detailArguments;
+		this.MIGHT_PB_CONTAIN_FILE_NAMES = processBlockClass != null && mightPBContainFileNames;
 
 		String[] tmp = command.split(" ");
 		if(tmp.length > 1)
@@ -130,7 +133,6 @@ public class Task implements Serializable {
 		this.COMMAND = command;
 		if(detailArguments != null)
 			this.ARGUMENTS.addAll(Task.parseArguments(detailArguments));
-		this.COMPLETE_PROCESS_BLOCK_INPUT = completeRawargumentList;
 		if(errorChecker != null) 
 			this.ERROR_CHECKER.addAll(errorChecker);
 		if(successChecker != null)
@@ -155,6 +157,7 @@ public class Task implements Serializable {
 		this.PROCESS_BLOCK_CLASS = processBlockClass;
 		this.PROCESS_TABLE_MAPPING = processTableMapping;
 		this.ENV = env;
+		this.SAVE_RES = saveRes;
 		
 		// add the task actions
 		for(TaskAction a : taskActions) {
@@ -225,7 +228,7 @@ public class Task implements Serializable {
 	}
 
 	public static Task getShutdownTask(ArrayList<TaskAction> shutdownActions, ExecutorInfo e) {
-		return new Task(0, "on shutdown event", e, "", null, null, null, null, null, null, null, null, false, false, null, null, null, null, null, shutdownActions);
+		return new Task(0, "on shutdown event", e, "", null, null, null, null, null, null, null, null, false, false, null, null, null, null, shutdownActions, false, false);
 	}
 	
 	/**
@@ -473,8 +476,8 @@ public class Task implements Serializable {
 	 * returns the used resources
 	 * @return
 	 */
-	public HashMap<String, Double> getUsedResources() {
-		return new HashMap<String, Double>(this.USED_RESOURCES);
+	public TreeMap<String, Double> getUsedResources() {
+		return new TreeMap<String, Double>(this.USED_RESOURCES);
 	}
 	
 	 /**
@@ -1016,10 +1019,6 @@ public class Task implements Serializable {
 		return this.RETURN_PARAMS.size() > 0;
 	}
 	
-	public String getCompleteProcessBlockInput() {
-		return this.COMPLETE_PROCESS_BLOCK_INPUT;
-	}
-	
 	/**
 	 * can be set to true to ignore the resource restrictions
 	 * @param b
@@ -1044,7 +1043,7 @@ public class Task implements Serializable {
 	 * @param mapping
 	 * @return
 	 */
-	public HashMap<String, String> getEnvironment(String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping) {
+	public HashMap<String, String> getEnvironment(String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping, boolean valueMightBeFilePath) {
 		if(this.ENV == null)
 			return new HashMap<>();
 		
@@ -1053,7 +1052,7 @@ public class Task implements Serializable {
 		HashMap<String, String> vars = this.ENV.getEnv();
 		// replace all the variables and $()
 		for(String k : vars.keySet()) {
-			String v = ReplaceSpecialConstructs.replaceValues(vars.get(k), inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true);
+			String v = ReplaceSpecialConstructs.replaceValues(vars.get(k), inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true, valueMightBeFilePath);
 			env.put(k, v);
 		}
 		return env;
@@ -1075,7 +1074,7 @@ public class Task implements Serializable {
 	 * @param mapping
 	 * @return
 	 */
-	public ArrayList<String> getEnvironmentCommands(String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping) {
+	public ArrayList<String> getEnvironmentCommands(String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping, boolean valueMightBeFilePath) {
 		if(this.ENV == null)
 			return new ArrayList<>();
 		
@@ -1084,7 +1083,7 @@ public class Task implements Serializable {
 		String workingDir = XMLTask.hasXMLTask(this.getTaskID()) ? XMLTask.getXMLTask(this.getTaskID()).getExecutor().getWorkingDir() : "";
 		// replace all the variables and $()
 		for(String k : vars) {
-			k = ReplaceSpecialConstructs.replaceValues(k, inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true);
+			k = ReplaceSpecialConstructs.replaceValues(k, inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true, valueMightBeFilePath);
 			env.add(k);
 		}
 		return env;
@@ -1223,5 +1222,16 @@ public class Task implements Serializable {
 	
 	public boolean isTaskStatusUpdateFinished() {
 		return this.taskStatusUpdateFinished;
+	}
+	
+	public File getSaveResFilename() {
+		if(this.SAVE_RES == false)
+			return null;
+		File f = this.getStdOut(false);
+		return new File(f.getAbsolutePath() + RES_ENDING);
+	}
+	
+	public boolean mightProcessblockContainFilenames() {
+		return this.MIGHT_PB_CONTAIN_FILE_NAMES;
 	}
 }

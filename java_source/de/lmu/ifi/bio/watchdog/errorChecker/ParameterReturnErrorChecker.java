@@ -15,8 +15,8 @@ public class ParameterReturnErrorChecker extends ErrorChecker implements Seriali
 
 	private static final long serialVersionUID = -1225957239576183024L;
 	private final static String LAST_LINE = "?EOF!";
-	private final static int WAIT = 25; // wait time in ms for files
-	private final static int COUNTER = 2400; // counter
+	private final static int WAIT = 10; // wait time in ms for files
+	private final static int COUNTER = 5000; // counter
 	private final static String TAB = "\t"; 
 	
 	private final HashMap<String, String> COLLECTED_RETURN_PARAMETER = new HashMap<>();

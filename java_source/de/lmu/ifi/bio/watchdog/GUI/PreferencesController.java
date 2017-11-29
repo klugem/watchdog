@@ -11,6 +11,8 @@ import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.AdditionalBarController;
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.StatusConsole;
 import de.lmu.ifi.bio.watchdog.GUI.event.ToolLibraryUpdateEvent;
@@ -21,11 +23,7 @@ import de.lmu.ifi.bio.watchdog.GUI.helper.SaveablePane;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.GUI.preferences.AbstractPreferencesController;
 import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
-import javafx.application.Platform;
-import javafx.beans.binding.BooleanExpression;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ObservableBooleanValue;
 import javafx.beans.value.ObservableValueBase;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -38,7 +36,6 @@ import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
 public class PreferencesController implements Initializable {
 	
@@ -78,14 +75,14 @@ public class PreferencesController implements Initializable {
 		URL fxmlFolder = FXMLRessourceLoader.class.getResource(PreferencesController.PREFERENCES_SUB_FOLDER);
 		File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 		try {
-			if(jarFile.isFile()) { 
+			if(jarFile.isFile()) {  
 			    JarFile jar = new JarFile(jarFile);
 			    Enumeration<JarEntry> entries = jar.entries();
 			    while(entries.hasMoreElements()) {
-			        String name = entries.nextElement().getName();
-			        if (name.matches(".*" + File.separator + PreferencesController.PREFERENCES_SUB_FOLDER + File.separator + ".*" + "\\.fxml")) {
-			            String[] tmp = name.split(File.separator);
-			            this.addPreferencePage(tmp[tmp.length-1], first, tree);
+			        String name = entries.nextElement().getName().replaceAll("\\\\", "/"); // don't let pattern crash under windows
+			        if (name.matches(".*" + '/' + PreferencesController.PREFERENCES_SUB_FOLDER + '/' + ".*" + "\\.fxml")) {
+			            String[] tmp = name.split("/");
+			            this.addPreferencePage(PreferencesController.PREFERENCES_SUB_FOLDER + '/', tmp[tmp.length-1], first, tree);
 			            first = false;
 			        }
 			    }
@@ -93,7 +90,7 @@ public class PreferencesController implements Initializable {
 			} else {
 				File fxmlFile =	Paths.get(fxmlFolder.toURI()).toFile();
 				for(File f : fxmlFile.listFiles(new PatternFilenameFilter(FXML_PATTERN, false))) {
-					this.addPreferencePage(f.getName(), first, tree);
+					this.addPreferencePage(PreferencesController.PREFERENCES_SUB_FOLDER + File.separator, f.getName(), first, tree);
 					first = false;
 				}
 			}
@@ -128,10 +125,10 @@ public class PreferencesController implements Initializable {
 	 * @param first
 	 * @param tree
 	 */
-	private void addPreferencePage(String fullName, boolean first, TreeItem<String> tree) {
+	private void addPreferencePage(String path, String fullName, boolean first, TreeItem<String> tree) {
 		final String name = fullName.replaceFirst(ENDING_REPLACE, "");
 		tree.getChildren().add(new TreeItem<>(name));
-		SaveablePane s = getPreferenceSetting(fullName, this.status);
+		SaveablePane s = getPreferenceSetting(path + fullName, this.status);
 		s.setParentPaneForEvents(this.root);
 		this.PANES.put(name, s);
 		
@@ -207,7 +204,7 @@ public class PreferencesController implements Initializable {
 	public static SaveablePane getPreferenceSetting(String filename, StatusConsole status) {
 		try {
 			SaveablePane sp = new SaveablePane();
-			FXMLRessourceLoader<SaveablePane, AbstractPreferencesController> l = new FXMLRessourceLoader<>(PreferencesController.PREFERENCES_SUB_FOLDER + File.separator + filename, sp);
+			FXMLRessourceLoader<SaveablePane, AbstractPreferencesController> l = new FXMLRessourceLoader<>(filename, sp);
 			Pair<SaveablePane, AbstractPreferencesController> p = l.getNodeAndController();
 			AbstractPreferencesController c = p.getValue();
 			sp.setSaveController(c);

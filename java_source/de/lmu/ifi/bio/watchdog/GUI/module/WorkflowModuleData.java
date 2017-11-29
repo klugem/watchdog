@@ -2,9 +2,9 @@ package de.lmu.ifi.bio.watchdog.GUI.module;
 
 import java.util.ArrayList;
 
-import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignerRunner;
-import de.lmu.ifi.bio.watchdog.GUI.helper.ErrorCheckerStore;
+import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.ActionType;
+import de.lmu.ifi.bio.watchdog.helper.ErrorCheckerStore;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 
 public class WorkflowModuleData {
@@ -22,13 +22,14 @@ public class WorkflowModuleData {
 	public boolean enforceStdin = true;
 	public String stdOut;
 	public String stdErr;
-	public String workingDir = WorkflowDesignerRunner.DEFAULT_WORKDIR;
+	public String workingDir = WatchdogThread.DEFAULT_WORKDIR;
 	public String stdIn;
+	public boolean saveRes;
 	
 	// error checker / actions
 	public final ArrayList<ErrorCheckerStore> CHECKERS = new ArrayList<>();
 	public final ArrayList<TaskAction> ACTIONS = new ArrayList<>();
-	
+
 	
 	public void addErrorChecker(ErrorCheckerStore e) {
 		this.CHECKERS.add(e);

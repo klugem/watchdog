@@ -23,7 +23,16 @@ public class XMLBuilder {
 	private static final String WATCHDOG = "watchdog";
 	private static final String XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	private static final String BASE_REP = "%%%BASE%%%";
-	private static final String START_WATCHDOG = "<watchdog xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"watchdog.xsd\" watchdogBase=\""+BASE_REP+"\">";
+	private static final String START_WATCHDOG = "<watchdog xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"watchdog.xsd\" watchdogBase=\""+BASE_REP+"\"";
+	private static boolean unsafeMode = false;
+	
+	/**
+	 * can be used to set unsafe mode in which some null pointers are captured --> might result errors later on.
+	 * @param unsave
+	 */
+	public static void setMode(boolean unsave) {
+		XMLBuilder.unsafeMode = unsave;
+	}
 	
 	/**
 	 * starts the document with the XML header
@@ -33,8 +42,11 @@ public class XMLBuilder {
 		this.newline();
 	}
 	
-	public void startWachdog(File base) {
+	public void startWachdog(File base, boolean isValidToXSD) {
 		this.B.append(START_WATCHDOG.replace(BASE_REP, base.getAbsolutePath() + File.separator));
+		if(!isValidToXSD) 
+			this.addQuotedAttribute(XMLParser.IS_NOT_VALID_XSD_STRING, true);
+		this.B.append(XMLParser.CLOSE_TAG);
 		this.newline();
 		
 		// add the element to the open tags
@@ -86,6 +98,9 @@ public class XMLBuilder {
 	 * @param value
 	 */
 	public void addQuotedAttribute(String name, Object value) {
+		if(XMLBuilder.unsafeMode && value == null) // we want to get an error if not in unsafe mode!
+			return;
+		
 		this.B.append(XMLParser.SPACER);
 		this.B.append(name);
 		this.B.append(XMLParser.EQUAL);

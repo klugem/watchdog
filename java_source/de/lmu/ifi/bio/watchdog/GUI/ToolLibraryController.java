@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.xml.sax.SAXException;
 
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.MessageType;
@@ -43,7 +44,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.VBox;
-import javafx.util.Pair;
 
 /**
  * controller for the tool library
@@ -83,7 +83,7 @@ public class ToolLibraryController implements Initializable {
 				HashMap<String, String> moduleFolders = PreferencesStore.getMouleFolders();
 				ArrayList<String> paths = new ArrayList<String>(moduleFolders.values());
 				HashMap<String, String> modules = getNamesOfModules(paths);
-				File schemaFile = XMLParser.createTemporaryXSDFile(defaultSchemaPath.getPath(), new HashSet<>(modules.keySet()), modules, paths).getKey();
+				File schemaFile = XMLParser.createTemporaryXSDFile(defaultSchemaPath.getPath(), new HashSet<>(modules.keySet()), modules, paths, null).getKey();
 				HashMap<String, HashMap<String, Parameter>> modulesAndParameters = getParameterOfModules(modules, schemaFile, defaultSchemaPath.getParent());
 				HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = getReturnInformation(modules, schemaFile, PreferencesStore.getWatchdogBaseDir());
 				this.setModules(modules, moduleFolders, modulesAndParameters, retInfo);

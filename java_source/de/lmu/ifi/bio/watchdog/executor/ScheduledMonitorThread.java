@@ -12,7 +12,7 @@ import de.lmu.ifi.bio.watchdog.task.Task;
  * @author Michael Kluge
  *
  */
-public abstract class ScheduledMonitorThread<E extends ScheduledExecutor> extends MonitorThread<E> {
+public abstract class ScheduledMonitorThread<E extends ScheduledExecutor<?>> extends MonitorThread<E> {
 	
 	protected static final int BUFFER_SIZE = 32768;
 	protected final byte[] BUFFER = new byte[BUFFER_SIZE];
@@ -22,7 +22,7 @@ public abstract class ScheduledMonitorThread<E extends ScheduledExecutor> extend
 	public ScheduledMonitorThread(String name) {
 		super(name);
 	}
-	
+
 	/**
 	 * Reads a stream and stores the content into a file
 	 * @param stream

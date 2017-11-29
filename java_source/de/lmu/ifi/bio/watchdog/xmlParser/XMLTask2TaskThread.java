@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.multithreading.StopableLoopRunnable;
 import de.lmu.ifi.bio.watchdog.errorChecker.ParameterReturnErrorChecker;
 import de.lmu.ifi.bio.watchdog.errorChecker.WatchdogErrorCatcher;
@@ -17,15 +19,14 @@ import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.ActionType;
 import de.lmu.ifi.bio.watchdog.helper.CheckerContainer;
 import de.lmu.ifi.bio.watchdog.helper.Mailer;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessInput;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessMultiParam;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.interfaces.ErrorChecker;
 import de.lmu.ifi.bio.watchdog.interfaces.SuccessChecker;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessMultiParam;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessReturnValueAdder;
 import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.StatusHandler;
 import de.lmu.ifi.bio.watchdog.task.Task;
-import javafx.util.Pair;
 
 /**
  * Creates Tasks based on XMLTask definitions
@@ -111,8 +112,8 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					continue;
 
 				// check, if it is a processInput and
-				if(x.getProcessBlock() instanceof ProcessInput)
-					this.addProcessInput(x);
+				if(x.getProcessBlock() instanceof ProcessReturnValueAdder)
+					this.addDependingReturnModifingProcessBlocks(x);
 
 				HashMap<String, Integer> nameMapping = null;
 				if(x.getProcessBlock() instanceof ProcessMultiParam) {
@@ -153,7 +154,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 
 					 // task can be scheduled
 					 String completeRawargumentList = completeArguments.get(inputName);
-					 Task t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, completeRawargumentList, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping));
+					 Task t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled(), x.mightProcessblockContainFilenames());
 					 t.setMaxRunning(x.getMaxRunning());
 					 t.setProject(x.getProjectName());
 					 t.addErrorChecker(new WatchdogErrorCatcher(t));
@@ -269,13 +270,13 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	 * adds some values to processInput blocks, if finished tasks depend on that
 	 * @param x
 	 */
-	public boolean addProcessInput(XMLTask x) {
-		if(!((x.getProcessBlock() instanceof ProcessInput)))
+	public boolean addDependingReturnModifingProcessBlocks(XMLTask x) {
+		if(!((x.getProcessBlock() instanceof ProcessReturnValueAdder)))
 			return false;
 			
 		boolean retVal = false;
 		boolean noSeparate = true;
-		ProcessInput input = (ProcessInput) x.getProcessBlock();
+		ProcessReturnValueAdder input = (ProcessReturnValueAdder) x.getProcessBlock();
 		int numberOfSeparateDep = x.getSeparateDependencies().size(); 
 		int numberOfGlobalDep = x.getOriginalGlobalDependencies().size();
 		HashMap<String, ArrayList<Task>> finishedDep = new HashMap<>();

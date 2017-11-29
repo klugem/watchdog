@@ -1,9 +1,8 @@
 package de.lmu.ifi.bio.watchdog.helper;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
-
-import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
 
 /**
  * Classes that should be used by GUI must implement that interface
@@ -11,6 +10,8 @@ import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
  *
  */
 public abstract interface XMLDataStore extends Serializable {
+	
+	static final ArrayList<GUISaveHelper> NOTIFY_CHANGE = new ArrayList<>();
 	static final long serialVersionUID = -1910178648862889040L;
 	static final String SEP = "~][~";
 	static final HashMap<String, XMLDataStore> STORE = new HashMap<>();	
@@ -50,7 +51,7 @@ public abstract interface XMLDataStore extends Serializable {
 	public static boolean registerData(XMLDataStore data) {
 		if(!hasRegistedData(data.getRegisterName(), null)) {
 			STORE.put(data.getRegisterName(), data);
-			WorkflowDesignController.configureHasChanged();
+			notifyOnRegisterOrUnregisterData();
 			return true;
 		}
 		return false;
@@ -87,14 +88,29 @@ public abstract interface XMLDataStore extends Serializable {
 	 */
 	public static boolean unregisterData(XMLDataStore data) {
 		if(hasRegistedData(data.getRegisterName(), null)) {
-			WorkflowDesignController.configureHasChanged();
+			notifyOnRegisterOrUnregisterData();
 			return STORE.remove(data.getRegisterName()) != null;
 		}
 		return false;
 	}
 
 	/**
-	 * is called when the property is readlly deleted on the GUI
+	 * is called when the property is really deleted on the GUI
 	 */
 	public abstract void onDeleteProperty();
+	
+	/**
+	 * must return the data that should be loaded by the GUI with the loadData(...) method
+	 * @return
+	 */
+	public abstract Object[] getDataToLoadOnGUI();
+
+	public static void registerNotifyOnRegisterOrUnregisterData(GUISaveHelper guiSaveHelper) {
+		NOTIFY_CHANGE.add(guiSaveHelper);
+	}
+	
+	public static void notifyOnRegisterOrUnregisterData() {
+		for(GUISaveHelper gsh : NOTIFY_CHANGE)
+			gsh.configureHasChanged();
+	}
 }

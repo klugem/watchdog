@@ -1,6 +1,25 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
+Changelog startet with version 1.2.0
+
+## [1.2.0] - 2017-xx-xx
+### Added
+- [PLUGIN] Implemented plugin system for XML parsing that allows to extend functionally of Watchdog by community
+- [PLUGIN] Applied concept of plugin system to process blocks and executors
+- [] Implemented additional executor to support Slurm Workload Manager (https://slurm.schedmd.com/)
+- [GUI] Saving (and loading) of incomplete workflows, not valid according to the XSD format, is supported experimentally
+- [XML] Added attribute 'saveResourceUsage' to <stream> that saves used resources to <STDOUT_FILE>.res
+- [XSD] Added attribute 'separateFormat' to abstract task that can be used to set the default separator string between multiple occurrences of the same parameter
+- [CMD] Added flag -forceLoading  (tries to load a workflow even if it is not valid according to the XSD format)
+- [CMD] Added flag -disableCheckpoint (ignores all checkpoints that are defined in the workflow)
+- [] Added Watchdog to the package manager bioconda (https://bioconda.github.io/)
+- [] Sources of watchdog are now hosted on github (https://github.com/klugem/watchdog)
+### Removed
+- [CMD] Removed flag -simulate
+### Fixed
+- [GUI] workflow designer crashed on windows caused by not escaped backslash in regex
+- [CMD] command line version of watchdog crashed when openjdk8 with missing javafx was used
 
 ## [1.1.0] - 2017-08-24
 ### Added

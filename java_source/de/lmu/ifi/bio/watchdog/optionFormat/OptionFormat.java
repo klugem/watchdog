@@ -1,5 +1,7 @@
 package de.lmu.ifi.bio.watchdog.optionFormat;
 
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
+
 /**
  * Formats options and flags
  * @author Michael Kluge
@@ -10,6 +12,7 @@ public class OptionFormat {
 	private final ParamFormat PARAM_FORMAT;
 	private final QuoteFormat QUOTE_FORMAT;
 	private final SpacingFormat SPACING_FORMAT;
+	private final String SEPARATE_STRING;
 	
 	/**
 	 * Constructor
@@ -17,10 +20,11 @@ public class OptionFormat {
 	 * @param quoteFormat
 	 * @param spacingFormat
 	 */
-	public OptionFormat(ParamFormat paramFormat, QuoteFormat quoteFormat, SpacingFormat spacingFormat) {
+	public OptionFormat(ParamFormat paramFormat, QuoteFormat quoteFormat, SpacingFormat spacingFormat, String separateString) {
+		this.SEPARATE_STRING = (separateString == null ? XMLTask.DEFAULT_PARAM_SEP : separateString);
 		this.PARAM_FORMAT = paramFormat;
 		this.QUOTE_FORMAT = quoteFormat;
-		
+
 		// do not allow null values for the spacing format
 		if(spacingFormat == null) {
 			this.SPACING_FORMAT = SpacingFormat.blankSeperated;
@@ -69,5 +73,9 @@ public class OptionFormat {
 
 	public String getQuote() {
 		return (this.QUOTE_FORMAT == null || (this.QUOTE_FORMAT.equals(QuoteFormat.unquoted)) ? null : ((Character) this.QUOTE_FORMAT.quoteValue("").charAt(0)).toString());
+	}
+	
+	public String getSeparateString() {
+		return this.SEPARATE_STRING;
 	}
 }

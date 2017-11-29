@@ -6,7 +6,6 @@ import java.io.FileWriter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -18,16 +17,11 @@ import de.lmu.ifi.bio.multithreading.ConvertedMonitorRunnable;
 import de.lmu.ifi.bio.multithreading.MonitorRunnable;
 import de.lmu.ifi.bio.multithreading.RunPool;
 import de.lmu.ifi.bio.multithreading.StopableLoopThread;
-import de.lmu.ifi.bio.watchdog.executor.cluster.ClusterExecutor;
-import de.lmu.ifi.bio.watchdog.executor.cluster.ClusterExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.local.LocalExecutor;
 import de.lmu.ifi.bio.watchdog.executor.local.LocalExecutorInfo;
-import de.lmu.ifi.bio.watchdog.executor.remote.RemoteExecutor;
-import de.lmu.ifi.bio.watchdog.executor.remote.RemoteExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.remote.RemoteJobInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.ReadExitCodes;
-import de.lmu.ifi.bio.watchdog.helper.SSHPassphraseAuth;
 import de.lmu.ifi.bio.watchdog.helper.ShutdownManager;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.slave.Master;
@@ -44,17 +38,19 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
  */
 public class WatchdogThread extends StopableLoopThread {
 	
+	public static final String DEFAULT_WORKDIR = "/usr/local/storage/";
 	public static final String EXIT_CODE_PATH = ".." + File.separator + "core_lib" + File.separator + "exitCodes.sh";
-	public static final int RETRY_SUBMIT_COUNT = 10; // try to context the DRM system x times before waiting for new round
 	public static final int RETRY_WAIT_TIME = 10000; // wait 10s before next contact try
 	private static final int SLEEP_MILIS = 500; // sleeps 5 seconds before trying to schedule new stuff
 	private static final int MAX_TASKS_NOT_FINISHED = 1024;
 	private static final int WORKER_THREADS = 8;
 	private static final int MANAGEMENT_THREADS = 8;
+	public static final int DEFAULT_HTTP_PORT = 8080;
+	
+	@SuppressWarnings("unused")
 	private static WatchdogThread watchdogThread;
 	
 	private final Set<Task> TASKS = Collections.synchronizedSet(new LinkedHashSet<Task>());
-	private final HashMap<String, SSHPassphraseAuth> SAVE_STORE = new HashMap<>();
 	private final ArrayList<TaskAction> ON_SHUTDOWN = new ArrayList<>();
 	
 	private final boolean SIMULATE;
@@ -80,7 +76,7 @@ public class WatchdogThread extends StopableLoopThread {
 		this.SIMULATE = simulate;
 		this.SLAVE_MODE = slaveMode;
 
-		this.SLAVE_EXEC_INFO = new LocalExecutorInfo("slave executor", false, false, null, maxRunningOnSlave, watchdogXSDPath.getAbsoluteFile().getParentFile().getParent(), new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), "");
+		this.SLAVE_EXEC_INFO = new LocalExecutorInfo(XMLParser.LOCAL, "slave executor", false, false, null, maxRunningOnSlave, watchdogXSDPath.getAbsoluteFile().getParentFile().getParent(), new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), "");
 		
 		if(executionLog != null) {
 			try {
@@ -127,15 +123,6 @@ public class WatchdogThread extends StopableLoopThread {
 	}
 	
 	/**
-	 * adds a save pass phrase store for a name with the executor executorName
-	 * @param executorName
-	 * @param auth
-	 */
-	public void addPassphrase(String executorName, SSHPassphraseAuth auth) {
-		this.SAVE_STORE.put(executorName, auth);
-	}
-
-	/**
 	 * Executes tasks with resolved dependencies.
 	 * @return number of jobs which were submitted
 	 */
@@ -180,7 +167,7 @@ public class WatchdogThread extends StopableLoopThread {
 	 * @return
 	 */
 	private boolean execute(Task t, boolean simulate, boolean isSlaveExecutor) {
-		Executor exec = null;
+		Executor<?> exec = null;
 		// ignore the information that comes from that task and only call it locally on an executor
 		if(isSlaveExecutor) {
 			exec = new LocalExecutor(t, this.LOG_FILE, this.SLAVE_EXEC_INFO);
@@ -188,34 +175,15 @@ public class WatchdogThread extends StopableLoopThread {
 		}
 		else {
 			ExecutorInfo execInfo = t.getExecutor();
-			if(execInfo instanceof LocalExecutorInfo) {
-				exec = new LocalExecutor(t, this.LOG_FILE, (LocalExecutorInfo) execInfo);
-			}
-			else if(execInfo instanceof RemoteExecutorInfo) {
-				// check, if auth file is there
-				if(!this.SAVE_STORE.containsKey(execInfo.getName())) {
-					LOGGER.error("No auth file was added for executor with name '"+ execInfo.getName() +"'");
-					System.exit(1);
-				}
-				// get the session info
-				SSHPassphraseAuth auth = this.SAVE_STORE.get(execInfo.getName());
-				exec = new RemoteExecutor(t, this.LOG_FILE, auth, (RemoteExecutorInfo) execInfo);
-			}
-			else if(execInfo instanceof ClusterExecutorInfo) {
-				exec = new ClusterExecutor(t, this.LOG_FILE, WatchdogThread.RETRY_SUBMIT_COUNT, (ClusterExecutorInfo) execInfo);
-			}
-			else {
-				LOGGER.error("Unimplemented executor '" + execInfo.getClass() + "'!");
-				System.exit(1);
-			}
+			exec = execInfo.getExecutorForTask(t, this.LOG_FILE);
 		}
 		
 		// set env variables
 		if(!t.useExternalCommand4Env())
-			exec.setEnvironment(t.getEnvironment(t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping()));
+			exec.setEnvironment(t.getEnvironment(t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames()));
 		// set some commands which are executed before
 		else {
-			for(String command : t.getEnvironmentCommands(t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping())) {
+			for(String command : t.getEnvironmentCommands(t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames())) {
 				exec.addPreCommand(command);
 			}
 		}

@@ -17,8 +17,8 @@ import de.lmu.ifi.bio.watchdog.task.Task;
 public class ShutdownManager extends MonitorRunnable {
 	private final Set<Task> TASKS;
 	private boolean wereTasksKilled = false;
-	private static long OBSERVER_WAIT = 2500;
-	private static final ArrayList<MonitorThread<Executor>> MONITORS = new ArrayList<>();
+	private static long OBSERVER_WAIT = 0;
+	private static final ArrayList<MonitorThread<Executor<?>>> MONITORS = new ArrayList<>();
 	
 	public ShutdownManager(Set<Task> tasks) {
 		super("ShutdownManager");
@@ -29,11 +29,9 @@ public class ShutdownManager extends MonitorRunnable {
 	 * registers a monitor
 	 * @param monitor
 	 */
-	public static void register(MonitorThread<Executor> monitor) {
+	public static void register(MonitorThread<Executor<?>> monitor) {
 		MONITORS.add(monitor);
-		if(monitor.getDefaultWaitTime() >= OBSERVER_WAIT) {
-			OBSERVER_WAIT = monitor.getDefaultWaitTime();
-		}
+		OBSERVER_WAIT = Math.max(OBSERVER_WAIT, monitor.getDefaultWaitTime());
 	}
 	
 	@Override
@@ -51,7 +49,7 @@ public class ShutdownManager extends MonitorRunnable {
 			try { Thread.sleep(OBSERVER_WAIT); } catch(Exception e) {}
 			
 			// stop the thread
-			for(MonitorThread<Executor> m : MONITORS) {
+			for(MonitorThread<Executor<?>> m : MONITORS) {
 				m.interrupt();
 			}
 		}

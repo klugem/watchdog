@@ -10,12 +10,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessBlock;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessFolder;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessInput;
-import de.lmu.ifi.bio.watchdog.helper.ProcessBlock.ProcessTable;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 
 /**
  * helper class which replaces (), [], {} and $()
@@ -77,7 +74,7 @@ public class ReplaceSpecialConstructs {
 	 * @param isEnv if true, more sensitive because it might be not intent replacement
 	 * @return
 	 */
-	public static String replaceValues(String value, String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> nameMapping, String tmpWorkingDir, boolean isEnv) {
+	public static String replaceValues(String value, String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> nameMapping, String tmpWorkingDir, boolean isEnv, boolean valueMightBeFilePath) {
 		if(value == null)
 			return null;
 		
@@ -129,7 +126,7 @@ public class ReplaceSpecialConstructs {
 							try {throw new Exception(""); } catch(Exception e) { e.printStackTrace(); }
 							System.exit(1);
 						}
-						String retVal = replaceValues(value, split[col-1], processBlockClass, spawnedTaskCounter, null, tmpWorkingDir, isEnv);
+						String retVal = replaceValues(value, split[col-1], processBlockClass, spawnedTaskCounter, null, tmpWorkingDir, isEnv, valueMightBeFilePath);
 						// security test
 						if(retVal != null)
 							value = retVal;
@@ -143,12 +140,8 @@ public class ReplaceSpecialConstructs {
 					inputReplacement.replaceAll("\\\\{2,}", "\\\\");
 				}
 				
-				// separate between process folder and process loop
-				boolean isProcessFolder = processBlockClass != null && processBlockClass.isAssignableFrom(ProcessFolder.class);
-				boolean isProcessTable = processBlockClass != null && processBlockClass.isAssignableFrom(ProcessTable.class) && inputReplacement.matches(REGEX_PATH);
-				boolean isProcessInput = processBlockClass != null && processBlockClass.isAssignableFrom(ProcessInput.class) && inputReplacement.matches(REGEX_PATH);
-			
-				if(isProcessFolder || isProcessTable || isProcessInput) {
+				// separate file types and other values
+				if(processBlockClass != null && inputReplacement.matches(REGEX_PATH)) {
 					completePath = new File(inputReplacement).getParentFile().getAbsolutePath();
 					replaceValue = new File(inputReplacement).getName();
 					parentPath = new File(inputReplacement).getParentFile().getAbsolutePath();
@@ -157,7 +150,7 @@ public class ReplaceSpecialConstructs {
 					replaceValue = inputReplacement;
 					parentPath = inputReplacement;
 				}
-				
+
 				// substitute the stuff
 				value = substitute(PATTERN_PATH, SUBSTITUTE_PATH_PATTERN, value, completePath, replaceValue, processBlockClass, POINT, isEnv);
 				value = substitute(PATTERN_PARENT, SUBSTITUTE_PARENT_PATTERN, value, parentPath, processBlockClass, SLASH, isEnv);

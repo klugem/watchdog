@@ -2,9 +2,14 @@ package de.lmu.ifi.bio.watchdog.executor.remote;
 
 import java.util.HashMap;
 
+import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
+import de.lmu.ifi.bio.watchdog.helper.SSHPassphraseAuth;
+import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
+import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 /**
@@ -20,10 +25,10 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 	private final int PORT;
 	private final boolean STRICT_HOST_CHECKING;
 	private final String ORIGINAL_HOST_LIST;
-	private String privKeyGUI;
+	private SSHPassphraseAuth AUTH;
 
-	public RemoteExecutorInfo(String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String host, String user, int port, boolean strictHostChecking, String workingDir) {
-		super(name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir);
+	public RemoteExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String host, String user, int port, boolean strictHostChecking, String workingDir, SSHPassphraseAuth auth) {
+		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir);
 		
 		// save the additional stuff
 		this.USER = user;
@@ -33,6 +38,12 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 		}
 		this.PORT = port;
 		this.STRICT_HOST_CHECKING = strictHostChecking;
+		this.AUTH = auth;
+	}
+	
+	@Override
+	public Executor<RemoteExecutorInfo> getExecutorForTask(Task t, SyncronizedLineWriter logFile) {
+		return new RemoteExecutor(t, logFile, this);
 	}
 	
 	public String getOriginalHostList() {
@@ -68,6 +79,31 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 	public int getPort() {
 		return this.PORT;
 	}
+	
+	public SSHPassphraseAuth getAuth() {
+		return this.AUTH;
+	}
+	
+	public void testRemoteCredentials(boolean guiLoadAttempt, boolean noExit, Logger logger) {
+		if(guiLoadAttempt || noExit)
+			noExit = true;		
+		if(!guiLoadAttempt) {
+			int succ = 0;
+			for(String h : this.HOSTS.keySet()) {
+				if(this.AUTH.testCredentials(this.USER, h, this.PORT, this.STRICT_HOST_CHECKING)) {
+					succ++;
+					if(logger != null)
+						logger.info("Testing of remote connection to host '" + h + "' with user '" + this.USER + "' on port '" + this.PORT + "' and the given private auth key succeeded.");
+				}
+			}
+			// test, if at least one host was reachable
+			if(succ == 0) {
+				if(logger != null)
+					logger.error("No remote host accepted a connection for executor with name '"+this.getName()+"'!");
+				if(!noExit) System.exit(1);
+			}
+		}
+	}
 
 	public boolean isStrictHostCheckingEnabled() {
 		return this.STRICT_HOST_CHECKING;
@@ -81,21 +117,12 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 	public void removeHost(String host) {
 		this.HOSTS.remove(host);
 	}
-	
-	/**
-	 * sets a private key for the GUI
-	 * @param privKeyGUI
-	 */
-	public void setPrivKey(String privKeyGUI) {
-		this.privKeyGUI = privKeyGUI;
-	}
-
 	/**
 	 * returns the path to the private key
 	 * @return
 	 */
 	public String getPrivateKey() {
-		return this.privKeyGUI;
+		return this.AUTH.getAuthFile();
 	}
 	
 
@@ -107,7 +134,10 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 		x.addQuotedAttribute(XMLParser.NAME, this.getName());
 		x.addQuotedAttribute(XMLParser.USER, this.getUser());
 		x.addQuotedAttribute(XMLParser.HOST, this.getOriginalHostList());
-		x.addQuotedAttribute(XMLParser.PRIVATE_KEY, this.getPrivateKey());
+		String authFile = this.getPrivateKey();
+		x.addQuotedAttribute(XMLParser.PRIVATE_KEY, authFile);
+		authFile = null;
+		System.gc();
 				
 		// add optional attributes
 		if(this.hasDefaultEnv())
@@ -131,4 +161,8 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 		return x.toString();
 	}
 
+	@Override
+	public Object[] getDataToLoadOnGUI() {
+		return new Object[] { this.getOriginalHostList(), this.getUser(), this.getPrivateKey(), this.getPort(), !this.isStrictHostCheckingEnabled() };
+	}
 }

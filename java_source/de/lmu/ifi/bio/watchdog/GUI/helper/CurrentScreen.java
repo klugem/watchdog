@@ -3,7 +3,6 @@ package de.lmu.ifi.bio.watchdog.GUI.helper;
 import java.awt.MouseInfo;
 import java.awt.Point;
 
-import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Dialog;
 import javafx.stage.Screen;

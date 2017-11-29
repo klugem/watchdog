@@ -1,10 +1,11 @@
 package de.lmu.ifi.bio.watchdog.GUI.properties.views;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.StatusConsole;
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
 import de.lmu.ifi.bio.watchdog.helper.Constants;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
-import javafx.util.Pair;
 
 public class ConstantsPropertyView extends PropertyView {
 	

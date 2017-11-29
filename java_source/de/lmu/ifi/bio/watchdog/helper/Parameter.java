@@ -2,11 +2,7 @@ package de.lmu.ifi.bio.watchdog.helper;
 
 import java.io.Serializable;
 
-import de.lmu.ifi.bio.watchdog.helper.returnType.BooleanReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Control;
-import javafx.scene.control.TextField;
 
 public class Parameter implements Serializable {
 
@@ -47,14 +43,7 @@ public class Parameter implements Serializable {
 		boolean maxOK = this.isUnbounded() || count <= this.MAX_O;
 		return minOK && maxOK;
 	}
-
-	public Control getControlElement() {
-		if(this.TYPE instanceof BooleanReturnType) 
-			return new CheckBox();
-		else
-			return new TextField();
-	}
-
+	
 	public boolean isOnlySingleInstanceAllowed() {
 		return (this.getMax() != null && this.getMax() == 1);
 	}

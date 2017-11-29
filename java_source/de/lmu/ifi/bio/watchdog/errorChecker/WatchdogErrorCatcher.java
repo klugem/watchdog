@@ -19,8 +19,8 @@ public class WatchdogErrorCatcher extends ErrorChecker implements Serializable {
 	public static final String ERROR_START = "[ERROR]";
 	public static final String ERROR_CHECKER_START = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
 	public static final String ERROR_CHECKER_END = "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<";
-	private final static int WAIT = 25; // wait time in ms for files
-	private final static int COUNTER = 400; // counter
+	private final static int WAIT = 10; // wait time in ms for files
+	private final static int COUNTER = 1000; // counter
 	
 	
 	/**
