@@ -35,7 +35,7 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
  */
 public class Master extends Server {
 	public static final int RUN_ID = Math.abs(new Random().nextInt());
-	public static final String SLAVE_JAR = "watchdogSlave.jar";
+	public static final String SLAVE_JAR = "jars" + File.separator + "watchdogSlave.jar";
 	private static Master master;
 	private static String host;
 	private static int slaves = -1;
