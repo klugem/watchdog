@@ -72,6 +72,7 @@ do
 	sedinline -E 's#isTemplate="[(true)|1]+"##' "$FILE_NEW"
 	if [ $FLAGS_fastTest -eq 0 ]; then
 		sedinline -E 's#<wait>[0-9]+.*</wait>#<wait>1s</wait>#' "$FILE_NEW"
+		sedinline -E 's#>[0-9]+s</#>1s</#' "$FILE_NEW"
 	fi
 
 	# remove empty mail attribute

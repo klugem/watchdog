@@ -1305,12 +1305,18 @@ public class XMLParser {
 			noExit = true;
 		ArrayList<String> xsd = new ArrayList<>();
 		for(String dir : moduleFolders) {
-			for(File mmf : new File(dir).listFiles()) {
-				if(mmf.isDirectory()) {
-					for(File xsdmmf : mmf.listFiles(new PatternFilenameFilter(XSD_PATTERN, false))) {
-						xsd.add(xsdmmf.getAbsolutePath());
+			if(new File(dir).isDirectory() && new File(dir).canRead()) {
+				for(File mmf : new File(dir).listFiles()) {
+					if(mmf.isDirectory()) {
+						for(File xsdmmf : mmf.listFiles(new PatternFilenameFilter(XSD_PATTERN, false))) {
+							xsd.add(xsdmmf.getAbsolutePath());
+						}
 					}
 				}
+			}
+			else {
+				LOGGER.error("Can not read module folder '"+dir+"'!");
+				if(!noExit) System.exit(1);
 			}
 		}
 		HashMap<String, String> res = new HashMap<>();
