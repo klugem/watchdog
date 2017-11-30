@@ -90,7 +90,9 @@ public abstract class XMLParserPlugin<A extends XMLPlugin> {
 	 */
 	public A parse(Element el, String watchdogBaseDir, Object[] additionalData) {
 		A info = parseElement(el, watchdogBaseDir, additionalData);
-		this.PARSED_INFO.put(info.getName(), info);
+		// might be an append block --> in that case null is valid
+		if(info != null)
+			this.PARSED_INFO.put(info.getName(), info);
 		return info;
 	}
 	
