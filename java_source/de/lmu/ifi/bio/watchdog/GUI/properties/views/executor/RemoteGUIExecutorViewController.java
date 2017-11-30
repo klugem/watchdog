@@ -71,7 +71,7 @@ public class RemoteGUIExecutorViewController extends GUIExecutorViewController {
 		String watchdogBaseDir = (String) data[6];
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
-		return new RemoteExecutorInfo(XMLParser.REMOTE, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, this.host.getText(), this.user.getText(), Integer.parseInt(this.port.getText()), !this.disableStrictHostCheck.isSelected(), workingDir, new SSHPassphraseAuth(name, this.privateKey.getText()));
+		return new RemoteExecutorInfo(XMLParser.REMOTE, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, this.host.getText(), this.user.getText(), Integer.parseInt(this.port.getText()), !this.disableStrictHostCheck.isSelected(), workingDir, new SSHPassphraseAuth(name, this.privateKey.getText(), true));
 	}
 
 	@Override

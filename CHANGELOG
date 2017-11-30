@@ -15,11 +15,11 @@ Changelog startet with version 1.2.0
 - [CMD] Added flag -disableCheckpoint (ignores all checkpoints that are defined in the workflow)
 - [] Added Watchdog to the package manager bioconda (https://bioconda.github.io/)
 - [] Sources of watchdog are now hosted on github (https://github.com/klugem/watchdog)
-### Removed
-- [CMD] Removed flag -simulate
+
 ### Fixed
 - [GUI] workflow designer crashed on windows caused by not escaped backslash in regex
 - [CMD] command line version of watchdog crashed when openjdk8 with missing javafx was used
+- [] remote executor: not reachable hosts are removed from host list
 
 ## [1.1.0] - 2017-08-24
 ### Added

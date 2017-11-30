@@ -462,36 +462,41 @@ public class XMLParser {
 						String baseName = ProcessBlock.cleanFilename(XMLParser.getAttribute(elBaseFolder, FOLDER));
 						Integer maxDepth = Integer.parseInt(XMLParser.getAttribute(elBaseFolder, MAX_DEPTH));
 						if(maxDepth == -1) { maxDepth = null; } // erase default value
-						// get process folders within the base folder
-						NodeList tmp = elBaseFolder.getElementsByTagName(PROCESS_FOLDER);
-						for(int ii = 0 ; ii < tmp.getLength(); ii++) {
-							if(tmp.item(ii) instanceof Element) {
-								Element el = (Element)tmp.item(ii);
-								// introduce a new constant, if a GUI load attempt as baseFolders are not supported by the GUI
-								if(isGUILoadAttempt() && !XMLParser.PATTERN_CONST.matcher(baseName).matches()) {
-									String newConstName = null;
-									while(newConstName == null || consts.containsKey(newConstName)) {
-										newConstName = BASE_FOLDER_CONST_PREFIX + baseFolderConstCounter++;
-									}
-									consts.put(newConstName, baseName);
-									baseName = "${" + newConstName + "}";	
-								}
-								processblock = PLUGIN_PROCESSBLOCK_PARSER.parseElement(el, watchdogBaseDir, new Object[] { baseName, consts, validationMode, maxDepth});
-								addProcessBlock(processblock, blocks, noExit);
+						
+						// introduce a new constant, if a GUI load attempt as baseFolders are not supported by the GUI
+						if(isGUILoadAttempt() && !XMLParser.PATTERN_CONST.matcher(baseName).matches()) {
+							String newConstName = null;
+							while(newConstName == null || consts.containsKey(newConstName)) {
+								newConstName = BASE_FOLDER_CONST_PREFIX + baseFolderConstCounter++;
 							}
+							consts.put(newConstName, baseName);
+							baseName = "${" + newConstName + "}";	
 						}
-						// search for process tables
-						tmp = elBaseFolder.getElementsByTagName(PROCESS_TABLE);
-						for(int ii = 0 ; ii < tmp.getLength(); ii++) {
-							if(tmp.item(ii) instanceof Element) {
-								Element el = (Element)tmp.item(ii);
-								processblock = PLUGIN_PROCESSBLOCK_PARSER.parseElement(el, watchdogBaseDir, new Object[] { baseName, consts, validationMode, maxDepth});
-								addProcessBlock(processblock, blocks, noExit);
+						
+						// go through each of the annotated process blocks
+						Element el;
+						NodeList proccessblockList = elBaseFolder.getChildNodes();
+						for(int ii = 0 ; ii < proccessblockList.getLength(); ii++) {
+							if(proccessblockList.item(ii) instanceof Element) {
+								el = (Element) proccessblockList.item(ii);
+								String type = el.getTagName();
+								String name = XMLParser.getAttribute(el, NAME);
+								
+								// get appropriate parser
+								processblock = null;
+								try {
+									processblock = PLUGIN_PROCESSBLOCK_PARSER.parseElement(el, watchdogBaseDir, new Object[] { baseName, consts, validationMode, maxDepth});
+									addProcessBlock(processblock, blocks, noExit);
+								} catch(IllegalArgumentException ex) {
+									LOGGER.error("ProcessBlock plugin for process block '"+name+"' of type <"+type+"> was not found.");
+									ex.printStackTrace();
+									if(!noExit) System.exit(1);
+								}	
 							}
 						}
 					}
-					
-					/********** check for the process block tag */
+						
+					/********** check for the process block tag outside of base folders*/
 					NodeList processBlockNodes = docEle.getElementsByTagName(PROCESS_BLOCK);
 					if(processBlockNodes.getLength() == 1) {
 						Element el = (Element) processBlockNodes.item(0);

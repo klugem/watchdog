@@ -55,37 +55,14 @@ public class SSHPassphraseAuth {
 	 * Constructor
 	 * @param authFile
 	 */
-	public SSHPassphraseAuth(String name, String authFile) {
+	public SSHPassphraseAuth(String name, String authFile, boolean noExit) {
 		String pw = new BigInteger(130, RAND).toString(32);
 		String salt = new BigInteger(130, RAND).toString(32).substring(0, 8);
 		this.CIPTHER_EN = getCipher(pw, salt, true);
 		this.CIPTHER_DE = getCipher(pw, salt, false);
 		try {
-			// check, if the file exists
-			if(!(new File(authFile).exists() && new File(authFile).isFile() && (new File(authFile).canRead()))) {
-				LOGGER.error("Can not read auth file '"+authFile+"'!");
-				System.exit(1);
-			}
 			this.name = this.encrypt(char2byte(name.toCharArray()));
 			this.authFile = this.encrypt(char2byte(authFile.toCharArray()));
-			this.pass = null;
-			
-			// open file and check, if it is protected by a pass-phrase
-			BufferedReader bf = new BufferedReader(new FileReader(authFile));
-			String line;		
-			Matcher m;
-			while((line = bf.readLine()) != null) {
-				m = ENCRYPTION_PATTERN.matcher(line);
-
-				// it is encrypted
-				if(m.matches()) {
-					this.encrypted = true;
-				}
-			}
-			bf.close();
-			if(!this.encrypted) {
-				LOGGER.warn("Your private ssh key for the remote executer '"+name+"' is not protected by a passphrase!");
-			}
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -96,6 +73,51 @@ public class SSHPassphraseAuth {
 	
 	public static void changePasswordRequestType(GetPassword pwgetter) {
 		requestPassword = pwgetter;
+	}
+	
+	/**
+	 * tests, if the auth file exists and if the file is encrypted
+	 * must be called before ssh session can be used!
+	 * @param noExit
+	 * @return
+	 */
+	public boolean testAuthFile(boolean noExit) {
+		String authFile = this.getAuthFile();
+		// check, if the file exists
+		if(!(new File(authFile).exists() && new File(authFile).isFile() && (new File(authFile).canRead()))) {
+			LOGGER.error("Auth file does not exist or can not be read for the remote executer '"+this.getName()+"'.");
+			authFile = null;
+			System.gc();
+			if(!noExit) System.exit(1);
+			return false;
+		}
+		
+		try {
+			// open file and check, if it is protected by a pass-phrase
+			BufferedReader bf = new BufferedReader(new FileReader(authFile));
+			String line;		
+			Matcher m;
+			while((line = bf.readLine()) != null) {
+				m = ENCRYPTION_PATTERN.matcher(line);
+	
+				// it is encrypted
+				if(m.matches()) {
+					this.encrypted = true;
+				}
+			}
+			bf.close();
+			if(!this.encrypted) {
+				LOGGER.warn("Your private ssh key for the remote executer '"+this.getName()+"' is not protected by a passphrase!");
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			LOGGER.error("Failed to read auth file for the remote executer '"+this.getName()+"'.");
+			System.exit(1);
+		}
+		authFile = null;
+		System.gc();
+		return true;
 	}
 	
 	/**

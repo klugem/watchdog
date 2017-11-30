@@ -1,5 +1,6 @@
 package de.lmu.ifi.bio.watchdog.executor.remote;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import de.lmu.ifi.bio.watchdog.executor.Executor;
@@ -89,11 +90,18 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 			noExit = true;		
 		if(!guiLoadAttempt) {
 			int succ = 0;
-			for(String h : this.HOSTS.keySet()) {
+			this.AUTH.testAuthFile(noExit);
+			ArrayList<String> hosts = new ArrayList<>();
+			hosts.addAll(this.HOSTS.keySet());
+			for(String h : hosts) {
 				if(this.AUTH.testCredentials(this.USER, h, this.PORT, this.STRICT_HOST_CHECKING)) {
 					succ++;
 					if(logger != null)
 						logger.info("Testing of remote connection to host '" + h + "' with user '" + this.USER + "' on port '" + this.PORT + "' and the given private auth key succeeded.");
+				}
+				// remove host, if connection can not established
+				else {
+					this.HOSTS.remove(h);
 				}
 			}
 			// test, if at least one host was reachable
