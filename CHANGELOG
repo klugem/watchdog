@@ -13,6 +13,7 @@ Changelog startet with version 1.2.0
 - [XSD] Added attribute 'separateFormat' to abstract task that can be used to set the default separator string between multiple occurrences of the same parameter
 - [CMD] Added flag -forceLoading  (tries to load a workflow even if it is not valid according to the XSD format)
 - [CMD] Added flag -disableCheckpoint (ignores all checkpoints that are defined in the workflow)
+- [CMD] Added flag -disableMails (does not send mails even if a mail address is set in the workflow)
 - [] Added Watchdog to the package manager bioconda (https://bioconda.github.io/)
 - [] Sources of watchdog are now hosted on github (https://github.com/klugem/watchdog)
 

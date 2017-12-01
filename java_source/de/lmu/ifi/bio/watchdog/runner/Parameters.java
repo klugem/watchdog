@@ -30,6 +30,9 @@ public class Parameters {
 	@Parameter(names={"-disableCheckpoint"}, description="checkpoints are ignored during execution", required=false)
 	protected boolean disableCheckpoint = false;
 	
+	@Parameter(names={"-disableMails"}, description="no mails are sent even if a mail adress is given in the workflow", required=false)
+	protected boolean disableMails = false;
+	
 	@Parameter(names={"-version"}, description="prints the version number of Watchdog", required=false, help=true)
 	protected boolean version = false;
 	

@@ -91,14 +91,14 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 				for(File xmlFile : xml.listFiles(new PatternFilenameFilter(XML_PATTERN, false))) {
 					String xmlFilename = xmlFile.getAbsolutePath();
 					log.info("Validating '" + xmlFilename + "'...");
-					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading);
+					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
 					succ++;
 				}
 				System.out.println("Validation of " + succ + " files stored in '"+ xml.getCanonicalPath() +"' succeeded.");
 			}
 			// process only that file
 			else {				
-				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath()).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading);
+				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath()).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
 				System.out.println("Validation of '"+ xml.getCanonicalPath() +"' succeeded!");
 			}
 			System.exit(0);
@@ -179,7 +179,7 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 				log.info("Log file: ** not saved **");
 
 			// parse the XML Tasks
-			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading);
+			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading, params.disableMails);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
 			String mail = (String) ret[1];
 			HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = (HashMap<String, Pair<HashMap<String, ReturnType>, String>>) ret[3];

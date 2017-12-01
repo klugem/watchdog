@@ -353,7 +353,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			}
 			
 			XMLParser.setGUILoadAttempt(true);
-			Object[] ret = XMLParser.parse(f.getAbsolutePath(), XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath()).getAbsolutePath(), 0, false, true, false, false, loadUnsafeFile); // TODO disable checkpoint on GUI
+			Object[] ret = XMLParser.parse(f.getAbsolutePath(), XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath()).getAbsolutePath(), 0, false, true, false, false, loadUnsafeFile, false);
 			if(ret == null) {
 				Inform.error("Failed to parse the workflow", "Check your standard out and error messages in order to identify the problem.\nOr use the command-line tool with the -validate option.");
 				XMLParser.setGUILoadAttempt(false);
@@ -765,7 +765,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 		File tmpXLMFile = Functions.generateRandomTmpExecutionFile("validate", false);
 		if(this.saveWorkflow(tmpXLMFile, false, true)) {
 			try {
-				XMLParser.parse(tmpXLMFile.getAbsolutePath(), new File(PreferencesStore.getWatchdogBaseDir()) + File.separator + XMLParser.FILE_CHECK, 0, false, true, true, false, false); // TODO disable checkpoint on GUI
+				XMLParser.parse(tmpXLMFile.getAbsolutePath(), new File(PreferencesStore.getWatchdogBaseDir()) + File.separator + XMLParser.FILE_CHECK, 0, false, true, true, false, false, false);
 				tmpXLMFile.delete();
 				
 				if(!afterSave)
@@ -1217,7 +1217,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			File f = new File(this.currentLoadedFile.get());
 			File xsdSchema = XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath()); 
 			// file is already loaded --> we parse it safe if valid and unsafe if not
-			Object[] ret = XMLParser.parse(f.getAbsolutePath(), xsdSchema.getAbsolutePath(), 0, false, true, false, false, XMLParser.testIfUnsafe(f.getAbsolutePath())); // TODO disable checkpoint on GUI
+			Object[] ret = XMLParser.parse(f.getAbsolutePath(), xsdSchema.getAbsolutePath(), 0, false, true, false, false, XMLParser.testIfUnsafe(f.getAbsolutePath()), false);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
 			String mail = (String) ret[1];		
 			Mailer mailer = new Mailer(mail);

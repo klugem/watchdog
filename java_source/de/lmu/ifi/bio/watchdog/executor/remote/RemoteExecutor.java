@@ -176,7 +176,6 @@ public class RemoteExecutor extends ScheduledExecutor<RemoteExecutorInfo> {
 	public void stopExecution() {
 		if(this.session.isConnected()) {
 			try { 
-				this.fos.write(3);
 				this.fos.flush();
 				this.channel.disconnect();
 				this.session.disconnect(); 

@@ -306,7 +306,7 @@ public class XMLParser {
 	 * @throws ParserConfigurationException
 	 */
 	@SuppressWarnings({ "rawtypes", "resource", "unchecked" })
-	public static Object[] parse(String filenamePath, String schemaPath, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading) throws SAXException, IOException, ParserConfigurationException {	
+	public static Object[] parse(String filenamePath, String schemaPath, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails) throws SAXException, IOException, ParserConfigurationException {	
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
 		String watchdogBaseDir = new File(schemaPath).getParentFile().getParent();
@@ -642,7 +642,9 @@ public class XMLParser {
 						Element el = (Element) rootTask.item(0);
 						NodeList tasks = el.getChildNodes();
 						String projectName = XMLParser.getAttribute(el, PROJECT_NAME);
-						mail = XMLParser.getAttribute(el, MAIL);
+						// save mail only if not disabled
+						if(!disableMails)
+							mail = XMLParser.getAttribute(el, MAIL);
 						int biggestID = 1;
 						
 						// get to each of the annotated tasks
@@ -1178,10 +1180,6 @@ public class XMLParser {
 				if(!noExit) System.exit(1);
 			}
 		}
-		else {
-			// TODO: problem here?
-			System.out.println("NULL returned by pb");
-		}
 	}
 
 	/**
@@ -1307,9 +1305,15 @@ public class XMLParser {
 		for(String dir : moduleFolders) {
 			if(new File(dir).isDirectory() && new File(dir).canRead()) {
 				for(File mmf : new File(dir).listFiles()) {
-					if(mmf.isDirectory()) {
-						for(File xsdmmf : mmf.listFiles(new PatternFilenameFilter(XSD_PATTERN, false))) {
-							xsd.add(xsdmmf.getAbsolutePath());
+					if(mmf.isDirectory()  && new File(dir).canRead()) {
+						File[] res = mmf.listFiles(new PatternFilenameFilter(XSD_PATTERN, false));
+						if(res != null) {
+							for(File xsdmmf : res) {
+								xsd.add(xsdmmf.getAbsolutePath());
+							}
+						}
+						else {
+							LOGGER.warn("Failed to load modules from folder '"+mmf.getAbsolutePath()+"'.");
 						}
 					}
 				}
