@@ -764,9 +764,10 @@ public class XMLParser {
 										pb = blocks.get(processBlock);
 										
 										// check, if process block is a processInput and if yes -> create a copy of it!
-										/*if(pb instanceof ProcessInput) {
-											pb = new ProcessInput(pb.getName(), ((ProcessInput) pb).getGlobalSep(), ((ProcessInput) pb).getReplaceDefaultGroup());
-										}*/ //TODO: why?!?!?!
+										// ensures that each task has it's own instance and that variables are not shared between tasks that have nothing in common!
+										if(pb instanceof ProcessReturnValueAdder) {
+											pb = (ProcessBlock) (((ProcessReturnValueAdder) pb).clone());
+										}
 									}
 									else {
 										// find it the hard way

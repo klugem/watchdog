@@ -1,5 +1,5 @@
 #!/bin/bash
-SCRIPT_FOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+SCRIPT_FOLDER=$(cd $(dirname $(realpath "${BASH_SOURCE[0]}")) && pwd)
 source $SCRIPT_FOLDER/includeBasics.sh
 
 DEFAULT_KEY_WORDS="error:exception:failure:killed:segmentation fault:core dump:failed"

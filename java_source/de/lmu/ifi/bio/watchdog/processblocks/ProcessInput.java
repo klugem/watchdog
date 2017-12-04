@@ -45,7 +45,7 @@ public class ProcessInput extends ProcessReturnValueAdder {
 
 	@Override
 	public HashMap<String, String> getValues() {
-		return new HashMap<String, String>(this.BLOCK_ENTRIES);
+		return new LinkedHashMap<String, String>(this.BLOCK_ENTRIES);
 	}
 	
 	@Override
@@ -108,5 +108,10 @@ public class ProcessInput extends ProcessReturnValueAdder {
 	@Override
 	public Object[] getDataToLoadOnGUI() { 
 		return new Object[] { this.gui_sep, this.gui_compare }; 
+	}
+	
+	@Override
+	public Object clone() {
+		return new ProcessInput(this.getName(), this.getReturnValueSeperator(), this.getReplaceDefaultGroup());
 	}
 }

@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import de.lmu.ifi.bio.watchdog.helper.ReplaceSpecialConstructs;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 
-public abstract class ProcessReturnValueAdder extends ProcessMultiParam {
+public abstract class ProcessReturnValueAdder extends ProcessMultiParam implements Cloneable {
 
 	private static final long serialVersionUID = 844534047220037755L;
 	private static final Logger LOGGER = new Logger();
@@ -38,6 +38,9 @@ public abstract class ProcessReturnValueAdder extends ProcessMultiParam {
 	public String getReplaceDefaultGroup() {
 		return this.REPLACE_DEFAULT_GROUP;
 	}
+	
+	@Override
+	public abstract Object clone();
 	
 	/**
 	 * adds these values to the return vales

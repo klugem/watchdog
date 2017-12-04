@@ -1,5 +1,5 @@
 #!/bin/bash
-SCRIPT_FOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+SCRIPT_FOLDER=$(cd $(dirname $(realpath "${BASH_SOURCE[0]}")) && pwd)
 source $SCRIPT_FOLDER/includeBasics.sh
 PERL_MODE=0
 R_MODE=0
