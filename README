@@ -1,29 +1,40 @@
-################################## MANUAL ##################################
-
-The manual can be found online at https://www.bio.ifi.lmu.de/files/Software/Watchdog/Watchdog-manual.html
-and also in the folder named documentation.
-
-
 ############################## INSTALLATION ################################
+Manually:
 
-Simply extract the provided archive into a folder of your choice:
+- Download a release from https://github.com/klugem/watchdog/releases
+- Extract the provided archive into a folder of your choice
 
-tar xfvz watchdog.tar.gz
+Via conda:
+
+- conda install -c bioconda watchdog-wms
+
+In that case binaries are named watchdog-cmd and watchdog-gui while the rest
+of the files is located in ${PREFIX}/share/watchdog-wms-${VERSION}.
+
 
 ################################## CALLS ###################################
-
 In order to run a xml-file using the command line tool, call
 
-./watchdog.sh -x xml-file
+./watchdog.sh -x xml-file or java -jar jars/watchdog.jar -x xml-file
 
 The workflow designer can be started using 
 
-./workflowDesigner.sh
+./workflowDesigner.sh or java -jar jars/workflowDesigner.jar 
+
 
 ################################## CONTACT #################################
-
 If you have any questions or suggestions, please feel free to contact me:
 michael.kluge@bio.ifi.lmu.de
+
+In case of bugs or feature requests, feel free to create an issues at
+https://github.com/klugem/watchdog/issues
+
+
+################################## MANUAL ##################################
+The most recent version of the manual can be found online at 
+https://www.bio.ifi.lmu.de/files/Software/Watchdog/Watchdog-manual.html
+and also in the folder named documentation.
+
 
 ################################## LICENCE #################################
 Watchdog is free software: you can redistribute it and/or modify
@@ -38,5 +49,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with Watchdog.  If not, see <http://www.gnu.org/licenses/>.
-
-############################################################################

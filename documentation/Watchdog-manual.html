@@ -54,17 +54,21 @@ Here, we present Watchdog, a WMS for the automated and distributed analysis of l
 <li>a GUI for workflow construction using pre-defined modules</li>
 <li>a helper script for creating new module definitions</li>
 <li>no restriction to specific programming languages</li>
+<li>provides a flexible plugin system for extending without modifying the original sources</li>
 </ul>
 <a name="install_watchdog" class="topic">2 Install and Configure Watchdog</a>
 
 <a name="requirements" class="subtopic">2.1 Requirements</a>
 
-Watchdog is platform independent as it is written in Java and requires JRE (Java Runtime Environment) 1.8 or higher. Most of the modules that are delivered with Watchdog require a unix based system and were tested on SUSE Linux. They might not run without any changes on other unix systems or Windows but users can define custom modules that are compatible with their installed software and operating system. Each of the modules might require additional software to be installed. These requirements can be checked for the modules that are delivered with Watchdog with the help of <pre class="name">helper_scripts/dependencyTest.sh</pre> as described below.
+Watchdog is platform independent as it is written in Java and requires JRE (Java Runtime Environment) 1.8 or higher (the GUI is build on JavaFX that is currently not part of most OpenJDK builds). Most of the modules that are delivered with Watchdog require a unix based system and were tested on SUSE Linux. They might not run without any changes on other unix systems or Windows but users can define custom modules that are compatible with their installed software and operating system. Each of the modules might require additional software to be installed. These requirements can be checked for the modules that are delivered with Watchdog with the help of <pre class="name">helper_scripts/dependencyTest.sh</pre> as described below.
 
 <a name="installation" class="subtopic">2.2 Installation</a>
 The installation of Watchdog is very easy. Simply extract the provided archive into a folder of your choice using
-<pre class="name">tar xfvz watchdog.tar.gz</pre>  
-The folder must be accessible for remote or cluster executors if you plan to use some. In the next few lines the content of each folder is explained:
+<pre class="name">tar xfvz watchdog.tar.gz</pre> The folder must be accessible for remote or cluster executors if you plan to use some. 
+
+Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda watchdog-wms</pre>. In that case be binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>.
+
+<br /><br />In the next few lines the content of each folder is explained:
 
 <ul>
 <li>core_lib: some core functions that can be used in bash module scripts</li>
@@ -84,12 +88,12 @@ In order to test if all modules that provide tests work as expected on your syst
 
 <pre class="name">helper_scripts/configureExamples.sh -i /path/to/install/folder/of/watchdog [-m your@mail-adress.com]</pre> (mail attribute (-m) is optional)
 
-<br /><br />Afterwards the configured examples will be located in <pre class="name">/path/to/install/folder/of/watchdog/examples/</pre> and can be executed (from the watchdog installation directory) using the following command: <pre class="name">./watchdog.sh -x examples/filename.xml</pre><br />
-For instance: <pre class="name">./watchdog.sh -x examples/workflow1_basic_information_extraction.xml</pre><br /><br />
+<br /><br />Afterwards the configured examples will be located in <pre class="name">/path/to/install/folder/of/watchdog/examples/</pre> and can be executed (from the watchdog installation directory) using the following command: <pre class="name">./watchdog.sh -x examples/filename.xml</pre> or alternatively <pre class="name">java -jar jars/watchdog.jar -x examples/filename.xml</pre><br /><br />
+For instance: <pre class="name">./watchdog.sh -x examples/workflow1_basic_information_extraction.xml</pre><br />
 
 If you want to use the workflow designer (GUI), you can start it by using (from the watchdog installation directory):
 
-<pre class="name">./workflowDesigner.sh</pre>
+<pre class="name">./workflowDesigner.sh</pre> or alternatively <pre class="name">java -jar jars/WatchdogDesigner.jar </pre>
 
 <a name="mail_server" class="subtopic">2.3 E-Mail Server Configuration</a>
 As Watchdog will send e-mails it needs a working mail configuration. If you don't want Watchdog to send e-mails, simply don't use the <pre class="attr">mail</pre> attribute of the <pre class="tag">tasks</pre> tag. In that case the content of the mails with be printed to the standard output stream.<br /><br />
