@@ -1,5 +1,5 @@
 #!/bin/bash
-SCRIPT_FOLDER=$(cd $(dirname $(realpath "${BASH_SOURCE[0]}")) && pwd)
+SCRIPT_FOLDER=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd -P)
 source $SCRIPT_FOLDER/../core_lib/includeBasics.sh
 
 # make dependency test first

@@ -1,5 +1,5 @@
 #!/bin/bash
-SCRIPT_FOLDER=$(cd $(dirname $(realpath "${BASH_SOURCE[0]}")) && pwd)
+SCRIPT_FOLDER=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd -P)
 source $SCRIPT_FOLDER/../core_lib/includeBasics.sh
 
 # check, if used tools are installed
@@ -36,7 +36,8 @@ if [ ! -f "$FLAGS_install/xsd/watchdog.xsd" ] || [ ! -d "$FLAGS_install/examples
 fi
 
 # ensure that after example data no / occours and that after install dir one is given!
-FLAGS_install=$(realpath "$FLAGS_install" | sed -E 's|/+$||')
+FLAGS_install="$FLAGS_install" | sed -E 's|/+$||'
+FLAGS_install=$(cd $FLAGS_install && pwd -P)
 FLAGS_install="${FLAGS_install}/"
 
 # start replacing the values
