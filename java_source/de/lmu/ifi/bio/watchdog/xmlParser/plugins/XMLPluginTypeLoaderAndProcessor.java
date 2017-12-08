@@ -62,7 +62,7 @@ public abstract class XMLPluginTypeLoaderAndProcessor<A extends XMLPlugin> {
 			}
 			 
 			 this.init = true;
-			 return this.getALLXSDFiles(watchdogBase + File.separator + "xsd"); // TODO
+			 return this.getALLXSDFiles(watchdogBase + File.separator + "xsd");
 		}
 		// clear parses for this run
 		for(XMLParserPlugin<A> xp : PARSER.values()) {

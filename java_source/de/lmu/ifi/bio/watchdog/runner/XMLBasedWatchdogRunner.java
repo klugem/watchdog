@@ -50,7 +50,7 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 	private static final Pattern WATCHDOG_BASE = Pattern.compile("<"+XMLParser.ROOT+".+"+BASE_STRING+"=\"([^\"]+)\".+"); 
 	public static final String XSD_PATH = "xsd" + File.separator + "watchdog.xsd";
 	private static final String TOOL_NAME = "Watchdog";  
-	private static final String VERSION = "version: release candidate 1.1";
+	private static final String VERSION = "version: release candidate 1.2.0";
 	private static final String REVISION = getRevisionNumber();        
 	public static final String LOG_SEP = "#########################################################################################";
 	public static int PORT =  WatchdogThread.DEFAULT_HTTP_PORT;

@@ -287,12 +287,10 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		return this.isInitComplete;
 	}
 	
-	// TODO: set env and workingdir to find binarys ?
 	protected BinaryCallInfo executeCommand(String command, ArrayList<String> args) {
 		return this.executeCommand(command, args, null, null);
 	}
 	
-	// TODO: set env and workingdir to find binarys ?
 	protected BinaryCallInfo executeCommand(String command) {
 		return this.executeCommand(command, new ArrayList<>(), null, null);
 	}

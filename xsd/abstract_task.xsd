@@ -253,38 +253,44 @@
 		</x:restriction>
 	</x:simpleType>
 
+
+	<!-- types for org.apache.commons.vfs2.FileSystemManager -->
+	<x:simpleType name="fileSystemManagerURIorRelOrAbsPath">
+		<x:union memberTypes="absoluteOrRelativePathType x:anyURI" />
+	</x:simpleType>
+
 	<!-- create definition -->
 	<x:complexType name="createFileType">
-		<x:attribute name="file" type="absoluteOrRelativeFileType" use="required"/>
+		<x:attribute name="file" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>
 		<x:attribute name="override" type="x:boolean" default="false" />
 		<x:attribute name="createParent" type="x:boolean" default="true" />			
 	</x:complexType>
 	<x:complexType name="createFolderType">
-		<x:attribute name="folder" type="absoluteOrRelativePathType" use="required"/>
+		<x:attribute name="folder" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>
 		<x:attribute name="override" type="x:boolean" default="false" />
 		<x:attribute name="createParent" type="x:boolean" default="true" />			
 	</x:complexType>
 	<!-- copy definition -->
 	<x:complexType name="copyFileType">
-		<x:attribute name="file" type="absoluteOrRelativeFileType" use="required"/>
-		<x:attribute name="destination" type="absoluteOrRelativeFileType" use="required"/>
+		<x:attribute name="file" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>
+		<x:attribute name="destination" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>
 		<x:attribute name="override" type="x:boolean" default="false" />
 		<x:attribute name="deleteSource" type="x:boolean" default="false" />
 		<x:attribute name="createParent" type="x:boolean" default="true" />				
 	</x:complexType>
 	<x:complexType name="copyFolderType">
-		<x:attribute name="folder" type="absoluteOrRelativePathType" use="required"/>
-		<x:attribute name="destination" type="absoluteOrRelativePathType" use="required"/>
+		<x:attribute name="folder" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>
+		<x:attribute name="destination" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>
 		<x:attribute name="override" type="x:boolean" default="false" />
 		<x:attribute name="deleteSource" type="x:boolean" default="false" />
 		<x:attribute name="createParent" type="x:boolean" default="true" />			
 	</x:complexType>
 	<!-- delete definition -->
 	<x:complexType name="deleteFileType">
-		<x:attribute name="file" type="absoluteOrRelativeFileType" use="required"/>			
+		<x:attribute name="file" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>			
 	</x:complexType>
 	<x:complexType name="deleteFolderType">
-		<x:attribute name="folder" type="absoluteOrRelativePathType" use="required"/>		
+		<x:attribute name="folder" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>		
 	</x:complexType>
 
 	<!-- action definition -->

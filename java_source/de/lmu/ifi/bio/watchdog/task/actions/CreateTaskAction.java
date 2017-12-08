@@ -1,23 +1,28 @@
 package de.lmu.ifi.bio.watchdog.task.actions;
 
-import java.io.File;
 import java.io.Serializable;
+
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.VFS;
 
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import de.lmu.ifi.bio.watchdog.task.TaskActionTime;
+import de.lmu.ifi.bio.watchdog.task.actions.vfs.WatchdogFileSystemManager;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 /**
  * Creates files or folders
- * @author kluge
+ * @author kluge 
  *
  */
 public class CreateTaskAction extends TaskAction implements Serializable {
 	
 	private static final long serialVersionUID = -95383908598948825L;
 	private final String PATH;
-	private final boolean OVERRIDE;
+	private final boolean OVERRIDE; 
 	private final boolean CREATE_PARENT;
 	private final boolean IS_FILE_TYPE;
 	
@@ -38,7 +43,7 @@ public class CreateTaskAction extends TaskAction implements Serializable {
 	public CreateTaskAction(String path, CreateTaskAction c) {
 		super(c.getActionTime(), c.isUncoupledFromExecutor());
 		
-		this.PATH = path;
+		this.PATH = c.PATH;
 		this.OVERRIDE = c.OVERRIDE;
 		this.CREATE_PARENT = c.CREATE_PARENT;
 		this.IS_FILE_TYPE = c.IS_FILE_TYPE;
@@ -46,58 +51,67 @@ public class CreateTaskAction extends TaskAction implements Serializable {
 
 	@Override
 	protected boolean performAction() {
-		File f = new File(this.PATH);
-		File p = f.getParentFile();
+		// ensure that is only executed once
+		if(this.wasExecuted())
+			return this.wasSuccessfull();
 		
-		// check, if parent folder exists
-		if(!p.exists() && !this.CREATE_PARENT) { 
-			this.addError("Parent folder '"+p.getAbsolutePath()+"' does not exist and should not be created.");
-			return false;
-		}
-		// check, if file is already there
-		if(f.exists()) {
-			if(!this.OVERRIDE) {
-				this.addError("File or folder '"+f.getAbsolutePath()+"' does already exist.");
+		super.performAction();
+		try {
+			FileSystemManager fsManager = WatchdogFileSystemManager.getManager(false);
+			FileObject f = fsManager.resolveFile(this.PATH);
+			FileObject p = f.getParent();
+			
+			// check, if parent folder exists
+			if(!p.exists() && !this.CREATE_PARENT) { 
+				this.addError("Parent folder '"+p.getPublicURIString()+"' does not exist and should not be created.");
 				return false;
 			}
-			else 
-				f.delete();
-		}
-		
-		// create the parent folder
-		if(!p.exists() && this.CREATE_PARENT) {
-			if(!p.mkdirs()) {
-				this.addError("Failed to create parent folder '"+p.getAbsolutePath()+"'!");
-				return false;
+			// check, if file is already there
+			if(f.exists()) {
+				if(!this.OVERRIDE) {
+					this.addError("File or folder '"+f.getPublicURIString()+"' does already exist.");
+					return false;
+				}
+				else 
+					f.delete();
 			}
-		}
-		// create the file or folder
-		if(this.IS_FILE_TYPE) {
-			try {
-				if(!f.createNewFile()) {
-					this.addError("Failed to create file '"+f.getAbsolutePath()+"'!");
+			
+			// create the parent folder
+			if(!p.exists() && this.CREATE_PARENT) {
+				try { p.createFolder(); }
+				catch(Exception e) {
+					this.addError("Failed to create parent folder '"+p.getPublicURIString()+"'!");
 					return false;
 				}
 			}
-			catch(Exception e) {
-				this.addError("Failed to create file '"+f.getAbsolutePath()+"'!");
-				this.addError(e.getStackTrace().toString());
-				return false;
-			}
-		}
-		else {
-			if(f.isFile() && f.exists()) {
-				this.addError("Failed to create folder '"+f.getAbsolutePath()+"' because a file with that name already exists.");
-				return false;
-			}
-			else if(!f.exists()) {
-				if(!f.mkdir()) {
-					this.addError("Failed to create folder '"+p.getAbsolutePath()+"'!");
+			// create the file or folder
+			if(this.IS_FILE_TYPE) {
+				try { f.createFile(); }
+				catch(Exception e) {
+					this.addError("Failed to create file '"+f.getPublicURIString()+"'!");
 					return false;
 				}
 			}
+			else {
+				if(f.isFile() && f.exists()) {
+					this.addError("Failed to create folder '"+f.getPublicURIString()+"' because a file with that name already exists.");
+					return false;
+				}
+				else if(!f.exists()) {
+					try { f.createFolder(); }
+					catch(Exception e) {
+						this.addError("Failed to create folder '"+p.getPublicURIString()+"'!");
+						return false;
+					}
+				}
+			}
+			return true;
 		}
-		return true;
+		catch(FileSystemException e) {
+			e.printStackTrace();
+			this.addError(this.getName() + " failed caused by a FileSystemException of org.apache.commons.vfs2. See log file for stackTrace.");
+		}
+		return false;
 	}
 	
 	public boolean isFileType() {
@@ -118,7 +132,7 @@ public class CreateTaskAction extends TaskAction implements Serializable {
 	public String toXML() {
 		XMLBuilder x = new XMLBuilder();
 		x.startTag(this.IS_FILE_TYPE ? XMLParser.CREATE_FILE : XMLParser.CREATE_FOLDER, false);
-		x.addQuotedAttribute(this.IS_FILE_TYPE ? XMLParser.FILE : XMLParser.FOLDER, this.PATH);
+		x.addQuotedAttribute(this.IS_FILE_TYPE ? XMLParser.FILE : XMLParser.FOLDER, this.getPath());
 		
 		// set optional values if they are not the defaults
 		if(this.OVERRIDE) x.addQuotedAttribute(XMLParser.OVERRIDE, this.OVERRIDE);

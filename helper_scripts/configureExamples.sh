@@ -36,7 +36,7 @@ if [ ! -f "$FLAGS_install/xsd/watchdog.xsd" ] || [ ! -d "$FLAGS_install/examples
 fi
 
 # ensure that after example data no / occours and that after install dir one is given!
-FLAGS_install=$(echo "$FLAGS_install" | sed -E 's|/+$||')
+FLAGS_install=$(realpath "$FLAGS_install" | sed -E 's|/+$||')
 FLAGS_install="${FLAGS_install}/"
 
 # start replacing the values

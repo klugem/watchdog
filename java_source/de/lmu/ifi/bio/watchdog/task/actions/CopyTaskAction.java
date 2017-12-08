@@ -3,12 +3,20 @@ package de.lmu.ifi.bio.watchdog.task.actions;
 import java.io.File;
 import java.io.Serializable;
 
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSelector;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.Selectors;
+import org.apache.commons.vfs2.VFS;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import de.lmu.ifi.bio.watchdog.task.TaskActionTime;
+import de.lmu.ifi.bio.watchdog.task.actions.vfs.WatchdogFileSystemManager;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 /**
@@ -56,80 +64,92 @@ public class CopyTaskAction extends TaskAction implements Serializable {
 
 	@Override
 	protected boolean performAction() {
-		File s = new File(this.SRC);
-		File d = new File(this.DEST);
-		File p = d.getParentFile();
+		// ensure that is only executed once
+		if(this.wasExecuted())
+			return this.wasSuccessfull();
 		
-		// check, if file or folder exists
-		if(!s.exists()) {
-			this.addError("Source file or folder '"+s.getAbsolutePath()+"' does not exist.");
-			return false;
-		}
-		
-		// check, if parent folder exists
-		if(!p.exists() && !this.CREATE_PARENT) { 
-			this.addError("Parent folder '"+p.getAbsolutePath()+"' of destination does not exist and should not be created.");
-			return false;
-		}
-		// create the parent folder
-		else if(!p.exists() && this.CREATE_PARENT) {
-			if(!p.mkdirs()) {
-				this.addError("Failed to create parent folder of destination '"+p.getAbsolutePath()+"'!");
-				return false;
-			}
-		}
-		
-		// check, if file is already there
-		if(d.exists()) {
-			if(!this.OVERRIDE) {
-				this.addError("Destination file or folder '"+d.getAbsolutePath()+"' does already exist.");
-				return false;
-			}
-		}
-		// create a new empty file for file copy
-		else if(this.IS_FILE_TYPE) {
-			try { d.createNewFile(); }
-			catch(Exception e) { this.addError("Failed to copy file '"+s.getAbsolutePath()+"' to '"+d.getAbsolutePath()+"':" + NEWLINE + StringUtils.join(e.getStackTrace(), NEWLINE)); }
-		}
-		
-		// copy files or folders
-		boolean retCopy = false;
-		if(this.IS_FILE_TYPE && s.isFile()) {
-			try {
-				FileUtils.copyFile(s, d);
-				retCopy = true;
-			}
-			catch(Exception e) { this.addError("Failed to copy file '"+s.getAbsolutePath()+"' to '"+d.getAbsolutePath()+"':" + NEWLINE + StringUtils.join(e.getStackTrace(), NEWLINE)); }				
-		}
-		else if(!this.IS_FILE_TYPE && s.isDirectory()) {
-			try {
-				FileUtils.copyDirectory(s, d);
-				retCopy = true;
-			}
-			catch(Exception e) { this.addError("Failed to copy folder '"+s.getAbsolutePath()+"' to '"+d.getAbsolutePath()+"':" + NEWLINE + StringUtils.join(e.getStackTrace(), NEWLINE)); }	
-		}
-		else {
-			if(s.isFile())
-				this.addError("Expected folder but got file '"+s.getAbsolutePath()+"'!");
-			else
-				this.addError("Expected file but got folder '"+s.getAbsolutePath()+"'!");
-		}
-		
-		// delete the source files
-		if(this.DELETE_SOURCE && retCopy) {
-			DeleteTaskAction da = new DeleteTaskAction(this.SRC, this.IS_FILE_TYPE, this.getActionTime(), this.isUncoupledFromExecutor());
-			boolean retDel = da.performAction();
-			if(!retDel) {
-				// copy error messages
-				for(String e : da.getErrors()) {
-					this.addError(e.split(NEWLINE)[2]);
+		super.performAction();
+		try {
+			FileSystemManager fsManager = WatchdogFileSystemManager.getManager(false);
+			FileObject s = fsManager.resolveFile(this.SRC);
+			FileObject d = fsManager.resolveFile(this.DEST);
+			FileObject p = d.getParent();
+			
+			// check, if file is already there --> and remove it
+			if(d.exists()) {
+				if(!this.OVERRIDE) {
+					this.addError("Destination file or folder '"+d.getPublicURIString()+"' does already exist.");
+					return false;
+				}
+				else {
+					d.delete(Selectors.SELECT_SELF_AND_CHILDREN);
 				}
 			}
-			return retDel;
+			
+			// check, if file or folder exists
+			if(!s.exists()) {
+				this.addError("Source file or folder '"+s.getPublicURIString()+"' does not exist.");
+				return false;
+			}
+			
+			// check, if parent folder exists
+			if(!p.exists() && !this.CREATE_PARENT) { 
+				this.addError("Parent folder '"+p.getPublicURIString()+"' of destination does not exist and should not be created.");
+				return false;
+			}
+			// create the parent folder
+			else if(!p.exists() && this.CREATE_PARENT) {
+				try{ p.createFolder(); }
+				catch(Exception e) {
+					this.addError("Failed to create parent folder of destination '"+p.getPublicURIString()+"'!");
+					return false;
+				}
+			}
+			
+			// copy files or folders
+			boolean retCopy = false;
+			if(this.IS_FILE_TYPE && s.isFile()) {
+				try {
+					d.copyFrom(s, Selectors.SELECT_SELF);
+					retCopy = true;
+				}
+				catch(Exception e) { this.addError("Failed to copy file '"+s.getPublicURIString()+"' to '"+d.getPublicURIString()+"':" + NEWLINE + StringUtils.join(e.getStackTrace(), NEWLINE)); }				
+			}
+			else if(!this.IS_FILE_TYPE && s.isFolder()) {
+				try {
+					d.copyFrom(s, Selectors.SELECT_CHILDREN);
+					retCopy = true;
+				}
+				catch(Exception e) { this.addError("Failed to copy folder '"+s.getPublicURIString()+"' to '"+d.getPublicURIString()+"':" + NEWLINE + StringUtils.join(e.getStackTrace(), NEWLINE)); }	
+			}
+			else {
+				if(s.isFile())
+					this.addError("Expected folder but got file '"+s.getPublicURIString()+"'!");
+				else
+					this.addError("Expected file but got folder '"+s.getPublicURIString()+"'!");
+			}
+			
+			// delete the source files
+			if(this.DELETE_SOURCE && retCopy) {
+				DeleteTaskAction da = new DeleteTaskAction(this.SRC, this.IS_FILE_TYPE, this.getActionTime(), this.isUncoupledFromExecutor());
+				boolean retDel = da.performAction();
+				if(!retDel) {
+					// copy error messages
+					for(String e : da.getErrors()) {
+						this.addError(e.split(NEWLINE)[2]);
+					}
+				}
+				return retDel;
+			}
+			else {
+				return retCopy;
+			}
 		}
-		else {
-			return retCopy;
+		catch(FileSystemException e) {
+			e.printStackTrace();
+			this.addError(this.getName() + " failed caused by a FileSystemException of org.apache.commons.vfs2. See log file for stackTrace.");
 		}
+		return false;
 	}
 
 	public String getSrc() {

@@ -3,12 +3,18 @@ package de.lmu.ifi.bio.watchdog.task.actions;
 import java.io.File;
 import java.io.Serializable;
 
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.VFS;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import de.lmu.ifi.bio.watchdog.task.TaskActionTime;
+import de.lmu.ifi.bio.watchdog.task.actions.vfs.WatchdogFileSystemManager;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 /**
@@ -43,37 +49,51 @@ public class DeleteTaskAction extends TaskAction implements Serializable {
 	
 	@Override
 	protected boolean performAction() {
-		File f = new File(this.PATH);
-		// nothing to do, if file or folder is not there
-		if(!f.exists()) 
-			return true;
+		// ensure that is only executed once
+		if(this.wasExecuted())
+			return this.wasSuccessfull();
+		
+		super.performAction();
+		try {
+			FileSystemManager fsManager = WatchdogFileSystemManager.getManager(false);
+			FileObject f = fsManager.resolveFile(this.PATH);
 
-		// delete file or folder
-		if(this.IS_FILE_TYPE && f.isFile()) {
-			if(!f.delete()) {
-				this.addError("File or folder '"+f.getAbsolutePath()+"' could not be deleted.");
-				return false;
-			}
-			return true;
-		}
-		else if(!this.IS_FILE_TYPE && f.isDirectory()) {
-			try {
-				FileUtils.deleteDirectory(f);
+			// nothing to do, if file or folder is not there
+			if(!f.exists()) 
+				return true;
+	
+			// delete file or folder
+			if(this.IS_FILE_TYPE && f.isFile()) {
+				if(!f.delete()) {
+					this.addError("File or folder '"+f.getPublicURIString()+"' could not be deleted.");
+					return false;
+				} 
 				return true;
 			}
-			catch(Exception e) {
-				this.addError("Failed to delete folder '"+f.getAbsolutePath()+"':" + NEWLINE + StringUtils.join(e.getStackTrace(), NEWLINE));
-				return false;					
+			else if(!this.IS_FILE_TYPE && f.isFolder()) {
+				try {
+					f.deleteAll();
+					return true;
+				}
+				catch(Exception e) {
+					this.addError("Failed to delete folder '"+f.getPublicURIString()+"':" + NEWLINE + StringUtils.join(e.getStackTrace(), NEWLINE));
+					return false;					
+				}
+			}
+			else {
+				if(f.isFile())
+					this.addError("Expected folder but got file '"+f.getPublicURIString()+"'!");
+				else
+					this.addError("Expected file but got folder '"+f.getPublicURIString()+"'!");
+				
+				return false;
 			}
 		}
-		else {
-			if(f.isFile())
-				this.addError("Expected folder but got file '"+f.getAbsolutePath()+"'!");
-			else
-				this.addError("Expected file but got folder '"+f.getAbsolutePath()+"'!");
-			
-			return false;
+		catch(FileSystemException e) {
+			e.printStackTrace();
+			this.addError(this.getName() + " failed caused by a FileSystemException of org.apache.commons.vfs2. See log file for stackTrace.");
 		}
+		return false;
 	}
 
 	public String getPath() {

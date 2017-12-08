@@ -119,8 +119,6 @@ public class TaskActionWindowController extends ValidateViewController {
 		// add event handler to action
 		this.action.getSelectionModel().selectedItemProperty().addListener((x, y, z) -> this.onActionChange());
 		this.time.getSelectionModel().selectedItemProperty().addListener((x, y, z) -> this.validate());
-		//this.action.onActionProperty().set(x -> this.onActionChange()); -> not running before java 8u60
-		//this.time.onActionProperty().set(x -> this.validate());
 		Platform.runLater(() -> this.onActionChange()); // trigger it once to hide all the stuff
 		
 		// customize cancel button
@@ -130,14 +128,14 @@ public class TaskActionWindowController extends ValidateViewController {
 		// add validation stuff
 		this.addValidateToControl(this.action, "action", c -> ((ChoiceBox<TaskAction>) c).getSelectionModel().getSelectedItem() != null);
 		this.addValidateToControl(this.time, "time", c -> ((ChoiceBox<TaskAction>) c).getSelectionModel().getSelectedItem() != null);
-		this.addValidateToControl(this.createFile_file, "createFile_file", f -> this.isAbsoluteFile((TextField) f, "An absolute file path must be given."), SWITCH_CREATE_FILE.toString());
-		this.addValidateToControl(this.createFolder_folder, "createFolder_folder", f -> this.isAbsoluteFolder((TextField) f, "An absolute folder path must be given."), SWITCH_CREATE_FOLDER.toString());
-		this.addValidateToControl(this.copyFile_source, "copyFile_source", f -> this.isAbsoluteFile((TextField) f, "An absolute path to a file to copy must be given."), SWITCH_COPY_FILE.toString());
-		this.addValidateToControl(this.copyFile_destination, "copyFile_destination", f -> this.isAbsoluteFile((TextField) f, "An absolute path to the destination file must be given."), SWITCH_COPY_FILE.toString());
-		this.addValidateToControl(this.copyFolder_source, "copyFolder_source", f -> this.isAbsoluteFolder((TextField) f, "An absolute path to a folder to copy must be given."), SWITCH_COPY_FOLDER.toString());
-		this.addValidateToControl(this.copyFolder_destination, "copyFolder_destination", f -> this.isAbsoluteFolder((TextField) f, "An absolute path to the destination folder must be given."), SWITCH_COPY_FOLDER.toString());
-		this.addValidateToControl(this.delete_file, "delete_file", f -> this.isAbsoluteFile((TextField) f, "An absolute file path must be given."), SWITCH_DELETE_FILE.toString());
-		this.addValidateToControl(this.delete_folder, "delete_folder", f -> this.isAbsoluteFolder((TextField) f, "An absolute folder path must be given."), SWITCH_DELETE_FOLDER.toString());
+		this.addValidateToControl(this.createFile_file, "createFile_file", f -> !this.isEmpty((TextField) f, "An absolute file path or an URI must be given."), SWITCH_CREATE_FILE.toString());
+		this.addValidateToControl(this.createFolder_folder, "createFolder_folder", f -> !this.isEmpty((TextField) f, "An absolute folder path or an URI must be given."), SWITCH_CREATE_FOLDER.toString());
+		this.addValidateToControl(this.copyFile_source, "copyFile_source", f -> !this.isEmpty((TextField) f, "An absolute path or an URI to a file to copy must be given."), SWITCH_COPY_FILE.toString());
+		this.addValidateToControl(this.copyFile_destination, "copyFile_destination", f -> !this.isEmpty((TextField) f, "An absolute path or an URI to the destination file must be given."), SWITCH_COPY_FILE.toString());
+		this.addValidateToControl(this.copyFolder_source, "copyFolder_source", f -> !this.isEmpty((TextField) f, "An absolute path or an URI to a folder to copy must be given."), SWITCH_COPY_FOLDER.toString());
+		this.addValidateToControl(this.copyFolder_destination, "copyFolder_destination", f -> !this.isEmpty((TextField) f, "An absolute path or an URI to the destination folder must be given."), SWITCH_COPY_FOLDER.toString());
+		this.addValidateToControl(this.delete_file, "delete_file", f -> !this.isEmpty((TextField) f, "An absolute file path or an URI must be given."), SWITCH_DELETE_FILE.toString());
+		this.addValidateToControl(this.delete_folder, "delete_folder", f -> !this.isEmpty((TextField) f, "An absolute folder or an URI path must be given."), SWITCH_DELETE_FOLDER.toString());
 		
 		// add handlers that should call validate on change
 		this.createFile_file.textProperty().addListener(x -> this.validate());
@@ -250,6 +248,7 @@ public class TaskActionWindowController extends ValidateViewController {
 			// activate active one ;)
 			if(active != null) {
 				this.setActivePane(active);
+				this.validate();
 			}
 		}
 	}

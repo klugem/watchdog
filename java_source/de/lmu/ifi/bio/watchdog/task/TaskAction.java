@@ -1,6 +1,7 @@
 package de.lmu.ifi.bio.watchdog.task;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
@@ -19,6 +20,7 @@ public abstract class TaskAction implements Serializable, XMLDataStore {
 	private final ArrayList<String> ERRORS = new ArrayList<>();
 	protected static final String NEWLINE = System.lineSeparator();
 	public static final String AERROR = "Action reported an error:";
+	private boolean wasExecuted = false;
 	
 	/**
 	 * Constructor
@@ -33,7 +35,10 @@ public abstract class TaskAction implements Serializable, XMLDataStore {
 	 * performs the action of this task
 	 * @return
 	 */
-	protected abstract boolean performAction();
+	protected boolean performAction() {
+		this.wasExecuted = true;
+		return false;
+	}
 	
 	/**
 	 * return the action time for this event
@@ -94,5 +99,9 @@ public abstract class TaskAction implements Serializable, XMLDataStore {
 	 */
 	public boolean isUncoupledFromExecutor() {
 		return this.UNCOUPLE_FROM_EXECUTOR;
+	}
+	
+	public boolean wasExecuted() {
+		return this.wasExecuted;
 	}
 }

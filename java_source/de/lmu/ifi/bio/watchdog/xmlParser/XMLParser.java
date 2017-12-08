@@ -1172,7 +1172,6 @@ public class XMLParser {
 
 	private static void addProcessBlock(ProcessBlock processblock, LinkedHashMap<String, ProcessBlock> blocks, boolean noExit) {
 		if(processblock != null) {
-			// TODO: check, if some checks were lost during  code mode
 			if(!blocks.containsKey(processblock.getName())) {
 				blocks.put(processblock.getName(), processblock);
 			}

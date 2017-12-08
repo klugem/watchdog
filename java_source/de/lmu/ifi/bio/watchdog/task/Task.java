@@ -254,11 +254,13 @@ public class Task implements Serializable {
 		if(this.TASK_ACTIONS.containsKey(time)) {
 			// perform all the actions
 			for(TaskAction a : this.TASK_ACTIONS.get(time)) {
-				if(a.isUncoupledFromExecutor() || this.isRunningOnSlave() || this.getExecutor() instanceof LocalExecutorInfo) {
-					a.performAction();
-					for(String error : a.getErrors()) {
-						ret = false;
-						this.addError(error);
+				if(!a.wasExecuted()) {
+					if(a.isUncoupledFromExecutor() || this.isRunningOnSlave() || this.getExecutor() instanceof LocalExecutorInfo) {
+						a.performAction();
+						for(String error : a.getErrors()) {
+							ret = false;
+							this.addError(error);
+						}
 					}
 				}
 			}
