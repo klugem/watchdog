@@ -19,7 +19,7 @@ In order to run a xml-file using the command line tool, call
 
 The workflow designer can be started using 
 
-./workflowDesigner.sh or java -jar jars/workflowDesigner.jar 
+./workflowDesigner.sh or java -jar jars/WatchdogDesigner.jar
 
 
 ################################## CONTACT #################################
