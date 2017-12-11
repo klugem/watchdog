@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 Changelog started with version 1.2.0
 
-## [1.2.0] - 2017-12-08
+## [1.2.5] - 2017-12-08
 ### Added
 - [PLUGIN] Implemented plugin system for XML parsing that allows to extend functionally of Watchdog by community
 - [PLUGIN] Applied concept of plugin system to process blocks and executors
