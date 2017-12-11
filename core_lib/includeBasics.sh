@@ -1,4 +1,4 @@
-LIB_SCRIPT_FOLDER=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd -P)
+LIB_SCRIPT_FOLDER=$(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || readlink "${BASH_SOURCE[0]}" || echo "${BASH_SOURCE[0]}")) && pwd -P)
 # try to find an alternative for md5sum when not there (on mac)
 # fixes sed inline mac vs unix --> sedinline
 PATH="$PATH:$LIB_SCRIPT_FOLDER/wrapper"
