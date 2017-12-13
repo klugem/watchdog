@@ -65,6 +65,7 @@ public class TaskActionWindowController extends ValidateViewController {
 	@FXML private CheckBox copyFile_delete;
 	@FXML private TextField copyFolder_source;
 	@FXML private TextField copyFolder_destination;
+	@FXML private TextField copyFolder_pattern;
 	@FXML private CheckBox copyFolder_override;
 	@FXML private CheckBox copyFolder_parent;
 	@FXML private CheckBox copyFolder_delete;
@@ -72,6 +73,7 @@ public class TaskActionWindowController extends ValidateViewController {
 	// delete file / folder
 	@FXML private TextField delete_file;
 	@FXML private TextField delete_folder;
+	@FXML private TextField delete_folder_pattern;
 	
 	// some external variables used for data transfer
 	private WorkflowModuleController setWorkflowModule;
@@ -80,10 +82,10 @@ public class TaskActionWindowController extends ValidateViewController {
 	
 	private final static CreateTaskAction SWITCH_CREATE_FILE = new CreateTaskAction(null, false, false, true, null, false);
 	private final static CreateTaskAction SWITCH_CREATE_FOLDER = new CreateTaskAction(null, false, false, false, null, false);
-	private final static CopyTaskAction SWITCH_COPY_FILE = new CopyTaskAction(null, null, false, false, false, true, null, false);
-	private final static CopyTaskAction SWITCH_COPY_FOLDER = new CopyTaskAction(null, null, false, false, false, false, null, false);
-	private final static DeleteTaskAction SWITCH_DELETE_FILE = new DeleteTaskAction(null, true, null, false);
-	private final static DeleteTaskAction SWITCH_DELETE_FOLDER = new DeleteTaskAction(null, false, null, false);
+	private final static CopyTaskAction SWITCH_COPY_FILE = new CopyTaskAction(null, null, false, false, false, true, null, false, null);
+	private final static CopyTaskAction SWITCH_COPY_FOLDER = new CopyTaskAction(null, null, false, false, false, false, null, false, null);
+	private final static DeleteTaskAction SWITCH_DELETE_FILE = new DeleteTaskAction(null, true, null, false, null);
+	private final static DeleteTaskAction SWITCH_DELETE_FOLDER = new DeleteTaskAction(null, false, null, false, null);
 	
 	private final LinkedHashMap<TaskAction, GridPane> HIDE = new LinkedHashMap<>();
 	private final HashMap<GridPane, TaskAction> PANE2ACTION = new HashMap<>();
@@ -183,15 +185,16 @@ public class TaskActionWindowController extends ValidateViewController {
 					this.copyFile_destination.setText(cc.getDest());
 					this.copyFile_override.setSelected(cc.isOverride());
 					this.copyFile_parent.setSelected(cc.isCreateParent());
-					this.copyFile_delete.setSelected(cc.isCreateParent());
+					this.copyFile_delete.setSelected(cc.isDeleteSource());
 					this.setActivePane(this.copyFile_grid);
 				}
 				else {
 					this.copyFolder_source.setText(cc.getSrc());
 					this.copyFolder_destination.setText(cc.getDest());
+					if(cc.hasPattern()) this.copyFolder_pattern.setText(cc.getPattern());
 					this.copyFolder_override.setSelected(cc.isOverride());
 					this.copyFolder_parent.setSelected(cc.isCreateParent());
-					this.copyFolder_delete.setSelected(cc.isCreateParent());
+					this.copyFolder_delete.setSelected(cc.isDeleteSource());
 					this.setActivePane(this.copyFolder_grid);
 				}
 			}
@@ -204,6 +207,7 @@ public class TaskActionWindowController extends ValidateViewController {
 				else {
 					this.delete_folder.setText(d.getPath());
 					this.setActivePane(this.deleteFolder_grid);
+					if(d.hasPattern()) this.delete_folder_pattern.setText(d.getPattern());
 				}
 			}
 			
@@ -282,16 +286,16 @@ public class TaskActionWindowController extends ValidateViewController {
 			else if(select instanceof CopyTaskAction) {
 				CopyTaskAction cc = (CopyTaskAction) select;
 				if(cc.isFileType())
-					this.taskActionStore = new CopyTaskAction(this.copyFile_source.getText(), this.copyFile_destination.getText(), this.copyFile_override.isSelected(), this.copyFile_parent.isSelected(), this.copyFile_delete.isSelected(), true, this.time.getSelectionModel().getSelectedItem(), this.uncouple.isSelected());						
+					this.taskActionStore = new CopyTaskAction(this.copyFile_source.getText(), this.copyFile_destination.getText(), this.copyFile_override.isSelected(), this.copyFile_parent.isSelected(), this.copyFile_delete.isSelected(), true, this.time.getSelectionModel().getSelectedItem(), this.uncouple.isSelected(), null);						
 				else
-					this.taskActionStore = new CopyTaskAction(this.copyFolder_source.getText(), this.copyFolder_destination.getText(), this.copyFolder_override.isSelected(), this.copyFolder_parent.isSelected(), this.copyFolder_delete.isSelected(), false, this.time.getSelectionModel().getSelectedItem(), this.uncouple.isSelected());						
+					this.taskActionStore = new CopyTaskAction(this.copyFolder_source.getText(), this.copyFolder_destination.getText(), this.copyFolder_override.isSelected(), this.copyFolder_parent.isSelected(), this.copyFolder_delete.isSelected(), false, this.time.getSelectionModel().getSelectedItem(), this.uncouple.isSelected(), this.copyFolder_pattern.getText());						
 			}
 			else if(select instanceof DeleteTaskAction) {
 				DeleteTaskAction d= (DeleteTaskAction) select;
 				if(d.isFileType())
-					this.taskActionStore = new DeleteTaskAction(this.delete_file.getText(), true, this.time.getSelectionModel().getSelectedItem(), this.uncouple.isSelected());
+					this.taskActionStore = new DeleteTaskAction(this.delete_file.getText(), true, this.time.getSelectionModel().getSelectedItem(), this.uncouple.isSelected(), null);
 				else 
-					this.taskActionStore = new DeleteTaskAction(this.delete_folder.getText(), false, this.time.getSelectionModel().getSelectedItem(), this.uncouple.isSelected());
+					this.taskActionStore = new DeleteTaskAction(this.delete_folder.getText(), false, this.time.getSelectionModel().getSelectedItem(), this.uncouple.isSelected(), this.delete_folder_pattern.getText());
 			}
 			super.saveData();
 		}

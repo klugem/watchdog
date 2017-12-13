@@ -5,7 +5,6 @@ import java.io.Serializable;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
-import org.apache.commons.vfs2.VFS;
 
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;

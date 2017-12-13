@@ -4,9 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import de.lmu.ifi.bio.network.exception.ConnectionNotReady;
 import de.lmu.ifi.bio.network.server.Server;
@@ -40,7 +44,7 @@ public class Master extends Server {
 	private static String host;
 	private static int slaves = -1;
 	private final ConcurrentHashMap<String, ServerConnectionHandler> SLAVES = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<String, ArrayList<Task>> WAITING = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, LinkedHashMap<Task, LinkedHashSet<Integer>>> WAITING = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<String, XMLTask> XML = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<String, String> TASK2SLAVE = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<String, Boolean> PENDING_SLAVE = new ConcurrentHashMap<String, Boolean>(); // hashset would be sufficient but is not implemented in java...
@@ -93,10 +97,11 @@ public class Master extends Server {
 	 * @param t
 	 * @param exec
 	 * @param env
+	 * @param depToKeep 
 	 * @throws IOException 
 	 * @throws IllegalArgumentException 
 	 */
-	public synchronized static XMLTask addSlave(String id, Task t, File watchdogBase, ExecutorInfo exec, Environment env) throws IllegalArgumentException, IOException {
+	public synchronized static XMLTask addSlave(String id, Task t, File watchdogBase, ExecutorInfo exec, Environment env, LinkedHashSet<Integer> depToKeep) throws IllegalArgumentException, IOException {
 		// check if master server is running
 		if(Master.master == null) {
 			// start a new master at a random port
@@ -135,8 +140,8 @@ public class Master extends Server {
 			slave.setConfirmParam(ActionType.DISABLED);
 			
 			// save that task that it should be executed afterwards
-			ArrayList<Task> tasks = new ArrayList<>();
-			tasks.add(t);
+			LinkedHashMap<Task, LinkedHashSet<Integer>> tasks = new LinkedHashMap<>();
+			tasks.put(t, depToKeep);
 			Master.master.WAITING.put(id, tasks);
 			Master.master.XML.put(id, slave);
 			Master.master.PENDING_SLAVE.put(id, false);
@@ -147,12 +152,12 @@ public class Master extends Server {
 				// check, if slave if running
 				if(Master.master.SLAVES.containsKey(id)) {
 					Master.registerTask(t.getID(), id);
-					Master.master.SLAVES.get(id).send(new TaskExecutorEvent(t));
+					Master.master.SLAVES.get(id).send(new TaskExecutorEvent(t, depToKeep));
 					System.out.println("task was sent to host " + t.getID());
 				}
 				// slave is pending...
 				else {
-					Master.master.WAITING.get(id).add(t);
+					Master.master.WAITING.get(id).put(t, depToKeep);
 				}
 			} catch (ConnectionNotReady e) {
 				// connection to slave failed

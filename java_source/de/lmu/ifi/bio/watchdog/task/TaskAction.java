@@ -1,7 +1,6 @@
 package de.lmu.ifi.bio.watchdog.task;
 
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;

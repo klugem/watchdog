@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -66,7 +67,8 @@ public abstract class Executor<A extends ExecutorInfo> {
 		
 				// get the old or newly set slave ID!
 				String slaveID = this.TASK.getSlaveID();
-				XMLTask slave = Master.addSlave(slaveID, this.TASK, Executor.watchdogBase, (ExecutorInfo) this.EXEC_INFO.clone(), this.EXEC_INFO.env);
+				LinkedHashSet<Integer> depToKeep = XMLTask.getXMLTask(t.getTaskID()).getSeparateSlaveDependencies();
+				XMLTask slave = Master.addSlave(slaveID, this.TASK, Executor.watchdogBase, (ExecutorInfo) this.EXEC_INFO.clone(), this.EXEC_INFO.env, depToKeep);
 				// slave must be spawned first!
 				if(slave != null)
 					Executor.xml2taskThread.addTask(slave);

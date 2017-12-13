@@ -1,6 +1,8 @@
 package de.lmu.ifi.bio.watchdog.slave.clientEvents;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.lmu.ifi.bio.network.EventSocket;
@@ -18,14 +20,14 @@ import de.lmu.ifi.bio.watchdog.task.Task;
  */
 public class IdentifyEventEH extends Eventhandler {
 	private final ConcurrentHashMap<String, ServerConnectionHandler> CONS;
-	private final ConcurrentHashMap<String, ArrayList<Task>> WAITING;
+	private final ConcurrentHashMap<String, LinkedHashMap<Task, LinkedHashSet<Integer>>> WAITING;
 	private final ConcurrentHashMap<String, Boolean> PENDING;
 	
 	/**
 	 * Constructor
 	 * @param cons
 	 */
-	public IdentifyEventEH(ConcurrentHashMap<String, ServerConnectionHandler> cons, ConcurrentHashMap<String, ArrayList<Task>> waiting, ConcurrentHashMap<String, Boolean> pending) {
+	public IdentifyEventEH(ConcurrentHashMap<String, ServerConnectionHandler> cons, ConcurrentHashMap<String, LinkedHashMap<Task, LinkedHashSet<Integer>>> waiting, ConcurrentHashMap<String, Boolean> pending) {
 		this.CONS = cons;
 		this.WAITING = waiting;
 		this.PENDING = pending;
@@ -53,9 +55,10 @@ public class IdentifyEventEH extends Eventhandler {
 		
 		// send tasks that are waiting
 		if(this.WAITING.containsKey(id)) {
-			for(Task t : this.WAITING.get(id)) {
+			for(Task t : this.WAITING.get(id).keySet()) {
+				LinkedHashSet<Integer> depToKeep = this.WAITING.get(id).get(t);
 				Master.registerTask(t.getID(), id);
-				reciever.send(new TaskExecutorEvent(t));
+				reciever.send(new TaskExecutorEvent(t, depToKeep));
 				System.out.println("task was sent to host " + t.getID());
 			}
 			// delete all that tasks

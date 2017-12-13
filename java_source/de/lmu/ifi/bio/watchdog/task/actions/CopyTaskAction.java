@@ -1,20 +1,14 @@
 package de.lmu.ifi.bio.watchdog.task.actions;
 
-import java.io.File;
 import java.io.Serializable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSelector;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.Selectors;
-import org.apache.commons.vfs2.VFS;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
-import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import de.lmu.ifi.bio.watchdog.task.TaskActionTime;
 import de.lmu.ifi.bio.watchdog.task.actions.vfs.WatchdogFileSystemManager;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
@@ -24,7 +18,7 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
  * @author kluge
  *
  */
-public class CopyTaskAction extends TaskAction implements Serializable {
+public class CopyTaskAction extends PatternFolderTaskAction implements Serializable {
 
 	private static final long serialVersionUID = 4663622213901702886L;
 	private final String SRC;
@@ -34,8 +28,8 @@ public class CopyTaskAction extends TaskAction implements Serializable {
 	private final boolean DELETE_SOURCE;
 	private final boolean IS_FILE_TYPE;
 	
-	public CopyTaskAction(String src, String dest, boolean override, boolean createParent, boolean deleteSource, boolean isFileType, TaskActionTime time, boolean uncoupleFromExecutor) {
-		super(time, uncoupleFromExecutor);
+	public CopyTaskAction(String src, String dest, boolean override, boolean createParent, boolean deleteSource, boolean isFileType, TaskActionTime time, boolean uncoupleFromExecutor, String pattern) {
+		super(time, uncoupleFromExecutor, pattern);
 		
 		this.SRC = src;
 		this.DEST = dest;
@@ -51,8 +45,8 @@ public class CopyTaskAction extends TaskAction implements Serializable {
 	 * @param dest
 	 * @param c
 	 */
-	public CopyTaskAction(String src, String dest, CopyTaskAction c) {
-		super(c.getActionTime(), c.isUncoupledFromExecutor());
+	public CopyTaskAction(String src, String dest, String pattern, CopyTaskAction c) {
+		super(c.getActionTime(), c.isUncoupledFromExecutor(), pattern);
 		
 		this.SRC = src;
 		this.DEST = dest;
@@ -117,7 +111,8 @@ public class CopyTaskAction extends TaskAction implements Serializable {
 			}
 			else if(!this.IS_FILE_TYPE && s.isFolder()) {
 				try {
-					d.copyFrom(s, Selectors.SELECT_CHILDREN);
+					System.out.println("copy to " + d.getPublicURIString());
+					d.copyFrom(s, this.getPatternSelector(s));
 					retCopy = true;
 				}
 				catch(Exception e) { this.addError("Failed to copy folder '"+s.getPublicURIString()+"' to '"+d.getPublicURIString()+"':" + NEWLINE + StringUtils.join(e.getStackTrace(), NEWLINE)); }	
@@ -131,7 +126,7 @@ public class CopyTaskAction extends TaskAction implements Serializable {
 			
 			// delete the source files
 			if(this.DELETE_SOURCE && retCopy) {
-				DeleteTaskAction da = new DeleteTaskAction(this.SRC, this.IS_FILE_TYPE, this.getActionTime(), this.isUncoupledFromExecutor());
+				DeleteTaskAction da = new DeleteTaskAction(this.SRC, this.IS_FILE_TYPE, this.getActionTime(), this.isUncoupledFromExecutor(), null);
 				boolean retDel = da.performAction();
 				if(!retDel) {
 					// copy error messages
@@ -171,6 +166,7 @@ public class CopyTaskAction extends TaskAction implements Serializable {
 		if(this.DELETE_SOURCE) x.addQuotedAttribute(XMLParser.DELETE_SOURCE, this.DELETE_SOURCE);
 		if(this.OVERRIDE) x.addQuotedAttribute(XMLParser.OVERRIDE, this.OVERRIDE);
 		if(!this.CREATE_PARENT) x.addQuotedAttribute(XMLParser.CREATE_FILE, this.CREATE_PARENT);
+		if(!this.IS_FILE_TYPE && this.hasPattern()) x.addQuotedAttribute(XMLParser.PATTERN, this.getPattern());
 		
 		// close and return the XML tag
 		x.endCurrentTag(true);
@@ -185,6 +181,9 @@ public class CopyTaskAction extends TaskAction implements Serializable {
 	}
 	public boolean isCreateParent() {
 		return this.CREATE_PARENT;
+	}
+	public boolean isDeleteSource() {
+		return this.DELETE_SOURCE;
 	}
 
 	@Override

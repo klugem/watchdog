@@ -41,7 +41,7 @@ public class Functions {
 		if(prefixLength > 0) {
 			if(sep == null) 
 				sep = POINT;
-			
+
 			String tmp[] = StringUtils.split(name, sep, prefixLength+1);
 			tmp[tmp.length-1] = "";
 			String result = StringUtils.join(tmp, sep);

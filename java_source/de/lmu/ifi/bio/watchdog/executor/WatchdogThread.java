@@ -144,7 +144,7 @@ public class WatchdogThread extends StopableLoopThread {
 			// task was never submitted
 			if(t.getStatus().isWaitingOnDependencies()) {
 				// check if dependencies are ok
-				if(t.hasTaskUnresolvedDependencies() == false) {
+				if(t.hasTaskUnresolvedDependencies(isSlaveExecutor) == false) {
 					try {
 						if(this.execute(t, simulate, isSlaveExecutor))
 							executed++;

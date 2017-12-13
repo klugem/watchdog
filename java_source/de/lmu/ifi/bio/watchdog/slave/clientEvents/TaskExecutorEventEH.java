@@ -1,6 +1,8 @@
 package de.lmu.ifi.bio.watchdog.slave.clientEvents;
 
 
+import java.util.LinkedHashSet;
+
 import de.lmu.ifi.bio.network.EventSocket;
 import de.lmu.ifi.bio.network.event.Event;
 import de.lmu.ifi.bio.network.eventhandler.Eventhandler;
@@ -48,6 +50,14 @@ public class TaskExecutorEventEH extends Eventhandler {
 		TaskExecutorEvent event = (TaskExecutorEvent) e;
 		Task task = event.getTask();
 		LOGGER.debug("Recieved new task with id '" + task.getID() + "' from master.");
+		
+		// get dependencies
+		LinkedHashSet<Integer> deps = event.getDependencies();
+		if(deps != null) {
+			for(Integer dID : deps) {
+				task.addSlaveDependency(dID);
+			}
+		}
 		
 		// mark the task to run on a slave
 		task.setIsScheduledOnSlave(false);

@@ -15,7 +15,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="root" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.module.TaskActionWindowController">
+<VBox fx:id="root" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="de.lmu.ifi.bio.watchdog.GUI.module.TaskActionWindowController">
    <children>
       <BorderPane fx:id="border">
          <center>
@@ -134,18 +134,22 @@
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                  </rowConstraints>
                                  <children>
                                     <Label text="source path:" />
                                     <Label text="destination path:" GridPane.rowIndex="1" />
-                                    <Label text="delete source:" GridPane.rowIndex="3" />
-                                    <Label text="empty existing folder:" GridPane.rowIndex="2" />
-                                    <Label text="create parent folders:" GridPane.rowIndex="4" />
+                                    <Label text="delete source:" GridPane.rowIndex="4" />
+                                    <Label text="empty existing folder:" GridPane.rowIndex="3" />
+                                    <Label text="create parent folders:" GridPane.rowIndex="5" />
                                     <TextField fx:id="copyFolder_source" GridPane.columnIndex="1" />
                                     <TextField fx:id="copyFolder_destination" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                    <CheckBox fx:id="copyFolder_override" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                    <CheckBox fx:id="copyFolder_parent" mnemonicParsing="false" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                                    <CheckBox fx:id="copyFolder_delete" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <CheckBox fx:id="copyFolder_override" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <CheckBox fx:id="copyFolder_parent" mnemonicParsing="false" selected="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                    <CheckBox fx:id="copyFolder_delete" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                    <Label text="file select pattern:" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <TextField fx:id="copyFolder_pattern" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Label text="file select pattern:" GridPane.rowIndex="2" />
                                  </children>
                                  <padding>
                                     <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -185,6 +189,8 @@
                                  <children>
                                     <Label text="path to folder:" />
                                     <TextField fx:id="delete_folder" GridPane.columnIndex="1" />
+                                    <Label text="file select pattern:" GridPane.rowIndex="1" />
+                                    <TextField fx:id="delete_folder_pattern" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                  </children>
                               </GridPane>
                            </children>

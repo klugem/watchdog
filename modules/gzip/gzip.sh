@@ -21,6 +21,7 @@ DEFINE_string 'oldPathMd5' '' '[optional] path where the files was stored when t
 DEFINE_boolean 'verify' 'true' '[optional] verify after compression the integrity of the file' 'v'
 DEFINE_boolean 'delete' 'false' '[optional] delete the file after compression was performed; enforces integrity check' 'd'
 DEFINE_integer 'quality' '9' '[optional] compression quality ranging from [1:9] with 1 being the fastest and 9 being the slowest but smallest.' 'q'
+DEFINE_integer 'limitLines' '' '[optional] extract only the first N lines.' 'l'
 DEFINE_string 'returnFilePath' '' 'path to the return variables file' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 
@@ -47,6 +48,11 @@ fi
 # enforce verify when delete is enabled
 if [ "$FLAGS_delete" -eq 0 ]; then
 	FLAGS_verify=0
+fi
+
+# disable verify when line limit is applied
+if [ ! -z "$FLAGS_limitLines" ] && [ "$FLAGS_limitLines" -ge 1 ]; then
+	FLAGS_verify=1
 fi
 
 # verify quality
@@ -106,7 +112,12 @@ if [ "$FLAGS_decompress" -eq 1 ]; then
 	fi
 # decompress mode
 else 
-	MESSAGE=$(gzip -cd "$FLAGS_input" > "$FLAGS_output")
+	# get only first n lines
+	if [ ! -z "$FLAGS_limitLines" ] && [ "$FLAGS_limitLines" -ge 1 ]; then
+		MESSAGE=$(gzip -cd "$FLAGS_input" | head -n $FLAGS_limitLines > "$FLAGS_output")
+	else
+		MESSAGE=$(gzip -cd "$FLAGS_input" > "$FLAGS_output")
+	fi
 	CODE=$?
 
 	if [ $CODE -ne 0 ]; then

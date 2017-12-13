@@ -55,6 +55,12 @@
 		<x:union memberTypes="relativeFileType absoluteFileType" />
 	</x:simpleType>
 
+	<x:simpleType name="absoluteOrRelativeFileReplaceType">
+		<x:restriction base="absoluteOrRelativeFileType">
+			<x:pattern value="(.*(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])*.*)*"/>
+		</x:restriction>
+	</x:simpleType>
+
 	<!-- absolute log file type (stdout / stderr) --> 
 	<x:complexType name="absoluteLogFileType">
 		<x:simpleContent>
@@ -169,6 +175,7 @@
 		<x:simpleContent>
 			<x:extension base="numericOrAlphabet">
 				<x:attribute name="separate" type="x:boolean" default="false"/>
+				<x:attribute name="keep4Slave" type="x:boolean" default="false"/>
 				<x:attribute name="prefixName" type="prefixNameType" default="[]" />
 				<x:attribute name="sep" type="x:string" default="." />
 			</x:extension>
@@ -256,7 +263,7 @@
 
 	<!-- types for org.apache.commons.vfs2.FileSystemManager -->
 	<x:simpleType name="fileSystemManagerURIorRelOrAbsPath">
-		<x:union memberTypes="absoluteOrRelativePathType x:anyURI" />
+		<x:union memberTypes="absoluteOrRelativeFileReplaceType x:anyURI" />
 	</x:simpleType>
 
 	<!-- create definition -->
@@ -276,14 +283,15 @@
 		<x:attribute name="destination" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>
 		<x:attribute name="override" type="x:boolean" default="false" />
 		<x:attribute name="deleteSource" type="x:boolean" default="false" />
-		<x:attribute name="createParent" type="x:boolean" default="true" />				
+		<x:attribute name="createParent" type="x:boolean" default="true" />			
 	</x:complexType>
 	<x:complexType name="copyFolderType">
 		<x:attribute name="folder" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>
 		<x:attribute name="destination" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>
 		<x:attribute name="override" type="x:boolean" default="false" />
 		<x:attribute name="deleteSource" type="x:boolean" default="false" />
-		<x:attribute name="createParent" type="x:boolean" default="true" />			
+		<x:attribute name="createParent" type="x:boolean" default="true" />	
+		<x:attribute name="pattern" type="filenamePatternType" default="*" />		
 	</x:complexType>
 	<!-- delete definition -->
 	<x:complexType name="deleteFileType">
@@ -291,6 +299,7 @@
 	</x:complexType>
 	<x:complexType name="deleteFolderType">
 		<x:attribute name="folder" type="fileSystemManagerURIorRelOrAbsPath" use="required"/>		
+		<x:attribute name="pattern" type="filenamePatternType" default="*" />
 	</x:complexType>
 
 	<!-- action definition -->

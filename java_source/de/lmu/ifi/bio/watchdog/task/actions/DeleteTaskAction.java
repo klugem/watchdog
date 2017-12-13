@@ -1,18 +1,13 @@
 package de.lmu.ifi.bio.watchdog.task.actions;
 
-import java.io.File;
 import java.io.Serializable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
-import org.apache.commons.vfs2.VFS;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
-import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import de.lmu.ifi.bio.watchdog.task.TaskActionTime;
 import de.lmu.ifi.bio.watchdog.task.actions.vfs.WatchdogFileSystemManager;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
@@ -22,14 +17,14 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
  * @author kluge
  *
  */
-public class DeleteTaskAction extends TaskAction implements Serializable {
+public class DeleteTaskAction extends PatternFolderTaskAction implements Serializable {
 	
 	private static final long serialVersionUID = -15453908592948855L;
 	private final String PATH;
 	private final boolean IS_FILE_TYPE;
 	
-	public DeleteTaskAction(String path, boolean isFileType, TaskActionTime time, boolean uncoupleFromExecutor) {
-		super(time, uncoupleFromExecutor);
+	public DeleteTaskAction(String path, boolean isFileType, TaskActionTime time, boolean uncoupleFromExecutor, String pattern) {
+		super(time, uncoupleFromExecutor, pattern);
 		
 		this.PATH = path;
 		this.IS_FILE_TYPE = isFileType;
@@ -40,8 +35,8 @@ public class DeleteTaskAction extends TaskAction implements Serializable {
 	 * @param path
 	 * @param d
 	 */
-	public DeleteTaskAction(String path, DeleteTaskAction d) {
-		super(d.getActionTime(), d.isUncoupledFromExecutor());
+	public DeleteTaskAction(String path, String pattern, DeleteTaskAction d) {
+		super(d.getActionTime(), d.isUncoupledFromExecutor(), pattern);
 		
 		this.PATH = path;
 		this.IS_FILE_TYPE = d.IS_FILE_TYPE;
@@ -72,7 +67,10 @@ public class DeleteTaskAction extends TaskAction implements Serializable {
 			}
 			else if(!this.IS_FILE_TYPE && f.isFolder()) {
 				try {
-					f.deleteAll();
+					if(this.hasPattern())
+						f.delete(this.getPatternSelector(f));
+					else
+						f.deleteAll();
 					return true;
 				}
 				catch(Exception e) {
@@ -105,6 +103,7 @@ public class DeleteTaskAction extends TaskAction implements Serializable {
 		XMLBuilder x = new XMLBuilder();
 		x.startTag(this.IS_FILE_TYPE ? XMLParser.DELETE_FILE : XMLParser.DELETE_FOLDER, false);
 		x.addQuotedAttribute(this.IS_FILE_TYPE ? XMLParser.FILE : XMLParser.FOLDER, this.PATH);
+		if(!this.IS_FILE_TYPE && this.hasPattern()) x.addQuotedAttribute(XMLParser.PATTERN, this.getPattern());
 		
 		// close and return the XML tag
 		x.endCurrentTag(true);

@@ -45,7 +45,7 @@ public class Task implements Serializable {
 	public static final String SEP = "-";
 	public static final String PFEIL = ">";
 	private static final String RES_ENDING = ".res";
-
+	
 	protected final int TASK_ID;
 	protected final int SUB_TASK_ID;
 	protected final String NAME;
@@ -56,6 +56,7 @@ public class Task implements Serializable {
 	protected final ArrayList<ErrorChecker> ERROR_CHECKER = new ArrayList<>();
 	protected final ArrayList<SuccessChecker> SUCCESS_CHECKER = new ArrayList<>();
 	protected final HashSet<String> DEPENDENCIES = new HashSet<>();
+	protected final HashSet<Integer> SLAVE_DEPENDENCIES = new HashSet<>();
 	protected final String GROUP_FILE_NAME;
 	protected final TreeMap<String, Double> USED_RESOURCES = new TreeMap<>();
 	protected final ArrayList<String> ERRORS = new ArrayList<>();
@@ -336,6 +337,14 @@ public class Task implements Serializable {
 	public HashSet<String> getDependencies() {
 		return new HashSet<String>(this.DEPENDENCIES);
 	}
+	
+	/**
+	 * adds a dependency that is valid for all subtasks of the same base tasks that are scheduled on a slave
+	 * @param id
+	 */
+	public void addSlaveDependency(int id) {
+		this.SLAVE_DEPENDENCIES.add(id);
+	}
 
 	/**
 	 * returns the group file name of that task which is needed to check, if a separate task depends on this one
@@ -555,7 +564,7 @@ public class Task implements Serializable {
 	 */
 	public boolean isMaxRunningRestrictionReached() {
 		int maxRunning = this.getMaxRunning();
-		return maxRunning > 0 && Task.getUnfinishedobs(this.getTaskID(), true) >= maxRunning;
+		return maxRunning > 0 && Task.getUnfinishedJobs(this.getTaskID(), true) >= maxRunning;
 	}
 	
 	
@@ -590,23 +599,32 @@ public class Task implements Serializable {
 	}
 	
 	/********************************** CHECKER **********************************/
-	public boolean hasTaskUnresolvedDependencies() {
-		for(String taskID : this.getDependencies()) {
-			Task dep = getTask(taskID);
-			// remove this dependency from the list because no information about it is available
-			if(dep == null) {
-				this.DEPENDENCIES.remove(taskID);
+	public boolean hasTaskUnresolvedDependencies(boolean isSlaveExecutor) {
+		// ensure that all subtasks that are scheduled on that slave are finished
+		if(isSlaveExecutor) {
+			for(int taskID : this.SLAVE_DEPENDENCIES) {
+				if(Task.hasUnfinishedJobs(taskID))
+					return true;
 			}
-
-			// if, it depends on a task, which is ignore, ignore it itself!
-			if(!dep.isTaskIgnored()) {
-				this.setStatus(TaskStatus.IGNORE);
-				return true;
-			}
+		}
+		else {
+			for(String taskID : this.getDependencies()) {
+				Task dep = getTask(taskID);
+				// remove this dependency from the list because no information about it is available
+				if(dep == null) {
+					this.DEPENDENCIES.remove(taskID);
+				}
+	
+				// if, it depends on a task, which is ignore, ignore it itself!
+				if(!dep.isTaskIgnored()) {
+					this.setStatus(TaskStatus.IGNORE);
+					return true;
+				}
 			
-			// test if task has finished correctly
-			if(!dep.hasTaskFinished()) {
-				return true;
+				// test if task has finished correctly
+				if(!dep.hasTaskFinished()) {
+					return true;
+				}
 			}
 		}
 		return false; 
@@ -711,8 +729,17 @@ public class Task implements Serializable {
 	 * @param id
 	 * @return
 	 */
-	public static int getUnfinishedobs(int id, boolean ignoreWithoutResources) {
+	public static int getUnfinishedJobs(int id, boolean ignoreWithoutResources) {
 		return Task.getCountOfJobs(id, false, ignoreWithoutResources);
+	}
+	
+	/**
+	 * true if some not finished tasks are there with that id
+	 * @param id
+	 * @return
+	 */
+	public static boolean hasUnfinishedJobs(int id) {
+		return getUnfinishedJobs(id, false) > 0;
 	}
 	
 	/**

@@ -141,7 +141,7 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 			
 			// check, if the port is ok
 			if(!portOK(port)) {
-				log.error("Port '"+port+"'is already used by another programm.");
+				log.error("Port '"+port+"' is already used by another programm.");
 				System.exit(1);
 			}
 			// check, if start and stop ID are ok

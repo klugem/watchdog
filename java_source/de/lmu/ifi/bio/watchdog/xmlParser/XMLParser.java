@@ -151,6 +151,7 @@ public class XMLParser {
 	public static final String BIN_NAME = "binName";
 	public static final String PRE_BIN_COMMAND = "preBinCommand";
 	public static final String SEPARATE = "separate";
+	public static final String KEEP4SLAVE = "keep4Slave";
 	public static final String PREFIX_NAME = "prefixName";
 	public static final String IS_WATCHDOG_MODULE = "isWatchdogModule";
 	public static final String WATCHDOG_BASE = "watchdogBase";
@@ -819,6 +820,7 @@ public class XMLParser {
 											if(DEPENDS_TYPE.equals(type)) {
 												String sID = el.getTextContent();
 												boolean separate = Boolean.parseBoolean(XMLParser.getAttribute(el, SEPARATE));
+												boolean keep4slave = false;
 												String prefixName = null;
 												String sep = null;
 												int dId = -1;
@@ -841,6 +843,7 @@ public class XMLParser {
 												if(separate) {
 													prefixName = XMLParser.getAttribute(el, PREFIX_NAME);
 													sep = XMLParser.getAttribute(el, SEP);
+													keep4slave = Boolean.parseBoolean(XMLParser.getAttribute(el, KEEP4SLAVE));
 												}
 												
 												// test, if dependency ID is valid
@@ -856,7 +859,7 @@ public class XMLParser {
 														returnInfoValues.addAll(retInfo.get(depType).getKey().keySet());
 													}
 													// add the stuff
-													x.addDependencies(dId, separate, prefixName, sep, returnInfoValues);
+													x.addDependencies(dId, separate, keep4slave, prefixName, sep, returnInfoValues);
 												}
 											}
 										}
@@ -1102,19 +1105,21 @@ public class XMLParser {
 												boolean isFileType = COPY_FILE.equals(type);
 												String src = XMLParser.getAttribute(action, isFileType ? FILE : FOLDER);
 												String dest = XMLParser.getAttribute(action, DESTINATION);
+												String pattern = XMLParser.getAttribute(action, PATTERN);
 												checkInputVariableNames(x, src);
 												checkInputVariableNames(x, dest);
 												boolean override = Boolean.parseBoolean(XMLParser.getAttribute(action, OVERRIDE));
 												boolean createParent = Boolean.parseBoolean(XMLParser.getAttribute(action, CREATE_PARENT));
 												boolean deleteSource = Boolean.parseBoolean(XMLParser.getAttribute(action, DELETE_SOURCE));
 												 
-												taskActions.add(new CopyTaskAction(src, dest, override, createParent, deleteSource, isFileType, time, uncoupleFromExecutor));
+												taskActions.add(new CopyTaskAction(src, dest, override, createParent, deleteSource, isFileType, time, uncoupleFromExecutor, pattern));
 											}
 											else if(DELETE_FILE.equals(type) || DELETE_FOLDER.equals(type)) {
 												boolean isFileType = DELETE_FILE.equals(type);
 												String path = XMLParser.getAttribute(action, isFileType ? FILE : FOLDER);
+												String pattern = XMLParser.getAttribute(action, PATTERN);
 												checkInputVariableNames(x, path);
-												taskActions.add(new DeleteTaskAction(path, isFileType, time, uncoupleFromExecutor));
+												taskActions.add(new DeleteTaskAction(path, isFileType, time, uncoupleFromExecutor, pattern));
 											}
 										}
 									}

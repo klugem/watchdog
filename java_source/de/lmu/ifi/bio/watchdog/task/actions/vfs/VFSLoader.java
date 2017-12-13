@@ -3,6 +3,7 @@ package de.lmu.ifi.bio.watchdog.task.actions.vfs;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Map.Entry;
+
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 

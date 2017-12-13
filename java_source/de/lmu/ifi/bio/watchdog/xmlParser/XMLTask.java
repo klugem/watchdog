@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -59,6 +60,7 @@ public class XMLTask {
 	private final ExecutorInfo EXECUTOR_INFO;
 	private final OptionFormat OPTION_FORMAT;
 	private final HashMap<Integer, Integer> DEPENDS = new HashMap<>();
+	private final LinkedHashSet<Integer> DEPENDS_SEP_KEEP = new LinkedHashSet<>();
 	private final HashMap<Integer, String> DEPENDS_SEP = new HashMap<>();
 	private final HashSet<Integer> NEEDED_DEPENDENCIES_4_VARS = new HashSet<>();
 	private final HashMap<Integer, HashSet<String>> AVAIL_RETURN_PARAMS = new HashMap<>();
@@ -256,7 +258,7 @@ public class XMLTask {
 	 * @param dependsSeparately
 	 * @param prefixName
 	 */
-	public void addDependencies(int xmlID, boolean dependsSeparately, String prefixName, String sep, HashSet<String> availReturnParameters) {
+	public void addDependencies(int xmlID, boolean dependsSeparately, boolean keep4slave, String prefixName, String sep, HashSet<String> availReturnParameters) {
 		int prefixLength = -1;
 		// parse number
 		if(dependsSeparately) {
@@ -277,8 +279,11 @@ public class XMLTask {
 		
 		this.DEPENDS.put(xmlID, prefixLength);
 		this.AVAIL_RETURN_PARAMS.put(xmlID, availReturnParameters);
-		if(sep != null)
+		if(sep != null) {
 			this.DEPENDS_SEP.put(xmlID, sep);
+			if(keep4slave)
+				this.DEPENDS_SEP_KEEP.add(xmlID);
+		}
 	}
 	
 	/**
@@ -373,6 +378,16 @@ public class XMLTask {
 			}
 		}
 		return dep;
+	}
+	
+	/**
+	 * Retuns dependencies that should be transfered to the slave host
+	 * @param inputName
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public LinkedHashSet<Integer> getSeparateSlaveDependencies() {
+		return (LinkedHashSet<Integer>) DEPENDS_SEP_KEEP.clone();
 	}
 	
 	/**
@@ -951,6 +966,7 @@ public class XMLTask {
 		if(this.DEPENDS.containsKey(depID)) {
 			this.DEPENDS.remove(depID);
 			this.DEPENDS_SEP.remove(depID);
+			this.DEPENDS_SEP_KEEP.remove(depID);
 			this.AVAIL_RETURN_PARAMS.remove(depID);
 			this.ORIGINAL_GLOBAL_DEPENDENCIES.remove(depID);
 			// test, if result is needed for that block as input
@@ -1280,7 +1296,8 @@ public class XMLTask {
 				CopyTaskAction c = (CopyTaskAction) a;
 				String src = this.replaceString(c.getSrc(), inputReplacement, nameMapping);
 				String dest = this.replaceString(c.getDest(), inputReplacement, nameMapping);
-				res.add(new CopyTaskAction(src, dest, c));
+				String pattern = this.replaceString(c.getPattern(), inputReplacement, nameMapping);
+				res.add(new CopyTaskAction(src, dest, pattern, c));
 			}
 			else if(a instanceof CreateTaskAction) {
 				CreateTaskAction c = (CreateTaskAction) a;
@@ -1290,7 +1307,8 @@ public class XMLTask {
 			else if(a instanceof DeleteTaskAction) {
 				DeleteTaskAction d = (DeleteTaskAction) a;
 				String path = this.replaceString(d.getPath(), inputReplacement, nameMapping);
-				res.add(new DeleteTaskAction(path, d));
+				String pattern = this.replaceString(d.getPattern(), inputReplacement, nameMapping);
+				res.add(new DeleteTaskAction(path, pattern, d));
 			}
 			else {
 				try { throw new IllegalArgumentException("For action task of type class '" + a.getErrors() + "' no variable replacement is implemented."); }

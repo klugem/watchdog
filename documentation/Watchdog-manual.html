@@ -527,6 +527,7 @@ In example 5 a <pre class="name">compress</pre> task with id <pre class="name">2
 			<tr><td><pre class="tag">dependencies</pre></td><td></td><td></td><td>parent of <pre class="tag">depends</pre> elements and child of <pre class="tag">?Task</pre></td></tr>
 <tr><td><pre class="tag">depends</pre></td><td></td><td>integer</td><td>already defined task id on which the task should depend on</td></tr>
 <tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[separate]</pre></td><td>boolean</td><td>if set to <pre class="name">true</pre> each subtask depends only on its corresponding subtask; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[keep4Slave]</pre></td><td>boolean</td><td>if set to <pre class="name">true</pre> a executor in slave mode will wait until all tasks with that id, which are running on that slave, are finished; only valid for separate dependencies; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[prefixName]</pre></td><td>[[0-9]*]</td><td>only meaningful if <pre class="attr">separate</pre> is set to <pre class="name">true</pre>; defines in which manner the variables of the two process blocks must be equal to each other: <br /> []/[0]: complete variables of the subtasks are compared<br />[<pre class="name">n</pre>]: it is checked if the variable of a subtask begins with the prefix of the finished subtask this task depends on; the first <pre class="name">n</pre> parts are taken was prefix whereby '.' is used as separator; default: <pre class="name">[]</pre></td></tr>
 <tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[sep]</pre></td><td>string</td><td>separator which is used together with <pre class="attr">prefixName</pre>; default: <pre class="name">.</pre></td></tr>
 
@@ -546,6 +547,7 @@ In example 5 a <pre class="name">compress</pre> task with id <pre class="name">2
 				<tr><td><pre class="tag">dependencies</pre></td><td></td><td></td><td>parent of <pre class="tag">depends</pre> elements and child of <pre class="tag">?Task</pre></td></tr>
 <tr><td><pre class="tag">depends</pre></td><td></td><td>integer</td><td>already defined task id on which the task should depend on</td></tr>
 <tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[separate]</pre></td><td>boolean</td><td>if set to <pre class="name">true</pre> each subtask depends only on its corresponding subtask; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[keep4Slave]</pre></td><td>boolean</td><td>if set to <pre class="name">true</pre> a executor in slave mode will wait until all tasks with that id, which are running on that slave, are finished; only valid for separate dependencies; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[prefixName]</pre></td><td>[[0-9]*]</td><td>only meaningful if <pre class="attr">separate</pre> is set to <pre class="name">true</pre>; defines in which manner the variables of the two process blocks must be equal to each other: <br /> []/[0]: complete variables of the subtasks are compared<br />[<pre class="name">n</pre>]: it is checked if the variable of a subtask begins with the prefix of the finished subtask this task depends on; the first <pre class="name">n</pre> parts are taken was prefix whereby '.' is used as separator; default: <pre class="name">[]</pre></td></tr>
 <tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[sep]</pre></td><td>string</td><td>separator which is used together with <pre class="attr">prefixName</pre>; default: <pre class="name">.</pre></td></tr>
 
@@ -1047,11 +1049,13 @@ In example 11 a file name <pre class="name">/tmp/watchdog_file_to_compress.tmp</
 <tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
 <tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>path to the folder that should be copied</td></tr>
 <tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">destination</pre></td><td>string</td><td>path to the destination folder</td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[pattern]</pre></td><td>string </td><td>pattern selecting files that should be copied in that folder; syntax as in bash</td></tr>
 <tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[override]</pre></td><td>boolean</td><td>defines if an existing folder should be deleted; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[deleteSource]</pre></td><td>boolean</td><td>deletes the source folder after the copy operation; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
 <tr><td><pre class="tag">deleteFile</pre></td><td><pre class="attr">file</pre></td><td>string</td><td>path to the file that should be deleted</td></tr>
 <tr><td><pre class="tag">deleteFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>path to the folder that should be deleted</td></tr>
+<tr><td><pre class="tag">deleteFolder</pre></td><td><pre class="attr">[pattern]</pre></td><td>string </td><td>pattern selecting files that should be deleted in that folder; syntax as in bash</td></tr>
 
 		</tbody>
 	</table>
@@ -1081,11 +1085,13 @@ In example 11 a file name <pre class="name">/tmp/watchdog_file_to_compress.tmp</
 <tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
 <tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>path to the folder that should be copied</td></tr>
 <tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">destination</pre></td><td>string</td><td>path to the destination folder</td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[pattern]</pre></td><td>string </td><td>pattern selecting files that should be copied in that folder; syntax as in bash</td></tr>
 <tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[override]</pre></td><td>boolean</td><td>defines if an existing folder should be deleted; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[deleteSource]</pre></td><td>boolean</td><td>deletes the source folder after the copy operation; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
 <tr><td><pre class="tag">deleteFile</pre></td><td><pre class="attr">file</pre></td><td>string</td><td>path to the file that should be deleted</td></tr>
 <tr><td><pre class="tag">deleteFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>path to the folder that should be deleted</td></tr>
+<tr><td><pre class="tag">deleteFolder</pre></td><td><pre class="attr">[pattern]</pre></td><td>string </td><td>pattern selecting files that should be deleted in that folder; syntax as in bash</td></tr>
 
 			</tbody>
 		</table>

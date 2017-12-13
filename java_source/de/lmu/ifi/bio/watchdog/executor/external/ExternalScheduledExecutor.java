@@ -104,7 +104,7 @@ public abstract class ExternalScheduledExecutor<A extends ExternalExecutorInfo> 
 				try { Thread.sleep(w); } catch(Exception e) {}
 				wait += w;
 			}
-			// test if init is comlpete now
+			// test if init is complete now
 			if(!this.getMonitor().isInitComplete()) {
 				try {
 					throw new IllegalStateException("init() of ExternalScheduledMonitorThread does not end!");

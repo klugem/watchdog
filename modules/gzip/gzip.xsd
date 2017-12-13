@@ -12,6 +12,7 @@
 			<x:element name="decompress" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
 			<x:element name="delete" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
 			<x:element name="quality" type="paramIntegerRange0_9_gzip" minOccurs="0" maxOccurs="1"/>
+			<x:element name="limitLines" type="paramIntegerPositive_gzip" minOccurs="0" maxOccurs="1"/>
 		</x:all>
 	</x:complexType>
 
@@ -55,7 +56,15 @@
 	<x:complexType name="paramIntegerRange0_9_gzip">
 		<x:simpleContent>
 			<x:restriction base="paramInteger">
-				<x:assertion test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or ($value >= 1 and $value &lt;= 9)" xerces:message="Parameter with name '{$tag}' must be equal or greater than 0." />
+				<x:assertion test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or ($value >= 1 and $value &lt;= 9)" xerces:message="Parameter with name '{$tag}' must be equal or greater than 0 and less or equal to 10." />
+			</x:restriction>
+		</x:simpleContent>
+	</x:complexType>
+
+	<x:complexType name="paramIntegerPositive_gzip">
+		<x:simpleContent>
+			<x:restriction base="paramInteger">
+				<x:assertion test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or ($value >= 1)" xerces:message="Parameter with name '{$tag}' must be greater than 0." />
 			</x:restriction>
 		</x:simpleContent>
 	</x:complexType>

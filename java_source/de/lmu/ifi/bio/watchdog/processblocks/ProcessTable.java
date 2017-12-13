@@ -106,11 +106,11 @@ public class ProcessTable extends ProcessMultiParam {
 					noKey = true;
 				else {
 					if(!this.NAME_MAPPING.containsKey(this.KEY_COLUMN)) {
-						LOGGER.error("Process table file '" + this.TABLE.getAbsolutePath() + "'does not contain a column named '"+this.KEY_COLUMN+"'!");
+						LOGGER.error("Process table file '" + this.TABLE.getAbsolutePath() + "' does not contain a column named '"+this.KEY_COLUMN+"'!");
 						if(!XMLParser.isNoExit()) System.exit(1);
 					}
 					else
-						keyID = this.NAME_MAPPING.get(this.KEY_COLUMN);
+						keyID = this.NAME_MAPPING.get(this.KEY_COLUMN)-1;
 				}
 				
 				// add the entries

@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 Changelog started with version 1.2.0
 
+## [Unreleased]
+### Added
+- [] Added attribute 'pattern' to restrict <copyFolder>/<deleteFolder> actions to files that match that pattern
+- [] Added attribute 'keep4Slave' to <depends> in order to make the slave wait with task execution until all sub-tasks with that ID are finished on it
+
+### Fixed
+- [GUI] Attribute 'deleteSource' of <copyFile>/<deleteFolder> was loaded incorrectly
+- [XSD] Pattern for URI's of task actions was to strict when process block variables should be used in it
+
 ## [1.2.5] - 2017-12-08
 ### Added
 - [PLUGIN] Implemented plugin system for XML parsing that allows to extend functionally of Watchdog by community
