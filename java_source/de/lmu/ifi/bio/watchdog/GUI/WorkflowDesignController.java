@@ -353,7 +353,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			}
 			
 			XMLParser.setGUILoadAttempt(true);
-			Object[] ret = XMLParser.parse(f.getAbsolutePath(), XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath()).getAbsolutePath(), 0, false, true, false, false, loadUnsafeFile, false);
+			Object[] ret = XMLParser.parse(f.getAbsolutePath(), XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath(), false, null).getAbsolutePath(), 0, false, true, false, false, loadUnsafeFile, false);
 			if(ret == null) {
 				Inform.error("Failed to parse the workflow", "Check your standard out and error messages in order to identify the problem.\nOr use the command-line tool with the -validate option.");
 				XMLParser.setGUILoadAttempt(false);
@@ -1215,7 +1215,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			
 			// load the XML file
 			File f = new File(this.currentLoadedFile.get());
-			File xsdSchema = XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath()); 
+			File xsdSchema = XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath(), false, null); 
 			// file is already loaded --> we parse it safe if valid and unsafe if not
 			Object[] ret = XMLParser.parse(f.getAbsolutePath(), xsdSchema.getAbsolutePath(), 0, false, true, false, false, XMLParser.testIfUnsafe(f.getAbsolutePath()), false);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];

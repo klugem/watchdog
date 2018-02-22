@@ -4,13 +4,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 Changelog started with version 1.2.0
 
 ## [Unreleased]
+
+## [1.2.5] - 2018-01-22
 ### Added
 - [] Added attribute 'pattern' to restrict <copyFolder>/<deleteFolder> actions to files that match that pattern
 - [] Added attribute 'keep4Slave' to <depends> in order to make the slave wait with task execution until all sub-tasks with that ID are finished on it
+- [CMD] Added flag -useEnvBase that overrides the watchdogBase attribute with the content of the WATCHDOG_HOME environment variable
+- [DOCU] Added documentation on how Docker can be used to run Watchdog and how a Docker image can be used within modules
+- [MOD] Added Docker example module and an example workflow that use a bowtie2 Docker image
 
 ### Fixed
 - [GUI] Attribute 'deleteSource' of <copyFile>/<deleteFolder> was loaded incorrectly
 - [XSD] Pattern for URI's of task actions was to strict when process block variables should be used in it
+- [XSD] Constants are now allowed to contain numbers
 
 ## [1.2.5] - 2017-12-08
 ### Added

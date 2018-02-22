@@ -56,6 +56,7 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 	public static int PORT =  WatchdogThread.DEFAULT_HTTP_PORT;
 	public final static int SLEEP = 500; // check every 0.5s if all tasks are finished!
 	private static final String XML_PATTERN = "*.xml";
+	public static final String ENV_WATCHDOG_HOME_NAME = "WATCHDOG_HOME";
 	
 	@SuppressWarnings({ "unchecked" })
 	public static void main(String[] args) throws SAXException, IOException, ParserConfigurationException, DrmaaException, InterruptedException {
@@ -91,14 +92,14 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 				for(File xmlFile : xml.listFiles(new PatternFilenameFilter(XML_PATTERN, false))) {
 					String xmlFilename = xmlFile.getAbsolutePath();
 					log.info("Validating '" + xmlFilename + "'...");
-					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
+					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename, params.useEnvBase, log).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
 					succ++;
 				}
 				System.out.println("Validation of " + succ + " files stored in '"+ xml.getCanonicalPath() +"' succeeded.");
 			}
 			// process only that file
 			else {				
-				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath()).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
+				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath(), params.useEnvBase, log).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
 				System.out.println("Validation of '"+ xml.getCanonicalPath() +"' succeeded!");
 			}
 			System.exit(0);
@@ -155,7 +156,7 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 			}
 			// find path to base XSD dir
 			else {
-				xsdSchema = findXSDSchema(xmlPath.getAbsolutePath());
+				xsdSchema = findXSDSchema(xmlPath.getAbsolutePath(), params.useEnvBase, log);
 				
 				if(xsdSchema == null) {
 					log.error("XML file '"+ xmlPath.getAbsolutePath() +"' is lacking the '"+BASE_STRING+"' attribute.");
@@ -346,7 +347,15 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 	 * @param xmlPath
 	 * @return
 	 */
-	public static File findXSDSchema(String xmlPath) {
+	public static File findXSDSchema(String xmlPath, boolean overrideWithEnvWatchdogHomeVar, Logger log) {
+		if(overrideWithEnvWatchdogHomeVar) {
+			String home = System.getenv(ENV_WATCHDOG_HOME_NAME);
+			if(home == null || home.length() == 0) {
+				log.error("Environment variable '"+ ENV_WATCHDOG_HOME_NAME +"' is not set or missing. Disable the -useEnvBase flag or set the variable correctly.");
+				System.exit(1);
+			}
+			return new File(home + File.separator + XSD_PATH);
+		}
 		try {
 			BufferedReader bf = new BufferedReader(new FileReader(xmlPath));
 			String line;		

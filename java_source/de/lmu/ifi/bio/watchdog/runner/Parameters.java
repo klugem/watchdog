@@ -57,6 +57,9 @@ public class Parameters {
 	@Parameter(names={"-exclude", "-e"}, description="xml task id that should be ignored during execution; can be used several times; can be used in combination with -start and -stop", required=false)
 	protected List<String> exclude = new ArrayList<>();
 	
+	@Parameter(names={"-useEnvBase"}, description="ignores the watchdogBase attribute of the XML workflow and overrides it with the content of the "+ XMLBasedWatchdogRunner.ENV_WATCHDOG_HOME_NAME +" environment variable", required=false)
+	protected boolean useEnvBase = false;
+	
 	@Parameter(names={"--help"}, description="print usage message and exit", help=true)
 	protected boolean help = false;
 }

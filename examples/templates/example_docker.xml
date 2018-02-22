@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+	
+	<settings>
+		<constants>
+			<const name="BASE">{%INSTALL%}/modules/bowtie2Docker/example_data</const>
+		</constants>
+	</settings>
+
+	<tasks mail="{%MAIL%}">
+		<bowtie2DockerTask id="1" name="bowtie2_in_docker">
+			<streams>
+				<stdout>/tmp/bowtie2.docker.test.out</stdout>
+				<stderr>/tmp/bowtie2.docker.test.err</stderr>
+			</streams>
+			<parameter>
+				<genome>${BASE}/index/lambda_virus</genome>
+				<reads>${BASE}/reads/reads_1.fq</reads>
+				<reads>${BASE}/reads/reads_1.fq</reads>
+				<outfile>/tmp/bowtie2.docker.test.sam</outfile>
+			</parameter>
+		</bowtie2DockerTask>
+	</tasks>
+</watchdog>

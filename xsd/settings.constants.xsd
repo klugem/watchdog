@@ -6,7 +6,7 @@
 		<x:simpleContent>
 			<x:extension base="x:string">
 				<x:attribute name="name" type="x:string" use="required" />
-				<x:assert test="matches(@name, '^[A-Za-z_0-9]+$')" xerces:message="Name of a constant may only contain following characters as start '[A-Za-z_]' and '[A-Za-z_0-9]' afterwards." />
+				<x:assert test="matches(@name, '^[A-Za-z_][A-Za-z0-9_]*$')" xerces:message="Name of a constant may only contain following characters as start '[A-Za-z_]' and '[A-Za-z_0-9]' afterwards." />
 			</x:extension>
 		</x:simpleContent>
 	</x:complexType>

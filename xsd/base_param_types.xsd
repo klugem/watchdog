@@ -17,7 +17,7 @@
 	<x:complexType name="paramBoolean">
 		<x:simpleContent>
 			<x:restriction base="paramAbstract">
-				<x:pattern value="(.*(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])*.*)*"/>
+				<x:pattern value="(.*(\$\{[A-Za-z_][A-Za-z0-9_]*\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])*.*)*"/>
 				<x:enumeration value="true"/>
 				<x:enumeration value="false"/>
 				<x:enumeration value="True"/>
@@ -32,14 +32,14 @@
 	<x:complexType name="paramString">
 		<x:simpleContent>
 			<x:restriction base="paramAbstract">
-				<x:pattern value="(.*(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])*.*)*"/>
+				<x:pattern value="(.*(\$\{[A-Za-z_][A-Za-z0-9_]*\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])*.*)*"/>
 			</x:restriction>
 		</x:simpleContent>
 	</x:complexType>
 	<x:complexType name="paramInteger">
 		<x:simpleContent>
 			<x:restriction base="paramAbstract">
-				<x:pattern value="(.*(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])*.*)*"/>
+				<x:pattern value="(.*(\$\{[A-Za-z_][A-Za-z0-9_]*\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])*.*)*"/>
 				<x:pattern value="[0-9]+"/>
 			</x:restriction>
 		</x:simpleContent>
@@ -47,7 +47,7 @@
 	<x:complexType name="paramDouble">
 		<x:simpleContent>
 			<x:restriction base="paramAbstract">
-				<x:pattern value="(.*(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])*.*)*"/>
+				<x:pattern value="(.*(\$\{[A-Za-z_][A-Za-z0-9_]*\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])*.*)*"/>
 				<x:pattern value="[0-9]+(\.[0-9]+)?"/>
 			</x:restriction>
 		</x:simpleContent>

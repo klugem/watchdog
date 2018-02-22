@@ -114,6 +114,10 @@ if(!is.null(cutD)) {
 }
 data <- data[order(data$Filename), ]
 
+# create a plot showing total lib sizes
+par(mar=c(10,4.5,4,2))
+barplot(data$ReadNumber, main="#raw input fragments per sample", names.arg=data$Filename, las=2)
+
 # calculate percentage
 c <- NULL
 c$counted <- data$Assigned / data$ReadNumber

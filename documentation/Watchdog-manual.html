@@ -44,6 +44,12 @@
 <a href="#extensions" class="smalltopic">6 Extend Watchdog's functionality</a><br />
 <a href="#vfs" class="smallsubtopic">6.1 Virtual file systems for task actions</a><br />
 <a href="#plugins" class="smallsubtopic">6.2 XML Plugins</a><br />
+<a href="#docker" class="smalltopic">7 Docker</a><br />
+<a href="#docker_watchdog_install" class="smallsubtopic">7.1 Install the Watchdog Docker image</a><br />
+<a href="#docker_share" class="smallsubtopic">7.2 Sharing of files</a><br />
+<a href="#docker_port" class="smallsubtopic">7.3 Port forwarding</a><br />
+<a href="#docker_watchdog_usage" class="smallsubtopic">7.4 How to use the Docker Watchdog image</a><br />
+<a href="#docker_modules" class="smallsubtopic">7.5 Use Docker in modules</a><br />
 <a name="introduction" class="topic">1 Introduction</a>
 
 Here, we present Watchdog, a WMS for the automated and distributed analysis of large-scale experimental data. Watchdog is implemented in Java and is thus platform-independent.
@@ -70,7 +76,7 @@ Watchdog is platform independent as it is written in Java and requires JRE (Java
 The installation of Watchdog is very easy. Simply extract the provided archive into a folder of your choice using
 <pre class="name">tar xfvz watchdog.tar.gz</pre> The folder must be accessible for remote or cluster executors if you plan to use some. 
 <br /><br />
-Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda watchdog-wms</pre>. In that case be binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>.
+Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda watchdog-wms</pre>. In that case be binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">7</a>.
 
 <br /><br />In the next few lines the content of each folder is explained:
 
@@ -1546,6 +1552,77 @@ For use in the Workflow designer GUI of Watchdog, two additional requirements ha
 <li>Classes extending <pre class="name">PluginView</pre> and <pre class="name">PluginViewController</pre> have to be implemented for testing whether the input is valid and for loading and saving data to and from XML.</li>
 </ul>
 All executors and process blocks integrated in Watchdog are using this plugin system. Hence, examples how to implement a new XML element can be found in the package <pre class="name">de.lmu.ifi.bio.watchdog.xmlParser.plugins</pre> of the <a target="_blank" href="https://github.com/klugem/watchdog/tree/master/java_source/de/lmu/ifi/bio/watchdog/xmlParser/plugins">Java source code</a>.
+<a name="docker" class="topic">7 Docker</a>
+
+In order to run a Docker image, Docker must be installed and configured correctly as descibed <a target="_blank" href="https://docs.docker.com">here</a>.
+
+<a name="docker_watchdog_install" class="subtopic">7.1 Install the Watchdog Docker image</a>
+
+A Watchdog image for Docker can be obtained from <a target="_blank" href="https://hub.docker.com/r/klugem/watchdog-wms/">hub.docker.com</a>. The image is rebuild automatically by the Bioconda project once a new version is released on <a target="_blank" href="https://bioconda.github.io/">Bioconda</a>. <br /><br />
+
+You can download the latest version of the image with <pre class="name">docker pull klugem/watchdog-wms</pre>.
+Within the Docker image the environment variable <pre class="name">WATCHDOG_HOME</pre> is set automatically to the installation directory of Watchdog (required for the <pre class="attr">watchdogBase</pre> attribute). The <pre class="name">-useEnvBase</pre> flag of the command line version can be used to override the <pre class="attr">watchdogBase</pre> attribute of the XML workflow with the value stored in <pre class="name">WATCHDOG_HOME</pre>. Moreover, the installation directory of Watchdog is mounted under <pre class="name">/watchdog</pre> within the Docker image.
+
+<a name="docker_share" class="subtopic">7.2 Sharing of files</a>
+
+In order to exchange files with the host system, the -v or -mount option of Docker can be used. These option can be used multiple times.<br /><br />
+
+<pre class="name">docker run -v source_folder_or_file_on_host:destination_folder_or_file[:ro] image command</pre><br /><br />
+
+More information can be found in the <a target="_blank" href="https://docs.docker.com/storage/volumes/">documentation</a> of Docker.
+
+<a name="docker_port" class="subtopic">7.3 Port forwarding</a>
+
+In order to use the build-in webserver of Watchdog, the port used by the webserver must be forwarded to the host running the Docker container. <br /><br />
+
+The command <pre class="name">docker run -p 8090:8080 image command</pre> maps the container port 8080 (TCP) to the port 8090 (TCP) on the Docker host. More information can be found in the <a target="_blank" href="https://docs.docker.com/config/containers/container-networking/#published-ports">documentation</a> of Docker.
+
+<a name="docker_watchdog_usage" class="subtopic">7.4 How to use the Docker Watchdog image</a>
+
+The examples within the Docker image are automatically configured when {%Nwatchdog-cmd%N} is started the first time and are stored in <pre class="name">/watchdog/examples</pre>. The command<br /><br />
+
+<pre class="name">docker run -h localhost -p 8080:8080 klugem/watchdog-wms watchdog-cmd -useEnvBase -x /watchdog/examples/&#8203;example_basic_sleep.xml</pre><br /><br />
+executes the example described in <a href="#basic_xml_structure">3.2</a> and forwards the webserver port to the host port 8080.
+<br /><br />
+Alternatively, it is possible to run a workflow that is stored on the host system as described in <a href="#docker_share">7.2</a>. Ensure that all files used in the workflow are made accessible within the Docker image.
+
+<a name="docker_modules" class="subtopic">7.5 Use Docker in modules</a>
+
+A Docker image can also be used in a module. The module <pre class="name">bowtie2Docker</pre> implements an example module that uses the Docker image of <a target="_blank" href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">Bowtie 2</a> that is provided by <a target="_blank" href="https://bioconda.github.io/">Bioconda</a> and hosted on <a target="_blank" href="https://quay.io/repository/biocontainers/bowtie2">quay.io</a>. The Docker image will be automatically downloaded if it is not found locally. <br /><br />
+
+Make sure that the Docker daemon is installed and running before you test this example.
+
+<div class="box">	
+	<div class="head_box">Example 23: Example usage of the Bowtie 2 Docker module</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3		
+ 4		&lt;settings&gt;
+ 5			&lt;constants&gt;
+ 6				&lt;const name="BASE"&gt;{%INSTALL%}/modules/bowtie2Docker/example_data&lt;/const&gt;
+ 7			&lt;/constants&gt;
+ 8		&lt;/settings&gt;
+ 9	
+10		&lt;tasks mail="{%MAIL%}"&gt;
+11			&lt;bowtie2DockerTask id="1" name="bowtie2_in_docker"&gt;
+12				&lt;streams&gt;
+13					&lt;stdout&gt;/tmp/bowtie2.docker.test.out&lt;/stdout&gt;
+14					&lt;stderr&gt;/tmp/bowtie2.docker.test.err&lt;/stderr&gt;
+15				&lt;/streams&gt;
+16				&lt;parameter&gt;
+17					&lt;genome&gt;${BASE}/index/lambda_virus&lt;/genome&gt;
+18					&lt;reads&gt;${BASE}/reads/reads_1.fq&lt;/reads&gt;
+19					&lt;reads&gt;${BASE}/reads/reads_1.fq&lt;/reads&gt;
+20					&lt;outfile&gt;/tmp/bowtie2.docker.test.sam&lt;/outfile&gt;
+21				&lt;/parameter&gt;
+22			&lt;/bowtie2DockerTask&gt;
+23		&lt;/tasks&gt;
+24	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+Example 23 shows how the <pre class="name">bowtie2Docker</pre> module can be used with the provided example data. The test data that is shipped with Bowtie 2 is stored in the folder <pre class="name">example_data</pre> of the module (6). Log files are written to <pre class="name">/tmp/bowtie2.docker.test.[out|err]</pre> (13, 14) while the mapped reads are stored in SAM format in <pre class="name">/tmp/bowtie2.docker.test.sam</pre> (20).
 		</div>
 	</body>
 </html> 

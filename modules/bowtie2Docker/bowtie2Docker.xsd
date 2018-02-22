@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- definition of the task parameters -->
+	<x:complexType name="bowtie2DockerTaskParameterType">
+		<x:all>
+			<x:element name="genome" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1"/>
+			<x:element name="reads" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="2"/>
+			<x:element name="outfile" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1"/>
+		</x:all>
+	</x:complexType>
+
+	<!-- change default attributes -->
+	<x:complexType name="bowtie2DockerTaskOverrideType">
+		<x:complexContent>
+			<x:restriction base="baseAttributeTaskType">
+				<x:attribute name="binName" type="x:string" fixed="bowtie2Docker.sh"/>
+			</x:restriction>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- definition of final task -->
+	<x:complexType name="bowtie2DockerTaskType">
+		<x:complexContent>
+			<x:extension base="bowtie2DockerTaskOverrideType">
+				<x:all>
+					<x:element name="parameter" type="bowtie2DockerTaskParameterType" minOccurs="1" maxOccurs="1" />
+					<x:group ref="defaultTaskElements" />
+				</x:all>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!-- make task definition availible via substitution group -->
+	<x:element name="bowtie2DockerTask" type="bowtie2DockerTaskType" substitutionGroup="abstractTask" />
+
+	<!-- module specific parameter types -->
+
+</x:schema>

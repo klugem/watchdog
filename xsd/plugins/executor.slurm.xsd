@@ -6,7 +6,7 @@
 		<x:simpleType>
 			<x:restriction base="x:string">
 				<x:pattern value="[0-9]+-[0-9]+:[0-9]+" />
-				<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+"/>
+				<x:pattern value="(.*(\$\{[A-Za-z_][A-Za-z0-9_]*\}).*)+"/>
 			</x:restriction>
 		</x:simpleType>
 	</x:attribute>
@@ -16,7 +16,7 @@
 		<x:simpleType>
 			<x:restriction base="x:integer">
 				<x:minInclusive value="1" />
-				<x:pattern value="(.*(\$\{[A-Za-z_]+\}).*)+|[0-9]+"/>
+				<x:pattern value="(.*(\$\{[A-Za-z_][A-Za-z0-9_]*\}).*)+|[0-9]+"/>
 			</x:restriction>
 		</x:simpleType>
 	</x:attribute>
