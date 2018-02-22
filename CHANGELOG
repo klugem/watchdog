@@ -5,7 +5,7 @@ Changelog started with version 1.2.0
 
 ## [Unreleased]
 
-## [1.2.5] - 2018-01-22
+## [1.2.6] - 2018-01-22
 ### Added
 - [] Added attribute 'pattern' to restrict <copyFolder>/<deleteFolder> actions to files that match that pattern
 - [] Added attribute 'keep4Slave' to <depends> in order to make the slave wait with task execution until all sub-tasks with that ID are finished on it
