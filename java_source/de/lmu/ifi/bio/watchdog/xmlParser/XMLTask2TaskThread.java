@@ -117,7 +117,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 
 				HashMap<String, Integer> nameMapping = null;
 				if(x.getProcessBlock() instanceof ProcessMultiParam) {
-					nameMapping = ((ProcessMultiParam) x.getProcessBlock()).getNameMapping();
+					nameMapping = ((ProcessMultiParam) x.getProcessBlock()).getNameMapping(true);
 					// no data is there yet --> process this task later
 					if(nameMapping.size() == 0) {
 						// check, if separate dependencies are finished for that task

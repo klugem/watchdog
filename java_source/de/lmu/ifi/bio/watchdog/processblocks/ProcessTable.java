@@ -74,10 +74,10 @@ public class ProcessTable extends ProcessMultiParam {
 	}
 	
 	@Override
-	public HashMap<String, Integer> getNameMapping() {
-		if(!this.gui_disableExistanceCheck)
+	public HashMap<String, Integer> getNameMapping(boolean hasNoMoreGlobalDependencies) {
+		if(hasNoMoreGlobalDependencies || !this.gui_disableExistanceCheck)
 			this.readFile();
-		return super.getNameMapping();
+		return super.getNameMapping(hasNoMoreGlobalDependencies);
 	}
 	
 	/**

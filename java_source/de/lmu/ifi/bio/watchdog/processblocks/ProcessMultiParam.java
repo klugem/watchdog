@@ -18,9 +18,17 @@ public abstract class ProcessMultiParam extends ProcessBlock {
 	
 	/**
 	 * returns the name to column mapping
+	 * @param hasNoMoreGlobalDependencies should be, set if task should be executed NOW!
 	 * @return
 	 */
-	public HashMap<String, Integer> getNameMapping() {
+	public HashMap<String, Integer> getNameMapping(boolean hasNoMoreGlobalDependencies) {
 		return this.NAME_MAPPING;
+	}
+	
+	/**
+	 * returns the name to column mapping
+	 */
+	public HashMap<String, Integer> getNameMapping() {
+		return this.getNameMapping(false);
 	}
 }
