@@ -15,6 +15,7 @@
 			<x:element name="maxLength" type="paramIntegerRange_maxLength_cutadapt" minOccurs="0" maxOccurs="1" />
 			<x:element name="outfile" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" />
 			<x:element name="infofile" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1" />
+			<x:element name="shortenReads" type="paramInteger" minOccurs="0" maxOccurs="1" />
 			<x:element name="cutFixedLength" type="paramIntegerRange_cutFixedLength_cutadapt" minOccurs="0" maxOccurs="1" />
 			<x:element name="qualityCutoff" type="paramDouble" minOccurs="0" maxOccurs="1" />
 			<x:element name="qualityBase" type="paramInteger" minOccurs="0" maxOccurs="1" />

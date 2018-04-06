@@ -25,6 +25,7 @@ DEFINE_integer 'minOverlap' '6' '[optional] minimum overlap length' ''
 DEFINE_integer 'minLength' '40' '[optional] minimum read length after trimming' ''
 DEFINE_integer 'maxLength' '-1' '[optional] maximum read length after trimming' '' 
 DEFINE_integer 'cutFixedLength' '0' '[optional] trimmes a fixed length from the beginning (positive numbers) or the end of the reads (negative numbers)' 'c'
+DEFINE_integer 'shortenReads' '0' '[optional] ' 'shorten reads to a maximal length after trimming; positive values keep the beginning of reads; negative ones the ends (starting from cutadapt version 1.17)'
 DEFINE_float 'qualityCutoff' '0' '[optional] trimmes reads at the ends using a sliding window approach' ''
 DEFINE_integer 'qualityBase' '33' '[optional] base quality value' ''
 DEFINE_boolean 'noIndels' '1' '[optional] does not allow indels between read and adapter' ''
@@ -58,6 +59,10 @@ if [ $(echo "scale=0; $FLAGS_errorRate*100" | bc | cut -d "." -f 1) -gt 100 ] ||
 fi
 if [ "$FLAGS_repeat" -gt 100 ] || [ "$FLAGS_repeat" -lt 1 ]; then
 	echoError "Parameter -r must be between [1, 100]. (see --help for details)";
+	exit $EXIT_INVALID_ARGUMENTS
+fi
+if [ "$FLAGS_shortenReads" -eq 0 ]; then
+	echoError "Parameter --shortenReads can not be zero. (see --help for details)";
 	exit $EXIT_INVALID_ARGUMENTS
 fi
 if [ "$FLAGS_minOverlap" -lt 1 ] ; then
@@ -114,6 +119,7 @@ if [ "$FLAGS_minLength" -ne -1 ]; then SETTINGS="$SETTINGS -m $FLAGS_minLength";
 if [ "$FLAGS_maxLength" -ne -1 ]; then SETTINGS="$SETTINGS -M $FLAGS_maxLength"; fi
 if [ "$FLAGS_cutFixedLength" -ne 0 ]; then SETTINGS="$SETTINGS -u $FLAGS_cutFixedLength"; fi
 if [ "$FLAGS_qualityCutoff" -ne 0 ]; then SETTINGS="$SETTINGS -q $FLAGS_qualityCutoff"; fi
+if [ "$FLAGS_shortenReads" -ne 0 ]; then SETTINGS="$SETTINGS -l $FLAGS_shortenReads"; fi
 
 # add the flags
 FLAGS=""
