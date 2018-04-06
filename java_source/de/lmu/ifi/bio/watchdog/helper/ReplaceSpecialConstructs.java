@@ -114,7 +114,7 @@ public class ReplaceSpecialConstructs {
 							System.exit(1);
 						}
 						// replace the name
-						value = value.replaceAll("\\$" + name+ "(\\s*,)?", ""); 
+						value = value.replaceAll("\\$" + name+ "(\\s*,\\s*)?", ""); 
 						int col = nameMapping.get(name);
 
 						// recursive call
@@ -136,8 +136,8 @@ public class ReplaceSpecialConstructs {
 			// normal replacement (not from process table)
 			else {
 				if(inputReplacement.matches(REGEX_PATH)) {
-					inputReplacement.replaceAll("/{2,}", "/");
-					inputReplacement.replaceAll("\\\\{2,}", "\\\\");
+					inputReplacement = inputReplacement.replaceAll("/{2,}", "/");
+					inputReplacement = inputReplacement.replaceAll("\\\\{2,}", "\\\\");
 				}
 				
 				// separate file types and other values
