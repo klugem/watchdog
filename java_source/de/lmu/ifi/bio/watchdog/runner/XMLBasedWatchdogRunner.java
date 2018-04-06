@@ -384,6 +384,8 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 				// send termination event
 					if(first) { 
 						if(b == ((int) 'Y') && ((b = System.in.read()) == 10 || b == 13)) {
+							if(Task.getMailer() != null)
+								Task.getMailer().setOrderedShutdown();
 							Signal.raise(SIGTERM);
 							return; 
 						}

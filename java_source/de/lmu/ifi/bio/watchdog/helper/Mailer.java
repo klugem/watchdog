@@ -66,6 +66,7 @@ public class Mailer {
 	private final String FROM;
 	private final String MAIL;
 	private final Session SESSION;
+	private boolean wasShutdownCommanded = false;
 	public static String HOST_PREFIX = PROTOCOL + HOST + PORT_SEP + XMLBasedWatchdogRunner.PORT;
 	private final static Logger LOGGER = new Logger();
 	private static long generatedLinks = 0;
@@ -210,6 +211,8 @@ public class Mailer {
 	 * @return
 	 */
 	public boolean inform(Task t) {
+		if(this.wasWatchdogShutdown())
+			return true;
 		TaskStatus s = t.getStatus();
 		if(s == null)
 			return false;
@@ -281,11 +284,25 @@ public class Mailer {
 		return this.sendMail(main, info.toString());
 	}
 
+	private boolean wasWatchdogShutdown() {
+		return this.wasShutdownCommanded;
+	}
+	
+	/**
+	 * can be called from outside to avoid status mails after a watchdog run was canceled by the user
+	 */
+	public void setOrderedShutdown() {
+		this.wasShutdownCommanded = true;
+	}
+
 	/**
 	 * informs about a complete process block
 	 * @param tasks
 	 */
 	public boolean inform(ArrayList<Task> tasks) {
+		if(this.wasWatchdogShutdown())
+			return true;
+		
 		StringBuffer info = new StringBuffer();
 		StringBuffer error = new StringBuffer();
 		LinkedHashMap<String, Double> res = new LinkedHashMap<>();
