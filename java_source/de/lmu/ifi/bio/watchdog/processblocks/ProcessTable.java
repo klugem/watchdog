@@ -94,47 +94,58 @@ public class ProcessTable extends ProcessMultiParam {
 				this.BUFFER.addAll(Files.readAllLines(Paths.get(this.TABLE.getAbsolutePath()))); 
 						
 				// create the mapping
-				String[] names =  this.BUFFER.remove(0).split(ReplaceSpecialConstructs.TAB);
-				for(int i = 0; i < names.length; i++)
-					this.NAME_MAPPING.put(names[i], i+1);
-				
-				// find the key column 
-				int keyID = 0;
-				boolean noKey = false;
-				// check, if a valid key column is there
-				if(this.KEY_COLUMN == null || this.KEY_COLUMN.length() == 0)
-					noKey = true;
+				if(this.BUFFER.size() == 0) {
+					LOGGER.error("Process table file '" + this.TABLE.getAbsolutePath() + "' does not contain any lines!");
+					if(!XMLParser.isNoExit()) System.exit(1);
+				}
 				else {
-					if(!this.NAME_MAPPING.containsKey(this.KEY_COLUMN)) {
-						LOGGER.error("Process table file '" + this.TABLE.getAbsolutePath() + "' does not contain a column named '"+this.KEY_COLUMN+"'!");
+					if(this.BUFFER.size() == 1) {
+						LOGGER.error("Process table file '" + this.TABLE.getAbsolutePath() + "' does only contain a header line!");
 						if(!XMLParser.isNoExit()) System.exit(1);
 					}
-					else
-						keyID = this.NAME_MAPPING.get(this.KEY_COLUMN)-1;
-				}
-				
-				// add the entries
-				String key;
-				String e[];
-				int c = 2;
-				int mustHave = this.NAME_MAPPING.size();
-				for(String v : this.BUFFER) {
-					// ensure that all lines have the same number of elements
-					e = v.split(ReplaceSpecialConstructs.TAB);
-					if(e.length != mustHave) {
-						LOGGER.error("Line " + c + " of file '"+this.TABLE.getAbsolutePath()+"' has " + e.length + " columns but " + mustHave + " are expected!");
-						LOGGER.error("content of line: '"+v+"'");
-						LOGGER.error("Column names: " + StringUtils.join(this.NAME_MAPPING, " "));
-						if(!XMLParser.isNoExit()) System.exit(1);
+					
+					String[] names =  this.BUFFER.remove(0).split(ReplaceSpecialConstructs.TAB);
+					for(int i = 0; i < names.length; i++)
+						this.NAME_MAPPING.put(names[i], i+1);
+					
+					// find the key column 
+					int keyID = 0;
+					boolean noKey = false;
+					// check, if a valid key column is there
+					if(this.KEY_COLUMN == null || this.KEY_COLUMN.length() == 0)
+						noKey = true;
+					else {
+						if(!this.NAME_MAPPING.containsKey(this.KEY_COLUMN)) {
+							LOGGER.error("Process table file '" + this.TABLE.getAbsolutePath() + "' does not contain a column named '"+this.KEY_COLUMN+"'!");
+							if(!XMLParser.isNoExit()) System.exit(1);
+						}
+						else
+							keyID = this.NAME_MAPPING.get(this.KEY_COLUMN)-1;
 					}
-					if(noKey)
-						key = v;
-					else
-						key = e[keyID];
-					this.RES.put(key, v);
-					c++;
-				}
-				
+					
+					// add the entries
+					String key;
+					String e[];
+					int c = 2;
+					int mustHave = this.NAME_MAPPING.size();
+					for(String v : this.BUFFER) {
+						// ensure that all lines have the same number of elements
+						e = v.split(ReplaceSpecialConstructs.TAB);
+						if(e.length != mustHave) {
+							LOGGER.error("Line " + c + " of file '"+this.TABLE.getAbsolutePath()+"' has " + e.length + " columns but " + mustHave + " are expected!");
+							LOGGER.error("content of line: '"+v+"'");
+							LOGGER.error("Column names: " + StringUtils.join(this.NAME_MAPPING, " "));
+							if(!XMLParser.isNoExit()) System.exit(1);
+						}
+						if(noKey)
+							key = v;
+						else
+							key = e[keyID];
+						this.RES.put(key, v);
+						c++;
+					}
+					
+				} 
 			} catch (IOException e) {
 				e.printStackTrace();
 				LOGGER.error("Failed to read file '" + this.TABLE.getAbsolutePath() + "'!");

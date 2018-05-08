@@ -5,6 +5,7 @@ library(DESeq)
 pasillaDesign <- data.frame(row.names = colnames(exprs), condition = pData$condition)
 condition <- pasillaDesign$condition
 
+exprs <- round(exprs)
 cds <- newCountDataSet(exprs, condition)
 cds <- estimateSizeFactors(cds)
 cds <- tryCatch(estimateDispersions(cds, method = "per-condition"), error = function(e) { print("[ERROR] Estimation of dispersions in DESeq failed!"); quit(save = "no", status = 1, runLast = FALSE) })

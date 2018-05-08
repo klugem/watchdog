@@ -4,6 +4,7 @@ library(DESeq2)
 ###################################### DESeq2 #############################################
 colData <- data.frame(condition=factor(pData$condition))
 
+exprs <- round(exprs)
 dds <- DESeqDataSetFromMatrix(exprs, colData, formula(~ condition))
 dds <- DESeq(dds)
 res <- results(dds, contrast=c("condition", opt$testCondition, opt$controlCondition))

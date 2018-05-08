@@ -53,7 +53,7 @@ for(i in seq(2, (length(samples)+2))) {
 
 	# get number of features with more than 10 counts
 	minRawReads <- length(which(data$count >= 10))
-	total <- sum(data$count)
+	total <- max(sum(data$count), 1)
 
 	# get features with more than 0.5% of total reads
 	if(length(samples)+2 != i) {

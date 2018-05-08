@@ -98,10 +98,12 @@ if(pe == 1) {
 	cmap$R1_only <- r1_mapped$number - (ppaired$number/2)
 	cmap$R2_only <- r2_mapped$number - (ppaired$number/2) 
 	cmap$mapped <- unlist(lapply(((ppaired$number/2) - (cmap$R1_only + cmap$R2_only)), max, 0))
+	cmap$mapped <- cmap$mapped - flagstats[flagstats$event == "secondary", "number"] 
 	cmap$sample <- ppaired$sample
 	cmap <- as.data.frame(cmap)
 } else { # single end mapping mode
-	cmap <- flagstats[flagstats$event == "in total", c("number", "sample")]
+	cmap <- flagstats[flagstats$event == "mapped", c("number", "sample")] 
+	cmap$number <- cmap$number - flagstats[flagstats$event == "secondary", "number"] 
 	colnames(cmap)[1] <- "mapped"
 }
 

@@ -55,18 +55,23 @@ write.table(nc[, c(opt$featureAnnotationID, "name", "type", n)], file=paste(outp
 write.table(countsRaw[, c("FeatureID", "name", "type", n)], file=paste(outputFolderPrefix, name, ".anno.counts", sep=""), row.names=F, col.names=T, quote=F, sep="\t")
 
 # make some statistics
+
 pdf(paste(outputFolderPrefix, "/", name , "_rpkm_cpm.pdf", sep=""))
 for(i in seq(1, length(n))) {
-	hist(r[, i], breaks=100, xlab="log2(rpkm)", main=paste("Sample: ", n[i], sep=""), xlim=c(min(r[, i], na.rm=T), max(r[, i], na.rm=T)))
+	if(sum(r[, i], na.rm=T) != 0)
+	{
+		hist(r[, i], breaks=100, xlab="log2(rpkm)", main=paste("Sample: ", n[i], sep=""), xlim=c(min(r[, i], na.rm=T), max(r[, i], na.rm=T)))
+	}
 }
-hist(unlist(r), breaks=100, xlab="log2(rpkm)", main=paste("All samples: ", n[i], sep=""), xlim=c(min(r, na.rm=T), max(r, na.rm=T)))
+hist(unlist(r), breaks=100, xlab="log2(rpkm)", main="all samples", xlim=c(min(r, na.rm=T), max(r, na.rm=T)))
 
 for(i in seq(1, length(n))) {
-	hist(c[, i], breaks=100, xlab="log2(cpm)", main=paste("Sample: ", n[i], sep=""), xlim=c(min(c[, i], na.rm=T), max(c[, i], na.rm=T)))
+	if(sum(c[, i], na.rm=T) != 0) {
+		hist(c[, i], breaks=100, xlab="log2(cpm)", main=paste("Sample: ", n[i], sep=""), xlim=c(min(c[, i], na.rm=T), max(c[, i], na.rm=T)))
+	}
 }
-hist(unlist(c), breaks=100, xlab="log2(cpm)", main=paste("All samples: ", n[i], sep=""), xlim=c(min(c, na.rm=T), max(c, na.rm=T)))
+hist(unlist(c), breaks=100, xlab="log2(cpm)", main="all samples", xlim=c(min(c, na.rm=T), max(c, na.rm=T)))
 dev.off()
-
 # write a file that we know, the script run to its end
 if(!is.null(opt$confirmRun2EndFile)) {
 	file.create(opt$confirmRun2EndFile, showWarnings = FALSE)

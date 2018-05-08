@@ -78,7 +78,9 @@ if [ $FAIL -eq 1 ]; then
 else
 	# create the link
 	if [ $FLAGS_link -eq 0 ]; then
-		ln -s "$FILE_BAI" "$FLAGS_bam.bai"
+		FILE_BAI_NAME=$(basename "$FILE_BAI")
+		BAM_NAME=$(basename "$FLAGS_bam")
+		$(cd "$OUT_BASE" && ln -s "${FILE_BAI_NAME}" "${BAM_NAME}.bai")
 	fi
 	writeParam2File "$FLAGS_returnFilePath" "BAMFile" "$FLAGS_bam"
 	blockUntilFileIsWritten "$FLAGS_returnFilePath"

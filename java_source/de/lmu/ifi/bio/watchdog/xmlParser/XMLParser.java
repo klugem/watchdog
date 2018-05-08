@@ -1363,12 +1363,13 @@ public class XMLParser {
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
 		
-		if(x.hasProcessBlock() && x.getProcessBlock() instanceof ProcessReturnValueAdder) {
+		if(x.hasProcessBlock() && x.getProcessBlock() instanceof ProcessMultiParam) {
+			ProcessMultiParam mp = (ProcessMultiParam) x.getProcessBlock();
 			Matcher m = ReplaceSpecialConstructs.PATTERN_TABLE_COL_NAME.matcher(value);
 			// test, if a var inputProcess block var is set
 			if(m.matches()) {
 				String usedReturnName = m.group(3);
-				if(!x.isReturnVariableAvail(usedReturnName)) {
+				if(!x.isReturnVariableAvail(usedReturnName) && !mp.getNameMapping().containsKey(usedReturnName)) {
 					LOGGER.error("ProcessInput block does not contain a return variable with name '"+usedReturnName+"' for task with id '"+x.getXMLID()+"'.");
 					if(!noExit) System.exit(1);
 				}
