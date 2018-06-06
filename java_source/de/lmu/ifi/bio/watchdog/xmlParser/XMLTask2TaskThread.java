@@ -159,7 +159,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					 t.setProject(x.getProjectName());
 					 t.addErrorChecker(new WatchdogErrorCatcher(t));
 					 t.setForceSingleSlaveMode(x.isSingleSlaveModeForced());
-					 
+
 					 // set status handler if some are set
 					 for(StatusHandler sh : this.STATUS_HANDLER) 
 						 t.addStatusHandler(sh);

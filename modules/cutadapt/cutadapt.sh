@@ -39,7 +39,10 @@ DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 FLAGS "$@" || exit $EXIT_INVALID_ARGUMENTS
 eval set -- "${FLAGS_ARGV}"
 printParamValues "initial parameters" # print param values, if in debug mode
-
+if [ -z "$FLAGS_shortenReads" ] && [ "$FLAGS_shortenReads" -eq 0 ]; then
+	echoError "Parameter --shortenReads can not be zero. (see --help for details)";
+	exit $EXIT_INVALID_ARGUMENTS
+fi
 # check if mandatory arguments are there
 if [ -z "$FLAGS_fastq" ]; then
 	echoError "Parameter -f must be set. (see --help for details)";
@@ -61,7 +64,7 @@ if [ "$FLAGS_repeat" -gt 100 ] || [ "$FLAGS_repeat" -lt 1 ]; then
 	echoError "Parameter -r must be between [1, 100]. (see --help for details)";
 	exit $EXIT_INVALID_ARGUMENTS
 fi
-if [ "$FLAGS_shortenReads" -eq 0 ]; then
+if [ -z "$FLAGS_shortenReads" ] && [ "$FLAGS_shortenReads" -eq 0 ]; then
 	echoError "Parameter --shortenReads can not be zero. (see --help for details)";
 	exit $EXIT_INVALID_ARGUMENTS
 fi

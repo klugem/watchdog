@@ -172,18 +172,45 @@ public class PreferencesStore {
 	}
 	
 	/************** methods to set values *************************/
-	public static void setBaseDir(String base) {
+	public static boolean setBaseDir(String base) {
 		// do not allow base dir to end with a slash as this will case problems.
 		if(base != null && base.endsWith(File.separator))
 			base = base.replaceFirst(File.separator + "$", "");
 		base = base.replaceAll(File.separator + "{2,}", File.separator);
-		watchdogBaseDir = base;
-		MODULE_SEARCH_FOLDERS.put(DEFAULT_NAME, watchdogBaseDir + File.separator + XMLParser.MODULES + File.separator);
+		if(!watchdogBaseDir.equals(base)) {
+			watchdogBaseDir = base;
+			MODULE_SEARCH_FOLDERS.put(DEFAULT_NAME, watchdogBaseDir + File.separator + XMLParser.MODULES + File.separator);
+			return true;
+		}
+		return false;
 	}
-	public static void setModuleDirectories(HashMap<String, String> dirs) {
-		MODULE_SEARCH_FOLDERS.clear();
-		for(String key : dirs.keySet())
-			MODULE_SEARCH_FOLDERS.put(key, dirs.get(key));
+	
+	/**
+	 * 
+	 * @param dirs
+	 * @return true, if something was changed
+	 */
+	public static boolean setModuleDirectories(HashMap<String, String> dirs) {
+		boolean change = false;
+		if(dirs.size() != MODULE_SEARCH_FOLDERS.size()) {
+			change = true;
+		}
+		else {
+			for(String key : dirs.keySet()) {
+				if(!MODULE_SEARCH_FOLDERS.containsKey(key) || MODULE_SEARCH_FOLDERS.get(key) != dirs.get(key)) {
+					change = true;
+					break;
+				}
+			}
+		}
+		// alter entries, if not equal
+		if(change) {
+			MODULE_SEARCH_FOLDERS.clear();
+			for(String key : dirs.keySet()) {
+				MODULE_SEARCH_FOLDERS.put(key, dirs.get(key));
+			}
+		}
+		return change;
 	}
 	public static void setFullScreenMode(boolean enableFullScreen) {
 		isFullScreenMode = enableFullScreen;

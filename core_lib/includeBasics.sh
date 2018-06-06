@@ -9,6 +9,15 @@ WATCHDOG_TMP_DIR="$LIB_SCRIPT_FOLDER/../tmp"
 CAPTURE_THIS=$(createOutputFolder "$WATCHDOG_TMP_DIR/dummy.file") # ensure that the tmp folder is there
 WATCHDOG_HOSTNAME_CLUSTER_FILE="$WATCHDOG_TMP_DIR/.jobID2hostname.txt"
 LOCK_TIMEOUT=15
+if [ ! -z "${MODULE_VERSION_PARAMETER_NAME}" ]; then
+	MODULE_VERSION=$(getSetModuleVersion $@ "${MODULE_VERSION_PARAMETER_NAME}")
+	if [ "${IS_WATCHDOG_JOB}" == "1" ]; then
+		echo "[Module version]: ${MODULE_VERSION}"
+	fi
+else
+	# set default value
+	MODULE_VERSION=1
+fi
 
 # get the last command
 trap 'command_prev="${command_curr}" ; command_curr=$(echo "${BASH_COMMAND}")' DEBUG
@@ -32,7 +41,8 @@ if [ "$_" != "$0" ]; then
 			unlockFile "$WATCHDOG_HOSTNAME_CLUSTER_FILE"
 		fi
 		if [ "$PRIMARY_CALLER" != "watchdog.sh" ]; then
-			echo "[Called command]: ${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]]} $@"
+			echo -n "[Called command]: ${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]]} "
+			echo $(removeModuleVersionParams $@)
 		fi
 	else
 		PRIMARY_CALLER="$PRIMARY_CALLER->$CALLER"

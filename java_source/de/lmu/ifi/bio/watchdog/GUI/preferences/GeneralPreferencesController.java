@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.MessageType;
+import de.lmu.ifi.bio.watchdog.GUI.event.WatchdogBaseDirUpdateEvent;
 import de.lmu.ifi.bio.watchdog.GUI.helper.Inform;
 import de.lmu.ifi.bio.watchdog.GUI.helper.PreferencesStore;
 import de.lmu.ifi.bio.watchdog.GUI.helper.TextFilter;
@@ -82,7 +83,13 @@ public class GeneralPreferencesController extends AbstractPreferencesController 
 	@Override
 	public void onSave() {
 		if(this.validate()) {
-			PreferencesStore.setBaseDir(this.installPath.getText());
+			String newDir = this.installPath.getText();
+			boolean change = PreferencesStore.setBaseDir(newDir);
+			if(change) {
+				// send the event
+				this.sendEventToSiblingPages(new WatchdogBaseDirUpdateEvent(newDir));
+			}					
+						
 			PreferencesStore.setPort(Integer.parseInt(this.port.getText()));
 			super.onSave();
 		}

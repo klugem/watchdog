@@ -232,6 +232,10 @@ public class Task implements Serializable {
 		return new Task(0, "on shutdown event", e, "", null, null, null, null, null, null, null, null, false, false, null, null, null, null, shutdownActions, false, false);
 	}
 	
+	public void addModuleVersionParam() {
+		
+	}
+	
 	/**
 	 * complete ID of that task (if task from processGroup --> taskID:subTaskID)
 	 * @return

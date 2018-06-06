@@ -80,13 +80,13 @@ public class ToolLibraryController implements Initializable {
 				Functions.filterErrorStream();
 				// get information about the stored modules
 				File defaultSchemaPath = new File(PreferencesStore.getWatchdogBaseDir() + File.separator + XMLParser.FILE_CHECK);
+				File defaultTmpPath = new File(PreferencesStore.getWatchdogBaseDir() + File.separator + XMLParser.TMP_FOLDER);
 				HashMap<String, String> moduleFolders = PreferencesStore.getMouleFolders();
 				ArrayList<String> paths = new ArrayList<String>(moduleFolders.values());
 				HashMap<String, String> modules = getNamesOfModules(paths);
-				File schemaFile = XMLParser.createTemporaryXSDFile(defaultSchemaPath.getPath(), new HashSet<>(modules.keySet()), modules, paths, null).getKey();
-				HashMap<String, HashMap<String, Parameter>> modulesAndParameters = getParameterOfModules(modules, schemaFile, defaultSchemaPath.getParent());
-				HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = getReturnInformation(modules, schemaFile, PreferencesStore.getWatchdogBaseDir());
-				this.setModules(modules, moduleFolders, modulesAndParameters, retInfo);
+				HashMap<String, Pair<Pair<File, File>, HashMap<String, Parameter>>> modulesAndParameters = getParameterOfModules(modules, null, defaultSchemaPath.getParent(), defaultTmpPath);
+				HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = getReturnInformation(modules, null, PreferencesStore.getWatchdogBaseDir(), defaultTmpPath);
+				this.setModules(moduleFolders, modulesAndParameters, retInfo);
 			}
 		}
 		catch(Exception e) {
@@ -100,38 +100,45 @@ public class ToolLibraryController implements Initializable {
 	 * @return
 	 * @throws SAXException 
 	 */
-	public static HashMap<String, HashMap<String, Parameter>> getParameterOfModules(HashMap<String, String> modules, File schemaFile, String xsdRootDir) throws SAXException {
-		// load the schema in XSD 1.1 format
-		SchemaFactory schemaFac = SchemaFactory.newInstance(XMLParser.XML_1_1);
+	public static HashMap<String, Pair<Pair<File, File>, HashMap<String, Parameter>>> getParameterOfModules(HashMap<String, String> modules, File schemaFile, String xsdRootDir, File tmpBase) throws SAXException {
 		Schema schema = null;
-		try { schema = schemaFac.newSchema(schemaFile); }
-		catch(Exception e) {
-			e.printStackTrace();
-			StatusConsole.addGlobalMessage(MessageType.ERROR, "Problem during the loading of the modules: " + e.getMessage());
-			return null;
+		// don't do that in GUI made where no actual XML document is parsed
+		if(schemaFile != null) {
+			// load the schema in XSD 1.1 format
+			SchemaFactory schemaFac = SchemaFactory.newInstance(XMLParser.XML_1_1);
+			try { schema = schemaFac.newSchema(schemaFile); }
+			catch(Exception e) {
+				e.printStackTrace();
+				StatusConsole.addGlobalMessage(MessageType.ERROR, "Problem during the loading of the modules: " + e.getMessage());
+				return null;
+			}
 		}
 		
 		// create a new document factory
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setIgnoringElementContentWhitespace(true);
 		dbf.setNamespaceAware(true);
-		dbf.setSchema(schema);
+		if(schema != null) dbf.setSchema(schema);
 		// find the parameters
-		return XMLParser.getParameters(dbf, new HashSet<>(modules.values()), xsdRootDir);
+		return XMLParser.getParameters(dbf, new HashSet<>(modules.values()), xsdRootDir, tmpBase);
 	}
 	
-	public static HashMap<String, Pair<HashMap<String, ReturnType>, String>> getReturnInformation(HashMap<String, String> modules, File schemaFile, String watchDogBase) throws SAXException {
-		// load the schema in XSD 1.1 format
-		SchemaFactory schemaFac = SchemaFactory.newInstance(XMLParser.XML_1_1);
-		Schema schema = schemaFac.newSchema(schemaFile);
+	public static HashMap<String, Pair<HashMap<String, ReturnType>, String>> getReturnInformation(HashMap<String, String> modules, File schemaFile, String watchDogBase, File tmpBaseDir) throws SAXException {
+		Schema schema = null;
+		// don't do that in GUI made where no actual XML document is parsed
+		if(schemaFile != null) {
+			// load the schema in XSD 1.1 format
+			SchemaFactory schemaFac = SchemaFactory.newInstance(XMLParser.XML_1_1);
+			schema = schemaFac.newSchema(schemaFile);
+		}
 		
 		// create a new document factory
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setIgnoringElementContentWhitespace(true);
 		dbf.setNamespaceAware(true);
-		dbf.setSchema(schema);
+		if(schema != null) dbf.setSchema(schema);
 		// find the parameters
-		return XMLParser.getReturnInformation(dbf, new HashSet<>(modules.values()), watchDogBase);
+		return XMLParser.getReturnInformation(dbf, new HashSet<>(modules.values()), watchDogBase, tmpBaseDir);
 	}
 
 	/**
@@ -187,7 +194,7 @@ public class ToolLibraryController implements Initializable {
 			total.put(cat, total.get(cat)+1);
 			
 			// module should be displayed
-			if(m.getName().contains(pattern)) {
+			if(m.getNameForDisplay().contains(pattern)) {
 				i = new TreeItem<ListLibraryView>(m);
 				if(!modules2add.containsKey(cat))
 					modules2add.put(cat, new ArrayList<TreeItem<ListLibraryView>>());
@@ -216,33 +223,43 @@ public class ToolLibraryController implements Initializable {
 		this.modules.setRoot(root);
 	}
 
-	public void setModules(HashMap<String, String> modules, HashMap<String, String> moduleFolders, HashMap<String, HashMap<String, Parameter>> modulesAndParameters, HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo) {
+	public void setModules(HashMap<String, String> moduleFolders, HashMap<String, Pair<Pair<File, File>, HashMap<String, Parameter>>> modulesAndParameters, HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo) {
 		this.INCLUDE_DIRS.clear();
 		this.LOADED_MODULES.clear();
 		HashMap<String, Module> modUnsorted = new HashMap<>();
 		
-		for(String name : modules.keySet()) {
-			String path = modules.get(name);
+		for(String name : modulesAndParameters.keySet()) {
+			Pair<Pair<File, File>, HashMap<String, Parameter>> data = modulesAndParameters.get(name);
+			@SuppressWarnings("unused")
+			String pathCached = data.getLeft().getRight().getAbsolutePath();
+			String pathOrg = data.getLeft().getLeft().getAbsolutePath();
+			HashMap<String, Parameter> params = data.getRight();
+			HashMap<String, ReturnType> ret = retInfo.containsKey(name) ? retInfo.get(name).getLeft() : null;
+			String tmp[] = name.split(XMLParser.VERSION_SEP);
+			String nameFull = name;
+			name = tmp[0];
+			int version = Integer.parseInt(tmp[1]);
+			
 			int maxLength = 0;
 			String lastCat = "";
 			
 			// find matching base dir
 			for(String catName : moduleFolders.keySet()) {
 				String searchBase = moduleFolders.get(catName);
-				if(path.startsWith(searchBase)) {
+				if(pathOrg.startsWith(searchBase)) {
 					if(searchBase.length() > maxLength) {
 						maxLength = searchBase.length();
 						lastCat = catName;
 					}
 				}
 			}
-			modUnsorted.put(name, new Module(name, path, "t1.png", modulesAndParameters.get(name), retInfo.containsKey(name) ? retInfo.get(name).getKey() : null, lastCat));
+			
+			modUnsorted.put(nameFull, new Module(name, new File(pathOrg).getParentFile().getAbsolutePath(), "", params, ret, lastCat, version));
 			this.INCLUDE_DIRS.put(name, moduleFolders.get(lastCat));
 		}
 		
 		// sort it
-		modUnsorted.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> this.LOADED_MODULES.put(entry.getValue().getName(), entry.getValue()));
-		
+		modUnsorted.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> this.LOADED_MODULES.put(entry.getValue().getNameForDisplay(), entry.getValue()));
 		// update the list
 		this.updateLibrary("");
 	}
@@ -251,6 +268,11 @@ public class ToolLibraryController implements Initializable {
 		return this.INCLUDE_DIRS.get(name);
 	}
 	
+	/**
+	 * must be name + sep + version
+	 * @param name
+	 * @return
+	 */
 	public Module getModuleData(String name) {
 		return this.LOADED_MODULES.get(name);
 	}

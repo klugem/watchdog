@@ -21,13 +21,21 @@
 			<x:element name="groupType" type="paramString" minOccurs="0" maxOccurs="1"/>
 			<x:element name="stranded" type="paramIntegerGreater0_2_featureCounts" minOccurs="0" maxOccurs="1"/>
 			<x:element name="threads" type="paramIntegerGreater0_featureCounts" minOccurs="0" maxOccurs="1"/>
-			<x:element name="minOverlap" type="paramInteger" minOccurs="0" maxOccurs="1"/>
 			<x:element name="disableGroupSummarization" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
 			<x:element name="multiMapping" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
 			<x:element name="primary" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
 			<x:element name="countFragments" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
 			<x:element name="multiCountMetaFeatures" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
 			<x:element name="detailedReadAssignments" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
+
+			<!-- attributes that differ between versions -->
+			<x:element name="minOverlap" type="paramInteger" minOccurs="0" maxOccurs="1" maxVersion="1"/>
+			<x:element name="minReadOverlap" type="paramInteger" minOccurs="0" maxOccurs="1" minVersion="2"/>
+			<x:element name="minFracOverlap" type="paramDouble" minOccurs="0" maxOccurs="1" minVersion="2"/>
+			<x:element name="readExtension5" type="paramIntegerGreater0_featureCounts" minOccurs="0" maxOccurs="1" minVersion="2"/>
+			<x:element name="readExtension3" type="paramIntegerGreater0_featureCounts" minOccurs="0" maxOccurs="1" minVersion="2"/>
+			<x:element name="fraction" type="paramBoolean" minOccurs="0" maxOccurs="1" minVersion="2"/>
+			<x:element name="largestOverlap" type="paramBoolean" minOccurs="0" maxOccurs="1" minVersion="2"/>
 		</x:all>
 	</x:complexType>
 

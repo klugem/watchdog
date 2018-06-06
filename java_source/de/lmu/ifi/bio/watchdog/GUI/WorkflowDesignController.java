@@ -15,7 +15,6 @@ import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -716,7 +715,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			delete = true;
 		}
 		String newHash = null;
-		try { newHash = Hex.encodeHexString(Mailer.MD.digest(Files.readAllBytes(filename.toPath()))); } catch(Exception e) { e.printStackTrace(); }
+		try { newHash = Functions.getFileHash(filename); } catch(Exception e) { e.printStackTrace(); }
 		if(delete) 
 			filename.delete();
 		return newHash;
@@ -1152,8 +1151,8 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 		return ret && retVal;
 	}
 
-	public void setModules(HashMap<String, String> modules, HashMap<String, String> moduleFolders, HashMap<String, HashMap<String, Parameter>> modulesAndParameters, HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo) {
-		this.toolLibController.setModules(modules, moduleFolders, modulesAndParameters, retInfo);
+	public void setModules(HashMap<String, String> moduleFolders, HashMap<String, Pair<Pair<File, File>, HashMap<String, Parameter>>> modulesAndParameters, HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo) {
+		this.toolLibController.setModules(moduleFolders, modulesAndParameters, retInfo);
 	}
 	
 	public void initGrid(int xSize, int ySize, int maxExtendDist) {		

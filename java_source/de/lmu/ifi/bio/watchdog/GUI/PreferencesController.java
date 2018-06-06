@@ -25,6 +25,7 @@ import de.lmu.ifi.bio.watchdog.GUI.preferences.AbstractPreferencesController;
 import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValueBase;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -120,6 +121,15 @@ public class PreferencesController implements Initializable {
 	}
 	
 	/**
+	 * can be used to send a event from one page to another
+	 * @param e
+	 */
+	public void sendEventToEachRegPageController(Event e) {
+		for(SaveablePane sp : this.PANES.values())
+			sp.recieveEventFromSiblingPages(e);
+	}
+	
+	/**
 	 * adds a preference page
 	 * @param fullName
 	 * @param first
@@ -130,6 +140,7 @@ public class PreferencesController implements Initializable {
 		tree.getChildren().add(new TreeItem<>(name));
 		SaveablePane s = getPreferenceSetting(path + fullName, this.status);
 		s.setParentPaneForEvents(this.root);
+		s.setEventDistributorForEvents((Event e) -> this.sendEventToEachRegPageController(e));
 		this.PANES.put(name, s);
 		
 		// set content of first setting 

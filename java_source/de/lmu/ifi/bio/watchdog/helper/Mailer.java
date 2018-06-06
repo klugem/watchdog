@@ -5,8 +5,6 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.URL;
 import java.nio.file.Files;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +24,6 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 
 import de.lmu.ifi.bio.watchdog.executor.HTTPListenerThread;
@@ -43,8 +40,6 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
  */
 public class Mailer {
 	
-	private static final String UTF8 = "UTF-8";
-	public static MessageDigest MD;
 	public static final String INSTANCE_KEY =  new BigInteger(130, new SecureRandom()).toString(32);
 	private static final String PROTOCOL = "http://";
 	public static final String PARAMS = "?";
@@ -72,13 +67,6 @@ public class Mailer {
 	private static long generatedLinks = 0;
 	
 	static {
-		try {
-			MD = MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			LOGGER.error("Can not find md5");
-			System.exit(1);
-		}
 		try {
 			HOST = InetAddress.getLocalHost().getHostName();
 			HOST_PREFIX = PROTOCOL + HOST + PORT_SEP + XMLBasedWatchdogRunner.PORT;
@@ -599,7 +587,7 @@ public class Mailer {
 		// add instance specific key
 		testUri.append(Mailer.INSTANCE_KEY);
 		String hash = Mailer.INSTANCE_KEY;
-		try { hash = Hex.encodeHexString(MD.digest(testUri.toString().getBytes(UTF8))); } catch(Exception e) { e.printStackTrace(); }
+		try { hash = Functions.getHash(testUri.toString()); } catch(Exception e) { e.printStackTrace(); }
 		return hash;
 	}
 	

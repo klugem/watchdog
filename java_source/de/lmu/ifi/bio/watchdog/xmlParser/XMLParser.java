@@ -22,6 +22,12 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -89,6 +95,7 @@ public class XMLParser {
 	public static final String DEFAULT_LOCAL_NAME = "default local executor";
 	public static final String DEFAULT_LOCAL_COPY_ENV = "default local copy environment";
 	public static final String TMP_FOLDER = "tmp";
+	public static final String CACHE_XSD_DIR = "cache_module_versions";
 	public static final String SPACER = " ";
 	public static final String EQUAL = "=";
 	public static final String QUOTE = "\"";
@@ -98,6 +105,7 @@ public class XMLParser {
 	public static final String CLOSE_NO_CHILD_TAG = "/>";
 	private static final String DISABLE_FLAG = "no";
 	public static String SUFFIX_SEP = "'+'*'";
+	public static String XSD_ENDING = ".xsd";
 	
 	/* Names of the elements */
 	public static final String ROOT = "watchdog";
@@ -140,6 +148,7 @@ public class XMLParser {
 	public static final String DELETE_FOLDER = "deleteFolder";
 		
 	/* attributes */
+	public static final String VERSION = "version";
 	public static final String PROJECT_NAME = "projectName";
 	public static final String NAME = "name";
 	public static final String FOLDER = "folder";
@@ -206,6 +215,9 @@ public class XMLParser {
 	public static final String UNCOUPLE_FROM_EXECUTOR = "uncoupleFromExecutor";
 	public static final String DISABLE_DEFAULT = "disableDefault"; 
 	public static final String CUSTOM_PARAMETERS = "customParameters";
+	public static final String MIN_VERSION_ATTR = "minVersion";
+	public static final String MAX_VERSION_ATTR = "maxVersion";
+	public static final String MODULE_VERSION_PARAM_NAME_TO_SET = "watchdogModuleVersionParameter";
 	
 	/* values for the return param */
 	private static final String X_EXTENSION = "x:extension";
@@ -233,7 +245,12 @@ public class XMLParser {
 	private static final String RETURN_FILE_PARAMETER = "returnFilePathParameter";
 	private static final String FIXED = "fixed";
 	private static final String PARAM = "param";
-		
+	private static final String DEFAULT_MODULE_VERSION = "1";
+	private static final String XSD_CACHE_ENDING = ".cache.xsd";
+	private static final String XSD_CACHE_SEP = "_";
+	public static final String VERSION_SEP = "§!§";
+	private static final int XSD_SOFTWARE_CACHE_VERSION = 1; // can be used to invalidate the cache if the Watchdog's internal needs ever to be changed
+	
 	/* names of types in XSD */
 	private static final String FLAG_TYPE = "paramBoolean";
 	private static final String DEPENDS_TYPE = "dependsType";
@@ -356,10 +373,10 @@ public class XMLParser {
 				
 		// get all the modules that must be loaded
 		getModules2LoadAndCheckID(dbf, xmlFile);
-		HashSet<String> modules2load = getModules2Load(dbf, xmlFile);
+		HashMap<String, Integer> modules2load = getModules2Load(dbf, xmlFile);
 		boolean allTasksHaveIDs = !enforceNameUsage && hasAllTasksNumericIDs(dbf, xmlFile) && areAllDependenciesNumeric(dbf, xmlFile);
 	
-		Pair<File, HashSet<String>> tmpXSDInfo = createTemporaryXSDFile(schemaPath, modules2load, moduleName2Path, moduleFolders, null);
+		Pair<File, HashSet<String>> tmpXSDInfo = createTemporaryXSDFile(dbf, tmpFolder, schemaPath, modules2load, moduleName2Path, moduleFolders, null);
 		if(tmpXSDInfo == null) {
 			if(!noExit) System.exit(1);
 			return null;
@@ -369,7 +386,7 @@ public class XMLParser {
 		/***************************************************************/
 		
 		// get the return information
-		HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = getReturnInformation(dbf, includedXSDFiles, watchdogBaseDir);
+		HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = getReturnInformation(dbf, includedXSDFiles, watchdogBaseDir, tmpFolder);
 
 		// load the schema in XSD 1.1 format
 		SchemaFactory schemaFac = SchemaFactory.newInstance(XML_1_1);
@@ -687,6 +704,8 @@ public class XMLParser {
 								String checkpoint = (!disableCheckpoint) ? XMLParser.getAttribute(task, CHECKPOINT) : null;
 								String confirmParam = XMLParser.getAttribute(task, CONFIRM_PARAM);
 								int maxRunning = Integer.parseInt(XMLParser.getAttribute(task, MAX_RUNNING));
+								int version = task.hasAttribute(VERSION) ? Integer.parseInt(XMLParser.getAttribute(task, VERSION)) : 1;
+								String versionSetName = XMLParser.getAttribute(task, MODULE_VERSION_PARAM_NAME_TO_SET);
 								
 								ProcessBlock pb = null;
 								OptionFormat globalOptionFormater = getFormater(task);
@@ -789,11 +808,12 @@ public class XMLParser {
 								}			
  
 								// create new task
-								XMLTask x = new XMLTask(id, taskType, binName, name, projectName,  globalOptionFormater, executorInfo, pb);
+								XMLTask x = new XMLTask(id, taskType, version, binName, name, projectName,  globalOptionFormater, executorInfo, pb);
 								x.setMaxRunning(maxRunning);
 								x.setNotify(notifyEnum);
 								x.setCheckpoint(checkpointEnum);
 								x.setConfirmParam(confirmParamEnum);
+								x.setModuleVersionParameterSetName(versionSetName);
 
 								if(retInfo.containsKey(taskType))
 									x.setReturnParameter(retInfo.get(taskType).getKey());
@@ -1070,6 +1090,11 @@ public class XMLParser {
 									LOGGER.error("Found multiple '<"+PARAMETER+">' elements!");
 									if(!noExit) System.exit(1);
 								}
+								// add module version parameter
+								// for version 1 it must not be set because that is the default for all modules by convention
+								if(x.getModuleVersionParameterSetName() != null && x.getModuleVersionParameterSetName().length() > 0 && x.getVersion() != 1) {
+									x.addNoGUILoadParameter(x.getModuleVersionParameterSetName(), Integer.toString(x.getVersion()), globalOptionFormater, -1);
+								}
 	
 								// get actions tag
 								NodeList actionTags = task.getElementsByTagName(ACTIONS);
@@ -1212,13 +1237,24 @@ public class XMLParser {
 		File check = new File(baseDir + File.separator + FILE_CHECK);
 		return check.exists() && check.isFile() && check.canRead();
 	}
+	
+	public static String getXSDCacheDir(File tmpBaseDir) {
+		return tmpBaseDir.getAbsolutePath() + File.separator + CACHE_XSD_DIR;
+	}
+	
+	public static String getCacheFileNameForXSDModule(String tmpDir, File xsdModuleFile, String modName, int version) throws IOException {
+		// get checksum of XSD file
+		String hash = Functions.getFileHash(xsdModuleFile);
+		hash = Functions.getHash(hash + XSD_SOFTWARE_CACHE_VERSION); // can be used to change software version
+		return tmpDir + File.separator + modName + XSD_CACHE_SEP + version + XSD_CACHE_SEP + hash + XSD_CACHE_ENDING;
+	}
 
 	/**
 	 * creates a temporary XSD file in which all that modules are loaded
 	 * @param modules2load
 	 * @return
 	 */
-	public static Pair<File, HashSet<String>> createTemporaryXSDFile(String defaultSchemaPath, HashSet<String> modules2load, HashMap<String, String> moduleName2Path, ArrayList<String> moduleFolders, HashSet<String> includePluginFiles) {
+	public static Pair<File, HashSet<String>> createTemporaryXSDFile(DocumentBuilderFactory dbf, File tmpBaseDir, String defaultSchemaPath, HashMap<String, Integer> modules2load, HashMap<String, String> moduleName2Path, ArrayList<String> moduleFolders, HashSet<String> includePluginFiles) {
 		boolean noExit = false;
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
@@ -1227,6 +1263,17 @@ public class XMLParser {
 		if(!(f.exists() && f.canRead())) {
 			LOGGER.error("Can not find 'xsd/watchdog.xsd' file in watchdog base folder: '" + f.getParentFile().getParent() + "'");
 			if(!noExit) System.exit(1);
+		}
+		
+		// ensure that the XSD cache dir is there
+		String cDir = getXSDCacheDir(tmpBaseDir);
+		File fcDir = new File(cDir);
+		if(!fcDir.exists())
+			fcDir.mkdir();
+		if(!fcDir.exists() || !fcDir.canWrite() || !fcDir.isDirectory()) {
+			LOGGER.error("Could not write into module cache folder '"+cDir+"'.");
+			if(!noExit) System.exit(1);
+			throw new IllegalArgumentException("Could not write into module cache folder '"+cDir+"'.");
 		}
 		
 		// load all plugin XSD files
@@ -1238,14 +1285,32 @@ public class XMLParser {
 		ArrayList<String> missingMod = new ArrayList<>();
 		HashSet<String> includedXSDFiles = new HashSet<>();
 		// check, if all needed modules could be located
-		for(String m : modules2load) {
-			if(moduleName2Path.containsKey(m)) {
-				// add the include info
-				includeMod.add(INCLUDE_XSD.replace(REPLACE, moduleName2Path.get(m)));
-				includedXSDFiles.add(moduleName2Path.get(m));
+		try {
+			for(String modName : modules2load.keySet()) {
+				if(moduleName2Path.containsKey(modName)) {
+					File xsdModuleFile = new File(moduleName2Path.get(modName));
+					
+					// check, which version we have
+					int version = modules2load.get(modName);
+					
+					String fileToLoad = getCacheFileNameForXSDModule(cDir, xsdModuleFile, modName, version);
+					File fileToLoadFile = new File(fileToLoad);
+					
+					// create the file, if it does not exist
+					if(!fileToLoadFile.exists())
+						createdCachedXSDModuleVersion(dbf, xsdModuleFile, fileToLoadFile, version, noExit);
+					
+					// add the include info
+					includeMod.add(INCLUDE_XSD.replace(REPLACE, fileToLoadFile.getAbsolutePath()));
+					includedXSDFiles.add(moduleName2Path.get(modName));
+				}
+				else
+					missingMod.add(modName);
 			}
-			else
-				missingMod.add(m);
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			if(!noExit) System.exit(1);
 		}
 
 		// print an error if modules are missing
@@ -1294,6 +1359,90 @@ public class XMLParser {
 			if(!noExit) System.exit(1);
 		}
 		return null;
+	}
+	
+	/**
+	 * removes all childs with incorrect versions and also the version attributes
+	 * @param el
+	 * @param version
+	 */
+	public static void filterDOM(Element parent, Element el, int version, ArrayList<Pair<Element, Node>> removeLater) {
+		// get versions
+		Integer minVersion = null;
+		Integer maxVersion = null;
+
+		if(el.hasAttribute(MIN_VERSION_ATTR)) {
+			minVersion = Integer.parseInt(el.getAttribute(MIN_VERSION_ATTR));
+			el.getAttributes().removeNamedItem(MIN_VERSION_ATTR);
+		}
+		if(el.hasAttribute(MAX_VERSION_ATTR)) {
+			maxVersion = Integer.parseInt(el.getAttribute(MAX_VERSION_ATTR));
+			el.getAttributes().removeNamedItem(MAX_VERSION_ATTR);
+		}
+
+		// check, if node should be keeped
+		boolean keep = false;
+		if(minVersion == null && maxVersion == null)
+			keep = true;
+		else if(minVersion == null && maxVersion != null && version <= maxVersion)
+			keep = true;
+		else if(minVersion != null && maxVersion == null && minVersion <= version)
+			keep = true;
+		else if(minVersion != null && maxVersion != null && minVersion <= version && version <= maxVersion)
+			keep = true;
+		
+		// remove it
+		if(!keep) {
+			// clean DOM to avoid empty lines where deleted nodes were located before
+			Node prevSib = el.getPreviousSibling();
+			parent.removeChild(el);
+			if(prevSib != null && prevSib.getNodeType() == Node.TEXT_NODE) {
+				if(prevSib.getTextContent().trim().length() == 0) 
+					removeLater.add(Pair.of(parent, prevSib));
+			}
+		}
+		// call it rec.
+		else {
+			NodeList childs = el.getChildNodes();
+			Element c = null;
+			// go through each of the annotated constants
+			for(int i = 0 ; i < childs.getLength(); i++) {
+				if(childs.item(i) instanceof Element) {
+					c = (Element) childs.item(i);
+					filterDOM(el, c, version, removeLater);
+				}
+			}
+		}
+	}
+	
+	public static boolean createdCachedXSDModuleVersion(DocumentBuilderFactory dbf, File xsdModuleFile, File outputFile, int version, boolean noExit) {
+		if(xsdModuleFile.exists() && xsdModuleFile.canRead()) {
+			try {
+				// filter it
+				ArrayList<Pair<Element, Node>>  removeLater = new ArrayList<>();
+				Element root = getRootElement(dbf, xsdModuleFile);
+				filterDOM(root, root, version, removeLater);
+				
+				// remove whitespace nodes afterwards as otherwise remove of attributes is not working...
+				for(Pair<Element, Node> p : removeLater) {
+					p.getLeft().removeChild(p.getRight());
+				}
+
+				// write it to disk
+				Transformer transformer = TransformerFactory.newInstance().newTransformer();
+				Result output = new StreamResult(outputFile);
+				Source input = new DOMSource(root);
+				transformer.transform(input, output);
+			
+				return true;
+			}
+			catch(Exception e) {
+				LOGGER.error("Failed to create cached module version of '" + xsdModuleFile.getAbsolutePath() + "' for version "+ version);
+				e.printStackTrace();
+				if(!noExit) System.exit(1);
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -1622,11 +1771,11 @@ public class XMLParser {
 	 * @param xmlFile
 	 */
 	@SuppressWarnings("unchecked")
-	public static HashSet<String> getModules2Load(DocumentBuilderFactory dbf, File xmlFile) {
+	public static HashMap<String, Integer> getModules2Load(DocumentBuilderFactory dbf, File xmlFile) {
 		if(!XML_MODULE_INFO.containsKey(xmlFile.getAbsolutePath())) {
 			getModules2LoadAndCheckID(dbf, xmlFile);
 		}
-		return (HashSet<String>) XML_MODULE_INFO.get(xmlFile.getAbsolutePath())[0];
+		return (HashMap<String, Integer>) XML_MODULE_INFO.get(xmlFile.getAbsolutePath())[0];
 	}
 	
 	/**
@@ -1674,7 +1823,7 @@ public class XMLParser {
 				noExit = true;
 			try {
 				boolean allID = true;
-				HashSet<String> modules = new HashSet<>();
+				HashMap<String, Integer> modules = new HashMap<>();
 				Element docRoot = getRootElement(dbf, xmlFile);
 				NodeList tasks = docRoot.getElementsByTagName(TASKS);
 				
@@ -1686,7 +1835,14 @@ public class XMLParser {
 							el = (Element) childs.item(i);
 							// get name of module and add it.
 							if(!el.getTagName().equals(XMLParser.SETTINGS)) {
-								modules.add(el.getTagName());
+								String v = el.getAttribute(VERSION);
+								if(v == null || v.length() == 0) v = DEFAULT_MODULE_VERSION; // use default version 1
+								int vi = Integer.parseInt(v);
+								if(modules.containsKey(el.getTagName()) && modules.get(el.getTagName()) != vi) {
+									LOGGER.error("You can not use different versions of the same module in one workflow.");
+									if(!noExit) System.exit(1);
+								}
+								modules.put(el.getTagName(), vi);
 							
 								if(!el.hasAttribute(ID)) {
 									allID = false;
@@ -1782,21 +1938,22 @@ public class XMLParser {
 		}
 		return null;
 	}
-	
+		
 	/**
 	 * gets the return variables of all modules which are included in the schema file and also saves their type
 	 * @param dbf
 	 * @param includedXSDFiles
 	 * @return
 	 */
-	public static HashMap<String, Pair<HashMap<String, ReturnType>, String>> getReturnInformation(DocumentBuilderFactory dbf, HashSet<String> includedXSDFiles, String watchdogBase) {
+	public static HashMap<String, Pair<HashMap<String, ReturnType>, String>> getReturnInformation(DocumentBuilderFactory dbf, HashSet<String> includedXSDFiles, String watchdogBase, File tmpBaseDir) {
 		boolean noExit = false;
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
 		try {
 			HashMap<String, Pair<HashMap<String, ReturnType>, String>> ret = new HashMap<>();
 			String defaultReturnName = getReturnParamName(dbf, new File(watchdogBase + File.separator + ABSTRACT_TASK_PATH));
-
+			String tmpCacheDir = XMLParser.getXSDCacheDir(tmpBaseDir);			
+			
 			// test, which of them are modules
 			for(String xsdFile : includedXSDFiles) {
 				String taskType = getTaskTypeOfModule(dbf, new File(xsdFile));
@@ -1804,7 +1961,18 @@ public class XMLParser {
 					LOGGER.error("Module '"+ new File(xsdFile).getAbsolutePath() +"' does not contain a valid task name given via a substitutionGroup.");
 					if(!noExit) System.exit(1);
 				}
-				ret.put(taskType, getReturnTypeOfModule(dbf, new File(xsdFile)));
+				HashSet<Integer> versions = getVersionsOfModule(dbf, new File(xsdFile));
+				for(int v : versions) {
+					// ensure that a cached version of the module is there 
+					String fileToLoad = getCacheFileNameForXSDModule(tmpCacheDir, new File(xsdFile), taskType, v);
+					File fileToLoadFile = new File(fileToLoad);
+					
+					// create the file, if it does not exist
+					if(!fileToLoadFile.exists())
+						createdCachedXSDModuleVersion(dbf, new File(xsdFile), fileToLoadFile, v, noExit);
+
+					ret.put(taskType + VERSION_SEP + v, getReturnTypeOfModule(dbf, fileToLoadFile));
+				}
 			}
 			// update all the default names, if none are set
 			for(String k : new ArrayList<String>(ret.keySet())) {
@@ -1835,20 +2003,25 @@ public class XMLParser {
 	 * @param watchdogBase
 	 * @return
 	 */
-	public static HashMap<String, HashMap<String, Parameter>> getParameters(DocumentBuilderFactory dbf, HashSet<String> includedXSDFiles, String xsdRootDir) {
+	public static HashMap<String, Pair<Pair<File, File>, HashMap<String, Parameter>>> getParameters(DocumentBuilderFactory dbf, HashSet<String> includedXSDFiles, String xsdRootDir, File tmpBaseDir) {
 		boolean noExit = false;
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
 		try {
 			// get types defined in the schema
 			ArrayList<Element> rootTypes = getComplexAndSimpleTypes(dbf, BASE_ROOT_TYPES, xsdRootDir);
+			String tmpCacheDir = XMLParser.getXSDCacheDir(tmpBaseDir);
 
 			// get the individual types
-			HashMap<String, HashMap<String, Parameter>> ret = new HashMap<>();
+			HashMap<String, Pair<Pair<File, File>, HashMap<String, Parameter>>> ret = new HashMap<>();
 			for(String xsdFile : includedXSDFiles) {
 				String taskType = getTaskTypeOfModule(dbf, new File(xsdFile));
-				ret.put(taskType, getParametersOfModule(dbf, new File(xsdFile), rootTypes));
+				HashSet<Integer> versions = getVersionsOfModule(dbf, new File(xsdFile));
+				for(int v : versions) {
+					ret.put(taskType + VERSION_SEP + v, getParametersOfModule(dbf, new File(xsdFile), tmpCacheDir, rootTypes, taskType, v, noExit));
+				}
 			}
+			// yes, it can get more ugly that it was before
 			return ret;
 		}
 		catch(Exception e) {
@@ -2023,6 +2196,48 @@ public class XMLParser {
 	}
 	
 	/**
+	 * finds all versions of a XSD module
+	 * @param dbf
+	 * @param schemaFile
+	 * @return
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 */
+	public static HashSet<Integer> getVersionsOfModule(DocumentBuilderFactory dbf, File schemaFile) throws ParserConfigurationException, SAXException, IOException {
+		Element docRoot = getRootElement(dbf, schemaFile);
+		
+		// find parameter name for return
+		HashSet<Integer> r = new HashSet<>();
+		r.add(1); // there is always a version 1!
+		checkElementForVersion(docRoot, r);
+		return r;
+	}
+	
+	public static void checkElementForVersion(Element el, HashSet<Integer> results) {
+		if(el == null)
+			return;
+		// check, if current element has the attribute
+		if(el.hasAttribute(MIN_VERSION_ATTR)) {
+			try {
+				int v = Integer.parseInt(el.getAttribute(MIN_VERSION_ATTR));
+				results.add(v);
+			}
+			catch(Exception e) {}
+		}
+		// check all childs of it
+		if(el.hasChildNodes()) {
+			NodeList elements = el.getChildNodes();
+			for(int i = 0 ; i < elements.getLength(); i++) {
+				if(elements.item(i) instanceof Element) {
+					el = (Element) elements.item(i);
+					checkElementForVersion(el, results);
+				}
+			}
+		}
+	}
+	
+	/**
 	 * reads the parameters of the XSD file
 	 * @param dbf
 	 * @param schemaFile
@@ -2031,8 +2246,17 @@ public class XMLParser {
 	 * @throws SAXException
 	 * @throws IOException
 	 */
-	public static HashMap<String, Parameter> getParametersOfModule(DocumentBuilderFactory dbf, File schemaFile, ArrayList<Element> rootTypes) throws ParserConfigurationException, SAXException, IOException {
-		Element docRoot = getRootElement(dbf, schemaFile);
+	public static Pair<Pair<File, File>, HashMap<String, Parameter>> getParametersOfModule(DocumentBuilderFactory dbf, File schemaFile, String xsdCacheDir, ArrayList<Element> rootTypes, String modName, int version, boolean noExit) throws ParserConfigurationException, SAXException, IOException {
+		// ensure that a cached version of the module is there 
+		String fileToLoad = getCacheFileNameForXSDModule(xsdCacheDir, schemaFile, modName, version);
+		File fileToLoadFile = new File(fileToLoad);
+		
+		// create the file, if it does not exist
+		if(!fileToLoadFile.exists())
+			createdCachedXSDModuleVersion(dbf, schemaFile, fileToLoadFile, version, noExit);
+		
+		// parse the file
+		Element docRoot = getRootElement(dbf, fileToLoadFile);
 		HashMap<String, Parameter> p = new HashMap<>();
 		String parameterDefinitionName = null;
 		Element el = null;
@@ -2089,7 +2313,7 @@ public class XMLParser {
 		}
 		else
 			LOGGER.debug("Element with name '"+PARAMETER+"' was not found in '"+schemaFile.toString()+"'. Perhaps the module does not accept any parameters.");
-		return p;
+		return Pair.of(Pair.of(schemaFile, fileToLoadFile), p);
 	}
 	
 	/**

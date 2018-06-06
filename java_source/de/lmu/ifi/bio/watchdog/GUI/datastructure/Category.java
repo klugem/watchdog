@@ -16,7 +16,7 @@ public class Category implements ListLibraryView {
 	}
 
 	@Override
-	public String getName() {
+	public String getNameForDisplay() {
 		return this.NAME;
 	}
 }

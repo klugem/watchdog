@@ -3,15 +3,18 @@ package de.lmu.ifi.bio.watchdog.GUI.preferences;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import de.lmu.ifi.bio.utils.interfaces.EventDistributor;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.ValidateViewController;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
+import javafx.event.Event;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 
 public abstract class AbstractPreferencesController extends ValidateViewController {
 	
 	private BorderPane parentPane;
-
+	private EventDistributor eventDistributor;
+	
 	public AbstractPreferencesController() {
 		this.saveButton = new Button(); // dummy save button
 	}
@@ -56,4 +59,21 @@ public abstract class AbstractPreferencesController extends ValidateViewControll
 	public void checkSettingsWhenNoDataIsThere() {
 		this.onLoad();
 	}
+
+	public void setEventDistributorForEvents(EventDistributor ed) {
+		this.eventDistributor = ed;
+	}
+		
+	public boolean sendEventToSiblingPages(Event e) {
+		if(this.eventDistributor == null)
+			return false;
+		this.eventDistributor.distribute(e);
+		return true;
+	}
+
+	/**
+	 * can be overwritten
+	 * @param e
+	 */
+	public void recieveEventFromSiblingPages(Event e) {}
 }

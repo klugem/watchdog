@@ -12,12 +12,14 @@ import java.util.ResourceBundle;
 import de.lmu.ifi.bio.watchdog.GUI.ToolLibraryController;
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.MessageType;
 import de.lmu.ifi.bio.watchdog.GUI.event.ToolLibraryUpdateEvent;
+import de.lmu.ifi.bio.watchdog.GUI.event.WatchdogBaseDirUpdateEvent;
 import de.lmu.ifi.bio.watchdog.GUI.helper.Inform;
 import de.lmu.ifi.bio.watchdog.GUI.helper.PreferencesStore;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
@@ -51,7 +53,7 @@ public class ModulesPreferencesController extends AbstractPreferencesController 
 		this.dirname.setCellValueFactory(new PropertyValueFactory<SimpleModuleDir, String>("Name"));
 		this.dirs.setCellValueFactory(new PropertyValueFactory<SimpleModuleDir, String>("Dir"));
 		this.table.setItems(this.MOD_OBSERV_DIRS);
-		
+
 		// add validate stuff
 		this.addValidateToControl(this.name, "name", f -> this.isNameValid());
 		
@@ -69,13 +71,29 @@ public class ModulesPreferencesController extends AbstractPreferencesController 
 		super.initialize(location, resources);
 	}
 	
+	@Override
+	public void recieveEventFromSiblingPages(Event e) {
+		if(e instanceof WatchdogBaseDirUpdateEvent) {
+			WatchdogBaseDirUpdateEvent ew = (WatchdogBaseDirUpdateEvent) e;
+			this.updateDefaultModule(ew.getNewBaseDir());
+		}
+	}
+	
+	private void updateDefaultModule(String newBaseDir) {
+		this.MOD_DIRS.putAll(PreferencesStore.getMouleFolders());
+		this.updateGUI();
+		// send the event to update module lib
+		Parent target = this.getParentToSendEvents();
+		ToolLibraryUpdateEvent event = new ToolLibraryUpdateEvent();
+		target.fireEvent(event);
+	}
+
 	private void removeFolder() {
 		String name = this.table.getSelectionModel().selectedItemProperty().getValue().getName();
 		this.removeFolder(name);
 	}
 
 	private boolean isNameValid() {
-		
 		// check, if name is already in use
 		return !this.MOD_DIRS.containsKey(this.name.getText());
 	}
@@ -159,16 +177,18 @@ public class ModulesPreferencesController extends AbstractPreferencesController 
 
 	@Override
 	public void onSave() {
-		PreferencesStore.setModuleDirectories(this.MOD_DIRS);
-		
-		// send the event
-		Parent target = this.getParentToSendEvents();
-		ToolLibraryUpdateEvent event = new ToolLibraryUpdateEvent();
-		target.fireEvent(event);
-		
+		boolean change = PreferencesStore.setModuleDirectories(this.MOD_DIRS);
 		super.onSave();
+		
+		if(change) {
+			// send the event
+			Parent target = this.getParentToSendEvents();
+			ToolLibraryUpdateEvent event = new ToolLibraryUpdateEvent();
+			target.fireEvent(event);
+		}
 	}
 
+	
 	@Override
 	public void onLoad() {
 		this.MOD_DIRS.putAll(PreferencesStore.getMouleFolders());

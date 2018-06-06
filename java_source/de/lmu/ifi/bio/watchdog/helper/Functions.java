@@ -5,10 +5,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -23,6 +27,8 @@ import de.lmu.ifi.bio.watchdog.logger.Logger;
  */
 public class Functions {
 	
+	private static final String UTF8 = "UTF-8";
+	public static MessageDigest MD;
 	private static final Logger LOGGER = new Logger(LogLevel.WARNING);
 	private static final String ONE = "1";
 	private static final String TRUE= "true";
@@ -30,6 +36,16 @@ public class Functions {
 	private static final String TMP_ENDING = ".tmp";
 	private static String temporaryFolder = "/tmp";
 	private static String WORKING_DIR_WATCHDOG = "watchdogWork_";
+	
+	static {
+		try {
+			MD = MessageDigest.getInstance("SHA-256");
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			LOGGER.error("Can not find sha-256");
+			System.exit(1);
+		}
+	}
 	
 	/**
 	 * gets the first x parts of a name (parts are separated by '.') and removes the rest of the string
@@ -199,4 +215,17 @@ public class Functions {
 			}
 		}
 	}
+	
+	public static String getHash(String stringToHash) throws UnsupportedEncodingException {
+		return getHash(stringToHash.toString().getBytes(UTF8));
+	}
+	
+	public static String getHash(byte[] dataToHash) {
+		return Hex.encodeHexString(Functions.MD.digest(dataToHash));
+	}
+	
+	public static String getFileHash(File filename) throws IOException {
+		return getHash(Files.readAllBytes(filename.toPath()));
+	}
+	
 }

@@ -330,6 +330,30 @@
 		</x:all>
 	</x:group>
 
+	<!-- for module version in XSD -->
+	<x:attribute name="minVersion">
+		<x:simpleType>
+			<x:restriction base="x:integer">
+				<x:pattern value="[0-9]+"/>
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+	<x:attribute name="maxVersion">
+		<x:simpleType>
+			<x:restriction base="x:integer">
+				<x:pattern value="[0-9]+"/>
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+	<!-- for task versions in XML -->
+	<x:attribute name="version">
+		<x:simpleType>
+			<x:restriction base="x:integer">
+				<x:pattern value="[0-9]+"/>
+			</x:restriction>
+		</x:simpleType>
+	</x:attribute>
+
 	<!-- base task definition definition -->
 	<x:complexType name="baseAttributeTaskType" abstract="true">	
 		<x:attribute name="name" type="numericOrAlphabet" use="required"/>
@@ -343,12 +367,14 @@
 		<x:attribute ref="maxRunning" default="-1"/>
 		<x:attribute name="posX" type="coordinate" use="optional"/>
 		<x:attribute name="posY" type="coordinate" use="optional"/>
+		<x:attribute ref="version" default="1"/>
 
-		<!-- attributes every task must have and might want to override -->
+		<!-- attributes every task must have and might want to override in the XSD -->
 		<!--============================================================-->
 		<x:attribute name="binName" type="x:string" default="binName/not/Overriden.error"/>
 		<x:attribute name="preBinCommand" type="x:string" default=""/>
 		<x:attribute name="isWatchdogModule" type="x:boolean" default="true" />
+		<x:attribute name="watchdogModuleVersionParameter" type="x:string" default="moduleVersion" />
 		<x:attribute name="returnFilePathParameter" type="x:string" default="returnFilePath"/>
 		<x:attribute ref="paramFormat" default="longShort"/>
 		<x:attribute ref="spacingFormat" default="blankSeparated"/>

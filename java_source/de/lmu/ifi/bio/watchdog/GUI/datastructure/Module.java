@@ -23,14 +23,16 @@ public class Module implements ListLibraryView, Serializable {
 	protected final String INSTALL_DIR;
 	protected final String IMAGE;
 	protected final String CAT;
+	protected final int VERSION;
 	protected final LinkedHashMap<String, Parameter> PARAMETER;
 	protected final HashMap<String, ReturnType> RETURN_PARAMS = new HashMap<>();
 	
-	public Module(String name, String installDir, String image, HashMap<String, Parameter> parameter, HashMap<String, ReturnType> retParams, String cat) {
+	public Module(String name, String installDir, String image, HashMap<String, Parameter> parameter, HashMap<String, ReturnType> retParams, String cat, int version) {
 		this.NAME = name;
 		this.INSTALL_DIR = installDir;
 		this.IMAGE = ImageLoader.getURL(ImageLoader.RED).toString(); 
 		this.CAT = cat;
+		this.VERSION = version;
 		
 		LinkedHashMap<String, Parameter> sortedList = new LinkedHashMap<>();
 		// sort parameters
@@ -44,6 +46,14 @@ public class Module implements ListLibraryView, Serializable {
 		this.PARAMETER = sortedList;
 		if(retParams != null)
 			this.RETURN_PARAMS.putAll(retParams);
+	}
+	
+	public String getNameForDisplay() {
+		return getNameForDisplay(this.NAME, this.getVersion());
+	}
+	
+	public static String getNameForDisplay(String name, int version) {
+		return name + " (v" + version + ")";
 	}
 
 	public String getName() {
@@ -60,6 +70,10 @@ public class Module implements ListLibraryView, Serializable {
 	
 	public String getCategory() {
 		return this.CAT;
+	}
+	
+	public int getVersion() {
+		return this.VERSION;
 	}
 	
 	public boolean hasImage() {
@@ -82,7 +96,7 @@ public class Module implements ListLibraryView, Serializable {
 		private static final long serialVersionUID = -2312650814682405950L;
 
 		public RootModule() {
-			super("", "", "", null, null, "");
+			super("", "", "", null, null, "", 0);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 #!/bin/bash
 SCRIPT_FOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+MODULE_VERSION_PARAMETER_NAME="--moduleVersion"
 source $SCRIPT_FOLDER/../../core_lib/includeBasics.sh $@
 TMP_FOLDER=$(getDefaultFolderForTmpFiles)
 cd "$TMP_FOLDER"
@@ -15,7 +16,7 @@ if [ $CODE -ne 0 ]; then
 fi
 
 # define parameters
-
+# params used in any version of the module
 DEFINE_string 'annotation' '' 'feature annotation in GTF or SAF format' 'a'
 DEFINE_string 'input' '' 'index bam file which should be used for counting' 'i'
 DEFINE_string 'output' '' 'path to output file' 'o'
@@ -25,15 +26,26 @@ DEFINE_string 'groupType' 'gene_id' '[optional] attribute which is used for summ
 DEFINE_boolean 'disableGroupSummarization' '1' '[optional] parameter can be used to turn summarization on groupType off' ''
 DEFINE_integer 'stranded' '0' '[optional] indicates strand-specific read counting; possible values:  0 (unstranded), 1 (stranded) and 2 (reversely stranded)' 's'
 DEFINE_integer 'threads' '1' '[optional] number of threads used for counting' 't'
-DEFINE_string 'minOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
 DEFINE_boolean 'multiMapping' '1' 'when enabled all alignments of multi mapping reads are counted' ''
 DEFINE_boolean 'primary' '0' '[optional] when enabled only alignments which are flaged as primary alignments are counted' 'p'
 DEFINE_boolean 'countFragments' '1' '[optional] paired end parameter: counts fragments instead of reads' 'P'
 DEFINE_string 'returnFilePath' '' 'path to the return variables file' ''
 DEFINE_boolean 'multiCountMetaFeatures' '1' '[optional] allows a read to be counted for more than one meta-feature' 'O'
-DEFINE_boolean 'detailedReadAssignments' '1' '[optional] saves for each read if it was assigned or not; filename: {input_file_name}.featureCounts; format: read name<TAB>status<TAB>feature name<TAB>number of counts for that read ' 'd'
+DEFINE_boolean 'detailedReadAssignments' '1' '[optional] saves for each read if it was assigned or not; filename: {input_file_name}.featureCounts; format: read name<TAB>status<TAB>feature name<TAB>number of counts for that read' 'd'
+# params only available in module version 1
+if [ ${MODULE_VERSION} -eq 1 ]; then
+	DEFINE_string 'minOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
+# params only available in module version 2
+elif [ ${MODULE_VERSION} -eq 2 ]; then
+	DEFINE_string 'minReadOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
+	DEFINE_string 'minFracOverlap' '0' '[optional] assign reads to a meta-feature/feature that has the largest number of overlapping bases' ''
+	DEFINE_integer 'readExtension5' '0' "[optional] extend reads at the 5' end" ''
+	DEFINE_integer 'readExtension3' '0' "[optional] extend reads at the 3' end" ''
+	DEFINE_boolean 'fraction' '1' '[optional] count fractional; only in combination with the assignToAllOverlappingFeatures or/and multiMapping flag(s)' ''
+	DEFINE_boolean 'largestOverlap' '1' '[optional] assign reads to a meta-feature/feature that has the largest number of overlapping bases.' ''
+fi
+DEFINE_integer 'moduleVersion' '1' '[optional] version of the module that should be used' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
-
 
 # parse parameters
 FLAGS "$@" || exit $EXIT_INVALID_ARGUMENTS
@@ -104,9 +116,6 @@ fi
 if [ $FLAGS_threads -ne 1 ]; then 
 	COMMAND="$COMMAND -T '$FLAGS_threads'"
 fi
-if [ $FLAGS_minOverlap -ne 1 ]; then 
-	COMMAND="$COMMAND --minReadOverlap '$FLAGS_minOverlap'"
-fi
 if [ $FLAGS_multiMapping -eq 0 ]; then 
 	COMMAND="$COMMAND -M"
 fi
@@ -121,6 +130,33 @@ if [ $FLAGS_multiCountMetaFeatures -eq 0 ]; then
 fi
 if [ $FLAGS_detailedReadAssignments -eq 0 ]; then
 	COMMAND="$COMMAND -R"
+fi
+
+# params only available in module version 1
+if [ ${MODULE_VERSION} -eq 1 ]; then
+	if [ $FLAGS_minOverlap -ne 1 ]; then 
+		COMMAND="$COMMAND --minReadOverlap '$FLAGS_minOverlap'"
+	fi
+# params only available in module version 2
+elif [ ${MODULE_VERSION} -eq 2 ]; then
+	if [ $FLAGS_minReadOverlap -ne 1 ]; then 
+		COMMAND="$COMMAND --minOverlap '$FLAGS_minReadOverlap'"
+	fi
+	if [ $FLAGS_minFracOverlap -ne 0 ]; then 
+		COMMAND="$COMMAND --fracOverlap '$FLAGS_minFracOverlap'"
+	fi
+	if [ $FLAGS_largestOverlap -eq 0 ]; then 
+		COMMAND="$COMMAND --largestOverlap"
+	fi
+	if [ $FLAGS_fraction -eq 0 ]; then
+		COMMAND="$COMMAND --fraction"
+	fi
+	if [ $FLAGS_readExtension5 -gt 0 ]; then
+		COMMAND="$COMMAND --readExtension5 $FLAGS_readExtension5"
+	fi
+	if [ $FLAGS_readExtension3 -gt 0 ]; then
+		COMMAND="$COMMAND --readExtension3 $FLAGS_readExtension3"
+	fi
 fi
 COMMAND="$COMMAND '$FLAGS_input'"
 

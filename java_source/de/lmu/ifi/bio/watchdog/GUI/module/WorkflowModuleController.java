@@ -611,7 +611,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 	
 	public void setModuleData(Module m) {
 		this.moduleData = m;
-		this.setLabel(this.moduleData.getName());
+		this.setLabel(this.moduleData.getNameForDisplay());
 		this.setImage(new Image(this.moduleData.getImage()));
 	}
 
@@ -843,6 +843,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 		
 		b.addQuotedAttribute(XMLParser.ID, this.DATA.id);
 		b.addQuotedAttribute(XMLParser.NAME, this.DATA.name);
+		b.addQuotedAttribute(XMLParser.VERSION, this.getModuleData().getVersion());
 		
 		// add maxSimRunning
 		if(this.DATA.simMaxRunning != -1) b.addQuotedAttribute(XMLParser.MAX_RUNNING, this.DATA.simMaxRunning);

@@ -357,6 +357,34 @@ function max() {
 	fi
 }
 
+# try to find an argument that h
+function getSetModuleVersion() {
+	RET=1 # default version
+	NAME_TO_FIND=${@: -1}
+	# shift until we find it
+	while [ "$1" != "$NAME_TO_FIND" ]; do
+		shift
+	done
+	# test, if last element was it
+	if [ "$1" == "$NAME_TO_FIND" ]; then
+		shift
+		# check, if we have some more or if
+		if [ "$1" != "$NAME_TO_FIND" ] && [ ! -z "$1" ]; then
+			RET=$1
+		fi
+	fi
+	# output the version
+	echo $RET
+}
+
+# removes the last parameter
+function removeModuleVersionParams() {
+	N=$#
+	N=$((N-1))
+	CUT=${@:1:$N}
+	echo $CUT
+}
+
 # first parameter: number of cores
 # second parameter: memory in MB per core
 # does override these settings, if executed on the GRID

@@ -3,14 +3,11 @@ package de.lmu.ifi.bio.watchdog.slave;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.tuple.Pair;
 
 import de.lmu.ifi.bio.network.exception.ConnectionNotReady;
 import de.lmu.ifi.bio.network.server.Server;
@@ -122,7 +119,7 @@ public class Master extends Server {
 			}
 
 			// start the new slave
-			XMLTask slave = new XMLTask(Master.slaves--, taskName, exec.getPath2Java() + " -Xms256m -Xmx256m", taskName, "", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.blankSeperated, null), exec, env);
+			XMLTask slave = new XMLTask(Master.slaves--, taskName, 1, exec.getPath2Java() + " -Xms256m -Xmx256m", taskName, "", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.blankSeperated, null), exec, env);
 			//slave.addParameter("Xms", "256M", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.notSeparated), -1);
 			//slave.addParameter("Xmx", "256M", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.notSeparated), -1); // TODO
 			slave.addParameter("jar", watchdogBase.getAbsolutePath() + File.separator + SLAVE_JAR, null, -1);

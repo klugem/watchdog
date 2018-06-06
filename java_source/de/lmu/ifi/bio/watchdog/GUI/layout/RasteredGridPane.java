@@ -57,6 +57,8 @@ public class RasteredGridPane extends GridPane {
 	private final Pane GRID = new Pane();
 	private final Pane DEP = new Pane();
 	private final HashMap<String, Node> USED_CELLS = new HashMap<> ();
+	private final HashMap<Module, Integer> USED_MODULE_COUNT = new HashMap<>();
+	private final HashMap<String, Integer> USED_MODULE_VERSION = new HashMap<>();
 	private final Rectangle MARK_CELL = new Rectangle();
 	private final HashMap<String, Dependency> DEPENDENCIES = new HashMap<>();
 	private WorkflowModule clipboard;
@@ -475,14 +477,31 @@ public class RasteredGridPane extends GridPane {
 	 * @param y
 	 */
 	public boolean placeContent(Node n, int x, int y, boolean duringReinit) {
+		// ensure that version can be used
+		if(n instanceof WorkflowModule) {
+			WorkflowModule wm = (WorkflowModule) n;
+			Module m = wm.getModule();
+			int v = m.getVersion();
+			String name = m.getName();
+			if(this.USED_MODULE_VERSION.containsKey(name)) {
+				int usedV = this.USED_MODULE_VERSION.get(name);
+				if(usedV != v) {
+					StatusConsole.addGlobalMessage(MessageType.ERROR, "task of module type '"+m.getNameForDisplay()+"' was not added because you are already using another version ('" +usedV+ "') of that module"); 
+					return false;
+				}
+			}
+		}
 		if(x >= 0 && x < this.xNumber && y >= 0 && y < this.yNumber) {
 			// reset opacity
 			if(this.clipboard != null)
 				n.setOpacity(1);
 			
 			HashMap<Dependency, Boolean> dependencies = null;
-			if(n instanceof WorkflowModule)
-				dependencies = this.getDependencies(((WorkflowModule) n).getPosition());
+			if(n instanceof WorkflowModule) {
+				WorkflowModule wm = (WorkflowModule) n;
+				dependencies = this.getDependencies(wm.getPosition());
+				this.increaseModuleCount(wm);
+			}
 			
 			// add node at this position
 			this.add(n, x, y);
@@ -588,12 +607,16 @@ public class RasteredGridPane extends GridPane {
 			Node n = this.USED_CELLS.remove(key);
 			this.getChildren().remove(n);
 			
+			if(n instanceof WorkflowModule)
+				this.decreaseModuleCount(((WorkflowModule) n));
+			
 			// remove dependencies
 			if(deleteDependencies) {
 				this.removeDependencies(x, y, true);
 				this.removeDependencies(x, y, false);
 				if(n instanceof WorkflowModule) {
-					((WorkflowModule) n).unregisterData();
+					WorkflowModule wm = ((WorkflowModule) n);
+					wm.unregisterData();
 				}
 			}
 			return n;
@@ -601,6 +624,45 @@ public class RasteredGridPane extends GridPane {
 		return null;
 	}
 	
+	/**
+	 * counts how often a module is used within the workflow
+	 * @param wm
+	 * @return
+	 */
+	public int getModuleCount(Module module) {
+		int c = 0;
+		if(this.USED_MODULE_COUNT.containsKey(module))
+			c = this.USED_MODULE_COUNT.get(module);
+		return c;
+	}
+
+	/**
+	 * counts how often a module is used for versions (decrease module count)
+	 * @param wm
+	 */
+	private void decreaseModuleCount(WorkflowModule wm) {
+		Module key = wm.getModule();
+		int c = this.getModuleCount(key);
+		// delete entry
+		if(c <= 1) {
+			this.USED_MODULE_COUNT.remove(key);
+			this.USED_MODULE_VERSION.remove(key.getName());
+		}
+		else
+			this.USED_MODULE_COUNT.put(key, Math.max(0, c-1));
+	}
+	
+	/**
+	 * counts how often a module is used for versions (increase module count)
+	 * @param wm
+	 */
+	private void increaseModuleCount(WorkflowModule wm) {
+		Module key = wm.getModule();
+		int c = this.getModuleCount(key);
+		this.USED_MODULE_COUNT.put(key, c+1);
+		this.USED_MODULE_VERSION.put(key.getName(), key.getVersion());
+	}
+
 	private void moveAllDependencies(int shiftX, int shiftY) {
 		for(String depKey : new ArrayList<>(this.DEPENDENCIES.keySet())) {
 			Dependency d = this.getDependency(depKey);
@@ -727,7 +789,7 @@ public class RasteredGridPane extends GridPane {
 			WorkflowModule wm = WorkflowModule.getModule(m, x, y, this);
 			success = this.placeContent(wm, x, y, false);
 			if(success)
-				StatusConsole.addGlobalMessage(MessageType.INFO, "task of module type '"+m.getName()+"' was added at " + wm.getKey()); 
+				StatusConsole.addGlobalMessage(MessageType.INFO, "task of module type '"+m.getNameForDisplay()+"' was added at " + wm.getKey()); 
 		}
 		else {
 			// an old module might be moved
@@ -786,7 +848,7 @@ public class RasteredGridPane extends GridPane {
 			this.deleteModule(pos.getKey(), pos.getValue(), true);
 		}
 		// ensure that all dependencies are really gone
-	this.DEP.getChildren().clear();
+		this.DEP.getChildren().clear();
 		this.DEPENDENCIES.clear();
 	}
 

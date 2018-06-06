@@ -40,7 +40,8 @@
 <a href="#custom_modules_binary" class="smallsubtopic">5.3 Binary call command and other settings</a><br />
 <a href="#custom_modules_name" class="smallsubtopic">5.4 Assign a name to the new module</a><br />
 <a href="#custom_modules_all_together" class="smallsubtopic">5.5 Putting it all together</a><br />
-<a href="#custom_modules_other" class="smallsubtopic">5.6 Other matters</a><br />
+<a href="#module_versions" class="smallsubtopic">5.6 Module versions</a><br />
+<a href="#custom_modules_other" class="smallsubtopic">5.7 Other matters</a><br />
 <a href="#extensions" class="smalltopic">6 Extend Watchdog's functionality</a><br />
 <a href="#vfs" class="smallsubtopic">6.1 Virtual file systems for task actions</a><br />
 <a href="#plugins" class="smallsubtopic">6.2 XML Plugins</a><br />
@@ -241,13 +242,16 @@ Example 3 shows a most basic XML file that contains only a single task named <pr
 <tr><td><pre class="tag">tasks</pre></td><td><pre class="attr">[projectName]</pre></td><td>string</td><td>name of the complete process; default: not set</td></tr>
 <tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[id]</pre></td><td>integer</td><td>numeric id of the task; if not set all id's will be automatically generated; default: not set</td></tr>
 <tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>name of the task</td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">processBlock</pre></td><td>string</td><td>processBlock as source of varying parameters (see <a href="#process_blocks">4.1</a>)</td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">executor</pre></td><td>string</td><td>execution environment on which the task is executed (see <a href="#execution_environments">4.3</a>)</td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">environment</pre></td><td>string</td><td>use globally defined environment variables (see <a href="#environment_variables">4.5</a>)</td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">maxRunning</pre></td><td>integer</td><td>maximal number of simultaneously running tasks; default: not restricted </td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">notify</pre></td><td>enum</td><td>notification of the user via mail on success; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre> (see <a href="#mail_notification">4.6</a>)</td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">checkpoint</pre></td><td>enum</td><td>does not schedule tasks which depend on this task until manually released by the user; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre></td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">confirmParam</pre></td><td>enum</td><td>allows the user to modify the parameters before the task is scheduled; enabled: task will not be scheduled until the user checks the parameter; default: <pre class="name">disabled</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[processBlock]</pre></td><td>string</td><td>processBlock as source of varying parameters (see <a href="#process_blocks">4.1</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[executor]</pre></td><td>string</td><td>execution environment on which the task is executed (see <a href="#execution_environments">4.3</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[environment]</pre></td><td>string</td><td>use globally defined environment variables (see <a href="#environment_variables">4.5</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[maxRunning]</pre></td><td>integer</td><td>maximal number of simultaneously running tasks; default: not restricted </td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[notify]</pre></td><td>enum</td><td>notification of the user via mail on success; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre> (see <a href="#mail_notification">4.6</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[checkpoint]</pre></td><td>enum</td><td>does not schedule tasks which depend on this task until manually released by the user; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[confirmParam]</pre></td><td>enum</td><td>allows the user to modify the parameters before the task is scheduled; enabled: task will not be scheduled until the user checks the parameter; default: <pre class="name">disabled</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[version]</pre></td><td>integer</td><td>version of the module that should be used for that task; default: <pre class="name">1</pre> (see <a href="#module_versions">5.6</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[posX]</pre></td><td>integer</td><td>x coordinate for display in GUI; default: not set</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[posY]</pre></td><td>integer</td><td>y coordinate for display in GUI; default: not set</td></tr>
 
 		</tbody>
 	</table>
@@ -268,13 +272,16 @@ Example 3 shows a most basic XML file that contains only a single task named <pr
 <tr><td><pre class="tag">tasks</pre></td><td><pre class="attr">[projectName]</pre></td><td>string</td><td>name of the complete process; default: not set</td></tr>
 <tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[id]</pre></td><td>integer</td><td>numeric id of the task; if not set all id's will be automatically generated; default: not set</td></tr>
 <tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>name of the task</td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">processBlock</pre></td><td>string</td><td>processBlock as source of varying parameters (see <a href="#process_blocks">4.1</a>)</td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">executor</pre></td><td>string</td><td>execution environment on which the task is executed (see <a href="#execution_environments">4.3</a>)</td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">environment</pre></td><td>string</td><td>use globally defined environment variables (see <a href="#environment_variables">4.5</a>)</td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">maxRunning</pre></td><td>integer</td><td>maximal number of simultaneously running tasks; default: not restricted </td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">notify</pre></td><td>enum</td><td>notification of the user via mail on success; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre> (see <a href="#mail_notification">4.6</a>)</td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">checkpoint</pre></td><td>enum</td><td>does not schedule tasks which depend on this task until manually released by the user; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre></td></tr>
-<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">confirmParam</pre></td><td>enum</td><td>allows the user to modify the parameters before the task is scheduled; enabled: task will not be scheduled until the user checks the parameter; default: <pre class="name">disabled</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[processBlock]</pre></td><td>string</td><td>processBlock as source of varying parameters (see <a href="#process_blocks">4.1</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[executor]</pre></td><td>string</td><td>execution environment on which the task is executed (see <a href="#execution_environments">4.3</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[environment]</pre></td><td>string</td><td>use globally defined environment variables (see <a href="#environment_variables">4.5</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[maxRunning]</pre></td><td>integer</td><td>maximal number of simultaneously running tasks; default: not restricted </td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[notify]</pre></td><td>enum</td><td>notification of the user via mail on success; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre> (see <a href="#mail_notification">4.6</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[checkpoint]</pre></td><td>enum</td><td>does not schedule tasks which depend on this task until manually released by the user; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[confirmParam]</pre></td><td>enum</td><td>allows the user to modify the parameters before the task is scheduled; enabled: task will not be scheduled until the user checks the parameter; default: <pre class="name">disabled</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[version]</pre></td><td>integer</td><td>version of the module that should be used for that task; default: <pre class="name">1</pre> (see <a href="#module_versions">5.6</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[posX]</pre></td><td>integer</td><td>x coordinate for display in GUI; default: not set</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[posY]</pre></td><td>integer</td><td>y coordinate for display in GUI; default: not set</td></tr>
 
 			</tbody>
 		</table>
@@ -1387,6 +1394,7 @@ In addition to that, the following settings can be modified:
 <li><pre class="name">preBinCommand</pre>: command that is added before the binName; e.g. interpreter</li>
 <li><pre class="name">isWatchdogModule</pre>: by default the command must be located in modules/<pre class="name">binName</pre>; if this parameter is false the command must point to a absolute binary or be reachable via the PATH environment variable</li>
 <li><pre class="name">returnFilePathParameter</pre>: name of the parameter that is used to store the return values</li>
+<li><pre class="name">watchdogModuleVersionParameter</pre>: name of the parameter that passes the module version to the called command if a version different to <pre class="name">1</pre> should be used; default: <pre class="name">moduleVersion</pre> (using the default parameter pasing options defined with the settings below; use an empty string to disable the passing of the module version)</li>
 <li><pre class="name">paramFormat</pre>: defines how names of parameters are prefixed; (do not print parameter name, - or --); default: <pre class="name">--</pre></li>
 <li><pre class="name">spacingFormat</pre>: defines how names of parameters and values are spaced; default: <pre class="name">blank</pre></li>
 <li><pre class="name">quoteFormat</pre>: defines how values are quoted; default: <pre class="name">single quoting</pre></li>
@@ -1479,8 +1487,68 @@ Example 21 shows the definition of the complete module.
 	</div>
 </div>
 
+<a name="module_versions" class="subtopic">5.6 Module versions</a>
 
-<a name="custom_modules_other" class="subtopic">5.6 Other matters</a>
+As parameters of the command that is called by the module might change over time, it is possible to define different versions of the same module. The version that should be used during XML validation and workflow execution can be set using the <pre class="attr">version</pre> attribute each <pre class="tag">?Task</pre> tag owns. By default version <pre class="name">1</pre> of each module is used. Be aware that only one version of the same module can be used within a workflow.<br /><br />
+
+In order to avoid duplication of the complete XSD file, the minimum and maximum supported module version can be defined for each tag within the XSD file using the <pre class="attr">minVersion</pre> and <pre class="attr">maxVersion</pre> attributes. If a tag is not part of a particular version, it is removed with all its childs from the XSD file that is generated dynamically at runtime for that module version. By using these two attributes the input parameter, the return parameter, the called command and more can be changed for different module version. Example 22 shows a part of the <pre class="name">featureCounts</pre> module. Among other things a parameter needs to be renamed to support the most recent binary of <pre class="name">featureCounts</pre> (11-12). 
+
+<div class="box">	
+	<div class="head_box">Example 22: Rename of parameters</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+ 2	&lt;x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org"&gt;
+ 3	
+ 4		&lt;!-- definition of the task parameters --&gt;
+ 5		&lt;x:complexType name="featureCountsTaskParameterType"&gt;
+ 6			&lt;x:all&gt;
+ 7				&lt;!-- attributes common to all versions --&gt;
+ 8				...
+ 9	
+10				&lt;!-- attributes that differ between versions --&gt;
+11				&lt;x:element name="minOverlap" type="paramInteger" minOccurs="0" maxOccurs="1" maxVersion="1" /&gt;
+12				&lt;x:element name="minReadOverlap" type="paramInteger" minOccurs="0" maxOccurs="1" minVersion="2" /&gt;
+13				...
+14			&lt;/x:all&gt;
+15		&lt;/x:complexType&gt;
+16	...
+17	&lt;/x:schema&gt;</code></pre>
+	</div>
+</div>
+
+Example 23 shows how a module script can be made version dependent using bash functions that are delivered with Watchdog. First, the bash variable <pre class="name">${MODULE_VERSION_PARAMETER_NAME}</pre> is set to the complete name of the parameter that is used to pass the module version (e.g. <pre class="name">--moduleVersion</pre>) (3). After sourcing of <pre class="name">includeBasics.sh</pre> the module version is automatically stored in the <pre class="name">${MODULE_VERSION}</pre> variable. This information can be used to alter the parameters and the behavior of the script as an alternative to duplication if differences between module versions are only minor (15,18).
+
+<div class="box">	
+	<div class="head_box">Example 23: Version dependent bash script</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	#!/bin/bash
+ 2	SCRIPT_FOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+ 3	MODULE_VERSION_PARAMETER_NAME="--moduleVersion"
+ 4	source $SCRIPT_FOLDER/../../core_lib/includeBasics.sh $@
+ 5	...
+ 6	
+ 7	# define parameters
+ 8	# params used in any version of the module
+ 9	DEFINE_string 'annotation' '' 'feature annotation in GTF or SAF format' 'a'
+10	DEFINE_string 'input' '' 'index bam file which should be used for counting' 'i'
+11	DEFINE_string 'output' '' 'path to output file' 'o'
+12	...
+13	
+14	# params only available in module version 1
+15	if [ ${MODULE_VERSION} -eq 1 ]; then
+16		DEFINE_string 'minOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
+17	# params only available in module version 2
+18	elif [ ${MODULE_VERSION} -eq 2 ]; then
+19		DEFINE_string 'minReadOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
+20		...
+21	fi
+22	DEFINE_integer 'moduleVersion' '1' '[optional] version of the module that should be used' ''
+23	DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
+24	...</code></pre>
+	</div>
+</div>
+
+<a name="custom_modules_other" class="subtopic">5.7 Other matters</a>
 
 <b>Exit codes: </b> The module developer must ensure that a command does only exit with exit status 0 if the command was executed sucessfully. File <pre class="name">core_lib/exitCodes.sh</pre> contains some exit codes which names are also included in mail notifications if they are used. Custom exit codes can be easily added.
 <br /><br />
@@ -1507,10 +1575,10 @@ In order to add a new virtual file system, a class that implements the <pre clas
 <li><pre class="name">getExtensions</pre> - sets schemes that should be used for specific file extension</li>
 </ul>
 
-The class <pre class="name">SimpleVFSRegister</pre> can be extended if an instance of the <pre class="name">FileProvider</pre> class can be created without arguments. Then only the name of the <pre class="name">FileProvider</pre> class and the URL schemes that should be used must be defined. Example 22 shows how the virtual FTP file system is integrated in Watchdog by using the <pre class="name">FtpsFileProvider</pre> class of the Commons Virtual File System project.
+The class <pre class="name">SimpleVFSRegister</pre> can be extended if an instance of the <pre class="name">FileProvider</pre> class can be created without arguments. Then only the name of the <pre class="name">FileProvider</pre> class and the URL schemes that should be used must be defined. Example 24 shows how the virtual FTP file system is integrated in Watchdog by using the <pre class="name">FtpsFileProvider</pre> class of the Commons Virtual File System project.
 
 <div class="box">	
-	<div class="head_box">Example 22: Simple implementation of the VFSRegister interface</div>
+	<div class="head_box">Example 24: Simple implementation of the VFSRegister interface</div>
 	<div class="box_body">
 		<pre><code class="example"> 1	package de.lmu.ifi.bio.watchdog.task.actions.vfs.impl;
  2	
@@ -1593,7 +1661,7 @@ A Docker image can also be used in a module. The module <pre class="name">bowtie
 Make sure that the Docker daemon is installed and running before you test this example.
 
 <div class="box">	
-	<div class="head_box">Example 23: Example usage of the Bowtie 2 Docker module</div>
+	<div class="head_box">Example 25: Example usage of the Bowtie 2 Docker module</div>
 	<div class="box_body">
 		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
  2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
@@ -1622,7 +1690,7 @@ Make sure that the Docker daemon is installed and running before you test this e
 	</div>
 </div>
 
-Example 23 shows how the <pre class="name">bowtie2Docker</pre> module can be used with the provided example data. The test data that is shipped with Bowtie 2 is stored in the folder <pre class="name">example_data</pre> of the module (6). Log files are written to <pre class="name">/tmp/bowtie2.docker.test.[out|err]</pre> (13, 14) while the mapped reads are stored in SAM format in <pre class="name">/tmp/bowtie2.docker.test.sam</pre> (20).
+Example 25 shows how the <pre class="name">bowtie2Docker</pre> module can be used with the provided example data. The test data that is shipped with Bowtie 2 is stored in the folder <pre class="name">example_data</pre> of the module (6). Log files are written to <pre class="name">/tmp/bowtie2.docker.test.[out|err]</pre> (13, 14) while the mapped reads are stored in SAM format in <pre class="name">/tmp/bowtie2.docker.test.sam</pre> (20).
 		</div>
 	</body>
 </html> 

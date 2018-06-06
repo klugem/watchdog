@@ -1,6 +1,5 @@
 package de.lmu.ifi.bio.watchdog.slave.clientEvents;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.concurrent.ConcurrentHashMap;

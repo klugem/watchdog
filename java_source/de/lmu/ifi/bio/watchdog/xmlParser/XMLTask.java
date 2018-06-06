@@ -52,6 +52,7 @@ public class XMLTask {
 	private static final Logger LOGGER = new Logger(LogLevel.INFO);
 	private final ArrayList<TaskAction> TASK_ACTIONS = new ArrayList<>();
 	private final int XML_ID;
+	private final int VERSION;
 	private final String BIN_NAME;
 	private final String TASK_TYPE;
 	private final String NAME;
@@ -65,6 +66,7 @@ public class XMLTask {
 	private final HashSet<Integer> NEEDED_DEPENDENCIES_4_VARS = new HashSet<>();
 	private final HashMap<Integer, HashSet<String>> AVAIL_RETURN_PARAMS = new HashMap<>();
 	private final LinkedHashMap<String, String> PARAM = new LinkedHashMap<>();
+	private final HashSet<String> NO_GUI_LOAD_PARAM = new HashSet<>();
 	private final HashMap<String, Boolean> PARAM_IS_FLAG = new HashMap<>();
 	private final HashMap<String, OptionFormat> PARAM_FORMATER = new HashMap<>();
 	private final ConcurrentHashMap<String, Task> SPAWNED_TASKS = new ConcurrentHashMap<>();
@@ -100,6 +102,7 @@ public class XMLTask {
 	private boolean isIgnored = false;
 	private GUIInfo guiInfo = null;
 	private boolean setSaveResourceUsage = false;
+	private String moduleVersionParameterSetName = null;
 	
 	/**
 	 * Constructor
@@ -111,9 +114,10 @@ public class XMLTask {
 	 * @param executorInfo
 	 * @param environment
 	 */
-	public XMLTask(int xmlID, String taskType, String binName, String name, String projectName, OptionFormat optionFormater, ExecutorInfo executorInfo, Environment environment) {
+	public XMLTask(int xmlID, String taskType, int version, String binName, String name, String projectName, OptionFormat optionFormater, ExecutorInfo executorInfo, Environment environment) {
 		this.XML_ID = xmlID;
-		this.TASK_TYPE = taskType;
+		this.VERSION = version;
+		this.TASK_TYPE = taskType + XMLParser.VERSION_SEP + this.VERSION; ;
 		this.NAME = name;
 		this.PROJECT_NAME = projectName;
 		this.BIN_NAME = binName;
@@ -135,9 +139,10 @@ public class XMLTask {
 	 * @param executorInfo
 	 * @param processBlock might be null
 	 */
-	public XMLTask(int xmlID, String taskType, String binName, String name, String projectName, OptionFormat optionFormater, ExecutorInfo executorInfo, ProcessBlock processBlock) {
+	public XMLTask(int xmlID, String taskType, int version, String binName, String name, String projectName, OptionFormat optionFormater, ExecutorInfo executorInfo, ProcessBlock processBlock) {
 		this.XML_ID = xmlID;
-		this.TASK_TYPE = taskType;
+		this.VERSION = version;
+		this.TASK_TYPE = taskType + XMLParser.VERSION_SEP + this.VERSION; 
 		this.BIN_NAME = binName;
 		this.NAME = name;
 		this.PROJECT_NAME = projectName;
@@ -190,6 +195,21 @@ public class XMLTask {
 	
 	public HashMap<String, ReturnType> getReturnParameters() {
 		return new HashMap<String, ReturnType>(this.RETURN_PARAMS);
+	}
+	
+	/**
+	 * sets the parameter that is used to sent the used version of the XSD module to the script
+	 */
+	public void setModuleVersionParameterSetName(String name) {
+		this.moduleVersionParameterSetName = name;
+	}
+	
+	/**
+	 * @returns the parameter that is used to sent the used version of the XSD module to the script
+	 * @return
+	 */
+	public String getModuleVersionParameterSetName() {
+		return this.moduleVersionParameterSetName;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -1170,7 +1190,16 @@ public class XMLTask {
 	 * @return
 	 */
 	public LinkedHashMap<String, String> getParamList() {
-		return new LinkedHashMap<String, String>(this.PARAM);
+		if(this.NO_GUI_LOAD_PARAM.size() == 0)
+			return new LinkedHashMap<String, String>(this.PARAM);
+		else {
+			LinkedHashMap<String, String> t = new LinkedHashMap<>();
+			for(String k : this.PARAM.keySet()) {
+				if(!NO_GUI_LOAD_PARAM.contains(k))
+					t.put(k, this.PARAM.get(k));
+			}
+			return t;
+		}
 	}
 	
 	/**
@@ -1434,5 +1463,14 @@ public class XMLTask {
 	 */
 	public boolean isSaveResourceUsageEnabled() {
 		return this.setSaveResourceUsage && this.getPlainStdOut() != null;
+	}
+
+	public int getVersion() {
+		return this.VERSION;
+	}
+
+	public void addNoGUILoadParameter(String name, String value, OptionFormat formater, int depID) {
+		this.NO_GUI_LOAD_PARAM.add(name);
+		this.addParameter(name, value, formater, depID);
 	}
 }

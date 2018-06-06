@@ -33,6 +33,7 @@ import javafx.stage.Stage;
 /**
  * Controller for simple rectangle property
  * */
+@SuppressWarnings("restriction")
 public class PropertyController implements Initializable {
 
 	@FXML private Rectangle rect;
@@ -49,7 +50,7 @@ public class PropertyController implements Initializable {
 		this.movePane.setOnMouseReleased(e -> { if(this.p != null && this.p.hasXMLData()) this.selectColor(); });
 	}
 	
-	@SuppressWarnings("restriction")
+
 	private void selectColor() {
 		// no changes in read-only mode
 		if(WorkflowDesignController.isInExecutionMode())
@@ -89,7 +90,6 @@ public class PropertyController implements Initializable {
 	 * @param picker
 	 * @return
 	 */
-	@SuppressWarnings("restriction")
 	private Color getColorFromPicker(CustomColorDialog picker) {
 		try {
 			Class<? extends CustomColorDialog> clazz = picker.getClass();
