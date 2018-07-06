@@ -1633,12 +1633,12 @@ public class XMLParser {
 		// check, if some value is set
 		if(value == null || consts == null) 
 			return value;
-
+		StringBuilder parts = new StringBuilder();
 		// check, if the value contains a constant which must be replaced
 		Matcher matcher = PATTERN_CONST.matcher(value);
 		while(matcher.matches()) {
 			String key = matcher.group(1);
-
+			
 			// check, if constant is there
 			if(!consts.containsKey(key) && !BLOCKED_CONST_NAMES.containsKey(key)) {
 				LOGGER.error("A constant with name '${"+key+"}' was used which was not defined before in the <"+CONSTANTS+"> element.");
@@ -1646,16 +1646,28 @@ public class XMLParser {
 			}
 			
 			// do not try to replace the variables at this stage as they are replaced later!
-			if(BLOCKED_CONST_NAMES.containsKey(key))
-				break;
+			if(BLOCKED_CONST_NAMES.containsKey(key)) {
+				int end = matcher.end(1)+1;
+				String doNotModifyPart = value.substring(0, end);
+				parts.append(doNotModifyPart);
+				value = value.substring(end);
+				matcher = PATTERN_CONST.matcher(value);
+				continue;
+			}
 			
 			// replace constant
 			value = value.replaceFirst(REPLACE_CONST, consts.get(key));
 			matcher = PATTERN_CONST.matcher(value);
 		}
+		
+		// check, if we have something that was not modified before
+		if(parts.length() > 0) {
+			parts.append(value);
+			value = parts.toString();
+		}		
 		return value;
 	}
-	
+
 	/**
 	 * returns the attribute of the element
 	 * @param el
