@@ -11,7 +11,10 @@ import org.w3c.dom.Element;
 
 import de.lmu.ifi.bio.watchdog.interfaces.XMLPlugin;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import de.lmu.ifi.bio.watchdog.task.actions.vfs.VFSRegister;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
 
 public abstract class XMLPluginTypeLoaderAndProcessor<A extends XMLPlugin> {
 	
@@ -25,25 +28,27 @@ public abstract class XMLPluginTypeLoaderAndProcessor<A extends XMLPlugin> {
 	    return Class.forName(cname);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public HashSet<String> init(Logger l, boolean noExit, boolean isGUILoadAttempt, String watchdogBase) {
 		if(this.init == false) {
 			// load all XML plugins of that type that are installed
 			try {
 				Class<?> bt = this.getBaseType();
-				new FastClasspathScanner("").matchSubclassesOf(XMLParserPlugin.class, 
-				c -> {
+				ClassInfoList candidateClasses = new ClassGraph().enableClassInfo().whitelistPackages(".*").scan().getSubclasses(XMLParserPlugin.class.getName());
+				for(ClassInfo c : candidateClasses) {
 					try {
 						// look at all non abstract classes
 						if(!Modifier.isAbstract(c.getModifiers())) {
 							// get type of class
-							ParameterizedType pt = (ParameterizedType) c.getGenericSuperclass();
+
+							ParameterizedType pt = (ParameterizedType) c.loadClass().getGenericSuperclass();
 							String cname = pt.getActualTypeArguments()[0].getTypeName().replaceAll("^class\\s+", "");
 
 							Class<?> parsesPluginsOfType = Class.forName(cname);
 							// load all classes that have the correct parent
 							if(bt.isAssignableFrom(parsesPluginsOfType)) {
-								l.info("Loading XML-Plugin: '"+c.getCanonicalName()+"'");
-								XMLParserPlugin<A> xp = XMLParserPlugin.getInstance(c, l, noExit, isGUILoadAttempt);
+								l.info("Loading XML-Plugin: '"+c.loadClass().getCanonicalName()+"'");
+								XMLParserPlugin<A> xp = XMLParserPlugin.getInstance((Class<? extends XMLParserPlugin>) c.loadClass(), l, noExit, isGUILoadAttempt);
 								this.PARSER.put(xp.getNameOfParseableTag(), xp);
 							}
 						}
@@ -53,7 +58,7 @@ public abstract class XMLPluginTypeLoaderAndProcessor<A extends XMLPlugin> {
 						e.printStackTrace();
 						System.exit(1);
 					}
-				}).scan();
+				}
 			}
 			catch(ClassNotFoundException e) {
 				l.error("Failed find base class for '"+this.getClass().getGenericSuperclass().getTypeName()+"'!");

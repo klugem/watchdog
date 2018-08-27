@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 
 import de.lmu.ifi.bio.watchdog.logger.Logger;
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
 
 /**
  * loads all registered Apache Commons VFS 
@@ -48,15 +50,17 @@ public class VFSLoader {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static ArrayList<Class<? extends VFSRegister>> getImplementingClasses() {
 		ArrayList<Class<? extends VFSRegister>> classes = new ArrayList<>();
 		// collect all classes that implement the VFSRegister 
-		new FastClasspathScanner("").matchClassesImplementing(VFSRegister.class, 
-		c -> {
+		ClassInfoList candidateClasses = new ClassGraph().enableClassInfo().whitelistPackages(".*").scan().getClassesImplementing(VFSRegister.class.getName());
+		for(ClassInfo c : candidateClasses) {
 			// look at all non abstract classes
-			if(!Modifier.isAbstract(c.getModifiers()))
-				classes.add(c);
-		}).scan();
+			if(!Modifier.isAbstract(c.getModifiers())) {
+				classes.add((Class<? extends VFSRegister>) c.loadClass());
+			}
+		}
 		return classes;
 	}
 }
