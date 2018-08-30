@@ -389,13 +389,25 @@ public class Mailer {
 		}
 		
 		if(error.length() > 0) {
-			info.append("You can fix the errors, if possible, and then restart the job. Alternatively you can change the parameters for this job and schedule it again." + NEWLINE);
+			info.append("You can fix the errors, if possible, and then restart the job. Alternatively you can change the parameters for this job and schedule it again." + NEWLINE + NEWLINE);
+			
+			// add option to apply an action to all subtasks
+			String joinedTaskIDs = StringUtils.join(errorTaskIDs, HTTPListenerThread.SEP);
+			String linkRestart = getLink(ControlAction.RESTART, false, joinedTaskIDs, true);
+			String linkModify = getLink(ControlAction.DISPLAY, true, Integer.toString(tasks.get(0).getTaskID()), false);
+			String linkIgnore = getLink(ControlAction.IGNORE, false, joinedTaskIDs, true);
+			String linkResolve = getLink(ControlAction.RESOLVE, false, joinedTaskIDs, true);
+			info.append("restart all failed tasks: "+ linkRestart + NEWLINE);
+			info.append("modify the parameters of all failed tasks "+ linkModify + NEWLINE);
+			info.append("ignore all failed tasks: "+ linkIgnore + NEWLINE);
+			info.append("mark all failed tasks as resolved: "+ linkResolve + NEWLINE + NEWLINE);
+
 			for(String taskID : errorTaskIDs) {
 				// add option to restart the job
-				String linkRestart = getLink(ControlAction.RESTART, false,taskID, true);
-				String linkModify = getLink(ControlAction.DISPLAY, false, taskID, false);
-				String linkIgnore = getLink(ControlAction.IGNORE, false, taskID, true);
-				String linkResolve = getLink(ControlAction.RESOLVE, false, taskID, true);
+				linkRestart = getLink(ControlAction.RESTART, false, taskID, true);
+				linkModify = getLink(ControlAction.DISPLAY, false, taskID, false);
+				linkIgnore = getLink(ControlAction.IGNORE, false, taskID, true);
+				linkResolve = getLink(ControlAction.RESOLVE, false, taskID, true);
 								
 				info.append(taskID + ": restart the failed task: "+ linkRestart + NEWLINE);
 				info.append(taskID + ": modify the parameters of the failed task: "+ linkModify + NEWLINE);

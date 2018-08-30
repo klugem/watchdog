@@ -117,7 +117,7 @@ public class XMLTask {
 	public XMLTask(int xmlID, String taskType, int version, String binName, String name, String projectName, OptionFormat optionFormater, ExecutorInfo executorInfo, Environment environment) {
 		this.XML_ID = xmlID;
 		this.VERSION = version;
-		this.TASK_TYPE = taskType + XMLParser.VERSION_SEP + this.VERSION; ;
+		this.TASK_TYPE = taskType + XMLParser.VERSION_SEP + this.VERSION;
 		this.NAME = name;
 		this.PROJECT_NAME = projectName;
 		this.BIN_NAME = binName;
@@ -1127,7 +1127,9 @@ public class XMLTask {
 				}
 				// was parameter confirmation for complete XMLTask
 				else {
-					this.RESCHEDULE.add(null); // this.isRescheduled() -> true; 
+					this.RESCHEDULE.add(null); 
+					// halt execution and reschedule all tasks that were FAILED
+					this.resetXMLTask(null);
 				}
 			}
 			this.unblock();
@@ -1145,13 +1147,14 @@ public class XMLTask {
 		if(reset == null) {
 			// terminate all tasks
 			for(Task t : this.SPAWNED_TASKS.values()) {
-				t.terminateTask();
-				t.deleteLogFiles();
+				if((t.hasTaskFailed() || t.wasTaskKilled()) && !t.isTaskIgnored()) {
+					t.terminateTask();
+					t.deleteLogFiles();
+					this.SPAWNED_TASKS.remove(t.getGroupFileName());
+					this.CACHE.remove(t.getGroupFileName());
+					this.RETURN_FILE_NAME.remove(t.getGroupFileName());
+				}
 			}
-			// remove all tasks
-			this.SPAWNED_TASKS.clear();
-			this.CACHE.clear();
-			this.RETURN_FILE_NAME.clear();
 		}
 		else {
 			reset.terminateTask();
