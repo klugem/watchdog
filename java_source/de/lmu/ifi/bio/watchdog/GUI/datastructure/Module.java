@@ -10,6 +10,7 @@ import de.lmu.ifi.bio.watchdog.GUI.interfaces.ListLibraryView;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.helper.Parameter;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 /**
  * Class that holds data about modules
@@ -48,6 +49,17 @@ public class Module implements ListLibraryView, Serializable {
 			this.RETURN_PARAMS.putAll(retParams);
 	}
 	
+	public String getTypeName() {
+		return this.getName() + XMLParser.VERSION_SEP + this.getVersion();
+	}
+	
+	@Override
+	public String getInternalName() {
+		return this.getTypeName();
+	}
+	
+	
+	@Override
 	public String getNameForDisplay() {
 		return getNameForDisplay(this.NAME, this.getVersion());
 	}

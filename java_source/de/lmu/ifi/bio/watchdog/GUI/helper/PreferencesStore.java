@@ -177,7 +177,7 @@ public class PreferencesStore {
 		if(base != null && base.endsWith(File.separator))
 			base = base.replaceFirst(File.separator + "$", "");
 		base = base.replaceAll(File.separator + "{2,}", File.separator);
-		if(!watchdogBaseDir.equals(base)) {
+		if(watchdogBaseDir == null || !watchdogBaseDir.equals(base)) {
 			watchdogBaseDir = base;
 			MODULE_SEARCH_FOLDERS.put(DEFAULT_NAME, watchdogBaseDir + File.separator + XMLParser.MODULES + File.separator);
 			return true;

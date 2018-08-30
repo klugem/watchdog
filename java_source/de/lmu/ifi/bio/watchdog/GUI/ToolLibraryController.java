@@ -158,8 +158,11 @@ public class ToolLibraryController implements Initializable {
 	/** is called when the drag of a module is started */
 	private void onDragStart(MouseEvent mouseEvent) {
 		if(mouseEvent.getSource() != null && mouseEvent.getSource() instanceof DragableTreeTableCell) {
-			String moduleName = ((DragableTreeTableCell<?,?>) mouseEvent.getSource()).getText();
-			
+			DragableTreeTableCell<?,?> s = ((DragableTreeTableCell<?,?>) mouseEvent.getSource());
+			String moduleName = s.getUserData().toString();
+			if(moduleName == null)
+				moduleName = s.getText();
+
 			// draged item is a module and not a category
 			if(this.LOADED_MODULES.containsKey(moduleName)) {
 				Module m = this.LOADED_MODULES.get(moduleName);
@@ -259,7 +262,7 @@ public class ToolLibraryController implements Initializable {
 		}
 		
 		// sort it
-		modUnsorted.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> this.LOADED_MODULES.put(entry.getValue().getNameForDisplay(), entry.getValue()));
+		modUnsorted.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> this.LOADED_MODULES.put(entry.getValue().getTypeName(), entry.getValue()));
 		// update the list
 		this.updateLibrary("");
 	}

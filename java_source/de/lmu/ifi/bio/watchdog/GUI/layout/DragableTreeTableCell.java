@@ -22,6 +22,7 @@ public class DragableTreeTableCell<A, B> extends TreeTableCell<A, B> {
 
         if(item != null && item instanceof ListLibraryView) {
             text = ((ListLibraryView) item).getNameForDisplay();
+            this.setUserData(((ListLibraryView) item).getInternalName());
         }
 
         // set the content of the cell
