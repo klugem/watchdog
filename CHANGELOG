@@ -5,6 +5,25 @@ Changelog started with version 1.2.0
 
 ## [Unreleased]
 
+## [1.2.7] - 2018-08-30
+### Added
+- [] New task action links, part of the summary mail, can control multiple failed subtasks at once
+- [XSD] Added concept of module versions that allows the use of different XSD definition versions (of the same module without copy&paste)
+- [DOCU] Added documentation on module versions (5.6)
+- [MOD] Added version 2 of the featureCount module which supports a newer featureCount release
+- [MOD] New parameter 'shortenReads' for cutadapt module that shortens reads to a maximal length after trimming
+
+### Fixed
+- [] Constant replacement of ${TMP} failed when used more than once per line 
+- [] Wrong behavior when attribute 'disableExistenceCheck' attribute was set on process table
+- [] Variables were not correctly replaced when a space separated the number of suffixes and the separator
+- [] Wrong behavior when a process table file was empty or did not contain the requested column
+- [CMD] Prevent sending of mails when workflow execution is ended with STRG+C
+- [GUI] Instant change of module library without restart when settings are updated
+
+### Internal
+- [PLUGIN] replaced outdated FastClasspathScanner class with its new version named ClassGraph (closed #1)
+
 ## [1.2.6] - 2018-01-22
 ### Added
 - [] Added attribute 'pattern' to restrict <copyFolder>/<deleteFolder> actions to files that match that pattern
