@@ -90,13 +90,14 @@
 		<!-- combine the archives -->
 		<joinFilesTask id="5" name="combine gz" environment="local" processBlock="input" posX="5" posY="6">
 			<dependencies>
+				<depends separate="true">1</depends>
 				<depends>4</depends>
 			</dependencies>
 			<parameter>
 				<convertPairedEnd>false</convertPairedEnd>
-				<input>${OUTPUT}/split/[$createdGzipFile,2,.].ids.gz</input>
-				<input>${OUTPUT}/split/[$createdGzipFile,2,.].sequences.gz</input>
-				<output>${OUTPUT}/[$createdGzipFile,2,.].ids_before_sequences.gz</output>
+				<input>${OUTPUT}/split/[$createdGzipFile,1,.].ids.gz</input>
+				<input>${OUTPUT}/split/[$createdGzipFile,1,.].sequences.gz</input>
+				<output>${OUTPUT}/[$createdGzipFile,1,.].ids_before_sequences.gz</output>
 			</parameter>
 		</joinFilesTask>
 	</tasks>

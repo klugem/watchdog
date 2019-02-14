@@ -7,6 +7,7 @@ import org.w3c.dom.Element;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.ExecutorPropertyViewController;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.RemoteGUIExecutorView;
 import de.lmu.ifi.bio.watchdog.executor.remote.RemoteExecutorInfo;
+import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.SSHPassphraseAuth;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
@@ -16,7 +17,9 @@ public class RemoteExecutorInfoParser extends XMLExecutorInfoParser<RemoteExecut
 	
 	static {
 		// register the executor plugins shipped with watchdog on GUI
-		ExecutorPropertyViewController.registerWatchdogPluginOnGUI(RemoteExecutorInfo.class, RemoteGUIExecutorView.class);
+		if(Functions.hasJavaFXInstalled()) {
+			ExecutorPropertyViewController.registerWatchdogPluginOnGUI(RemoteExecutorInfo.class, RemoteGUIExecutorView.class);
+		}
 	}
 	
 	public RemoteExecutorInfoParser(Logger l) {

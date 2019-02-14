@@ -132,7 +132,7 @@ public class InsertableGridPane extends GridPane {
 		return last;
 	}
 
-	public int getRowCount() {
+	public int getRowCountOwn() {
 		return this.ITEMS.size();
 	}
 }

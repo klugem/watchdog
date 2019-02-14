@@ -7,6 +7,7 @@ import org.w3c.dom.Element;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.ExecutorPropertyViewController;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.LocalGUIExecutorView;
 import de.lmu.ifi.bio.watchdog.executor.local.LocalExecutorInfo;
+import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
@@ -15,7 +16,9 @@ public class LocalExecutorInfoParser extends XMLExecutorInfoParser<LocalExecutor
 	
 	static {
 		// register the executor plugins shipped with watchdog on GUI
-		ExecutorPropertyViewController.registerWatchdogPluginOnGUI(LocalExecutorInfo.class, LocalGUIExecutorView.class);
+		if(Functions.hasJavaFXInstalled()) {
+			ExecutorPropertyViewController.registerWatchdogPluginOnGUI(LocalExecutorInfo.class, LocalGUIExecutorView.class);
+		}
 	}
 
 	public LocalExecutorInfoParser(Logger l) {

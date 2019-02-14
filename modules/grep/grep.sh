@@ -13,7 +13,7 @@ if [ $CODE -ne 0 ]; then
 fi
 
 # define parameters
-DEFINE_string 'options' '' '[optional] additional flags or parameters that are directely delivered to grep' ''
+DEFINE_string 'options' '' '[optional] additional flags or parameters that are directly delivered to grep' ''
 DEFINE_string 'pattern' '' 'pattern to search for' 'p'
 DEFINE_string 'file' '' 'file to search in' 'f'
 DEFINE_string 'outputFile' '' 'return of grep is written to that output file' 'o'

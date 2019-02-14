@@ -24,6 +24,9 @@ import de.lmu.ifi.bio.watchdog.interfaces.ErrorChecker;
 import de.lmu.ifi.bio.watchdog.interfaces.SuccessChecker;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessMultiParam;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessReturnValueAdder;
+import de.lmu.ifi.bio.watchdog.resume.ResumeInfo;
+import de.lmu.ifi.bio.watchdog.resume.ResumeJobInfo;
+import de.lmu.ifi.bio.watchdog.resume.WorkflowResumeLogger;
 import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.StatusHandler;
 import de.lmu.ifi.bio.watchdog.task.Task;
@@ -55,21 +58,32 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	 * @param xmlTasks
 	 * @param returnTypeInfo
 	 */
-	public XMLTask2TaskThread(WatchdogThread watchdog, ArrayList<XMLTask> xmlTasks, Mailer mailer, HashMap<String, Pair<HashMap<String, ReturnType>, String>> returnTypeInfo, File xmlPath, int mailWaitTime) {
+	public XMLTask2TaskThread(WatchdogThread watchdog, ArrayList<XMLTask> xmlTasks, Mailer mailer, HashMap<String, Pair<HashMap<String, ReturnType>, String>> returnTypeInfo, File xmlPath, int mailWaitTime, HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo) {
 		super("XMLTask2Task");
 		this.WATCHDOG = watchdog;
 		this.MAILER = mailer;
 		this.RETURN_TYPE_INFO = returnTypeInfo;
 		this.MAIL_WAIT_TIME = mailWaitTime;
 		this.XML_PATH = xmlPath;
+	
+		
+		// add the workflow resume logger task status update handler
+		this.addTaskStatusHandler(new WorkflowResumeLogger(this.XML_PATH));
 
 		for(XMLTask x : xmlTasks) {			
 			 // check, if return parameter argument must be provided
 			 if(this.RETURN_TYPE_INFO.containsKey(x.getTaskType()))
 				 x.addReturnParameter(this.RETURN_TYPE_INFO.get(x.getTaskType()).getValue());
 			 
+			 // check, if there is some return info for that task
+			 if(resumeInfo != null && resumeInfo.containsKey(x.getXMLID()))
+				 x.addResumeInfo(resumeInfo.get(x.getXMLID()));
+			
+			// add the task to the scheduler queue
 			this.addTask(x);
 		}
+		// free that memory
+		resumeInfo.clear();
 	}
 	
 	public boolean isSchedulingPaused() {
@@ -105,7 +119,6 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		for(XMLTask x : new ArrayList<XMLTask>(this.XML_TASKS.values())) {
 			// check, if this task is already fully processed
 			if(x.hasXMLTaskSpawnedAllTasks() == false && x.isIgnoredBecauseOfIgnoredDependencies() == false) {
-				
 				// check, if some global dependencies can be resolved
 				x.checkForGlobalResolvedDependencies();
 				if(x.hasGlobalDependencies())
@@ -143,9 +156,14 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					// check, if x is in reschedule mode --> the task itself must be in the reschedule side --> null is required for confirm of block tasks
 					if(x.isRescheduled() && !(x.isRescheduled(inputName) || x.isRescheduled(null)))
 						continue;
+					
+					// check, if it is in resume mode
+					ResumeInfo resumeInfo = null;
+					if(x.hasResumeInfo())
+						resumeInfo = x.getResumeInfo(inputName);
 
 					// check, if the user want to verify the parameters first
-					if((x.getConfirmParam().isEnabled() || x.getConfirmParam().isSubtaskEnabled()) && !x.getConfirmParam().wasPerformed()) {
+					if(resumeInfo == null && (x.getConfirmParam().isEnabled() || x.getConfirmParam().isSubtaskEnabled()) && !x.getConfirmParam().wasPerformed()) {
 						this.MAILER.notifyParamConfirmation(x);
 						x.setConfirmParam(ActionType.PERFORMED);
 						x.block();
@@ -159,7 +177,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					 t.setProject(x.getProjectName());
 					 t.addErrorChecker(new WatchdogErrorCatcher(t));
 					 t.setForceSingleSlaveMode(x.isSingleSlaveModeForced());
-
+				 
 					 // set status handler if some are set
 					 for(StatusHandler sh : this.STATUS_HANDLER) 
 						 t.addStatusHandler(sh);
@@ -194,8 +212,32 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					 t.setNotify(x.getNotify());
 					 t.setCheckpoint(x.getCheckpoint());
 					 x.addExecutionTask(t);
-					 					 
-					 this.WATCHDOG.addToQue(t);
+
+					 // check, if resumeInfo is valid
+					 if(resumeInfo != null && (!resumeInfo.isResumeInfoValid(x, t) || x.isDirty(true) || t.willRunOnSlave())) {
+						 if(x.isDirty(true) || resumeInfo.isDirty())
+							 LOGGER.warn("Resume info was not used for task " + t.getID() + " (subtask param: '"+inputName+"') as a dependency was re-executed.");
+						 else if(t.willRunOnSlave())
+							 LOGGER.warn("Resume info was not used for task " + t.getID() + " (subtask param: '"+inputName+"') as resume is not supported in slave mode.");
+						 else
+							 LOGGER.warn("Resume info was not used for task " + t.getID() + " (subtask param: '"+inputName+"') as parameter hash was not equal.");
+						 
+						 resumeInfo = null;
+						 // mark to resume info for all tasks that depend on this one as dirty
+						 x.flagResumeInfoAsDirty(t);
+					 }
+
+					 if(resumeInfo == null) {
+						 this.WATCHDOG.addToQue(t);
+					 }
+					 // task was already executed successfully
+					 else {
+						 t.increaseExecutionCounter();
+						 t.setJobInfo(new ResumeJobInfo());
+						 if(resumeInfo.hasReturnParams()) {
+							 t.setReturnParams(resumeInfo.getReturnParams());
+						 }
+					 }
 					 newTasks++;
 				}
 				if(!x.isBlocked())

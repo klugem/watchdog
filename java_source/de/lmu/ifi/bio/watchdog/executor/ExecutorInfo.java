@@ -50,9 +50,10 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	 */
 	public ExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir) {
 		// test, if we can use some of the default working dirs
-		if(workingDir == null) {
+		if(workingDir == null)
 			workingDir = ExecutorInfo.getWorkingDir(watchdogBaseDir);
-		}
+		else
+			workingDir = Functions.generateRandomWorkingDir(workingDir).getAbsolutePath();
 		
 		if(path2java == null || path2java.length() == 0)
 			path2java = JAVA;
@@ -65,7 +66,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 		this.IS_STICK2HOST = isStick2Host;
 		this.PATH2JAVA = path2java;
 		this.STATIC_WORKING_DIR = workingDir;
-		this.WORKING_DIR = Functions.generateRandomWorkingDir(workingDir).getAbsolutePath();
+		this.WORKING_DIR = workingDir;
 		
 		// set slave mode stuff
 		if(isStick2Host)

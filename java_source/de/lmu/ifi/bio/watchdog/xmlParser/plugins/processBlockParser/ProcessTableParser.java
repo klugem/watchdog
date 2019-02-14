@@ -7,6 +7,7 @@ import org.w3c.dom.Element;
 
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.processblocks.ProcessBlockPropertyViewController;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.processblocks.TableGUIProcessBlockView;
+import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessTable;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
@@ -16,7 +17,9 @@ public class ProcessTableParser extends XMLProcessBlockParser<ProcessTable> {
 	
 	static {
 		// register the processblock plugins shipped with watchdog on GUI
-		ProcessBlockPropertyViewController.registerWatchdogPluginOnGUI(ProcessTable.class, TableGUIProcessBlockView.class);
+		if(Functions.hasJavaFXInstalled()) {
+			ProcessBlockPropertyViewController.registerWatchdogPluginOnGUI(ProcessTable.class, TableGUIProcessBlockView.class);
+		}
 	}
 	
 	public ProcessTableParser(Logger l) {

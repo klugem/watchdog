@@ -11,10 +11,10 @@ import org.w3c.dom.Element;
 
 import de.lmu.ifi.bio.watchdog.interfaces.XMLPlugin;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
-import de.lmu.ifi.bio.watchdog.task.actions.vfs.VFSRegister;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
 
 public abstract class XMLPluginTypeLoaderAndProcessor<A extends XMLPlugin> {
 	
@@ -28,13 +28,14 @@ public abstract class XMLPluginTypeLoaderAndProcessor<A extends XMLPlugin> {
 	    return Class.forName(cname);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public HashSet<String> init(Logger l, boolean noExit, boolean isGUILoadAttempt, String watchdogBase) {
 		if(this.init == false) {
 			// load all XML plugins of that type that are installed
 			try {
 				Class<?> bt = this.getBaseType();
-				ClassInfoList candidateClasses = new ClassGraph().enableClassInfo().whitelistPackages(".*").scan().getSubclasses(XMLParserPlugin.class.getName());
+				ScanResult sr = new ClassGraph().enableClassInfo().whitelistPackages(".*").scan();
+				ClassInfoList candidateClasses = sr.getSubclasses(XMLParserPlugin.class.getName());
 				for(ClassInfo c : candidateClasses) {
 					try {
 						// look at all non abstract classes
@@ -59,15 +60,15 @@ public abstract class XMLPluginTypeLoaderAndProcessor<A extends XMLPlugin> {
 						System.exit(1);
 					}
 				}
+				sr.close();
 			}
 			catch(ClassNotFoundException e) {
 				l.error("Failed find base class for '"+this.getClass().getGenericSuperclass().getTypeName()+"'!");
            		e.printStackTrace();
            		System.exit(1);
 			}
-			 
-			 this.init = true;
-			 return this.getALLXSDFiles(watchdogBase + File.separator + "xsd");
+			this.init = true;
+			return this.getALLXSDFiles(watchdogBase + File.separator + "xsd");
 		}
 		// clear parses for this run
 		for(XMLParserPlugin<A> xp : PARSER.values()) {

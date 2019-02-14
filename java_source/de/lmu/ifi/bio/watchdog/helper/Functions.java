@@ -35,7 +35,9 @@ public class Functions {
 	private static final String POINT = ".";
 	private static final String TMP_ENDING = ".tmp";
 	private static String temporaryFolder = "/tmp";
-	private static String WORKING_DIR_WATCHDOG = "watchdogWork_";
+	private static final String WORKING_DIR_WATCHDOG = "watchdogWork_";
+	private static final String JAVA_FX = "javafx.runtime.version"; 
+	private static boolean hasJavaFX = false;
 	
 	static {
 		try {
@@ -45,6 +47,19 @@ public class Functions {
 			LOGGER.error("Can not find sha-256");
 			System.exit(1);
 		}
+		
+		// test for javafx availability
+		if(System.getProperties().containsKey(JAVA_FX)) {
+			hasJavaFX = true;
+		}
+	}
+	
+	/**
+	 * true, if javafx can be loaded on the system
+	 * @return
+	 */
+	public static boolean hasJavaFXInstalled() {
+		return hasJavaFX;
 	}
 	
 	/**
@@ -172,6 +187,9 @@ public class Functions {
 	 */
 	public static File generateRandomWorkingDir(String prefix) {
 		try {
+			if(prefix.contains(WORKING_DIR_WATCHDOG))
+				prefix = prefix.replaceFirst(WORKING_DIR_WATCHDOG + ".*$", "");
+			
 			File f = new File(prefix + File.separator + Files.createTempDirectory(WORKING_DIR_WATCHDOG).toFile().getAbsolutePath().replace("/tmp", ""));
 			// remove the folder on termination using commons.io
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> {try { FileUtils.deleteDirectory(f); } catch(Exception e) { e.printStackTrace(); }}));

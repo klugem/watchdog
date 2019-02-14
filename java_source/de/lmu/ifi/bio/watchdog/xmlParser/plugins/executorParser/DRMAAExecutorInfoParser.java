@@ -11,6 +11,7 @@ import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.ClusterGUIExecutorV
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.ExecutorPropertyViewController;
 import de.lmu.ifi.bio.watchdog.executor.external.drmaa.DRMAAExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.external.drmaa.DRMAAMonitorThread;
+import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
@@ -32,7 +33,9 @@ public class DRMAAExecutorInfoParser extends XMLExecutorInfoParser<DRMAAExecutor
 		DRMAAMonitorThread.updateMonitorThread();
 		
 		// register the executor plugins shipped with watchdog on GUI
-		ExecutorPropertyViewController.registerWatchdogPluginOnGUI(DRMAAExecutorInfo.class, ClusterGUIExecutorView.class);
+		if(Functions.hasJavaFXInstalled()) {
+			ExecutorPropertyViewController.registerWatchdogPluginOnGUI(DRMAAExecutorInfo.class, ClusterGUIExecutorView.class);
+		}
 	}
 	
 	public DRMAAExecutorInfoParser(Logger l) {

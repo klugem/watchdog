@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org">
+
+	<!-- name of the author of the module -->
+	<x:simpleType name="authorType">
+		<x:restriction base="x:string">
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- github usernames -->
+	<x:simpleType name="gidhubUsernameType">
+		<x:restriction base="x:string">
+		</x:restriction>
+	</x:simpleType>
+
+ 	<!-- Pubmed ID that should be used for citing the module -->
+	<x:simpleType name="PMIDType">
+		<x:restriction base="x:integer">
+		</x:restriction>
+	</x:simpleType>
+
+  	<!-- website used as reference -->
+	<x:simpleType name="websiteType">
+		<x:restriction base="x:string">
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- short description of the module for inclusing in a paper -->
+	<x:simpleType name="paperDescriptionType">
+		<x:restriction base="x:string">
+		</x:restriction>
+	</x:simpleType>
+
+
+	<!-- name of the parameter as it is in the module xsd file -->
+	<x:simpleType name="paramNameType">
+		<x:restriction base="x:string">
+		</x:restriction>
+	</x:simpleType>
+
+  	<!-- base type of the parameter -->
+	<x:simpleType name="paramBaseType">
+		<x:restriction base="x:string">
+		</x:restriction>
+	</x:simpleType>
+
+ 	<!-- parameter restrictions can be listed here -->
+	<x:simpleType name="paramRestrictionsType">
+		<x:restriction base="x:string">
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- default value for that parameter if applicable -->
+	<x:simpleType name="paramDefaultValueType">
+		<x:restriction base="x:string">
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- description of the parameter -->
+	<x:simpleType name="updateType">
+		<x:restriction base="x:date">
+		</x:restriction>
+	</x:simpleType>
+
+	<x:simpleType name="categoryType">
+		<x:restriction base="x:string">
+		</x:restriction>
+	</x:simpleType>
+
+	<!-- module info; additional parse versions from XSD module definition -->
+	<x:complexType name="infoType">
+		<x:all>
+			<x:element name="author" type="authorType" minOccurs="1" maxOccurs="unbounded"/>
+			<x:element name="updated" type="updateType" minOccurs="1" maxOccurs="1"/>
+			<x:element name="category" type="categoryType" minOccurs="1" maxOccurs="unbounded"/>
+			<x:element name="PMID" type="PMIDType" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="website" type="websiteType" minOccurs="0" maxOccurs="unbounded"/>
+			<x:element name="paperDescription" type="paperDescriptionType" minOccurs="0" maxOccurs="1"/>
+			<x:element name="description" type="stringVersionType" minOccurs="1" maxOccurs="unbounded"/>
+			<x:element name="dependencies" type="stringVersionType" minOccurs="0" maxOccurs="1"/>
+		</x:all>
+	</x:complexType>
+
+	<!-- maintainer info (github user names) -->
+	<x:complexType name="maintainerType">
+		<x:all>
+			<x:element name="username" type="gidhubUsernameType" minOccurs="1" maxOccurs="unbounded"/>
+		</x:all>
+	</x:complexType>
+
+	<x:complexType name="stringVersionType">
+		<x:simpleContent>
+			<x:extension base="x:string">
+				<x:attribute name="minVersion" type="x:integer" use="optional" />
+				<x:attribute name="maxVersion" type="x:integer" use="optional" />
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+
+	<!-- single parameter info; additional parse number of occurance from XSD module definition -->
+	<x:complexType name="paramType">
+		<x:all>
+			<x:element name="description" type="stringVersionType" minOccurs="1" maxOccurs="1"/>
+		</x:all>
+		<x:attribute name="name" type="paramNameType" use="required"/>
+		<x:attribute name="type" type="paramBaseType" use="required"/>
+		<x:attribute name="restrictions" type="paramRestrictionsType" use="optional"/>
+		<x:attribute name="default" type="paramDefaultValueType" use="optional"/>
+		<x:attribute name="minOccurs" type="x:integer" use="optional"/>
+		<x:attribute name="maxOccurs" type="x:integer" use="optional"/>
+		<x:attribute name="minVersion" type="x:integer" use="optional"/>
+		<x:attribute name="maxVersion" type="x:integer" use="optional"/>
+	</x:complexType>
+
+	<!-- return value info -->
+	<x:complexType name="returnType">
+		<x:all>
+			<x:element name="description" type="stringVersionType" minOccurs="1" maxOccurs="1"/>
+		</x:all>
+		<x:attribute name="name" type="paramNameType" use="required"/>
+		<x:attribute name="type" type="paramBaseType" use="required"/>
+		<x:attribute name="minVersion" type="x:integer" use="optional"/>
+		<x:attribute name="maxVersion" type="x:integer" use="optional"/>
+	</x:complexType>
+
+	<!-- parent element for documentation -->
+	<x:element name="documentation">
+		<x:complexType>
+			<x:all>
+			  <x:element name="info" type="infoType" minOccurs="1" maxOccurs="1" />
+			  <x:element name="maintainer" type="maintainerType" minOccurs="0" maxOccurs="1" />
+			<x:element name="parameter" minOccurs="0" maxOccurs="1">
+				<x:complexType>
+					<x:sequence>
+						<x:element name="param" type="paramType" minOccurs="1" maxOccurs="unbounded" />
+					</x:sequence>
+				</x:complexType>
+			</x:element>
+				<x:element name="return" minOccurs="0" maxOccurs="1">
+					<x:complexType>
+						<x:sequence>
+							<x:element name="var" type="returnType" minOccurs="1" maxOccurs="unbounded" />
+						</x:sequence>
+					</x:complexType>
+				</x:element>
+			</x:all>
+		</x:complexType>
+	</x:element>
+
+</x:schema>

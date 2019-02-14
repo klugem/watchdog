@@ -30,6 +30,7 @@ import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.optionFormat.OptionFormat;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessMultiParam;
+import de.lmu.ifi.bio.watchdog.resume.ResumeInfo;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
 import de.lmu.ifi.bio.watchdog.task.TaskStatus;
@@ -98,11 +99,14 @@ public class XMLTask {
 	protected Environment env;
 	private String prev_global_slave_id = null;
 	private final HashMap<String, String> SLAVE_IDS = new HashMap<>();
+	private final HashMap<String, ResumeInfo> RESUME_INFO = new HashMap<>();
 	private boolean forceSingleSlaveMode = false;
 	private boolean isIgnored = false;
 	private GUIInfo guiInfo = null;
 	private boolean setSaveResourceUsage = false;
 	private String moduleVersionParameterSetName = null;
+	private boolean isResumeInfoDirty = false;
+	private boolean isOneSubtaskResumeInfoDirty = false;
 	
 	/**
 	 * Constructor
@@ -312,11 +316,56 @@ public class XMLTask {
 	 */
 	private void deleteGlobalDependency(Integer xmlID) {
 		if(this.DEPENDS.containsKey(xmlID) && this.DEPENDS.get(xmlID) == -1) {
+			// check, if this task must be marked as dirty
+			XMLTask taskThisTaskDependsOn = XMLTask.getXMLTask(xmlID);
+			if(taskThisTaskDependsOn.isDirty(false))
+				this.setDirty();
+			
+			// remove the dependency 
 			this.DEPENDS.remove(xmlID);
 			this.AVAIL_RETURN_PARAMS.remove(xmlID);
 		}
 	}
+	
+	/**
+	 * flags the resume info of that task dirty
+	 * --> all tasks that depend on that task will also be flagged as dirty
+	 * @param t
+	 */
+	public void flagResumeInfoAsDirty(Task t) {
+		String gfn = t.getGroupFileName();
+		if(this.RESUME_INFO.containsKey(gfn))
+			this.RESUME_INFO.get(gfn).setDirty();
 		
+		// set it dirty for global dependencies
+		this.setOneSubTaskIsDirty();
+	}
+		
+	/**
+	 * set all subtasks are dirty
+	 */
+	private void setDirty() {
+		this.isResumeInfoDirty = true;
+	}
+	
+	/**
+	 * sets only a subtask as dirty --> all other subtasks are ok
+	 */
+	private void setOneSubTaskIsDirty() {
+		this.isOneSubtaskResumeInfoDirty = true;
+	}
+	
+	/**
+	 * true, if task is dirty based on change resume parameters
+	 * @return
+	 */
+	public boolean isDirty(boolean fromGlobalDependency) {
+		if(fromGlobalDependency)
+			return this.isResumeInfoDirty;
+		else
+			return this.isOneSubtaskResumeInfoDirty;
+	}
+
 	/**
 	 * adds a task which was created based on this XMLTask
 	 * @param t
@@ -394,7 +443,17 @@ public class XMLTask {
 				XMLTask depends = XML_TASKS.get(xmlID);			
 				// check, if the task with that prefix ID was already finished
 				if(inputName == null || !depends.isProcessBlockTaskReady(inputName, prefixLength, this.DEPENDS_SEP.get(xmlID), this))
-					dep.add(xmlID);	
+					dep.add(xmlID);
+					// check, if return info is flagged as dirty
+				else if(depends.hasResumeInfo() && this.hasResumeInfo()) {
+					ResumeInfo ri = depends.getResumeInfo(inputName);
+					if(ri != null && ri.isDirty()) {
+						// mark return info of this separate task also as dirty
+						ri = this.getResumeInfo(inputName);
+						if(ri != null)
+							ri.setDirty();
+					}
+				}	
 			}
 		}
 		return dep;
@@ -1475,5 +1534,34 @@ public class XMLTask {
 	public void addNoGUILoadParameter(String name, String value, OptionFormat formater, int depID) {
 		this.NO_GUI_LOAD_PARAM.add(name);
 		this.addParameter(name, value, formater, depID);
+	}
+
+	public void addResumeInfo(HashMap<String, ResumeInfo> rinfo) {
+		this.RESUME_INFO.putAll(rinfo);
+	}
+	
+	public boolean hasResumeInfo() {
+		return this.RESUME_INFO.size() > 0;
+	}
+	
+	/**
+	 * returns the resume info or null if no resume info is given for that group file name
+	 * @param groupFileName
+	 * @return
+	 */
+	public ResumeInfo getResumeInfo(String groupFileName) {
+		return this.RESUME_INFO.get(groupFileName);
+	}
+
+	public void removeResumeInfo(String inputName) {
+		this.RESUME_INFO.remove(inputName);
+	}
+
+	/**
+	 * returns the name of the return parameter of the module or null if it has none
+	 * @return
+	 */
+	public String getReturnParamName() {
+		return this.returnParamName;
 	}
 }

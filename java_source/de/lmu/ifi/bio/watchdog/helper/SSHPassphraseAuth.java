@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Properties;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -27,8 +28,6 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 
 import de.lmu.ifi.bio.watchdog.logger.Logger;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 /**
  * stores the information about private keys and pass phrases encrypted so very simple memory copy attacks should not work
@@ -314,7 +313,7 @@ public class SSHPassphraseAuth {
      * @return
      */
     private static String encodeBase64(byte[] bytes) {
-        return new BASE64Encoder().encode(bytes);
+        return new String(Base64.getEncoder().encode(bytes));
     }
 
     /**
@@ -324,6 +323,6 @@ public class SSHPassphraseAuth {
      * @throws IOException
      */
     private static byte[] decodeBase64(String message) throws IOException {
-        return new BASE64Decoder().decodeBuffer(message);
+        return Base64.getDecoder().decode(message);
     }
 }

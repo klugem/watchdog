@@ -54,19 +54,19 @@ secondP <- grep("_R2(_.*)*$", fastqc$Filename, perl=TRUE, value=FALSE)
 pe <- 0
 if(length(firstP) == length(secondP) && length(firstP) > 0) {
 	pe <- 1
-	fastqc$Filename <- gsub("_R1_.*$", "", fastqc$Filename)
-	fastqc$Filename <- gsub("_R2_.*$", "", fastqc$Filename)
 	fastqc$Filename <- gsub("_R1$", "", fastqc$Filename)
 	fastqc$Filename <- gsub("_R2$", "", fastqc$Filename)
+	fastqc$Filename <- gsub("_R1_.*$", "", fastqc$Filename)
+	fastqc$Filename <- gsub("_R2_.*$", "", fastqc$Filename)
 
 	fastqc <- aggregate(cbind(ReadNumber) ~ Filename, fastqc, FUN = "max")
 
 	if(!is.null(cutadpat)) 
 	{
-		cutadpat$sample <- gsub("_R1_.*$", "_R1", cutadpat$sample)
-		cutadpat$sample <- gsub("_R2_.*$", "_R2", cutadpat$sample)
 		cutadpat$sample <- gsub("_R1$", "", cutadpat$sample)
 		cutadpat$sample <- gsub("_R2$", "", cutadpat$sample)
+		cutadpat$sample <- gsub("_R1_.*$", "_R1", cutadpat$sample)
+		cutadpat$sample <- gsub("_R2_.*$", "_R2", cutadpat$sample)
 	}
 }
 

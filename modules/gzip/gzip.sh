@@ -3,7 +3,7 @@ SCRIPT_FOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source $SCRIPT_FOLDER/../../core_lib/includeBasics.sh $@
 
 # check, if used tools are installed
-USED_TOOLS='gzip:echo:grep:wc:rm:whoami'
+USED_TOOLS='gzip:echo:grep:wc:rm:dirname'
 MESSAGE=$($LIB_SCRIPT_FOLDER/checkUsedTools.sh "$USED_TOOLS" "check_shflag_tools")
 CODE=$?
 
@@ -16,7 +16,7 @@ fi
 DEFINE_string 'input' '' 'path to input file' 'i'
 DEFINE_boolean 'decompress' 'false' '[optional] decompress the input file' 'u'
 DEFINE_string 'output' '${input}.gz' '[optional] path to output file' 'o'
-DEFINE_string 'md5' '' '[optional] path to md5 file to store a md5 hashsum of the file to compress or to verify that the file was extracted correctly' 'm'
+DEFINE_string 'md5' '' '[optional] path to md5 hashsum file to verify file integrity after decompression' 'm'
 DEFINE_string 'oldPathMd5' '' '[optional] path where the files was stored when the md5 checksum was created' ''
 DEFINE_boolean 'verify' 'true' '[optional] verify after compression the integrity of the file' 'v'
 DEFINE_boolean 'delete' 'false' '[optional] delete the file after compression was performed; enforces integrity check' 'd'

@@ -377,12 +377,26 @@ function getSetModuleVersion() {
 	echo $RET
 }
 
-# removes the last parameter
-function removeModuleVersionParams() {
-	N=$#
-	N=$((N-1))
-	CUT=${@:1:$N}
-	echo $CUT
+# removes the module version parameter
+function removeModuleVersionParamsAndPrint() {
+	NAME_TO_REMOVE=${@: -1}
+	PARAMS=()
+	i=0
+	SKIP=0
+	for param in "${@}"; do
+		if [ "$param" != "$NAME_TO_REMOVE" ] && [ $SKIP -ne 1 ]; then
+			PARAMS[$i]="$param"
+			i=$(($i+1))
+		else
+			if [ $SKIP -eq 1 ]; then
+				SKIP=0
+			else
+				SKIP=1
+			fi
+		fi
+	done
+	# output it
+	printf "\"%s\" " "${PARAMS[@]}"
 }
 
 # first parameter: number of cores

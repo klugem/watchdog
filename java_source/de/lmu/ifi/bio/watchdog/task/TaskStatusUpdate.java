@@ -11,6 +11,7 @@ import de.lmu.ifi.bio.multithreading.StopableLoopRunnable;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.interfaces.ErrorChecker;
 import de.lmu.ifi.bio.watchdog.interfaces.SuccessChecker;
+import de.lmu.ifi.bio.watchdog.resume.ResumeJobInfo;
 import de.lmu.ifi.bio.watchdog.slave.Master;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
 
@@ -37,6 +38,7 @@ public class TaskStatusUpdate extends StopableLoopRunnable implements Serializab
 		try {
 			// check, if some info is already there
 			if(this.T.info != null) {
+				boolean isResume = this.T.info instanceof ResumeJobInfo;
 				this.T.setStatus(TaskStatus.STATUS_CHECK);
 				
 				// job failed because of some syntax error or f.e. stdout file could not be created
@@ -52,11 +54,22 @@ public class TaskStatusUpdate extends StopableLoopRunnable implements Serializab
 				// job ended with some exit status
 				else if(this.T.info.hasExited()) {
 					this.T.exitStatus=this.T.info.getExitStatus();
-					if(this.T.getTaskID() > 0 || this.T.exitStatus != 0)
+					if((this.T.getTaskID() > 0 || this.T.exitStatus != 0) && !isResume)
 						this.T.LOGGER.debug("Task with ID " + this.T.getID() + " exited with status " + this.T.exitStatus + ".");
+					else if(isResume) 
+						this.T.LOGGER.debug("Task with ID " + this.T.getID() + " was not executed as Watchdog was started in resume mode.");
 				
 					// check, if exit status was zero
 					if(this.T.exitStatus == 0) {
+						// check if it is resume job
+						if(isResume) {
+							this.T.setStatus(TaskStatus.FINISHED);
+							
+							// TODO: remove from slave if slave resume support will be implemented
+							this.T.setTaskStatusUpdateFinished();
+							return 1;
+						}
+						
 						// check, if the job should be blocked
 						if(this.T.checkpoint != null && !this.T.checkpoint.isDisabled())
 							this.T.blockTask();

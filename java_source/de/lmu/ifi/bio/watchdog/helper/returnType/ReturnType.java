@@ -8,6 +8,8 @@ public abstract class ReturnType implements Serializable {
 
 	private static final long serialVersionUID = -2625661511287719315L;
 	private final String TYPE;
+	public int minVer = 0;
+	public int maxVer = 0;
 	
 	private static final HashSet<String> FILE_BASE_TYPE = new HashSet<>();
 	private static final HashMap<Class<?>, ReturnType> CLASS_2_RETURN = new HashMap<>();
@@ -58,4 +60,14 @@ public abstract class ReturnType implements Serializable {
 	 * @return
 	 */
 	public abstract boolean checkType(String check);
+	
+	/**
+	 * used in template docu extractor
+	 * @param minVersion
+	 * @param maxVersion
+	 */
+	public void setVersion(int minVersion, int maxVersion) {
+		this.minVer = minVersion;
+		this.maxVer = maxVersion;
+	}
 }

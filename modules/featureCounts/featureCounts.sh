@@ -43,6 +43,7 @@ elif [ ${MODULE_VERSION} -eq 2 ]; then
 	DEFINE_integer 'readExtension3' '0' "[optional] extend reads at the 3' end" ''
 	DEFINE_boolean 'fraction' '1' '[optional] count fractional; only in combination with the assignToAllOverlappingFeatures or/and multiMapping flag(s)' ''
 	DEFINE_boolean 'largestOverlap' '1' '[optional] assign reads to a meta-feature/feature that has the largest number of overlapping bases.' ''
+	DEFINE_boolean 'longReads' '1' '[optional] counts long reads such as Nanopore and PacBio reads' ''
 fi
 DEFINE_integer 'moduleVersion' '1' '[optional] version of the module that should be used' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
@@ -156,6 +157,9 @@ elif [ ${MODULE_VERSION} -eq 2 ]; then
 	fi
 	if [ $FLAGS_readExtension3 -gt 0 ]; then
 		COMMAND="$COMMAND --readExtension3 $FLAGS_readExtension3"
+	fi
+	if [ $FLAGS_longReads -eq 0 ]; then
+		COMMAND="$COMMAND -L"
 	fi
 fi
 COMMAND="$COMMAND '$FLAGS_input'"

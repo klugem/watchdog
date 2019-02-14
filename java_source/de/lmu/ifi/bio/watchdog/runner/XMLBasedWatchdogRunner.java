@@ -8,7 +8,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,6 +30,8 @@ import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.resume.LoadResumeInfoFromFile;
+import de.lmu.ifi.bio.watchdog.resume.ResumeInfo;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
@@ -38,20 +39,17 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask2TaskThread;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
+
 /**
  * Runner for the XML Parser which reads an XML file and executes all containing tasks
  * @author Michael Kluge
  *
  */
-public class XMLBasedWatchdogRunner implements SignalHandler {
+public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler {
 	private static final Signal SIGTERM = new Signal("TERM"); // kill request
 	private static final Signal SIGINT = new Signal("INT"); // Strg + C
 	private static final String BASE_STRING = "watchdogBase"; 
-	private static final Pattern WATCHDOG_BASE = Pattern.compile("<"+XMLParser.ROOT+".+"+BASE_STRING+"=\"([^\"]+)\".+"); 
-	public static final String XSD_PATH = "xsd" + File.separator + "watchdog.xsd";
-	private static final String TOOL_NAME = "Watchdog";  
-	private static final String VERSION = "version: 1.2.7";
-	private static final String REVISION = getRevisionNumber();        
+	private static final Pattern WATCHDOG_BASE = Pattern.compile("<"+XMLParser.ROOT+".+"+BASE_STRING+"=\"([^\"]+)\".+");  
 	public static final String LOG_SEP = "#########################################################################################";
 	public static int PORT =  WatchdogThread.DEFAULT_HTTP_PORT;
 	public final static int SLEEP = 500; // check every 0.5s if all tasks are finished!
@@ -61,7 +59,7 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 	@SuppressWarnings({ "unchecked" })
 	public static void main(String[] args) throws SAXException, IOException, ParserConfigurationException, DrmaaException, InterruptedException {
 		Logger log = new Logger(LogLevel.DEBUG);
-		Parameters params = new Parameters();
+		XMLBasedWatchdogParameters params = new XMLBasedWatchdogParameters();
 		JCommander parser = null;
 		try { 
 			parser = new JCommander(params, args); 
@@ -92,14 +90,14 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 				for(File xmlFile : xml.listFiles(new PatternFilenameFilter(XML_PATTERN, false))) {
 					String xmlFilename = xmlFile.getAbsolutePath();
 					log.info("Validating '" + xmlFilename + "'...");
-					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename, params.useEnvBase, log).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
+					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename, params.useEnvBase, log).getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
 					succ++;
 				}
 				System.out.println("Validation of " + succ + " files stored in '"+ xml.getCanonicalPath() +"' succeeded.");
 			}
 			// process only that file
 			else {				
-				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath(), params.useEnvBase, log).getAbsolutePath(), params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
+				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath(), params.useEnvBase, log).getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
 				System.out.println("Validation of '"+ xml.getCanonicalPath() +"' succeeded!");
 			}
 			System.exit(0);
@@ -112,6 +110,20 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 			if(params.log != null) 
 				logFile = new File(params.log);
 			int port = params.port;
+			
+			// read resume info
+			HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo = new HashMap<>();
+			if(params.resume != null) {
+				File resume = new File(params.resume);
+				if(resume.exists() && resume.canRead()) {
+					resumeInfo = LoadResumeInfoFromFile.getResumeInfo(resume);
+				}
+				else {
+					log.error("Could not find watchdog status log file '"+resume.getAbsolutePath()+"'.");
+					System.exit(1);
+				}
+			}
+			
 			PORT = port; // copy that for other classes which want to access that
 			int startID = params.start;
 			int stopID = params.stop;
@@ -178,14 +190,18 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 				log.info("Log file: " + logFile.getAbsolutePath());
 			else
 				log.info("Log file: ** not saved **");
+			
+			if(params.resume != null)
+				log.info("Resume file: " + new File(params.resume).getAbsolutePath());
 
 			// parse the XML Tasks
-			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading, params.disableMails);
+			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading, params.disableMails);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
 			String mail = (String) ret[1];
 			HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = (HashMap<String, Pair<HashMap<String, ReturnType>, String>>) ret[3];
 			HashMap<String, Integer> name2id = (HashMap<String, Integer>) ret[4]; 
 			
+			log.info("Loaded resume info for "+ resumeInfo.size() +" task ids.");
 			log.info("Parsed " + xmlTasks.size() + " from the provided XML file.");
 
 			// check, if some of the tasks should be removed
@@ -261,7 +277,7 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 			// create a new watchdog object and xml2 thread stuff
 			WatchdogThread watchdog = new WatchdogThread(params.simulate, null, xsdSchema, logFile); 
 			watchdog.setWebserver(control);
-			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, xmlPath, params.mailWaitTime);
+			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, xmlPath, params.mailWaitTime, resumeInfo);
 			
 			WatchdogThread.addUpdateThreadtoQue(xml2taskThread, true);
 			Executor.setXml2Thread(xml2taskThread);
@@ -293,20 +309,6 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 		}
 	}
 	
-	private static String getRevisionNumber() {
-		Properties prop = new Properties();
-		try {
-		    prop.load(XMLBasedWatchdogRunner.class.getClassLoader().getResourceAsStream("de/lmu/ifi/bio/watchdog/helper/.svn_revision_number.properties"));
-		    return prop.getProperty("build.current.revision");
-		} 
-		catch (IOException ex) {}
-		return "unknown build";
-	}
-
-	public static String getVersion() {
-		return TOOL_NAME + " - " + VERSION + " (" + getRevision() +"r)";
-	}
-
 	/**
 	 * gets an int ID based on a String ID
 	 * @param sID
@@ -333,15 +335,7 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 			}
 		}
 	}
-
-	/**
-	 * returns the SVN revision of the last commit
-	 * @return
-	 */
-	private static String getRevision() {
-		return REVISION;
-	}
-
+	
 	/**
 	 * returns the xsd schema, extracted from a XML file
 	 * @param xmlPath
@@ -372,7 +366,8 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 		catch(Exception e) {}
 		return null;
 	}
-
+	
+	
 	@Override
 	public void handle(Signal arg0) {
 		if(SIGINT.equals(arg0)) {
@@ -403,6 +398,7 @@ public class XMLBasedWatchdogRunner implements SignalHandler {
 			catch(Exception e) { e.printStackTrace(); }
 		}
 	}
+	
 	
 	/**
 	 * checks, if the port is in use by another tool

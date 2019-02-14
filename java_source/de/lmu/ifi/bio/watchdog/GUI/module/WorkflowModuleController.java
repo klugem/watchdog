@@ -197,7 +197,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 			while(i < minNumber) {
 				final ParamValue pv = new ParamValue(p.getName(), ParameterToControl.getControlElement(p.getType()), (!onlySingleInstance ? i+1 : null));
 				params.put(pv.getName(), pv);
-				int c = grid.getRowCount();
+				int c = grid.getRowCountOwn();
 				grid.add(new Label(pv.getName()), 0, c);
 				grid.add(pv.getControl(), 1, c);
 				counts.increaseCount(pv.getPlainName());
@@ -232,7 +232,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 					lastAdd = add;
 					add.setGraphic(ImageLoader.getImage(ImageLoader.ADD_SMALL));
 					add.onActionProperty().set(e -> { this.createCopyOfArgument(grid, pv, number, stage, add, p, pWindow); e.consume();});
-					grid.add(add, 2, grid.getRowCount()-1);
+					grid.add(add, 2, grid.getRowCountOwn()-1);
 					// add add button in first row
 					if(!(maxNumber == null || (minNumber < maxNumber))) {
 						add.setVisible(false);
@@ -245,7 +245,7 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 					Button add = lastAdd;
 					Button remove = new Button();
 					remove.setGraphic(ImageLoader.getImage(ImageLoader.DELETE_SMALL));
-					grid.add(remove, 2, grid.getRowCount()-1);
+					grid.add(remove, 2, grid.getRowCountOwn()-1);
 					remove.onActionProperty().set(e -> { this.removeCopyOfArgument(pv.getName(), grid, stage, pv.getPlainName(), add); e.consume();});
 				}
 				i++;

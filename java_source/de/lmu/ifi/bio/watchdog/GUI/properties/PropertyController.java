@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-import com.sun.javafx.scene.control.skin.CustomColorDialog;
+import com.sun.javafx.scene.control.CustomColorDialog;//$JAVA11$
 
 import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
 import de.lmu.ifi.bio.watchdog.GUI.datastructure.ExtendedClipboardContent;
@@ -50,7 +50,6 @@ public class PropertyController implements Initializable {
 		this.movePane.setOnMouseReleased(e -> { if(this.p != null && this.p.hasXMLData()) this.selectColor(); });
 	}
 	
-
 	private void selectColor() {
 		// no changes in read-only mode
 		if(WorkflowDesignController.isInExecutionMode())

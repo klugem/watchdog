@@ -24,7 +24,7 @@ spec <- matrix(c('controlCondition', 'a', 1, "character",
 		  'confirmRun2EndFile', 'p', 1, "character"), ncol=4, byrow=T)
 
 # parse the parameters
-opt = getopt(spec);
+opt = getopt(spec)
 
 # we do no more checking for arguments because we expect that all checking is done before!
 # but ensure, that method is not manipulated
@@ -115,6 +115,16 @@ if(!is.null(features)) {
 
 			colnames(sumCounts) <- c("counts")
 			stats <- merge(features, sumCounts, by.x=opt$featureAnnotationID, by.y=0)
+			# try to remove numeric suffixs if there 
+			if(nrow(stats) == 0) {
+				features[, opt$featureAnnotationID] <- gsub("\\.[0-9]+$", "", features[, opt$featureAnnotationID])
+				stats <- merge(features, sumCounts, by.x=opt$featureAnnotationID, by.y=0)
+
+				if(nrow(stats) == 0) {
+					print(paste("[ERROR] Feature annotation seems not to match count file.", sep=""))
+					quit(save = "no", status = 14, runLast = FALSE) # status = 14 <--> invalid arguments
+				}
+			}
 	
 			# make statistics
 			data <- aggregate(stats$counts, by=list(stats[, opt$featureAnnotationType]), FUN=sum)

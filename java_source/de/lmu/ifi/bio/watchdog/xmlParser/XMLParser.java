@@ -1,5 +1,6 @@
 package de.lmu.ifi.bio.watchdog.xmlParser;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,9 +24,11 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -234,7 +238,7 @@ public class XMLParser {
 	private static final String MIN_OCCURS = "minOccurs";
 	private static final String MAX_OCCURS = "maxOccurs";
 	public static final String TYPE = "type";
-	private static final String ABSTRACT_TASK_PATH = "xsd/abstract_task.xsd";
+	private static final String ABSTRACT_TASK_PATH = "xsd" + File.separator + "abstract_task.xsd";
 	private static final String EXTENSION_RETURN = "taskReturnType";
 	private static final String X = "x:";
 	private static final String STRING = "string";
@@ -272,7 +276,7 @@ public class XMLParser {
 	private static final String REPLACE_MODULE_IMPORT = "<!-- @!JAVA_REPLACE_MODULE_INCLUDE!@ -->";
 	private static final String REPLACE_PLUGIN_IMPORT = "<!-- @!JAVA_REPLACE_PLUGIN_INCLUDE!@ -->";
 	private static final HashMap<String, String> BLOCKED_CONST_NAMES = new HashMap<>();
-	private static final ArrayList<String> BASE_ROOT_TYPES = new ArrayList<>();
+	public static final ArrayList<String> BASE_ROOT_TYPES = new ArrayList<>();
 	public static final HashMap<String, Object[]> XML_MODULE_INFO = new HashMap<>();
 	private static HashMap<String, String> last_consts = new HashMap<>();
 	private static boolean isGUILoadAttempt;
@@ -324,7 +328,7 @@ public class XMLParser {
 	 * @throws ParserConfigurationException
 	 */
 	@SuppressWarnings({ "rawtypes", "resource", "unchecked" })
-	public static Object[] parse(String filenamePath, String schemaPath, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails) throws SAXException, IOException, ParserConfigurationException {	
+	public static Object[] parse(String filenamePath, String schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails) throws SAXException, IOException, ParserConfigurationException {	
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
 		String watchdogBaseDir = new File(schemaPath).getParentFile().getParent();
@@ -344,6 +348,9 @@ public class XMLParser {
 		
 		// ensure that the tmp folder is there
 		File tmpFolder = new File(watchdogBaseDir + File.separator + TMP_FOLDER);
+		if(customTmpFolder != null) 
+			tmpFolder = new File(customTmpFolder);
+			
 		if(!tmpFolder.exists()) {
 			if(!tmpFolder.mkdirs()) {
 				LOGGER.error("Could not create temporary folder '"+tmpFolder.getAbsolutePath()+"'.");
@@ -1415,6 +1422,23 @@ public class XMLParser {
 		}
 	}
 	
+	/**
+	 * writes a pretty formated XML version of this root element to that file
+	 * @param root
+	 * @param outputFile
+	 * @throws TransformerException
+	 */
+	public static void writePrettyXML(Element root, File outputFile) throws TransformerException {
+		TransformerFactory tf = TransformerFactory.newInstance();
+		Transformer t = tf.newTransformer();
+		Result output = new StreamResult(outputFile);
+		Source input = new DOMSource(root);
+		t.setOutputProperty(OutputKeys.INDENT, "yes");
+		t.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "yes");
+		t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+		t.transform(input, output);
+	}
+	
 	public static boolean createdCachedXSDModuleVersion(DocumentBuilderFactory dbf, File xsdModuleFile, File outputFile, int version, boolean noExit) {
 		if(xsdModuleFile.exists() && xsdModuleFile.canRead()) {
 			try {
@@ -1429,11 +1453,7 @@ public class XMLParser {
 				}
 
 				// write it to disk
-				Transformer transformer = TransformerFactory.newInstance().newTransformer();
-				Result output = new StreamResult(outputFile);
-				Source input = new DOMSource(root);
-				transformer.transform(input, output);
-			
+				writePrettyXML(root, outputFile);
 				return true;
 			}
 			catch(Exception e) {
@@ -1757,6 +1777,14 @@ public class XMLParser {
 		return dom.getDocumentElement();
 	}
 	
+	public static Element getRootElement(DocumentBuilderFactory dbf, String xmlContent) throws ParserConfigurationException, SAXException, IOException {
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		Document dom = db.parse(new ByteArrayInputStream(xmlContent.getBytes(StandardCharsets.UTF_8)));
+
+		return dom.getDocumentElement();
+	}
+	
+	
 	/**
 	 * gets a action type based on a string or ends the program if parsing fails
 	 * @param actionType
@@ -1983,7 +2011,7 @@ public class XMLParser {
 					if(!fileToLoadFile.exists())
 						createdCachedXSDModuleVersion(dbf, new File(xsdFile), fileToLoadFile, v, noExit);
 
-					ret.put(taskType + VERSION_SEP + v, getReturnTypeOfModule(dbf, fileToLoadFile));
+					ret.put(taskType + VERSION_SEP + v, getReturnTypeOfModule(dbf, fileToLoadFile, false));
 				}
 			}
 			// update all the default names, if none are set
@@ -2030,7 +2058,7 @@ public class XMLParser {
 				String taskType = getTaskTypeOfModule(dbf, new File(xsdFile));
 				HashSet<Integer> versions = getVersionsOfModule(dbf, new File(xsdFile));
 				for(int v : versions) {
-					ret.put(taskType + VERSION_SEP + v, getParametersOfModule(dbf, new File(xsdFile), tmpCacheDir, rootTypes, taskType, v, noExit));
+					ret.put(taskType + VERSION_SEP + v, getParametersOfModule(dbf, new File(xsdFile), tmpCacheDir, rootTypes, taskType, v, noExit, false));
 				}
 			}
 			// yes, it can get more ugly that it was before
@@ -2053,7 +2081,7 @@ public class XMLParser {
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
 	 */
-	public static Pair<HashMap<String, ReturnType>, String> getReturnTypeOfModule(DocumentBuilderFactory dbf, File schemaFile) throws ParserConfigurationException, SAXException, IOException {
+	public static Pair<HashMap<String, ReturnType>, String> getReturnTypeOfModule(DocumentBuilderFactory dbf, File schemaFile, boolean loadAllVersions) throws ParserConfigurationException, SAXException, IOException {
 		Element el = null;
 		boolean notFound = false;
 		HashMap<String, ReturnType> ret = new HashMap<>();
@@ -2086,6 +2114,19 @@ public class XMLParser {
 									if(name != null && type != null) {
 										type = type.replace(X, "");
 										ReturnType r = getReturnType(type);
+										
+										// try to get the version of the parameter
+										if(loadAllVersions) {
+											String minVersionS = el.getAttribute(MIN_VERSION_ATTR);
+											String maxVersionS = el.getAttribute(MAX_VERSION_ATTR);
+											Integer minVersion = 0;
+											Integer maxVersion = 0;
+											try { minVersion = Integer.parseInt(minVersionS); } catch(Exception e) { };
+											try { maxVersion = Integer.parseInt(maxVersionS); } catch(Exception e) { };
+											if(minVersion != 0 || maxVersion != 0)
+												r.setVersion(minVersion, maxVersion);
+										}
+										
 										if(r != null)
 											ret.put(name, r);
 										else {
@@ -2207,6 +2248,30 @@ public class XMLParser {
 		return null;
 	}
 	
+	public static String getTaskCommand(DocumentBuilderFactory dbf, File schemaFile) throws ParserConfigurationException, SAXException, IOException {
+		Element docRoot = getRootElement(dbf, schemaFile);
+		
+		Element el;
+		NodeList restriction = docRoot.getElementsByTagName(X_RESTRICTION);
+		for(int i = 0 ; i < restriction.getLength(); i++) {
+			if(restriction.item(i) instanceof Element) {
+				el = (Element) restriction.item(i);
+				String base = el.getAttribute(BASE);
+				
+				// find the base element
+				if(base != null && BASE_ATTRIBUTE_TASK_TYPE.equals(base)) {
+					NodeList childs = el.getChildNodes();
+					for(int ii = 0; ii < childs.getLength(); ii++) {
+						if(childs.item(ii).getNodeName().equals(X_ATTRIBUTE) && ((Element) childs.item(ii)).getAttribute(NAME).equals(BIN_NAME)) {
+							return ((Element) childs.item(ii)).getAttribute(FIXED);
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
 	/**
 	 * finds all versions of a XSD module
 	 * @param dbf
@@ -2258,18 +2323,23 @@ public class XMLParser {
 	 * @throws SAXException
 	 * @throws IOException
 	 */
-	public static Pair<Pair<File, File>, HashMap<String, Parameter>> getParametersOfModule(DocumentBuilderFactory dbf, File schemaFile, String xsdCacheDir, ArrayList<Element> rootTypes, String modName, int version, boolean noExit) throws ParserConfigurationException, SAXException, IOException {
-		// ensure that a cached version of the module is there 
-		String fileToLoad = getCacheFileNameForXSDModule(xsdCacheDir, schemaFile, modName, version);
-		File fileToLoadFile = new File(fileToLoad);
-		
-		// create the file, if it does not exist
-		if(!fileToLoadFile.exists())
-			createdCachedXSDModuleVersion(dbf, schemaFile, fileToLoadFile, version, noExit);
+	public static Pair<Pair<File, File>, HashMap<String, Parameter>> getParametersOfModule(DocumentBuilderFactory dbf, File schemaFile, String xsdCacheDir, ArrayList<Element> rootTypes, String modName, int version, boolean noExit, boolean loadAllVersions) throws ParserConfigurationException, SAXException, IOException {
+		File fileToLoadFile;
+		if(loadAllVersions)
+			fileToLoadFile = schemaFile; 
+		else {
+			// ensure that a cached version of the module is there 
+			String fileToLoad = getCacheFileNameForXSDModule(xsdCacheDir, schemaFile, modName, version);
+			fileToLoadFile = new File(fileToLoad);
+			
+			// create the file, if it does not exist
+			if(!fileToLoadFile.exists())
+				createdCachedXSDModuleVersion(dbf, schemaFile, fileToLoadFile, version, noExit);
+		}
 		
 		// parse the file
 		Element docRoot = getRootElement(dbf, fileToLoadFile);
-		HashMap<String, Parameter> p = new HashMap<>();
+		HashMap<String, Parameter> p = new LinkedHashMap<>();
 		String parameterDefinitionName = null;
 		Element el = null;
 		
@@ -2313,9 +2383,23 @@ public class XMLParser {
 								Integer maxOccurs = 1;
 								try { minOccurs = Integer.parseInt(minOccursS); } catch(Exception e) { };
 								try { maxOccurs = Integer.parseInt(maxOccursS); } catch(Exception e) { maxOccurs = null; }; // unbounded
+								
+								Parameter pn = new Parameter(pName, minOccurs, maxOccurs, type);
+								
+								// try to get the version of the parameter
+								if(loadAllVersions) {
+									String minVersionS = el.getAttribute(MIN_VERSION_ATTR);
+									String maxVersionS = el.getAttribute(MAX_VERSION_ATTR);
+									Integer minVersion = 0;
+									Integer maxVersion = 0;
+									try { minVersion = Integer.parseInt(minVersionS); } catch(Exception e) { };
+									try { maxVersion = Integer.parseInt(maxVersionS); } catch(Exception e) { };
+									if(minVersion != 0 || maxVersion != 0)
+										pn.setVersion(minVersion, maxVersion);
+								}
 
 								// save the parameter
-								p.put(pName, new Parameter(pName, minOccurs, maxOccurs, type));
+								p.put(pName, pn);
 							}
 						}
 						break;
@@ -2337,7 +2421,7 @@ public class XMLParser {
 	 * @throws SAXException
 	 * @throws IOException
 	 */
-	private static ArrayList<Element> getComplexAndSimpleTypes(DocumentBuilderFactory dbf, ArrayList<String> files, String xsdRootDir) throws ParserConfigurationException, SAXException, IOException {
+	public static ArrayList<Element> getComplexAndSimpleTypes(DocumentBuilderFactory dbf, ArrayList<String> files, String xsdRootDir) throws ParserConfigurationException, SAXException, IOException {
 		ArrayList<Element> all = new ArrayList<>();
 		for(String f : files) {
 			Element docRoot = getRootElement(dbf, new File(xsdRootDir + File.separator + f));

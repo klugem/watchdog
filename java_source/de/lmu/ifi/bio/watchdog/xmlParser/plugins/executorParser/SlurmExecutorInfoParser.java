@@ -9,6 +9,7 @@ import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.SlurmGUIExecutorVie
 import de.lmu.ifi.bio.watchdog.executor.external.slurm.SlurmExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.external.slurm.SlurmMonitorThread;
 import de.lmu.ifi.bio.watchdog.executor.external.slurm.SlurmWorkloadManagerConnector;
+import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
@@ -21,7 +22,9 @@ public class SlurmExecutorInfoParser extends XMLExecutorInfoParser<SlurmExecutor
 		SlurmMonitorThread.updateMonitorThread();
 		
 		// register the executor plugins shipped with watchdog on GUI
-		ExecutorPropertyViewController.registerWatchdogPluginOnGUI(SlurmExecutorInfo.class, SlurmGUIExecutorView.class);
+		if(Functions.hasJavaFXInstalled()) {
+			ExecutorPropertyViewController.registerWatchdogPluginOnGUI(SlurmExecutorInfo.class, SlurmGUIExecutorView.class);
+		}
 	}
 	
 	public SlurmExecutorInfoParser(Logger l) {

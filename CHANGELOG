@@ -4,6 +4,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 Changelog started with version 1.2.0
 
 ## [Unreleased]
+### Added
+- [CMD] Workflows can be resumed now; only tasks that were not executed successfully or have changed parameters will be executed
+- [XSD] Modules can now be documented (including basic module information, description and parameters) using a simple XML format
+- [CMD] New parameter -tmpFolder, which can be used to set a custom temporary caching and working directory
+- [JAR] Added docuTemplateExtractor.jar that can be used to create templates for module documentation
+- [CMD] Implemented documentation template extractor plugins for bash and python modules
+
+### Internal
+- [] Watchdog releases require now Java 11 (and JavaFX SDK for workflow designer)
+ 
+### Fixed
+- [] Fixed small memory leak caused by not closed ScanResult objects
+- [CMD] removed unnecessary nesting of pre-defined TMP constant  
+- [EXAMPLE] Fixed wrong dependency in example workflow 1 for task 5
+- [BASH] syntax error on array access that caused an error in new bash versions
+- [BASH] last parameter of called command was not shown 
 
 ## [1.2.7] - 2018-08-30
 ### Added

@@ -352,7 +352,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			}
 			
 			XMLParser.setGUILoadAttempt(true);
-			Object[] ret = XMLParser.parse(f.getAbsolutePath(), XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath(), false, null).getAbsolutePath(), 0, false, true, false, false, loadUnsafeFile, false);
+			Object[] ret = XMLParser.parse(f.getAbsolutePath(), XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath(), false, null).getAbsolutePath(), null, 0, false, true, false, false, loadUnsafeFile, false);
 			if(ret == null) {
 				Inform.error("Failed to parse the workflow", "Check your standard out and error messages in order to identify the problem.\nOr use the command-line tool with the -validate option.");
 				XMLParser.setGUILoadAttempt(false);
@@ -764,7 +764,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 		File tmpXLMFile = Functions.generateRandomTmpExecutionFile("validate", false);
 		if(this.saveWorkflow(tmpXLMFile, false, true)) {
 			try {
-				XMLParser.parse(tmpXLMFile.getAbsolutePath(), new File(PreferencesStore.getWatchdogBaseDir()) + File.separator + XMLParser.FILE_CHECK, 0, false, true, true, false, false, false);
+				XMLParser.parse(tmpXLMFile.getAbsolutePath(), new File(PreferencesStore.getWatchdogBaseDir()) + File.separator + XMLParser.FILE_CHECK, null, 0, false, true, true, false, false, false);
 				tmpXLMFile.delete();
 				
 				if(!afterSave)
@@ -1216,7 +1216,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			File f = new File(this.currentLoadedFile.get());
 			File xsdSchema = XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath(), false, null); 
 			// file is already loaded --> we parse it safe if valid and unsafe if not
-			Object[] ret = XMLParser.parse(f.getAbsolutePath(), xsdSchema.getAbsolutePath(), 0, false, true, false, false, XMLParser.testIfUnsafe(f.getAbsolutePath()), false);
+			Object[] ret = XMLParser.parse(f.getAbsolutePath(), xsdSchema.getAbsolutePath(), null, 0, false, true, false, false, XMLParser.testIfUnsafe(f.getAbsolutePath()), false);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
 			String mail = (String) ret[1];		
 			Mailer mailer = new Mailer(mail);
@@ -1248,7 +1248,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			}
 			
 			// create a new watchdog object and xml2 thread stuff
-			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, f, 10);
+			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, f, 10, null);
 			
 			// change detail degree of output
 			watchdog.setLogLevel(LogLevel.ERROR);

@@ -3,6 +3,8 @@ package de.lmu.ifi.bio.watchdog.helper;
 import java.io.File;
 import java.util.ArrayList;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 /**
@@ -15,6 +17,8 @@ public class XMLBuilder {
 	private final ArrayList<String> OPEN_TAGS = new ArrayList<>();
 	private final ArrayList<Boolean> HAS_TAG_CHILDREN = new ArrayList<>();
 	private int newlineCounter = 0;
+	private boolean noNewlines = false;
+	
 	/**
 	 * some static XML stuff that is used internally
 	 */
@@ -207,13 +211,45 @@ public class XMLBuilder {
 	}
 
 	public void newline() {
-		this.B.append(XMLParser.NEWLINE);
-		this.newlineCounter++;
+		if(!this.noNewlines) {
+			this.B.append(XMLParser.NEWLINE);
+			this.newlineCounter++;
+		}
 	}
 	
 	public int getNewlines() {
 		return this.newlineCounter;
 	}
+	
+	public void addTags(String tag, String... values) {
+		this.addTags(tag, null, values);
+	}
+	
+	public void addTags(String tag, Pair<Integer, Integer> versionRange, String... values) {
+		for(String v : values) {
+			this.startTag(tag, true, true);
+			if(versionRange != null) {
+				this.addQuotedAttribute(XMLParser.MIN_VERSION_ATTR, versionRange.getLeft());
+				this.addQuotedAttribute(XMLParser.MAX_VERSION_ATTR, versionRange.getRight());
+			}
+			this.endOpeningTag(false);
+			this.addContent(v, false);
+			this.endCurrentTag(true);
+		}
+	}
+	public void addTags(String tag, Pair<Integer, Integer> versionRange, ArrayList<String >values) {
+		this.addTags(tag, versionRange, values.toArray(new String[0]));
+	}
+	
+	public void addTags(String tag, ArrayList<String >values) {
+		this.addTags(tag, null, values.toArray(new String[0]));
+	}
 
+	public void addPlain(String string) {
+		this.B.append(string);
+	}
 
+	public void noNewlines(boolean noNewLines) {
+		this.noNewlines = noNewLines;
+	}
 }

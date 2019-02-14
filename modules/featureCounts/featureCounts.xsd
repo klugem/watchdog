@@ -36,6 +36,7 @@
 			<x:element name="readExtension3" type="paramIntegerGreater0_featureCounts" minOccurs="0" maxOccurs="1" minVersion="2"/>
 			<x:element name="fraction" type="paramBoolean" minOccurs="0" maxOccurs="1" minVersion="2"/>
 			<x:element name="largestOverlap" type="paramBoolean" minOccurs="0" maxOccurs="1" minVersion="2"/>
+			<x:element name="longReads" type="paramBoolean" minOccurs="0" maxOccurs="1" minVersion="2"/>
 		</x:all>
 	</x:complexType>
 
