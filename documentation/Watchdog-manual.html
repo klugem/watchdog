@@ -42,23 +42,15 @@
 <a href="#custom_modules_all_together" class="smallsubtopic">5.5 Putting it all together</a><br />
 <a href="#module_versions" class="smallsubtopic">5.6 Module versions</a><br />
 <a href="#custom_modules_other" class="smallsubtopic">5.7 Other matters</a><br />
-<a href="#module_sharing" class="smalltopic">6 Sharing of modules</a><br />
-<a href="#custom_modules_input" class="smallsubtopic">6.1 Input parameter definition</a><br />
-<a href="#custom_modules_output" class="smallsubtopic">6.2 Output parameter definition</a><br />
-<a href="#custom_modules_binary" class="smallsubtopic">6.3 Binary call command and other settings</a><br />
-<a href="#custom_modules_name" class="smallsubtopic">6.4 Assign a name to the new module</a><br />
-<a href="#custom_modules_all_together" class="smallsubtopic">6.5 Putting it all together</a><br />
-<a href="#module_versions" class="smallsubtopic">6.6 Module versions</a><br />
-<a href="#custom_modules_other" class="smallsubtopic">6.7 Other matters</a><br />
-<a href="#extensions" class="smalltopic">7 Extend Watchdog's functionality</a><br />
-<a href="#vfs" class="smallsubtopic">7.1 Virtual file systems for task actions</a><br />
-<a href="#plugins" class="smallsubtopic">7.2 XML Plugins</a><br />
-<a href="#docker" class="smalltopic">8 Docker</a><br />
-<a href="#docker_watchdog_install" class="smallsubtopic">8.1 Install the Watchdog Docker image</a><br />
-<a href="#docker_share" class="smallsubtopic">8.2 Sharing of files</a><br />
-<a href="#docker_port" class="smallsubtopic">8.3 Port forwarding</a><br />
-<a href="#docker_watchdog_usage" class="smallsubtopic">8.4 How to use the Docker Watchdog image</a><br />
-<a href="#docker_modules" class="smallsubtopic">8.5 Use Docker in modules</a><br />
+<a href="#extensions" class="smalltopic">6 Extend Watchdog's functionality</a><br />
+<a href="#vfs" class="smallsubtopic">6.1 Virtual file systems for task actions</a><br />
+<a href="#plugins" class="smallsubtopic">6.2 XML Plugins</a><br />
+<a href="#docker" class="smalltopic">7 Docker</a><br />
+<a href="#docker_watchdog_install" class="smallsubtopic">7.1 Install the Watchdog Docker image</a><br />
+<a href="#docker_share" class="smallsubtopic">7.2 Sharing of files</a><br />
+<a href="#docker_port" class="smallsubtopic">7.3 Port forwarding</a><br />
+<a href="#docker_watchdog_usage" class="smallsubtopic">7.4 How to use the Docker Watchdog image</a><br />
+<a href="#docker_modules" class="smallsubtopic">7.5 Use Docker in modules</a><br />
 <a name="introduction" class="topic">1 Introduction</a>
 
 Here, we present Watchdog, a WMS for the automated and distributed analysis of large-scale experimental data. Watchdog is implemented in Java and is thus platform-independent.
@@ -85,7 +77,7 @@ Watchdog is platform independent as it is written in Java and requires JRE (Java
 The installation of Watchdog is very easy. Simply extract the provided archive into a folder of your choice using
 <pre class="name">tar xfvz watchdog.tar.gz</pre> The folder must be accessible for remote or cluster executors if you plan to use some. 
 <br /><br />
-Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda watchdog-wms</pre>. In that case be binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">8</a>.
+Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda watchdog-wms</pre>. In that case be binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">7</a>.
 
 <br /><br />In the next few lines the content of each folder is explained:
 
@@ -1000,7 +992,7 @@ In example 10 the working directory is set <nobr>to <pre class="name">/tmp</pre>
 
 Additional operations can be executed before and after the actual task is executed. Currently a set of IO operations are implemented that can be used to roll out data the task depends on or to clean up once the task is finished. This feature is especically usefull when Watchdog is running in slave mode (see <a href="#execution_environments">4.3</a>) in order to reduce load for the shared file system as some files might be requirements for different tasks. Hence, these files would have to be transfered multiple times from the shared file system to the host executing the task.
 <br />
-Moreover, files stored on remote files systems can be up- or downloaded by Watchdog. By default, virtual file systems based on the protocols File, HTTP, HTTPS, FTP, FTPS and SFTP as well as the main memory (RAM) are supported. These virtual file systems are provided by the Commons Virtual File System project of the Apache Software Foundation. Examples for valid URIs of these file systems can be can be found <a target="_blank" href="https://commons.apache.org/proper/commons-vfs/filesystems.html">here</a>. However, any file system with an implementation of the <pre class="name">FileProvider</pre> can also be included by the user as described in <a href="#vfs">7.1</a>.
+Moreover, files stored on remote files systems can be up- or downloaded by Watchdog. By default, virtual file systems based on the protocols File, HTTP, HTTPS, FTP, FTPS and SFTP as well as the main memory (RAM) are supported. These virtual file systems are provided by the Commons Virtual File System project of the Apache Software Foundation. Examples for valid URIs of these file systems can be can be found <a target="_blank" href="https://commons.apache.org/proper/commons-vfs/filesystems.html">here</a>. However, any file system with an implementation of the <pre class="name">FileProvider</pre> can also be included by the user as described in <a href="#vfs">6.1</a>.
 
 <br /><br />
 Task actions are defined in an <pre class="tag">actions</pre> tag as child of <pre class="tag">?Task</pre>. Slave mode is automatically activated if a task action is used. Currently six different IO operations are implemented:
@@ -1563,292 +1555,14 @@ Example 23 shows how a module script can be made version dependent using bash fu
 <b>Error messages: </b> Watchdog can detect by default error messages in standard out and standard error streams if they begin with <pre class="name">[ERROR]</pre>. The errors are only stored if standard out and error files are saved to disk using the <pre class="tag">streams</pre> tag. If an error was detected but the exit code was 0 the command will also fail.
 <br /><br />
 <b>Module test: </b> A script named <pre class="name">test_nameOfModule.sh</pre> can also be part of the module. It is automatically called, if the user calls <pre class="name">helper_scripts/moduleTest.sh</pre>. Also the module folder might contain some test data in the folder <pre class="name">test_data</pre>. For simple test cases the bash function <pre class="name">testExitCode</pre> can be used to test, if an input leads to the expected output.
-<a name="module_sharing" class="topic">6 Sharing of modules</a>
-
-In the following the steps that are needed to create a custom module named <pre class="attr">nameOfModule</pre> are explained. Basic XSD skills are needed to understand how things work together. Modules are defined in XSD format and should have the basic structure showed in example 24. To actually create modules the script <pre class="name">helper_scripts/createNewModule.sh</pre> can be used and modified by hand as not all settings can be configured by it.
-
-{%%Documentation of modules%%}
-
-Modules can be documented using an XML format that f
-
-
-
-The module documentation is based on XML files that follow an own XSD module documentation file. Such a  XML documentation file consists of three main sections: <info> and <params>, <return>. The first section is mandatory while the other two are optional for modules that do not require any parameter or do not return some variables. Templates for these XML files can be generated based on the XSD file of the modules using a new Java program. Moreover, custom extractor plugins can be implemented by the user to extract additional information like default parameters or descriptions. Currently, parameter extractors for the python xxx module and shflags, java jcommander exist.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-As a first step, a folder with the name <pre class="name">nameOfModule</pre> must be created in the <pre class="name">modules</pre> folder. That folder must contain a file named <pre class="name">nameOfModule.xsd</pre> which will hold the actual module definition.
-
-<a name="custom_modules_input" class="subtopic">5.1 Input parameter definition</a>
-Example 24 shows how input parameters and flags can be defined. 
-
-<div class="box">	
-	<div class="head_box">Example 25: Input parameter</div>
-	<div class="box_body">
-		<pre><code class="example"> 1	&lt;!-- definition of the task parameters --&gt;
- 2	&lt;x:complexType name="nameOfModuleTaskParameterType"&gt;
- 3		&lt;x:all&gt;
- 4			&lt;x:element name="parameter1" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" /&gt;
- 5			&lt;x:element name="parameter2" type="paramString" minOccurs="0" maxOccurs="unbounded" /&gt;
- 6			&lt;x:element name="flag1" type="paramBoolean" minOccurs="0" maxOccurs="1" /&gt;
- 7		&lt;/x:all&gt;
- 8	&lt;/x:complexType&gt;</code></pre>
-	</div>
-</div>
-
-In line 4 and 5 two parameters are defined while line 6 creates a flag. Using the <pre class="attr">minOccurs</pre> and <pre class="attr">maxOccurs</pre> attributes it can be specified how often a parameter can be used. Also parameters can have different types which are enforced during the validation of the XML workflows. Some pre-defined types are
-
-<ul>
-<li>paramBoolean (for flags)</li>
-<li>paramString</li>
-<li>paramInteger</li>
-<li>paramDouble</li>
-</ul>
-
-These types accept by default booleans, strings, integers or doubles but also allow all values that are substituted by Watchdog. Moreover own parameter types can be defined as showed in example 25.
-
-<div class="box">	
-	<div class="head_box">Example 26: Input parameter</div>
-	<div class="box_body">
-		<pre><code class="example"> 1	&lt;!-- module specific parameter types --&gt;
- 2	&lt;x:complexType name="paramWait_sleep"&gt;
- 3		&lt;x:simpleContent&gt;
- 4			&lt;x:restriction base="paramString"&gt;
- 5				&lt;x:assertion test="matches($value, '(${[A-Za-z_]+})|($(.+))|([[({]($[A-Za-z_]+(,s*){0,1}){0,1}([0-9]+(,S*){0,1}){0,1}[])}])') or matches($value, '^[0-9]+[smhd]{0,1}$')" xerces:message="Parameter with name '{$tag}' must match [0-9]+[smhd]{0,1}." /&gt;
- 6			&lt;/x:restriction&gt;
- 7		&lt;/x:simpleContent&gt;
- 8	&lt;/x:complexType&gt;</code></pre>
-	</div>
-</div>
-
-<a name="custom_modules_output" class="subtopic">5.2 Output parameter definition</a>
-
-Optionally a module can return output parameters that can be used for the following tasks as input. Return parameters must be written to a file in the format {%VAR_NAME%} TAB {%VALUE%}. The name of the file to write into is automatically sent to the module by Watchdog using the <pre class="name">returnFilePathParameter</pre> parameter. If you want to change this default parameter name see <a href="#custom_modules_binary">5.3</a>. 
-
-<div class="box">	
-	<div class="head_box">Example 26: Output parameter</div>
-	<div class="box_body">
-		<pre><code class="example"> 1	&lt;!-- define output parameters which must be written to a file --&gt;
- 2	&lt;x:complexType name="nameOfModuleTaskReturnType"&gt;
- 3		&lt;x:complexContent&gt;
- 4			&lt;x:extension base="taskReturnType"&gt;
- 5				&lt;x:all&gt;
- 6					&lt;x:element name="outputParam1" type="x:string" /&gt;
- 7				&lt;/x:all&gt;
- 8			&lt;/x:extension&gt;
- 9		&lt;/x:complexContent&gt;
-10	&lt;/x:complexType&gt;</code></pre>
-	</div>
-</div>
-
-Line 6 in example 27 specifies that the module must return a parameter named <pre class="name">outputParam1</pre> of type <pre class="name">x:string</pre>. The module itself must ensure that the parameters are written physically before the module exits or otherwise Watchdog will terminate itself. In case of a bash script which is executed, two functions named <pre class="name">writeParam2File</pre> and <pre class="name">blockUntilFileIsWritten</pre> defined in <pre class="name">core_lib/functions.sh</pre> can be used.
-
-<a name="custom_modules_binary" class="subtopic">5.3 Binary call command and other settings</a>
-
-Now the command that will be executed can be defined. Example 27 specifies that a script named <pre class="name">nameOfModule.sh</pre> that is stored in <pre class="name">modules/nameOfModule</pre> will be called.
-
-<div class="box">	
-	<div class="head_box">Example 28: Binary call command</div>
-	<div class="box_body">
-		<pre><code class="example"> 1	&lt;!-- set command and other settings --&gt;
- 2	&lt;x:complexType name="nameOfModuleTaskOverrideType"&gt;
- 3		&lt;x:complexContent&gt;
- 4			&lt;x:restriction base="baseAttributeTaskType"&gt;
- 5				&lt;x:attribute name="binName" type="x:string" fixed="nameOfModule.sh" /&gt;
- 6			&lt;/x:restriction&gt;
- 7		&lt;/x:complexContent&gt;
- 8	&lt;/x:complexType&gt;</code></pre>
-	</div>
-</div>
-
-In addition to that, the following settings can be modified:
-<ul>
-<li><pre class="name">binName</pre>: name of the command which should be called</li>
-<li><pre class="name">preBinCommand</pre>: command that is added before the binName; e.g. interpreter</li>
-<li><pre class="name">isWatchdogModule</pre>: by default the command must be located in modules/<pre class="name">binName</pre>; if this parameter is false the command must point to a absolute binary or be reachable via the PATH environment variable</li>
-<li><pre class="name">returnFilePathParameter</pre>: name of the parameter that is used to store the return values</li>
-<li><pre class="name">watchdogModuleVersionParameter</pre>: name of the parameter that passes the module version to the called command if a version different to <pre class="name">1</pre> should be used; default: <pre class="name">moduleVersion</pre> (using the default parameter pasing options defined with the settings below; use an empty string to disable the passing of the module version)</li>
-<li><pre class="name">paramFormat</pre>: defines how names of parameters are prefixed; (do not print parameter name, - or --); default: <pre class="name">--</pre></li>
-<li><pre class="name">spacingFormat</pre>: defines how names of parameters and values are spaced; default: <pre class="name">blank</pre></li>
-<li><pre class="name">quoteFormat</pre>: defines how values are quoted; default: <pre class="name">single quoting</pre></li>
-<li><pre class="name">separateFormat</pre>: defines the separator string between multiple occurrences of the same parameter; default: <pre class="name">,</pre></li>
-</ul>
-
-The last three arguments can also be used for each parameter separately.
-
-<a name="custom_modules_name" class="subtopic">5.4 Assign a name to the new module</a>
-
-Finally, a name must be assigned to the module. This can simply be done by creating a element with the attribute <pre class="attr">name</pre> of type <pre class="name">nameOfModuleType</pre> and <pre class="attr">substitutionGroup</pre> set to <pre class="name">abstractTask</pre>.
-Example 28 shows the needed line for the example module. Afterwards the type of the task is defined (5-15). If no output parameters are used line 10 can be omitted.
-
-<div class="box">	
-	<div class="head_box">Example 29: Assign a name to the module</div>
-	<div class="box_body">
-		<pre><code class="example"> 1	&lt;!-- make task definition availible via substitution group --&gt;
- 2	&lt;x:element name="nameOfModuleTask" type="nameOfModuleType" substitutionGroup="abstractTask" /&gt;
- 3	
- 4	&lt;!-- definition of final task --&gt;
- 5	&lt;x:complexType name="nameOfModuleTaskType"&gt;
- 6		&lt;x:complexContent&gt;
- 7			&lt;x:extension base="nameOfModuleTaskOverrideType"&gt;
- 8				&lt;x:all&gt;
- 9					&lt;x:element name="parameter" type="nameOfModuleTaskParameterType" minOccurs="1" maxOccurs="1" /&gt;
-10					&lt;x:element name="return" type="nameOfModuleTaskReturnType" minOccurs="0" maxOccurs="0" /&gt;
-11					&lt;x:group ref="defaultTaskElements" /&gt;
-12				&lt;/x:all&gt;
-13			&lt;/x:extension&gt;
-14		&lt;/x:complexContent&gt;
-15	&lt;/x:complexType&gt;</code></pre>
-	</div>
-</div>
-
-<a name="custom_modules_all_together" class="subtopic">5.5 Putting it all together</a>
-
-Example 29 shows the definition of the complete module.
-<div class="box">	
-	<div class="head_box">Example 30: Putting it all together</div>
-	<div class="box_body">
-		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
- 2	&lt;x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org"&gt;
- 3	
- 4		&lt;!-- definition of the task parameters --&gt;
- 5		&lt;x:complexType name="nameOfModuleTaskParameterType"&gt;
- 6			&lt;x:all&gt;
- 7				&lt;x:element name="parameter1" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" /&gt;
- 8				&lt;x:element name="parameter2" type="paramString" minOccurs="0" maxOccurs="unbounded" /&gt;
- 9				&lt;x:element name="flag1" type="paramBoolean" minOccurs="0" maxOccurs="1" /&gt;
-10			&lt;/x:all&gt;
-11		&lt;/x:complexType&gt;
-12	
-13		&lt;!-- define output parameters which must be written to a file --&gt;
-14		&lt;x:complexType name="nameOfModuleTaskReturnType"&gt;
-15			&lt;x:complexContent&gt;
-16				&lt;x:extension base="taskReturnType"&gt;
-17					&lt;x:all&gt;
-18						&lt;x:element name="outputParam1" type="x:string" /&gt;
-19					&lt;/x:all&gt;
-20				&lt;/x:extension&gt;
-21			&lt;/x:complexContent&gt;
-22		&lt;/x:complexType&gt;
-23	
-24		&lt;!-- set command and other settings --&gt;
-25		&lt;x:complexType name="nameOfModuleTaskOverrideType"&gt;
-26			&lt;x:complexContent&gt;
-27				&lt;x:restriction base="baseAttributeTaskType"&gt;
-28					&lt;x:attribute name="binName" type="x:string" fixed="nameOfModule.sh" /&gt;
-29				&lt;/x:restriction&gt;
-30			&lt;/x:complexContent&gt;
-31		&lt;/x:complexType&gt;
-32	
-33		&lt;!-- make task definition availible via substitution group --&gt;
-34		&lt;x:element name="nameOfModuleTask" type="nameOfModuleTaskType" substitutionGroup="abstractTask" /&gt;
-35	
-36		&lt;!-- definition of final task --&gt;
-37		&lt;x:complexType name="nameOfModuleTaskType"&gt;
-38			&lt;x:complexContent&gt;
-39				&lt;x:extension base="nameOfModuleTaskOverrideType"&gt;
-40					&lt;x:all&gt;
-41						&lt;x:element name="parameter" type="nameOfModuleTaskParameterType" minOccurs="1" maxOccurs="1" /&gt;
-42						&lt;x:element name="return" type="nameOfModuleTaskReturnType" minOccurs="0" maxOccurs="0" /&gt;
-43						&lt;x:group ref="defaultTaskElements" /&gt;
-44					&lt;/x:all&gt;
-45				&lt;/x:extension&gt;
-46			&lt;/x:complexContent&gt;
-47		&lt;/x:complexType&gt;
-48	
-49	&lt;/x:schema&gt;</code></pre>
-	</div>
-</div>
-
-<a name="module_versions" class="subtopic">5.6 Module versions</a>
-
-As parameters of the command that is called by the module might change over time, it is possible to define different versions of the same module. The version that should be used during XML validation and workflow execution can be set using the <pre class="attr">version</pre> attribute each <pre class="tag">?Task</pre> tag owns. By default version <pre class="name">1</pre> of each module is used. Be aware that only one version of the same module can be used within a workflow.<br /><br />
-
-In order to avoid duplication of the complete XSD file, the minimum and maximum supported module version can be defined for each tag within the XSD file using the <pre class="attr">minVersion</pre> and <pre class="attr">maxVersion</pre> attributes. If a tag is not part of a particular version, it is removed with all its childs from the XSD file that is generated dynamically at runtime for that module version. By using these two attributes the input parameter, the return parameter, the called command and more can be changed for different module version. Example 30 shows a part of the <pre class="name">featureCounts</pre> module. Among other things a parameter needs to be renamed to support the most recent binary of <pre class="name">featureCounts</pre> (11-12). 
-
-<div class="box">	
-	<div class="head_box">Example 31: Rename of parameters</div>
-	<div class="box_body">
-		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
- 2	&lt;x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org"&gt;
- 3	
- 4		&lt;!-- definition of the task parameters --&gt;
- 5		&lt;x:complexType name="featureCountsTaskParameterType"&gt;
- 6			&lt;x:all&gt;
- 7				&lt;!-- attributes common to all versions --&gt;
- 8				...
- 9	
-10				&lt;!-- attributes that differ between versions --&gt;
-11				&lt;x:element name="minOverlap" type="paramInteger" minOccurs="0" maxOccurs="1" maxVersion="1" /&gt;
-12				&lt;x:element name="minReadOverlap" type="paramInteger" minOccurs="0" maxOccurs="1" minVersion="2" /&gt;
-13				...
-14			&lt;/x:all&gt;
-15		&lt;/x:complexType&gt;
-16	...
-17	&lt;/x:schema&gt;</code></pre>
-	</div>
-</div>
-
-Example 31 shows how a module script can be made version dependent using bash functions that are delivered with Watchdog. First, the bash variable <pre class="name">${MODULE_VERSION_PARAMETER_NAME}</pre> is set to the complete name of the parameter that is used to pass the module version (e.g. <pre class="name">--moduleVersion</pre>) (3). After sourcing of <pre class="name">includeBasics.sh</pre> the module version is automatically stored in the <pre class="name">${MODULE_VERSION}</pre> variable. This information can be used to alter the parameters and the behavior of the script as an alternative to duplication if differences between module versions are only minor (15,18).
-
-<div class="box">	
-	<div class="head_box">Example 32: Version dependent bash script</div>
-	<div class="box_body">
-		<pre><code class="example"> 1	#!/bin/bash
- 2	SCRIPT_FOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
- 3	MODULE_VERSION_PARAMETER_NAME="--moduleVersion"
- 4	source $SCRIPT_FOLDER/../../core_lib/includeBasics.sh $@
- 5	...
- 6	
- 7	# define parameters
- 8	# params used in any version of the module
- 9	DEFINE_string 'annotation' '' 'feature annotation in GTF or SAF format' 'a'
-10	DEFINE_string 'input' '' 'index bam file which should be used for counting' 'i'
-11	DEFINE_string 'output' '' 'path to output file' 'o'
-12	...
-13	
-14	# params only available in module version 1
-15	if [ ${MODULE_VERSION} -eq 1 ]; then
-16		DEFINE_string 'minOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
-17	# params only available in module version 2
-18	elif [ ${MODULE_VERSION} -eq 2 ]; then
-19		DEFINE_string 'minReadOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
-20		...
-21	fi
-22	DEFINE_integer 'moduleVersion' '1' '[optional] version of the module that should be used' ''
-23	DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
-24	...</code></pre>
-	</div>
-</div>
-
-<a name="custom_modules_other" class="subtopic">5.7 Other matters</a>
-
-<b>Exit codes: </b> The module developer must ensure that a command does only exit with exit status 0 if the command was executed sucessfully. File <pre class="name">core_lib/exitCodes.sh</pre> contains some exit codes which names are also included in mail notifications if they are used. Custom exit codes can be easily added.
-<br /><br />
-<b>Error messages: </b> Watchdog can detect by default error messages in standard out and standard error streams if they begin with <pre class="name">[ERROR]</pre>. The errors are only stored if standard out and error files are saved to disk using the <pre class="tag">streams</pre> tag. If an error was detected but the exit code was 0 the command will also fail.
-<br /><br />
-<b>Module test: </b> A script named <pre class="name">test_nameOfModule.sh</pre> can also be part of the module. It is automatically called, if the user calls <pre class="name">helper_scripts/moduleTest.sh</pre>. Also the module folder might contain some test data in the folder <pre class="name">test_data</pre>. For simple test cases the bash function <pre class="name">testExitCode</pre> can be used to test, if an input leads to the expected output.
-<a name="extensions" class="topic">7 Extend Watchdog's functionality</a>
+<a name="extensions" class="topic">6 Extend Watchdog's functionality</a>
 In the following sections two different ways to extend Watchdog's functionality are described.
 <ul>
-<li><i>Virtual File Systems</i> that can be used within task actions (see <a href="#vfs">7.1</a>)</li>
-<li><i>XML Plugins</i> that add new <pre class="tag">?Executor</pre> and <pre class="tag">?ProcessBlock</pre> elements (see <a href="#plugins">7.2</a>)</li>
+<li><i>Virtual File Systems</i> that can be used within task actions (see <a href="#vfs">6.1</a>)</li>
+<li><i>XML Plugins</i> that add new <pre class="tag">?Executor</pre> and <pre class="tag">?ProcessBlock</pre> elements (see <a href="#plugins">6.2</a>)</li>
 </ul>
 
-<a name="vfs" class="subtopic">7.1 Virtual file systems for task actions</a>
+<a name="vfs" class="subtopic">6.1 Virtual file systems for task actions</a>
 
 With the help of task actions, file system operations can be performed before and after tasks (see <a href="#task_actions">4.8</a>). By default, virtual file systems based on the protocols File, HTTP, HTTPS, FTP, FTPS and SFTP as well as the main memory (RAM) are supported. These virtual file systems are provided by the Commons Virtual File System project of the Apache Software Foundation. <br /><br />
 
@@ -1861,10 +1575,10 @@ In order to add a new virtual file system, a class that implements the <pre clas
 <li><pre class="name">getExtensions</pre> - sets schemes that should be used for specific file extension</li>
 </ul>
 
-The class <pre class="name">SimpleVFSRegister</pre> can be extended if an instance of the <pre class="name">FileProvider</pre> class can be created without arguments. Then only the name of the <pre class="name">FileProvider</pre> class and the URL schemes that should be used must be defined. Example 32 shows how the virtual FTP file system is integrated in Watchdog by using the <pre class="name">FtpsFileProvider</pre> class of the Commons Virtual File System project.
+The class <pre class="name">SimpleVFSRegister</pre> can be extended if an instance of the <pre class="name">FileProvider</pre> class can be created without arguments. Then only the name of the <pre class="name">FileProvider</pre> class and the URL schemes that should be used must be defined. Example 24 shows how the virtual FTP file system is integrated in Watchdog by using the <pre class="name">FtpsFileProvider</pre> class of the Commons Virtual File System project.
 
 <div class="box">	
-	<div class="head_box">Example 33: Simple implementation of the VFSRegister interface</div>
+	<div class="head_box">Example 24: Simple implementation of the VFSRegister interface</div>
 	<div class="box_body">
 		<pre><code class="example"> 1	package de.lmu.ifi.bio.watchdog.task.actions.vfs.impl;
  2	
@@ -1879,7 +1593,7 @@ The class <pre class="name">SimpleVFSRegister</pre> can be extended if an instan
 11	}</code></pre>
 	</div>
 </div>
-<a name="plugins" class="subtopic">7.2 XML Plugins</a>
+<a name="plugins" class="subtopic">6.2 XML Plugins</a>
 
 Watchdog provides a flexible plugin system that allows extending Watchdog by additional types of executors and process blocks without modifying the original Java classes. Essentially, this means creating a new XML element for use in Watchdog workflows as well as implementing additional Java classes that provide the functionality for this element. 
 
@@ -1906,18 +1620,18 @@ For use in the Workflow designer GUI of Watchdog, two additional requirements ha
 <li>Classes extending <pre class="name">PluginView</pre> and <pre class="name">PluginViewController</pre> have to be implemented for testing whether the input is valid and for loading and saving data to and from XML.</li>
 </ul>
 All executors and process blocks integrated in Watchdog are using this plugin system. Hence, examples how to implement a new XML element can be found in the package <pre class="name">de.lmu.ifi.bio.watchdog.xmlParser.plugins</pre> of the <a target="_blank" href="https://github.com/klugem/watchdog/tree/master/java_source/de/lmu/ifi/bio/watchdog/xmlParser/plugins">Java source code</a>.
-<a name="docker" class="topic">8 Docker</a>
+<a name="docker" class="topic">7 Docker</a>
 
 In order to run a Docker image, Docker must be installed and configured correctly as descibed <a target="_blank" href="https://docs.docker.com">here</a>.
 
-<a name="docker_watchdog_install" class="subtopic">8.1 Install the Watchdog Docker image</a>
+<a name="docker_watchdog_install" class="subtopic">7.1 Install the Watchdog Docker image</a>
 
 A Watchdog image for Docker can be obtained from <a target="_blank" href="https://hub.docker.com/r/klugem/watchdog-wms/">hub.docker.com</a>. The image is rebuild automatically by the Bioconda project once a new version is released on <a target="_blank" href="https://bioconda.github.io/">Bioconda</a>. <br /><br />
 
 You can download the latest version of the image with <pre class="name">docker pull klugem/watchdog-wms</pre>.
 Within the Docker image the environment variable <pre class="name">WATCHDOG_HOME</pre> is set automatically to the installation directory of Watchdog (required for the <pre class="attr">watchdogBase</pre> attribute). The <pre class="name">-useEnvBase</pre> flag of the command line version can be used to override the <pre class="attr">watchdogBase</pre> attribute of the XML workflow with the value stored in <pre class="name">WATCHDOG_HOME</pre>. Moreover, the installation directory of Watchdog is mounted under <pre class="name">/watchdog</pre> within the Docker image.
 
-<a name="docker_share" class="subtopic">8.2 Sharing of files</a>
+<a name="docker_share" class="subtopic">7.2 Sharing of files</a>
 
 In order to exchange files with the host system, the -v or -mount option of Docker can be used. These option can be used multiple times.<br /><br />
 
@@ -1925,29 +1639,29 @@ In order to exchange files with the host system, the -v or -mount option of Dock
 
 More information can be found in the <a target="_blank" href="https://docs.docker.com/storage/volumes/">documentation</a> of Docker.
 
-<a name="docker_port" class="subtopic">8.3 Port forwarding</a>
+<a name="docker_port" class="subtopic">7.3 Port forwarding</a>
 
 In order to use the build-in webserver of Watchdog, the port used by the webserver must be forwarded to the host running the Docker container. <br /><br />
 
 The command <pre class="name">docker run -p 8090:8080 image command</pre> maps the container port 8080 (TCP) to the port 8090 (TCP) on the Docker host. More information can be found in the <a target="_blank" href="https://docs.docker.com/config/containers/container-networking/#published-ports">documentation</a> of Docker.
 
-<a name="docker_watchdog_usage" class="subtopic">8.4 How to use the Docker Watchdog image</a>
+<a name="docker_watchdog_usage" class="subtopic">7.4 How to use the Docker Watchdog image</a>
 
 The examples within the Docker image are automatically configured when {%Nwatchdog-cmd%N} is started the first time and are stored in <pre class="name">/watchdog/examples</pre>. The command<br /><br />
 
 <pre class="name">docker run -h localhost -p 8080:8080 klugem/watchdog-wms watchdog-cmd -useEnvBase -x /watchdog/examples/&#8203;example_basic_sleep.xml</pre><br /><br />
 executes the example described in <a href="#basic_xml_structure">3.2</a> and forwards the webserver port to the host port 8080.
 <br /><br />
-Alternatively, it is possible to run a workflow that is stored on the host system as described in <a href="#docker_share">8.2</a>. Ensure that all files used in the workflow are made accessible within the Docker image.
+Alternatively, it is possible to run a workflow that is stored on the host system as described in <a href="#docker_share">7.2</a>. Ensure that all files used in the workflow are made accessible within the Docker image.
 
-<a name="docker_modules" class="subtopic">8.5 Use Docker in modules</a>
+<a name="docker_modules" class="subtopic">7.5 Use Docker in modules</a>
 
 A Docker image can also be used in a module. The module <pre class="name">bowtie2Docker</pre> implements an example module that uses the Docker image of <a target="_blank" href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">Bowtie 2</a> that is provided by <a target="_blank" href="https://bioconda.github.io/">Bioconda</a> and hosted on <a target="_blank" href="https://quay.io/repository/biocontainers/bowtie2">quay.io</a>. The Docker image will be automatically downloaded if it is not found locally. <br /><br />
 
 Make sure that the Docker daemon is installed and running before you test this example.
 
 <div class="box">	
-	<div class="head_box">Example 33: Example usage of the Bowtie 2 Docker module</div>
+	<div class="head_box">Example 25: Example usage of the Bowtie 2 Docker module</div>
 	<div class="box_body">
 		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
  2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
@@ -1976,7 +1690,7 @@ Make sure that the Docker daemon is installed and running before you test this e
 	</div>
 </div>
 
-Example {%EXCOUNTER%} shows how the <pre class="name">bowtie2Docker</pre> module can be used with the provided example data. The test data that is shipped with Bowtie 2 is stored in the folder <pre class="name">example_data</pre> of the module (6). Log files are written to <pre class="name">/tmp/bowtie2.docker.test.[out|err]</pre> (13, 14) while the mapped reads are stored in SAM format in <pre class="name">/tmp/bowtie2.docker.test.sam</pre> (20).
+Example 25 shows how the <pre class="name">bowtie2Docker</pre> module can be used with the provided example data. The test data that is shipped with Bowtie 2 is stored in the folder <pre class="name">example_data</pre> of the module (6). Log files are written to <pre class="name">/tmp/bowtie2.docker.test.[out|err]</pre> (13, 14) while the mapped reads are stored in SAM format in <pre class="name">/tmp/bowtie2.docker.test.sam</pre> (20).
 		</div>
 	</body>
 </html> 
