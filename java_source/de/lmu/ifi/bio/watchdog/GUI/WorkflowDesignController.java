@@ -334,6 +334,14 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 		}
 		if(f == null)
 			return;
+		
+		// test if file exists
+		if(!(f.isFile() && f.exists() && f.canRead())) {
+			String er = "Workflow file '"+f.getAbsolutePath()+"' can not be found.";
+			StatusConsole.addGlobalMessage(MessageType.ERROR, er);
+			Inform.error("File not found", er);
+			return;
+		}
 		// clear all old stuff
 		this.onNew(null, true);
 		

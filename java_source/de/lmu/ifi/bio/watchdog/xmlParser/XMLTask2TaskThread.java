@@ -83,7 +83,8 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 			this.addTask(x);
 		}
 		// free that memory
-		resumeInfo.clear();
+		if(resumeInfo != null) 
+			resumeInfo.clear();
 	}
 	
 	public boolean isSchedulingPaused() {
