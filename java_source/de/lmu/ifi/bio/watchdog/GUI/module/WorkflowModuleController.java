@@ -260,7 +260,8 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 
 		// update the values
 		int paramCount = 0;
-		for(int valueCount = 0; valueCount < storedParamsNames.size(); valueCount++) {
+		int valueCount = 0;
+		while(valueCount < storedParamsNames.size() && paramCount < newParamsNames.size()) {
 			// if names are equal --> all is good
 			String paramName = newParamsNames.get(paramCount);
 			String storeName = storedParamsNames.get(valueCount);
@@ -269,28 +270,26 @@ public class WorkflowModuleController implements XMLDataStore, Initializable {
 				params.get(paramName).updateValue(this.PARAMETER.get(paramName).getSavedValue());
 				params.get(paramName).saveCurrentValue();
 				paramCount++;
+				valueCount++;
 			}
-			// check, if shift of count numbers is there (in case of edits (+/-)
-			else if(MULT_PARAM_PATTTERN.matcher(paramName).matches() && MULT_PARAM_PATTTERN.matcher(storeName).matches()) {
-				// check, if both have the same name
-				if(paramName.replaceAll(REPLACE_MULTI, "").equals(storeName.replaceAll(REPLACE_MULTI, ""))) {
-					params.get(paramName).updateValue(this.PARAMETER.get(storeName).getSavedValue());
-					params.get(paramName).saveCurrentValue();
-					paramCount++;
-				}
+			// check, if shift of count numbers is there (in case of edits (+/-) && check, if both have the same name
+			else if((MULT_PARAM_PATTTERN.matcher(paramName).matches() && MULT_PARAM_PATTTERN.matcher(storeName).matches()) &&
+				 paramName.replaceAll(REPLACE_MULTI, "").equals(storeName.replaceAll(REPLACE_MULTI, ""))) {
+ 
+				params.get(paramName).updateValue(this.PARAMETER.get(storeName).getSavedValue());
+				params.get(paramName).saveCurrentValue();
+				paramCount++;
+				valueCount++;
 			}
-			// value was not used --> check if no value is there
+			// value was not used --> check get next value in order to sync lists again
 			else {
 				if(paramName.compareTo(storeName) < 0) {
 					paramCount++;
-					valueCount--;
+				}
+				else {
+					valueCount++;
 				}
 			}
-			
-			// end checks, if parameters out of range
-			
-			if(!(paramCount < newParamsNames.size()))
-				break;
 		}
 				
 		// save the new properties
