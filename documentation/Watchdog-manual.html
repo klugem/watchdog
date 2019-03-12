@@ -2,7 +2,8 @@
 <html>
 	<head>
 		<title>Watchdog</title>
-		<link rel="stylesheet" type="text/css" media="screen,print" href="style.css" />
+		<link rel="stylesheet" type="text/css" media="screen" href="style.css" />
+		<link rel="stylesheet" type="text/css" media="print" href="style_pdf.css" />
 		<link rel="stylesheet" href="highlight/styles/github.css">
 		<script src="highlight/highlight.pack.js"></script>
 		<script src="js/unhideButtons.js"></script>
@@ -10,19 +11,21 @@
 	</head>
 	<body onload="unhide()">
 		<div id="main">
+			<div id="page-footer"><span style="width:100%; text-align: right; font-size:8px; font-family: Arial; margin-right: 80px;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>
 			<div class="mainTopic">Watchdog</div>
-			<a href="http://www.how-to-draw-funny-cartoons.com/free-images-ebooks.html" target="_blank" alt="image taken from www.how-to-draw-funny-cartoons.com" title="backlink to how-to-draw-funny-cartoons.com" class="watchdog" />
-			<a href="#introduction" class="smalltopic">1 Introduction</a><br />
-<a href="#install_watchdog" class="smalltopic">2 Install and Configure Watchdog</a><br />
+			<a href="http://www.how-to-draw-funny-cartoons.com/free-images-ebooks.html" target="_blank" alt="image taken from www.how-to-draw-funny-cartoons.com" title="backlink to how-to-draw-funny-cartoons.com" class="watchdog"></a>
+			<div id="index">
+				<div class="smallchapter"><a href="#introduction" class="smalltopic">1 Introduction</a><br />
+</div><div class="smallchapter"><a href="#install_watchdog" class="smalltopic">2 Install and Configure Watchdog</a><br />
 <a href="#requirements" class="smallsubtopic">2.1 Requirements</a><br />
 <a href="#installation" class="smallsubtopic">2.2 Installation</a><br />
 <a href="#mail_server" class="smallsubtopic">2.3 E-Mail Server Configuration</a><br />
 <a href="#remote_configuration" class="smallsubtopic">2.4 SSH Configuration</a><br />
 <a href="#cluster_configuration" class="smallsubtopic">2.5 Cluster Configuration</a><br />
-<a href="#getting_started" class="smalltopic">3 Watchdog Overview</a><br />
+</div><div class="smallchapter"><a href="#getting_started" class="smalltopic">3 Watchdog Overview</a><br />
 <a href="#basic_modules" class="smallsubtopic">3.1 Modules</a><br />
 <a href="#basic_xml_structure" class="smallsubtopic">3.2 Basic XML structure</a><br />
-<a href="#advanced_xml" class="smalltopic">4 Detailed XML format explanation</a><br />
+</div><div class="smallchapter"><a href="#advanced_xml" class="smalltopic">4 Detailed XML format explanation</a><br />
 <a href="#process_blocks" class="smallsubtopic">4.1 Process blocks</a><br />
 <a href="#dependencies" class="smallsubtopic">4.2 Dependencies</a><br />
 <a href="#execution_environments" class="smallsubtopic">4.3 Execution environments</a><br />
@@ -34,7 +37,7 @@
 <a href="#simple_calculations" class="smallsubtopic">4.9 Simple calculations</a><br />
 <a href="#module_folders" class="smallsubtopic">4.10 Multiple module search folders</a><br />
 <a href="#checkers" class="smallsubtopic">4.11 Custom success and error checker</a><br />
-<a href="#custom_modules" class="smalltopic">5 Creating custom modules</a><br />
+</div><div class="smallchapter"><a href="#custom_modules" class="smalltopic">5 Creating custom modules</a><br />
 <a href="#custom_modules_input" class="smallsubtopic">5.1 Input parameter definition</a><br />
 <a href="#custom_modules_output" class="smallsubtopic">5.2 Output parameter definition</a><br />
 <a href="#custom_modules_binary" class="smallsubtopic">5.3 Binary call command and other settings</a><br />
@@ -42,16 +45,18 @@
 <a href="#custom_modules_all_together" class="smallsubtopic">5.5 Putting it all together</a><br />
 <a href="#module_versions" class="smallsubtopic">5.6 Module versions</a><br />
 <a href="#custom_modules_other" class="smallsubtopic">5.7 Other matters</a><br />
-<a href="#extensions" class="smalltopic">6 Extend Watchdog's functionality</a><br />
+</div><div class="smallchapter"><a href="#extensions" class="smalltopic">6 Extend Watchdog's functionality</a><br />
 <a href="#vfs" class="smallsubtopic">6.1 Virtual file systems for task actions</a><br />
 <a href="#plugins" class="smallsubtopic">6.2 XML Plugins</a><br />
-<a href="#docker" class="smalltopic">7 Docker</a><br />
+</div><div class="smallchapter"><a href="#docker" class="smalltopic">7 Docker</a><br />
 <a href="#docker_watchdog_install" class="smallsubtopic">7.1 Install the Watchdog Docker image</a><br />
 <a href="#docker_share" class="smallsubtopic">7.2 Sharing of files</a><br />
 <a href="#docker_port" class="smallsubtopic">7.3 Port forwarding</a><br />
 <a href="#docker_watchdog_usage" class="smallsubtopic">7.4 How to use the Docker Watchdog image</a><br />
 <a href="#docker_modules" class="smallsubtopic">7.5 Use Docker in modules</a><br />
-<a name="introduction" class="topic">1 Introduction</a>
+</div>
+			</div>
+<div class="chapter"><a name="introduction" class="topic">1 Introduction</a>
 
 Here, we present Watchdog, a WMS for the automated and distributed analysis of large-scale experimental data. Watchdog is implemented in Java and is thus platform-independent.
 
@@ -67,7 +72,7 @@ Here, we present Watchdog, a WMS for the automated and distributed analysis of l
 <li>no restriction to specific programming languages</li>
 <li>provides a flexible plugin system for extending without modifying the original sources</li>
 </ul>
-<a name="install_watchdog" class="topic">2 Install and Configure Watchdog</a>
+<div class="chapter"><a name="install_watchdog" class="topic">2 Install and Configure Watchdog</a>
 
 <a name="requirements" class="subtopic">2.1 Requirements</a>
 
@@ -160,7 +165,7 @@ Basically there are two ways to change the default cluster extension in order to
 </li>
 </ul>
 Probably further settings are needed which depend on the used DRMAA library.
-<a name="getting_started" class="topic">3 Watchdog Overview</a>
+<div class="chapter"><a name="getting_started" class="topic">3 Watchdog Overview</a>
 <a name="basic_modules" class="subtopic">3.1 Modules</a>
 Modules represent re-usable components that perform certain tasks, e.g. compression of files or creating histograms. Watchdog is delivered with a set of predefined modules. Additionally the user has the possibility to define own modules as described in section <a href="#custom_modules">5</a>. The modules are stored in the <pre class="name">modules</pre> directory located in the root folder of the Watchdog installation. Each module is stored in its own folder and consists at least of an XSD file with the name of the module. The XSD file contains a definition of the parameters which can be set in the XML format and the tools which are executed in the background when the module is used.
 
@@ -289,7 +294,7 @@ Example 3 shows a most basic XML file that contains only a single task named <pr
 </div>
 
 In the following sections the structure of the XML format is described in greater detail.
-<a name="advanced_xml" class="topic">4 Detailed XML format explanation</a>
+<div class="chapter"><a name="advanced_xml" class="topic">4 Detailed XML format explanation</a>
 In the following sections the complete range of functions of Watchdog's XML format is explained. The following elements must be defined as child elements of the <pre class="tag">settings</pre> element before the <pre class="tag">tasks</pre> element begins and are valid within the complete XML file:
 
 <ul>
@@ -1288,7 +1293,7 @@ Example 14 shows an example of how an success checker can be added to a task by 
 		</table>
 	</div>
 </div>
-<a name="custom_modules" class="topic">5 Creating custom modules</a>
+<div class="chapter"><a name="custom_modules" class="topic">5 Creating custom modules</a>
 
 In the following the steps that are needed to create a custom module named <pre class="attr">nameOfModule</pre> are explained. Basic XSD skills are needed to understand how things work together. Modules are defined in XSD format and should have the basic structure showed in example 15. To actually create modules the script <pre class="name">helper_scripts/createNewModule.sh</pre> can be used and modified by hand as not all settings can be configured by it.
 
@@ -1555,7 +1560,7 @@ Example 23 shows how a module script can be made version dependent using bash fu
 <b>Error messages: </b> Watchdog can detect by default error messages in standard out and standard error streams if they begin with <pre class="name">[ERROR]</pre>. The errors are only stored if standard out and error files are saved to disk using the <pre class="tag">streams</pre> tag. If an error was detected but the exit code was 0 the command will also fail.
 <br /><br />
 <b>Module test: </b> A script named <pre class="name">test_nameOfModule.sh</pre> can also be part of the module. It is automatically called, if the user calls <pre class="name">helper_scripts/moduleTest.sh</pre>. Also the module folder might contain some test data in the folder <pre class="name">test_data</pre>. For simple test cases the bash function <pre class="name">testExitCode</pre> can be used to test, if an input leads to the expected output.
-<a name="extensions" class="topic">6 Extend Watchdog's functionality</a>
+<div class="chapter"><a name="extensions" class="topic">6 Extend Watchdog's functionality</a>
 In the following sections two different ways to extend Watchdog's functionality are described.
 <ul>
 <li><i>Virtual File Systems</i> that can be used within task actions (see <a href="#vfs">6.1</a>)</li>
@@ -1620,7 +1625,7 @@ For use in the Workflow designer GUI of Watchdog, two additional requirements ha
 <li>Classes extending <pre class="name">PluginView</pre> and <pre class="name">PluginViewController</pre> have to be implemented for testing whether the input is valid and for loading and saving data to and from XML.</li>
 </ul>
 All executors and process blocks integrated in Watchdog are using this plugin system. Hence, examples how to implement a new XML element can be found in the package <pre class="name">de.lmu.ifi.bio.watchdog.xmlParser.plugins</pre> of the <a target="_blank" href="https://github.com/klugem/watchdog/tree/master/java_source/de/lmu/ifi/bio/watchdog/xmlParser/plugins">Java source code</a>.
-<a name="docker" class="topic">7 Docker</a>
+<div class="chapter"><a name="docker" class="topic">7 Docker</a>
 
 In order to run a Docker image, Docker must be installed and configured correctly as descibed <a target="_blank" href="https://docs.docker.com">here</a>.
 
