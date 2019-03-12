@@ -142,6 +142,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 	private StatusConsole runLogConsole;
 	private HTTPListenerThread runHttp;
 	private LogMessageEventHandler GLOBAL_MESSAGE_HANDLER;
+	private WorkflowDesignParameters commandlineParams;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -213,6 +214,10 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 		// add global key listener
 		this.root.addEventFilter(KeyEvent.KEY_PRESSED, k -> this.pressKeyEvent(k));
 		this.root.addEventFilter(KeyEvent.KEY_RELEASED, k -> this.releaseKeyEvent(k));
+	}
+	
+	public void setCommandLineArgs(WorkflowDesignParameters params) {
+		this.commandlineParams = params;
 	}
 	
 	private void switchMode(boolean executionView) {
@@ -360,7 +365,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			}
 			
 			XMLParser.setGUILoadAttempt(true);
-			Object[] ret = XMLParser.parse(f.getAbsolutePath(), XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath(), false, null).getAbsolutePath(), null, 0, false, true, false, false, loadUnsafeFile, false);
+			Object[] ret = XMLParser.parse(f.getAbsolutePath(), XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath(), false, null).getAbsolutePath(), this.commandlineParams.tmpFolder, 0, false, true, false, false, loadUnsafeFile, false);
 			if(ret == null) {
 				Inform.error("Failed to parse the workflow", "Check your standard out and error messages in order to identify the problem.\nOr use the command-line tool with the -validate option.");
 				XMLParser.setGUILoadAttempt(false);
@@ -772,7 +777,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 		File tmpXLMFile = Functions.generateRandomTmpExecutionFile("validate", false);
 		if(this.saveWorkflow(tmpXLMFile, false, true)) {
 			try {
-				XMLParser.parse(tmpXLMFile.getAbsolutePath(), new File(PreferencesStore.getWatchdogBaseDir()) + File.separator + XMLParser.FILE_CHECK, null, 0, false, true, true, false, false, false);
+				XMLParser.parse(tmpXLMFile.getAbsolutePath(), new File(PreferencesStore.getWatchdogBaseDir()) + File.separator + XMLParser.FILE_CHECK, this.commandlineParams.tmpFolder, 0, false, true, true, false, false, false);
 				tmpXLMFile.delete();
 				
 				if(!afterSave)
@@ -1224,7 +1229,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			File f = new File(this.currentLoadedFile.get());
 			File xsdSchema = XMLBasedWatchdogRunner.findXSDSchema(f.getAbsolutePath(), false, null); 
 			// file is already loaded --> we parse it safe if valid and unsafe if not
-			Object[] ret = XMLParser.parse(f.getAbsolutePath(), xsdSchema.getAbsolutePath(), null, 0, false, true, false, false, XMLParser.testIfUnsafe(f.getAbsolutePath()), false);
+			Object[] ret = XMLParser.parse(f.getAbsolutePath(), xsdSchema.getAbsolutePath(), this.commandlineParams.tmpFolder, 0, false, true, false, false, XMLParser.testIfUnsafe(f.getAbsolutePath()), false);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
 			String mail = (String) ret[1];		
 			Mailer mailer = new Mailer(mail);

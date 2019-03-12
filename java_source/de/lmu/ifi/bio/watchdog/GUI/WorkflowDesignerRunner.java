@@ -5,6 +5,9 @@ import java.net.URISyntaxException;
 
 import org.xml.sax.SAXException;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
+
 import de.lmu.ifi.bio.multithreading.TimedExecution;
 import de.lmu.ifi.bio.watchdog.GUI.css.CSSRessourceLoader;
 import de.lmu.ifi.bio.watchdog.GUI.fxml.FXMLRessourceLoader;
@@ -35,7 +38,6 @@ import javafx.stage.StageStyle;
  */
 public class WorkflowDesignerRunner extends Application {
 	
-	private static final String DISABLE_LOAD_SCREEN = "-disableLoadScreen";
 	public static final int GRID_SIZE_X = 120;
 	public static final int GRID_SIZE_Y = 80;
 	public static final int MAX_EXTEND_DIST = 1;
@@ -72,13 +74,31 @@ public class WorkflowDesignerRunner extends Application {
  
 	@Override
 	public void start(Stage primaryStage) {
-		try {			
+		try {		
+			// parse parameters before we start the GUI
+		    Parameters p = this.getParameters();
+			WorkflowDesignParameters params = new WorkflowDesignParameters();
+			JCommander parser = null;
+			try { 
+				parser = new JCommander(params, p.getRaw().toArray(new String[0])); 
+			}
+			catch(ParameterException e) { 
+				e.printStackTrace();
+				new JCommander(params).usage();
+				System.exit(1);
+			}
+			
+			// display the help
+			if(params.help) {
+				parser.usage();
+				System.exit(0);
+			}
+			
 			// set javafx Platform executor for classes that require that
 			this.initRunableExecutor();
 						
 			// load settings from ini file
 			PreferencesStore.loadSettingsFromFile(PreferencesStore.defaultIniFile);
-		    Parameters p = this.getParameters();
 		    HostServices hs = this.getHostServices();
 		    Launch launch = null;
 		    
@@ -89,7 +109,7 @@ public class WorkflowDesignerRunner extends Application {
 		    Screen curScreen = CurrentScreen.getScreenWithMouseOnIt();
 		    
 		    // test if launch screen is enabled
-			if(!p.getUnnamed().contains(DISABLE_LOAD_SCREEN)) {
+			if(!params.disableLoadScreen) {
 				// show launch view
 				Stage stage = new ScreenCenteredStage();
 				stage.initStyle(StageStyle.UNDECORATED);
@@ -104,11 +124,12 @@ public class WorkflowDesignerRunner extends Application {
 				Thread t = new Thread(launch);
 				Platform.runLater(() -> t.start());
 			}
-			Runnable startMainWindow = () -> { try { this.loadApplication(hs, primaryStage, curScreen); } catch(Exception e) { e.printStackTrace(); System.exit(1);}};
+
+			Runnable startMainWindow = () -> { try { this.loadApplication(hs, primaryStage, curScreen, params); } catch(Exception e) { e.printStackTrace(); System.exit(1);}};
 			if(launch != null)
 				launch.setRunable(() -> WorkflowDesignController.enforcePreferences(startMainWindow));
 			// show it 
-			if(p.getUnnamed().contains(DISABLE_LOAD_SCREEN)) {
+			if(params.disableLoadScreen) {
 				WorkflowDesignController.enforcePreferences(startMainWindow);
 			}			
 		} catch(Exception e) {
@@ -116,12 +137,13 @@ public class WorkflowDesignerRunner extends Application {
 		}
 	}
 
-	private WorkflowDesignController loadApplication(HostServices hs, Stage primaryStage, Screen screen) throws URISyntaxException, IOException, SAXException {
+	private WorkflowDesignController loadApplication(HostServices hs, Stage primaryStage, Screen screen, WorkflowDesignParameters params) throws URISyntaxException, IOException, SAXException {
 		// load interface
 		FXMLLoader loader = new FXMLLoader(FXMLRessourceLoader.class.getResource("WorkflowDesigner.fxml"));
 		BorderPane page = (BorderPane) loader.load();
 		WorkflowDesignController mainController = loader.getController();
 		mainController.setHostService(hs);
+		mainController.setCommandLineArgs(params);
 		
 		// build the page
         Scene scene = new Scene(page);
