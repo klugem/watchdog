@@ -62,4 +62,9 @@ public class LocalExecutorInfo extends ExecutorInfo {
 
 	@Override
 	public Object[] getDataToLoadOnGUI() { return new Object[0]; }
+	
+	@Override
+	public boolean isWatchdogRestartSupported() {
+		return false;
+	}
 }

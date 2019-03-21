@@ -1,7 +1,9 @@
 package de.lmu.ifi.bio.watchdog.executor.external.slurm;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -10,42 +12,50 @@ import java.util.regex.Pattern;
 
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobInfo;
-import org.ggf.drmaa.TryLaterException;
 
 import de.lmu.ifi.bio.watchdog.executor.external.BinaryCallBasedExternalWorkflowManagerConnector;
 import de.lmu.ifi.bio.watchdog.executor.external.BinaryCallInfo;
+import de.lmu.ifi.bio.watchdog.executor.external.GenericJobInfo;
+import de.lmu.ifi.bio.watchdog.executor.external.sge.QacctBinaryCallInfo;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.task.Task;
 
 public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkflowManagerConnector<SlurmExecutor> {
 
 	public static final String EXECUTOR_NAME = "slurm";
-	private static final String ID_REGEX = "Submitted batch job ([0-9]+)";
-	private static final String STATUS_SACCT = "\\|(.+)\\|[0-9]+:[0-9]+";
+	private static final String ID_REGEX = "([0-9]+);(.+)";
+	private static final Pattern ID_REGEX_PATTERN = Pattern.compile(ID_REGEX);
 	private static final String RUNNING = "RUNNING";
 	private static final String COMPLETED = "COMPLETED";
 	private static final String PENDING = "PENDING";
 	private static final String GOOD_STATUS = PENDING+"|"+COMPLETED+"|"+RUNNING;
-	private static final Pattern ID_REGEX_PATTERN = Pattern.compile(ID_REGEX);
 	private static final String INFO_FIELDS = "JobID,JobName,Partition,NCPUS,State,ExitCode,Elapsed,CPUTime,MaxRSS,MaxVMSize,MaxDiskRead,MaxDiskWrite,ConsumedEnergy,AveCPU,AveVMSize,Submit";
 	private static final String EXIT_CODE_FIELD = "ExitCode";
-	private HashMap<String, Pattern> RUNNING_REGEX_PATTERN = new HashMap<>();
 	private boolean isInitComplete = false;
-	private boolean isJobInitSubmitted = false;
-	private static int MAX_WAIT = 15000; // wait 15 s after job submission
+	private static int MAX_WAIT_CYLCES = 3; // wait 3 cycles after job submission
+	private final static int LONG_WAIT = 5000; // don't query to often
+	private static final String STATE_SACCT = "^([0-9]+)\\|(.+)\\|(.+)";
+	private static final String CLUSTER_SEP = "@";
+	private final Pattern STATE_SACCT_PATTERN = Pattern.compile(STATE_SACCT); 
+	private String start_date_for_query = new SimpleDateFormat("MM/dd/YY-HH:mm:ss").format(new Date()) ; // date that is used for sacct query (--starttime)
 	
 	public SlurmWorkloadManagerConnector(Logger l) {
 		super(l);
 	}
 	
-	private void prepareRunningPattern(String id) {
-		Pattern p = Pattern.compile(id + STATUS_SACCT);
-		this.RUNNING_REGEX_PATTERN.put(id, p);
+	/**
+	 * sets a custom start date for sacct queries
+	 * no check is made if format is correct
+	 * @param date
+	 */
+	public void setStartDateForQuery(String date) {
+		this.start_date_for_query = date;
 	}
 
 	@Override
 	public synchronized String submitJob(Task task, SlurmExecutor ex) throws DrmaaException {
 		ArrayList<String> args = new ArrayList<>();
+		args.add("--parsable"); // outputs only the jobid and cluster name (if present), separated by semicolon, only on successful submission.
 		SlurmExecutorInfo execinfo = ex.getExecutorInfo();
 		
 		// set stdout
@@ -81,12 +91,11 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		// BUG https://bugs.schedmd.com/show_bug.cgi?id=3197 might cause problems in older versions
 		if(task.isTaskOnHold()) args.add("--hold"); 
 		// BUG
-		
 		args.add("--job-name"); args.add(task.getProjectShortCut() + " " + task.getName() + " " + task.getID());
-		args.add("--time");  args.add(execinfo.getTimelimit());
-		args.add("--cpus-per-task");  args.add(Integer.toString(execinfo.getCPUs()));
-		args.add("--mem-per-cpu");  args.add(execinfo.getMemory());
-		args.add(ex.getFinalCommand(false)[0]);
+		args.addAll(execinfo.getCommandsForGrid());
+
+		for(String part : ex.getFinalCommand(false, true))
+			args.add(part);
 
 		BinaryCallInfo info = this.executeCommand("sbatch", args);
 		if(info.exit != 0) {
@@ -98,17 +107,9 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 			Matcher m = ID_REGEX_PATTERN.matcher(info.out);
 			if(m.find()) {
 				String id = m.group(1);
-				this.prepareRunningPattern(id);
-				int maxWait = 0;
-				// wait until the ID is known in the system
-				this.isJobInitSubmitted = true;
-				while(!this.isJobKnownInGridSystem(id) && maxWait <= MAX_WAIT) {
-					try { Thread.sleep(100); } catch(Exception e) {}
-					maxWait += 100;
-				}
-				this.isJobInitSubmitted = false;
-				if(maxWait > MAX_WAIT)
-					throw new TryLaterException("ID '"+id+"' could not be queried by sacct after a wait time of " + (MAX_WAIT/1000) + " seconds.");
+				String cluster = m.group(2);
+				id = this.addClusterInfo(id, cluster);
+				this.SUBMITTED_JOB_STATUS.put(id, 0);
 				return id;
 			}
 			else {
@@ -119,84 +120,164 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		}
 		return null;
 	}
+		
+	/**
+	 * appends the cluster info to the id
+	 * @param id
+	 * @param cluster
+	 * @return
+	 */
+	private String addClusterInfo(String id, String cluster) {
+		if(cluster != null)
+			return id + CLUSTER_SEP + cluster;
+		return id;
+	}
+	
+	/**
+	 * gets the cluster info from a ID
+	 * if no cluster info is there, null is returned
+	 * @param id
+	 * @param execinfo
+	 * @return
+	 */
+	private String getClusterInfo(String id) {
+		String[] tmp = id.split(CLUSTER_SEP);
+		if(tmp.length == 2)
+			return tmp[1];
+		return null;
+	}
+	
+	/**
+	 * removes the cluster info from an id
+	 * @param id
+	 * @return
+	 */
+	private String removeClusterInfoFromID(String id) {
+		String[] tmp = id.split(CLUSTER_SEP);
+		return tmp[0];
+	}
+
+	@Override
+	public long getDefaultWaitTime() {
+		return LONG_WAIT;
+	}
 
 	@Override
 	public void releaseJob(String id) throws DrmaaException {
 		ArrayList<String> args = new ArrayList<>();
+		this.addClusterInfoToArguments(args, id);
 		args.add("release");
-		args.add(id);
+		args.add(this.removeClusterInfoFromID(id));
 		executeCommand("scontrol", args);
 	}
 
 	@Override
 	public void holdJob(String id) throws DrmaaException {
 		ArrayList<String> args = new ArrayList<>();
+		this.addClusterInfoToArguments(args, id);
 		args.add("hold");
-		args.add(id);
+		args.add(this.removeClusterInfoFromID(id));
 		executeCommand("scontrol", args);
 	}
 
 	@Override
 	public void cancelJob(String id) throws DrmaaException {
 		ArrayList<String> args = new ArrayList<>();
-		args.add(id);
+		this.addClusterInfoToArguments(args, id);
+		args.add(this.removeClusterInfoFromID(id));
 		executeCommand("scancel", args);
+	}
+	
+	/**
+	 * adds the info about the cluster that must be used to the argument list 
+	 * @param args
+	 */
+	private void addClusterInfoToArguments(ArrayList<String> args, String id) {
+		String cluster = this.getClusterInfo(id);
+		if(cluster != null) {
+			args.add("-M"); // only look at these cluster
+			args.add(cluster);
+		}
+	}
+	
+	/**
+	 * adds the info for which timespan jobs should be displayed
+	 * @param args
+	 */
+	private void addDateInfoToArguments(ArrayList<String> args) {
+		args.add("-S"); // get all jobs started after this time
+		args.add(this.start_date_for_query);
 	}
 
 	@Override
 	public boolean isJobRunning(String id) throws DrmaaException {
-		SacctBinaryCallInfo info = getJobStatus(id, false);
+		if(!this.CACHED_JOB_STATUS.containsKey(id))
+			return false;
 		
-		if(info == null) {
-			System.exit(1);
-		}
-		return RUNNING.equals(info.status);
+		return RUNNING.equals(this.CACHED_JOB_STATUS.get(id));
 	}
 	
-	public SacctBinaryCallInfo getJobStatus(String id, boolean init) {
+	@Override
+	protected void updateJobStatusCache() {
 		ArrayList<String> args = new ArrayList<>();
-		args.add("-b");
-		args.add("-P");
-		args.add("--job");
-		args.add(id);
-
-		SacctBinaryCallInfo info = new SacctBinaryCallInfo(id, this.executeCommand("sacct", args));
+		args.add("-L"); // get info from all cluster
+		args.add("--format=jobid,state,cluster");
+		args.add("-P"); // seperated by sa'|' 
+		
+		QacctBinaryCallInfo info = new QacctBinaryCallInfo("generic", this.executeCommand("sacct", args));
 		if(info.exit != 0) {
 			info.printInfo(this.LOGGER, true);
 			System.exit(1);
 		}
 		else {
-			// try to find id
-			Matcher m = this.RUNNING_REGEX_PATTERN.get(id).matcher(info.out);
-			if(m.find()) {
-				info.status = m.group(1);
-				return info;
+			// try to find ids
+			Scanner s = new Scanner(info.out);
+			String id, status, cluster;
+			while(s.hasNextLine()) {
+				Matcher m = STATE_SACCT_PATTERN.matcher(s.nextLine());
+				if(m.matches()) {
+					id = m.group(1);
+					status = m.group(2);
+					cluster = m.group(3);
+					id = this.addClusterInfo(id, cluster);
+					this.CACHED_JOB_STATUS.put(id, status);
+				//	System.out.println("#################" + id + " -> " + status);
+				}
 			}
-			else if(!init) {
-				this.LOGGER.error("Job ID " + id + " was not found in sacct output.");
-				info.printInfo(this.LOGGER, true);
-			}
+			s.close();
 		}
-		return null;
 	}
+		
 
 	@Override
 	public JobInfo getJobInfo(String id) throws DrmaaException {
-		SacctBinaryCallInfo runningInfo = getJobStatus(id, false);
-		if(PENDING.equals(runningInfo.status) || RUNNING.equals(runningInfo.status))
+		// check, if job is running
+		if(this.isJobRunning(id))
 			return null;
-		
+		// check, if job is in a "running-like" state
+		String runningInfo = this.CACHED_JOB_STATUS.get(id);
+		if(runningInfo == null || (PENDING.equals(runningInfo) || RUNNING.equals(runningInfo)))
+			return null;
+
+		// values we wan't extract
 		ArrayList<String> args = new ArrayList<>();
+		this.addDateInfoToArguments(args);
+		this.addClusterInfoToArguments(args, id);
 		args.add("-o");
 		args.add(INFO_FIELDS);
 		args.add("-P");
 		args.add("--job");
-		args.add(id);
+		args.add(this.removeClusterInfoFromID(id));
 		// get exit code and resource info
 		BinaryCallInfo info = this.executeCommand("sacct", args);
 		Scanner s = new Scanner(info.out);
-		String header = s.nextLine();
-		String values = s.nextLine();
+		String header = null;
+		String values = null;
+		
+		if(s.hasNext())
+			header = s.nextLine();
+		if(s.hasNext())
+			values = s.nextLine();
 		s.close();
 		
 		if(header == null || values == null) {
@@ -224,9 +305,9 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 			info.printInfo(this.LOGGER, true);
 			System.exit(1);
 		}
-		return new SlurmJobInfo(id, exitCode, signal, COMPLETED.equals(runningInfo.status));
+		return new GenericJobInfo(id, exitCode, signal, COMPLETED.equals(runningInfo), res);
 	}
-
+	
 	@Override
 	public void init() {
 		executeCommand("sinfo"); // test, if sinfo works
@@ -238,17 +319,23 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		this.isInitComplete = false;
 		for(String id : ids) 
 			try { this.cancelJob(id); } catch(Exception e) { e.printStackTrace(); }
-		this.RUNNING_REGEX_PATTERN.clear();
+		this.CACHED_JOB_STATUS.clear();
+		this.SUBMITTED_JOB_STATUS.clear();
 	}
 
 	@Override
-	public String getNameOfExecutionNode(String id, String watchdogBaseDir) {	
+	public String getNameOfExecutionNode(String id, String watchdogBaseDir) {
+		if(!this.isJobKnownInGridSystem(id))
+			return null;
+		
 		ArrayList<String> args = new ArrayList<>();
+		this.addDateInfoToArguments(args);
+		this.addClusterInfoToArguments(args, id);
 		args.add("-P");
 		args.add("-o");
 		args.add("NodeList");
 		args.add("--job");
-		args.add(id);
+		args.add(this.removeClusterInfoFromID(id));
 
 		BinaryCallInfo info = this.executeCommand("sacct", args);
 		if(info.exit != 0) {
@@ -258,8 +345,14 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		else {
 			// try to find node list
 			Scanner s = new Scanner(info.out);
-			String header = s.nextLine();
-			String values = s.nextLine();
+			String header = null;
+			String values = null;
+			
+			if(s.hasNext())
+				header = s.nextLine();
+			if(s.hasNext())
+				values = s.nextLine();
+			
 			s.close();
 			if(header == null || values == null) {
 				this.LOGGER.error("Failed to get detailed job info from sacct command!");
@@ -273,8 +366,11 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 
 	@Override
 	public boolean isJobKnownInGridSystem(String id) {
-		SacctBinaryCallInfo info = getJobStatus(id, this.isJobInitSubmitted);
-		return info != null && info.status.matches(GOOD_STATUS);
+		if(!this.CACHED_JOB_STATUS.containsKey(id))
+			return false;
+		// check, if it has a good status
+		String info = this.CACHED_JOB_STATUS.get(id);
+		return info != null && info.matches(GOOD_STATUS);
 	}
 
 	@Override
@@ -293,5 +389,10 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 	
 	protected BinaryCallInfo executeCommand(String command) {
 		return this.executeCommand(command, new ArrayList<>(), null, null);
+	}
+
+	@Override
+	public int getMaxWaitCyclesUntilJobsIsVisible() {
+		return MAX_WAIT_CYLCES;
 	}
 }

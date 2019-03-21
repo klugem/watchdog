@@ -40,15 +40,24 @@ public abstract class ExternalScheduledMonitorThread<A extends ExternalScheduled
 	}
 	
 	@Override
+	protected synchronized void remove(String id) {
+		super.remove(id);
+		this.connector.remove(id);
+	}
+	
+	@Override
 	protected synchronized boolean monitorJobs() {
 		int finished = 0;
-		boolean noRelease = true;
-		for(String id : new ArrayList<>(this.getMonitorTasks().keySet())) {
-
-			Task t = this.getMonitorTasks().get(id).getTask();
-			// check, if job was run and has exited
-			if(t.getExecutionCounter() > 0 && !t.hasJobInfo()) {
-				try {
+		try {
+			// update the cache first
+			this.connector.ensureThatJobStatusIsUpToDate(false);
+			
+			boolean noRelease = true;
+			for(String id : new ArrayList<>(this.getMonitorTasks().keySet())) {
+				Task t = this.getMonitorTasks().get(id).getTask();
+				// check, if job was run and has exited
+				if(t.getExecutionCounter() > 0 && !t.hasJobInfo()) {
+				
 					// check, if the task should be terminated
 					if(t.isTerminationPending()) {
 						this.connector.cancelJob(id);
@@ -73,7 +82,7 @@ public abstract class ExternalScheduledMonitorThread<A extends ExternalScheduled
 							t.setStatus(TaskStatus.RUNNING);
 						if(t.getHost() == null) 
 							t.setHostname(this.connector.getNameOfExecutionNode(id, t.getExecutor().getWatchdogBaseDir())); // try to get hostname until some name is set 
-						
+	
 						// test if job is still running --> do noting
 						if(t.isTaskRunning() && this.connector.isJobRunning(id)) {
 							continue;
@@ -106,7 +115,7 @@ public abstract class ExternalScheduledMonitorThread<A extends ExternalScheduled
 							this.releaseHold(t);
 						
 						// check, if task is still in the queue!!!
-						if(!this.connector.isJobKnownInGridSystem(id)) {
+						if(!this.connector.isJobKnownInGridSystem(id) && !this.connector.isInInitialSubmissionState(id)) {
 							// try to get node name one last time
 							if(t.getHost() == null) 
 								t.setHostname(this.connector.getNameOfExecutionNode(id, t.getExecutor().getWatchdogBaseDir()));
@@ -117,30 +126,30 @@ public abstract class ExternalScheduledMonitorThread<A extends ExternalScheduled
 						}
 					}
 				}
-				catch(Exception e) {
-					e.printStackTrace();
-				}
 			}
-		}
-		
-		// release the holds of jobs if needed!
-		if(noRelease) {
-			// run through all jobs
-			for(String id : new ArrayList<>(this.getMonitorTasks().keySet())) {
-				Task t = this.getMonitorTasks().get(id).getTask();
-				// check, if task is ok
-				if(t.isTaskOnHold() && t.getExecutionCounter() > 0 && !t.hasJobInfo() && !t.isTerminationPending()) {
-					// check, if needed resources are there
-					if((!t.isMaxRunningRestrictionReached() && !t.getExecutor().isMaxRunningRestrictionReached()) || !t.doesConsumeResources()) {
-						try {
-							this.releaseHold(t);
-						}
-						catch(Exception e) {
-							e.printStackTrace();
+
+			// release the holds of jobs if needed!
+			if(noRelease) {
+				// run through all jobs
+				for(String id : new ArrayList<>(this.getMonitorTasks().keySet())) {
+					Task t = this.getMonitorTasks().get(id).getTask();
+					// check, if task is ok
+					if(t.isTaskOnHold() && t.getExecutionCounter() > 0 && !t.hasJobInfo() && !t.isTerminationPending()) {
+						// check, if needed resources are there
+						if((!t.isMaxRunningRestrictionReached() && !t.getExecutor().isMaxRunningRestrictionReached()) || !t.doesConsumeResources()) {
+							try {
+								this.releaseHold(t);
+							}
+							catch(Exception e) {
+								e.printStackTrace();
+							}
 						}
 					}
 				}
 			}
+		}
+		catch(Exception ex) {
+			ex.printStackTrace();
 		}
 		return finished > 0;
 	}
@@ -148,18 +157,21 @@ public abstract class ExternalScheduledMonitorThread<A extends ExternalScheduled
 	@Override
 	public void setPauseScheduling(boolean pause) {
 		super.setPauseScheduling(pause);
-		LinkedHashMap<String, A> tasks = this.getMonitorTasks();
-		// do not schedule any more tasks --> set all on hold
-		for(String id : tasks.keySet()) {
-			A ex = tasks.get(id);
-			Task t = ex.getTask();
-			// if it is in waiting queue --> hold it!
-			if(t.isTaskWaitingInQue())
-				try { 
-					this.connector.holdJob(id);
-					t.setStatus(TaskStatus.WAITING_RESTRICTIONS);
-				}
-				catch(Exception e) {}
+		// if not in start&stop mode --> set all tasks on hold
+		if(!this.isInRestartMode()) {
+			LinkedHashMap<String, A> tasks = this.getMonitorTasks();
+			// do not schedule any more tasks --> set all on hold
+			for(String id : tasks.keySet()) {
+				A ex = tasks.get(id);
+				Task t = ex.getTask();
+				// if it is in waiting queue --> hold it!
+				if(t.isTaskWaitingInQue())
+					try { 
+						this.connector.holdJob(id);
+						t.setStatus(TaskStatus.WAITING_RESTRICTIONS);
+					}
+					catch(Exception e) {}
+			}
 		}
 	}
 
@@ -244,7 +256,14 @@ public abstract class ExternalScheduledMonitorThread<A extends ExternalScheduled
 	 * @throws Exception
 	 */
 	public synchronized String submit(Task task, A executor) throws Exception {
-		String id = this.connector.submitJob(task, executor);
+		String id = null;
+		if(task.isTaskAlreadyRunning()) {
+			id = task.getExternalExecutorID();
+			task.setTaskIsAlreadyRunning(false);
+		}
+		else {
+			id = this.connector.submitJob(task, executor);
+		}
 		if(id != null) {
 			this.addTaskToMonitor(id, executor);
 		}

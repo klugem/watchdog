@@ -44,6 +44,7 @@ public class SlurmExecutorInfoParser extends XMLExecutorInfoParser<SlurmExecutor
 		int cpu = Integer.parseInt(XMLParser.getAttribute(el, XMLParser.CPU));
 		String memory = XMLParser.getAttribute(el, XMLParser.MEMORY);
 		String cluster = XMLParser.getAttribute(el, XMLParser.CLUSTER);
+		String partition = XMLParser.getAttribute(el, XMLParser.PARTITION);
 		String timelimit = XMLParser.getAttribute(el, XMLParser.TIMELIMIT);
 		String customParams = XMLParser.getAttribute(el, XMLParser.CUSTOM_PARAMETERS); 
 		boolean disableDefault = Boolean.parseBoolean(XMLParser.getAttribute(el, XMLParser.DISABLE_DEFAULT));
@@ -52,7 +53,7 @@ public class SlurmExecutorInfoParser extends XMLExecutorInfoParser<SlurmExecutor
 		if(cpu <= 0) 
 			cpu = 1; 
 	
-		SlurmExecutorInfo info = new SlurmExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), cpu, memory, cluster, timelimit, di.getWorkingDir(), customParams, disableDefault);
+		SlurmExecutorInfo info = new SlurmExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), cpu, memory, cluster, partition, timelimit, di.getWorkingDir(), customParams, disableDefault);
 		if(di.getColor() != null)
 			info.setColor(di.getColor());
 		return info;

@@ -3,11 +3,13 @@ package de.lmu.ifi.bio.multithreading;
 import java.util.concurrent.TimeUnit;
 
 import de.lmu.ifi.bio.utils.interfaces.StopableLoop;
+import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 
 public abstract class StopableLoopRunnable extends MonitorRunnable implements StopableLoop {
 
 	private boolean requestStop = false;
 	private boolean forcedInterrupt = false;
+	private boolean wasStopped = false;
 	
 	public StopableLoopRunnable(String name) {
 		super(name);
@@ -22,8 +24,10 @@ public abstract class StopableLoopRunnable extends MonitorRunnable implements St
 			while(!this.isStopRequested()) {
 				int factor = Math.max(this.executeLoop(), 1);
 				
-				if(this.isStopRequested())
+				if(this.isStopRequested()) {
+					this.wasStopped = true;
 					break;
+				}
 				
 				Thread.sleep(this.getDefaultWaitTime()*factor);
 			}
@@ -37,6 +41,7 @@ public abstract class StopableLoopRunnable extends MonitorRunnable implements St
 			e.printStackTrace();
 		}
 		finally {
+			this.wasStopped = true;
 			this.afterLoop();
 			super.run();
 		}
@@ -65,6 +70,14 @@ public abstract class StopableLoopRunnable extends MonitorRunnable implements St
 	 */
 	public boolean isStopRequested() {
 		return this.requestStop;
+	}
+	
+	/**
+	 * check, if the thread was stopped
+	 * @return
+	 */
+	public boolean wasStopped() {
+		return this.wasStopped;
 	}
 	
 	/**

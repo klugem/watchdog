@@ -52,13 +52,13 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	private final int MAIL_WAIT_TIME;
 	
 	/**
-	 * Adds a new watchdog to which the tasks are added, if some are available
-	 * @param watchdog
-	 * @param mailer
-	 * @param xmlTasks
-	 * @param returnTypeInfo
-	 */
-	public XMLTask2TaskThread(WatchdogThread watchdog, ArrayList<XMLTask> xmlTasks, Mailer mailer, HashMap<String, Pair<HashMap<String, ReturnType>, String>> returnTypeInfo, File xmlPath, int mailWaitTime, HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo) {
+	* Adds a new watchdog to which the tasks are added, if some are available
+	* @param watchdog
+	* @param mailer
+	* @param xmlTasks
+	* @param returnTypeInfo
+	*/
+	public XMLTask2TaskThread(WatchdogThread watchdog, ArrayList<XMLTask> xmlTasks, Mailer mailer, HashMap<String, Pair<HashMap<String, ReturnType>, String>> returnTypeInfo, File xmlPath, int mailWaitTime, HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo, ArrayList<Task> runningInfo) {
 		super("XMLTask2Task");
 		this.WATCHDOG = watchdog;
 		this.MAILER = mailer;
@@ -69,15 +69,34 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		
 		// add the workflow resume logger task status update handler
 		this.addTaskStatusHandler(new WorkflowResumeLogger(this.XML_PATH));
+		
+		// add the restart info for start&stop
+		HashMap<Integer, ArrayList<Task>> runningHash = new HashMap<>();
+		if(runningInfo != null) {
+			for(Task runnningTaskInfo : runningInfo) {
+				int tid = runnningTaskInfo.getTaskID();
+				if(!runningHash.containsKey(tid)) 
+					runningHash.put(tid, new ArrayList<Task>());
+				
+				ArrayList<Task> r = runningHash.get(tid);
+				r.add(runnningTaskInfo);
+			}
+		}
 
 		for(XMLTask x : xmlTasks) {			
-			 // check, if return parameter argument must be provided
-			 if(this.RETURN_TYPE_INFO.containsKey(x.getTaskType()))
-				 x.addReturnParameter(this.RETURN_TYPE_INFO.get(x.getTaskType()).getValue());
-			 
-			 // check, if there is some return info for that task
-			 if(resumeInfo != null && resumeInfo.containsKey(x.getXMLID()))
-				 x.addResumeInfo(resumeInfo.get(x.getXMLID()));
+			// check, if return parameter argument must be provided
+			if(this.RETURN_TYPE_INFO.containsKey(x.getTaskType()))
+				x.addReturnParameter(this.RETURN_TYPE_INFO.get(x.getTaskType()).getValue());
+			
+			// check, if there is some return info for that task
+			if(resumeInfo != null && resumeInfo.containsKey(x.getXMLID()))
+				x.addResumeInfo(resumeInfo.get(x.getXMLID()));
+			
+			// add the info required for start&stop mode
+			if(runningHash.containsKey(x.getXMLID())) {
+				for(Task t : runningHash.get(x.getXMLID()))
+					x.addRestartInfo(t);
+			}
 			
 			// add the task to the scheduler queue
 			this.addTask(x);
@@ -99,9 +118,9 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	}
 	
 	/**
-	 * adds a XML task to a running XML2Task thread
-	 * @param x
-	 */
+	* adds a XML task to a running XML2Task thread
+	* @param x
+	*/
 	public boolean addTask(XMLTask x) {
 		if(this.XML_TASKS.containsKey(x.getXMLID()))
 			return false;
@@ -111,9 +130,9 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	}
 
 	/**
-	 * tries to convert some XML tasks to normal tasks, if they do not depend on anything
-	 * @return
-	 */
+	* tries to convert some XML tasks to normal tasks, if they do not depend on anything
+	* @return
+	*/
 	public synchronized boolean createAndAddTasks() {
 		int newTasks = 0;
 		// test if some the the xml tasks can be converted
@@ -162,6 +181,9 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					ResumeInfo resumeInfo = null;
 					if(x.hasResumeInfo())
 						resumeInfo = x.getResumeInfo(inputName);
+					
+					// check, if the task is currently running
+					Task restartInfo = x.getRestartInfo(inputName);
 
 					// check, if the user want to verify the parameters first
 					if(resumeInfo == null && (x.getConfirmParam().isEnabled() || x.getConfirmParam().isSubtaskEnabled()) && !x.getConfirmParam().wasPerformed()) {
@@ -169,77 +191,85 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						x.setConfirmParam(ActionType.PERFORMED);
 						x.block();
 						continue;
-					 }
-
-					 // task can be scheduled
-					 String completeRawargumentList = completeArguments.get(inputName);
-					 Task t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled(), x.mightProcessblockContainFilenames());
-					 t.setMaxRunning(x.getMaxRunning());
-					 t.setProject(x.getProjectName());
-					 t.addErrorChecker(new WatchdogErrorCatcher(t));
-					 t.setForceSingleSlaveMode(x.isSingleSlaveModeForced());
-				 
-					 // set status handler if some are set
-					 for(StatusHandler sh : this.STATUS_HANDLER) 
-						 t.addStatusHandler(sh);
-
-					// check, if the task should be executed on a slave
-					if(x.getExecutor().isStick2Host()) {
-						// check, is there is any task this task depends on that was already executed on a slave
-						String slaveID = x.getSlaveIDOfDependencies(inputName);
-						if(slaveID == null && x.getGlobalPrevSlaveId() != null)
-							slaveID = x.getGlobalPrevSlaveId();
-						
-						// set preeceeding slave ID if one is there
-						if(slaveID != null)
-							t.setSlaveTaskID(slaveID);
 					}
 
-					 if(this.RETURN_TYPE_INFO.containsKey(x.getTaskType()))
-						t.addErrorChecker(new ParameterReturnErrorChecker(t, this.RETURN_TYPE_INFO.get(x.getTaskType()).getKey(), x.getReturnParameterFile(completeRawargumentList)));
-					 
-					 // add custom error or success checkers
-					 for(CheckerContainer c : x.CHECKER) {
-						 boolean isErrorChecker = c.isErrorChecker();
-						 Object checker = c.getChecker(t, completeRawargumentList, nameMapping, x.getProcessBlock(), x.getNumberOfSpawnedTasks());
-						 
-						 // typecast and store the checker!
-						 if(isErrorChecker)
-							 t.addErrorChecker((ErrorChecker) checker);
-						 else
-							 t.addSuccessChecker((SuccessChecker) checker);
-					 }
-						 
-					 t.setNotify(x.getNotify());
-					 t.setCheckpoint(x.getCheckpoint());
-					 x.addExecutionTask(t);
+					// task can be scheduled and is new one
+					Task t = null;
+					if(restartInfo == null) {
+						String completeRawargumentList = completeArguments.get(inputName);
+						t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled(), x.mightProcessblockContainFilenames());
+						t.setMaxRunning(x.getMaxRunning());
+						t.setProject(x.getProjectName());
+						t.addErrorChecker(new WatchdogErrorCatcher(t));
+						t.setForceSingleSlaveMode(x.isSingleSlaveModeForced());
+					
+						// set status handler if some are set
+						for(StatusHandler sh : this.STATUS_HANDLER) 
+							t.addStatusHandler(sh);
+	
+						// check, if the task should be executed on a slave
+						if(x.getExecutor().isStick2Host()) {
+							// check, is there is any task this task depends on that was already executed on a slave
+							String slaveID = x.getSlaveIDOfDependencies(inputName);
+							if(slaveID == null && x.getGlobalPrevSlaveId() != null)
+								slaveID = x.getGlobalPrevSlaveId();
+							
+							// set preeceeding slave ID if one is there
+							if(slaveID != null)
+								t.setSlaveTaskID(slaveID);
+						}
+	
+						if(this.RETURN_TYPE_INFO.containsKey(x.getTaskType()))
+							t.addErrorChecker(new ParameterReturnErrorChecker(t, this.RETURN_TYPE_INFO.get(x.getTaskType()).getKey(), x.getReturnParameterFile(completeRawargumentList)));
+						
+						// add custom error or success checkers
+						for(CheckerContainer c : x.CHECKER) {
+							boolean isErrorChecker = c.isErrorChecker();
+							Object checker = c.getChecker(t, completeRawargumentList, nameMapping, x.getProcessBlock(), x.getNumberOfSpawnedTasks());
+							
+							// typecast and store the checker!
+							if(isErrorChecker)
+								t.addErrorChecker((ErrorChecker) checker);
+							else
+								t.addSuccessChecker((SuccessChecker) checker);
+						}
+							
+						t.setNotify(x.getNotify());
+						t.setCheckpoint(x.getCheckpoint());
+					}
+					// use de-serialized Task Info
+					else {
+						t = restartInfo;
+						t.setTaskIsAlreadyRunning(true);
+					}
+					x.addExecutionTask(t);
 
-					 // check, if resumeInfo is valid
-					 if(resumeInfo != null && (!resumeInfo.isResumeInfoValid(x, t) || x.isDirty(true) || t.willRunOnSlave())) {
-						 if(x.isDirty(true) || resumeInfo.isDirty())
-							 LOGGER.warn("Resume info was not used for task " + t.getID() + " (subtask param: '"+inputName+"') as a dependency was re-executed.");
-						 else if(t.willRunOnSlave())
-							 LOGGER.warn("Resume info was not used for task " + t.getID() + " (subtask param: '"+inputName+"') as resume is not supported in slave mode.");
-						 else
-							 LOGGER.warn("Resume info was not used for task " + t.getID() + " (subtask param: '"+inputName+"') as parameter hash was not equal.");
-						 
-						 resumeInfo = null;
-						 // mark to resume info for all tasks that depend on this one as dirty
-						 x.flagResumeInfoAsDirty(t);
-					 }
+					// check, if resumeInfo is valid
+					if(resumeInfo != null && (!resumeInfo.isResumeInfoValid(x, t) || x.isDirty(true) || t.willRunOnSlave())) {
+						if(x.isDirty(true) || resumeInfo.isDirty())
+							LOGGER.warn("Resume info was not used for task " + t.getID() + " (subtask param: '"+inputName+"') as a dependency was re-executed.");
+						else if(t.willRunOnSlave())
+							LOGGER.warn("Resume info was not used for task " + t.getID() + " (subtask param: '"+inputName+"') as resume is not supported in slave mode.");
+						else
+							LOGGER.warn("Resume info was not used for task " + t.getID() + " (subtask param: '"+inputName+"') as parameter hash was not equal.");
+						
+						resumeInfo = null;
+						// mark to resume info for all tasks that depend on this one as dirty
+						x.flagResumeInfoAsDirty(t);
+					}
 
-					 if(resumeInfo == null) {
-						 this.WATCHDOG.addToQue(t);
-					 }
-					 // task was already executed successfully
-					 else {
-						 t.increaseExecutionCounter();
-						 t.setJobInfo(new ResumeJobInfo());
-						 if(resumeInfo.hasReturnParams()) {
-							 t.setReturnParams(resumeInfo.getReturnParams());
-						 }
-					 }
-					 newTasks++;
+					if(resumeInfo == null) {
+						this.WATCHDOG.addToQue(t);
+					}
+					// task was already executed successfully
+					else {
+						t.increaseExecutionCounter();
+						t.setJobInfo(new ResumeJobInfo());
+						if(resumeInfo.hasReturnParams()) {
+							t.setReturnParams(resumeInfo.getReturnParams());
+						}
+					}
+					newTasks++;
 				}
 				if(!x.isBlocked())
 					this.checkSeparateDep(x);
@@ -260,9 +290,9 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	}
 	
 	/**
-	 * checks, if all separate dependencies of a task are finished --> no new subtasks will be spawned
-	 * @param x
-	 */
+	* checks, if all separate dependencies of a task are finished --> no new subtasks will be spawned
+	* @param x
+	*/
 	private void checkSeparateDep(XMLTask x) {
 		boolean allSeparateDependenciesAreReady = true;
 		// check if some separate dependencies are not completely finished --> some new jobs might be spawned later
@@ -281,10 +311,10 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 
 	
 	/**
-	  * Creates a list of argument lists based on a xml task
-	  * @param x
-	  * @return
-	  */
+	 * Creates a list of argument lists based on a xml task
+	 * @param x
+	 * @return
+	 */
 	public LinkedHashMap<String, ArrayList<String>> getArgumentLists(XMLTask x) {
 		LinkedHashMap<String, ArrayList<String>> list = new LinkedHashMap<>();
 		// single file mode
@@ -310,9 +340,9 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	}
 	
 	/**
-	 * adds some values to processInput blocks, if finished tasks depend on that
-	 * @param x
-	 */
+	* adds some values to processInput blocks, if finished tasks depend on that
+	* @param x
+	*/
 	public boolean addDependingReturnModifingProcessBlocks(XMLTask x) {
 		if(!((x.getProcessBlock() instanceof ProcessReturnValueAdder)))
 			return false;
@@ -396,9 +426,9 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	}
 
 	/**
-	 * Checks, if there are some unfinished tasks
-	 * @return
-	 */
+	* Checks, if there are some unfinished tasks
+	* @return
+	*/
 	public synchronized boolean hasUnfinishedTasks() {
 		for(XMLTask x : new ArrayList<XMLTask>(this.XML_TASKS.values())) {
 			if(!x.isProcessingOfTaskFinished()) {
@@ -406,6 +436,32 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	* tests, if restarting of watchdog is supported currently as not tasks are running on executor that do
+	* not support restarting
+	* @return
+	*/
+	public synchronized boolean isWatchdogRestartSupportedNow() {
+		// check, if only tasks are running on executors that support restart
+		for(XMLTask x : new ArrayList<XMLTask>(this.XML_TASKS.values())) {
+			if(x.isCompleteTaskReady())
+				continue;
+			
+			//check, if some of the spawned tasks are still running
+			for(Task t : x.getExecutionTasks().values()) {
+				// we can not restart while some tasks are running on a slave
+				if(t.isRunningOnSlave())
+					return false;
+				
+				// task is currently running and no restart is possible
+				if(t.isTaskRunning() && !x.getExecutor().isWatchdogRestartSupported()) {
+					return false;
+				}	
+			}
+		}
+		return true;
 	}
 
 	public void addTaskStatusHandler(StatusHandler sh) {
@@ -429,7 +485,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		if(!this.isSchedulingPaused()) {
 			this.createAndAddTasks();
 			return 1;
-		}
+		}		
 		return 5;
 	}
 
@@ -466,5 +522,10 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 			else 
 				LOGGER.warn(XMLBasedWatchdogRunner.LOG_SEP);				
 		}
+	}
+	
+	@Override
+	public boolean canBeStoppedForRestart() {
+		return true;
 	}
 }

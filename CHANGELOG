@@ -10,23 +10,30 @@ Changelog started with version 1.2.0
 - [CMD] New parameter -tmpFolder, which can be used to set a custom temporary caching and working directory
 - [JAR] Added docuTemplateExtractor.jar that can be used to create templates for module documentation
 - [CMD] Implemented documentation template extractor plugins for bash and python modules
+- [PLUGIN] Implemented binary-based executor (<sge>) to support Sun Grid Engine (tested with v6.1); SGE control binaries must be accessible via the $PATH variable TODO: add to DOCU
+- [DOCU] PDF version of the documentation is provided in addition to the HTML version
+- [GUI] Added -tmpFolder folder parameter to Workflow designer
+- [PLUGIN]
 
-### Internal
+### Changed
+- [PLUGIN] Executor <cluster> is now used for DRMAA cluster implementations; custom attributes (memory, slots, queue) were removed  TODO: add to DOCU
 - [] Watchdog releases require now Java 11 (and JavaFX SDK for workflow designer)
  
 ### Fixed
 - [] Fixed small memory leak caused by not closed ScanResult objects
-- [CMD] removed unnecessary nesting of pre-defined TMP constant  
+- [CMD] Removed unnecessary nesting of pre-defined TMP constant  
+- [GUI] In some cases not all task parameters were loaded from a XML file
 - [EXAMPLE] Fixed wrong dependency in example workflow 1 for task 5
-- [BASH] syntax error on array access that caused an error in new bash versions
-- [BASH] last parameter of called command was not shown 
+- [BASH] Corrected wrong array access that caused an error in new bash versions
+- [BASH] Last parameter of called command was not shown 
+- [PLUGIN] Slurm executor plugin was not using the <cluster> tag
 
 ## [1.2.7] - 2018-08-30
 ### Added
 - [] New task action links, part of the summary mail, can control multiple failed subtasks at once
 - [XSD] Added concept of module versions that allows the use of different XSD definition versions (of the same module without copy&paste)
 - [DOCU] Added documentation on module versions (5.6)
-- [MOD] Added version 2 of the featureCount module which supports a newer featureCount release
+- [MOD] Added versiodn 2 of the featureCount module which supports a newer featureCount release
 - [MOD] New parameter 'shortenReads' for cutadapt module that shortens reads to a maximal length after trimming
 
 ### Fixed

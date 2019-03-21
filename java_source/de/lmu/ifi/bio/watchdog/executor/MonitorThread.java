@@ -1,6 +1,8 @@
 package de.lmu.ifi.bio.watchdog.executor;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -21,17 +23,22 @@ import de.lmu.ifi.bio.watchdog.task.TaskStatus;
  */
 public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopThread {
 	protected static final Logger LOGGER = new Logger(LogLevel.DEBUG);
-	private final LinkedHashMap<String, E> MONITOR_TASKS = new LinkedHashMap<>();
+	public final LinkedHashMap<String, E> MONITOR_TASKS = new LinkedHashMap<>();
+	private static boolean WAS_RESTART_MODE_SET = false;
 	
 	// used for pausing / resume of scheduling
 	private static boolean stopWasCalled = false;
 	private static final Set<MonitorThread<? extends Executor<?>>> CREATED_MONITOR_THREADS = Collections.synchronizedSet(new LinkedHashSet<MonitorThread<? extends Executor<?>>>());
 	private boolean isSchedulingPaused = false;
 	private boolean isDead = false;
+	private boolean restartMode = false;
 	
 	public MonitorThread(String name) {
 		super(name);
-		CREATED_MONITOR_THREADS.add(this);
+		MonitorThread.CREATED_MONITOR_THREADS.add(this);
+	
+		// ensure that all monitor threads have restart mode set
+		this.setRestartMode(MonitorThread.WAS_RESTART_MODE_SET);
 	}
 	
 	public void setPauseScheduling(boolean pause) {
@@ -77,6 +84,26 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 		}
 	}
 	
+	public static void setRestartModeOnAllMonitorThreads(boolean isRestartMode) {
+		MonitorThread.WAS_RESTART_MODE_SET = isRestartMode;
+		for(MonitorThread<? extends Executor<?>> mt : CREATED_MONITOR_THREADS) {
+			mt.setRestartMode(isRestartMode);
+		}
+	}
+	
+	private void setRestartMode(boolean isRestartMode) {
+		this.restartMode = isRestartMode;
+	}
+	
+	/**
+	 * true, if watchdog is running in start&stop = restart mode
+	 * @return
+	 */
+	public boolean isInRestartMode() {
+		return this.restartMode;
+	}
+	
+
 	public boolean isDead() {
 		return this.isDead;
 	}
@@ -85,9 +112,9 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 	 * 
 	 * @return
 	 */
-	protected LinkedHashMap<String, E> getMonitorTasks() {
+	protected synchronized LinkedHashMap<String, E> getMonitorTasks() {
 		LinkedHashMap<String, E> ret = new LinkedHashMap<>();
-		for(String s  : this.MONITOR_TASKS.keySet()) {
+		for(String s : this.MONITOR_TASKS.keySet()) {
 			E e = this.MONITOR_TASKS.get(s);
 			if(!e.getTask().isTaskIgnored())
 				ret.put(s, e);
@@ -99,7 +126,7 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 	 * removes a task from being monitored
 	 * @param id
 	 */
-	protected void remove(String id) {
+	protected synchronized void remove(String id) {
 		this.MONITOR_TASKS.remove(id);
 	}
 	
@@ -123,9 +150,42 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 	
 	@Override
 	public void afterLoop() {
-		// stop all running tasks
-		for(E ex : this.MONITOR_TASKS.values())
-			ex.stopExecution();
+		// for resume mode, we want to save the running task ids and don't terminate all running processes		
+		// stop all other running tasks
+		for(String key : this.MONITOR_TASKS.keySet()) {
+			E ex = this.MONITOR_TASKS.get(key);
+			if(!this.isInRestartMode() || !ex.EXEC_INFO.isWatchdogRestartSupported()) {
+				ex.stopExecution();
+			}
+		}
+	}
+	
+	/**
+	 * returns the mapping for all tasks that support start&stop mode
+	 * @return
+	 */
+	public synchronized HashMap<String, Task> getMappingForRestartableTasks() {
+		HashMap<String, Task> ids2task = new HashMap<>();
+		for(String key : this.MONITOR_TASKS.keySet()) {
+			E ex = this.MONITOR_TASKS.get(key);
+			if(this.isInRestartMode()  && ex.EXEC_INFO.isWatchdogRestartSupported()) {
+				ids2task.put(key, ex.getTask());
+			}
+		}
+		return ids2task;
+	}
+	
+	public static ArrayList<Task> getMappingsForRestartableTasksFromAllMonitorThreads() {
+		ArrayList<Task> info = new ArrayList<>();
+		for(MonitorThread<? extends Executor<?>> mt : CREATED_MONITOR_THREADS) {
+			HashMap<String, Task> runInfo = mt.getMappingForRestartableTasks();
+			for(String externalID : runInfo.keySet()) {
+				Task t = runInfo.get(externalID);
+				t.setExternalExecutorID(externalID);
+				info.add(t);
+			}
+		}
+		return info;
 	}
 	
 	/**
@@ -141,14 +201,13 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 	 * monitors the jobs
 	 * @return
 	 */
-	protected boolean monitorJobs() {
+	protected synchronized boolean monitorJobs() {
 	    for(Iterator<E> iter = this.MONITOR_TASKS.values().iterator(); iter.hasNext();) {
 	    	Executor<?> e = iter.next();
 			Task t = e.getTask();
 			if(t.getExecutionCounter() > 0 && !t.hasJobInfo()) {
 				// check, if the task should be terminated
 				if(t.isTerminationPending()) {
-					this.MONITOR_TASKS.remove(e);
 					e.stopExecution();
 					t.setStatus(TaskStatus.TERMINATED);
 					iter.remove();

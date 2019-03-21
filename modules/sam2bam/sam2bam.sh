@@ -17,7 +17,7 @@ DEFINE_string 'sam' '' 'path to SAM file' 's'
 DEFINE_string 'bam' '' 'path to ouput BAM file' 'b'
 DEFINE_integer 'threads' '1' 'number of threads to use for compression' 't'
 DEFINE_integer 'quality' '9' 'compression level; [1, 9] whereby 1 is the worst/fastest and 9 is the best/slowest compression' 'q'
-DEFINE_string 'memory' '768M' 'maximal memory per thread; (is only an estimation and might be exceeded)' 'm'
+DEFINE_string 'memory' '768M' 'maximal memory that can be used per thread; only an estimation and might be exceeded!' 'm'
 DEFINE_string 'returnFilePath' '' 'path to the return variables file' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 

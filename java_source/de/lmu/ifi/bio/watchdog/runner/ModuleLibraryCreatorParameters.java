@@ -1,16 +1,13 @@
 package de.lmu.ifi.bio.watchdog.runner;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import com.beust.jcommander.Parameter;
 
 public class ModuleLibraryCreatorParameters {
 
-	@Parameter(names={"-moduleFolder", "-m"}, description="path to the module folder(s) for which documentation templates should be created", required=true)
-	protected List<String> module;
-	
-	@Parameter(names={"-outputFolder", "-o"}, description="output folder for the generated html page", required=true)
-	protected String outputFolder;
+	@Parameter(names={"-moduleFolder", "-m"}, description="path to the module folder(s) that should be validated", required=true)
+	protected ArrayList<String> module;
 	
 	@Parameter(names={"-watchdogBase", "-w"}, description="uses a different watchdog installation directory; default: ${jarLocation}/..", required=false)
 	protected String watchdogBase;

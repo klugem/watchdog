@@ -49,6 +49,7 @@ public class DocuXMLParser {
 	public static final String DESCRIPTION = "description";
 	public static final String DESCRIPTION_SEARCH = "description_search";
 	public static final String DEPENDENCIES = "dependencies";
+	public static final String COMMENTS = "comments";
 	public static final String NAME = "name";
 	public static final String USERNAME = "username";
 	public static final String TYPE = "type";
@@ -190,6 +191,7 @@ public class DocuXMLParser {
 			ArrayList<String>  categories = null;
 			String paperDesc = null;
 			ArrayList<VersionedInfo<String>> dependencies = null;
+			ArrayList<VersionedInfo<String>> comments = null;
 			ArrayList<VersionedInfo<String>> description = null;
 			String updated = null;
 			
@@ -211,6 +213,7 @@ public class DocuXMLParser {
 			website = new NodeListIterator(info.getElementsByTagName(WEBSITE)).stream().map(e -> e.getTextContent()).collect(Collectors.toCollection(ArrayList::new));
 			paperDesc = new NodeListIterator(info.getElementsByTagName(PAPER_DESC)).stream().map(e -> e.getTextContent()).collect(Collectors.joining(""));
 			dependencies = new NodeListIterator(info.getElementsByTagName(DEPENDENCIES)).stream().map(e -> getVersioned(e, minV, maxV)).collect(Collectors.toCollection(ArrayList::new));
+			comments = new NodeListIterator(info.getElementsByTagName(COMMENTS)).stream().map(e -> getVersioned(e, minV, maxV)).collect(Collectors.toCollection(ArrayList::new));
 			description =  new NodeListIterator(info.getElementsByTagName(DESCRIPTION)).stream().map(e -> getVersioned(e, minV, maxV)).collect(Collectors.toCollection(ArrayList::new));
 			updated = new NodeListIterator(info.getElementsByTagName(UPDATED)).stream().map(e -> e.getTextContent()).collect(Collectors.joining(""));
 			categories = new NodeListIterator(info.getElementsByTagName(CATEGORY)).stream().map(e -> e.getTextContent()).collect(Collectors.toCollection(ArrayList::new));
@@ -226,7 +229,7 @@ public class DocuXMLParser {
 				returnValues = new NodeListIterator(returnV.getElementsByTagName(VAR)).stream().map(e -> parseReturnValue(e)).collect(Collectors.toCollection(ArrayList::new));
 
 			// create the object
-			Moduledocu m = new Moduledocu(name, categories, updated, authors, pmid, website, paperDesc, dependencies, description, versions, params, returnValues, user);
+			Moduledocu m = new Moduledocu(name, categories, updated, authors, pmid, website, paperDesc, dependencies, comments, description, versions, params, returnValues, user);
 			return m;
 		}
 		catch(Exception e) {

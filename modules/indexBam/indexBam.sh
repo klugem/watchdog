@@ -14,7 +14,7 @@ fi
 
 # define parameters
 DEFINE_string 'bam' '' 'path to the bam file' 'b'
-DEFINE_boolean 'link' '0' '[optional] creates a linked called NAME.bam.bai because some tool expect the index under that name. Use --nolink to disable it.' ''
+DEFINE_boolean 'link' '0' '[optional] creates a link called NAME.bam.bai because some tool expect the index under that name; use --nolink to disable it' ''
 DEFINE_string 'returnFilePath' '' 'path to the return variables file' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 

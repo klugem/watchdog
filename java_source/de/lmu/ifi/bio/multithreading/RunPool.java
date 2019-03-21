@@ -4,6 +4,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import com.jcraft.jsch.Logger;
+
 import de.lmu.ifi.bio.utils.interfaces.Logable;
 
 /**
@@ -52,15 +54,29 @@ public class RunPool implements Logable {
 			LOGGER.printStackTrace();
 			System.exit(1);
 		}
-		else if(isConstantlyRunning) 
+		else if(isConstantlyRunning) {
 			this.constantRunningTasks++;
+			LOGGER.debug("Constantly running task added: " + r.getName());
+		}
 		
 		// add the tasks
 		Future<?> f = this.POOL.submit(r);
-		MonitorRunableExecutionTime.addFutureToMonitor(f, r);
+		MonitorRunableExecutionTime.addFutureToMonitor(f, r, isConstantlyRunning);
 	
 		LOGGER.debug("Runnable '" + r.getName() + "' was added to thread pool.");
 		return f;
+	}
+	
+	/**
+	 * returns the number of jobs in the short queue
+	 * @return
+	 */
+	public int getNumberOfShortRunningJobs() {
+		return Math.min(0, MonitorRunableExecutionTime.getNumberOfNotFinishedTasks() - this.constantRunningTasks);
+	}
+	
+	public boolean canAllConstantlyRunningTasksBeRestarted() {
+		return MonitorRunableExecutionTime.canAllConstantlyRunningTasksBeRestarted();
 	}
 	
 	/**

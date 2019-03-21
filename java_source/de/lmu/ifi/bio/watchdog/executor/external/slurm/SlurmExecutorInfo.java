@@ -1,5 +1,7 @@
 package de.lmu.ifi.bio.watchdog.executor.external.slurm;
 
+import java.util.ArrayList;
+
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.external.ExternalExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
@@ -20,17 +22,18 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 	private final static String GIGABYTE = "G";
 	private final static int G2M = 1024;
 	
-	private final static String SPACER = " ";
-	private final static String T = "--cpus-per-task";
+	private final static String T = "--time";
 	private final static String C = "--cpus-per-task";
 	private final static String M = "--mem-per-cpu";
 	private final static String Q = "--clusters";
+	private final static String P = "--partition";
 	
 	private final String CUSTOM_PARAMS;
 	private final boolean IGNORE_DEFAULT_PARAMS;
 	private final int CPU;
 	private final String MEMORY;
 	private final String CLUSTERS;
+	private final String PARTITION;
 	private final String TIMELIMIT;
 	
 
@@ -53,12 +56,13 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 	 * @param customParams
 	 * @param disableDefault
 	 */
-	public SlurmExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, int cpu, String memory, String clusters, String timelimit, String workingDir, String customParams, boolean disableDefault) {
+	public SlurmExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, int cpu, String memory, String clusters, String partition, String timelimit, String workingDir, String customParams, boolean disableDefault) {
 		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir);
 		this.CPU = Math.max(1, cpu);
 		this.MEMORY = memory;
 		this.CLUSTERS = clusters;
 		this.TIMELIMIT = timelimit;
+		this.PARTITION = partition;
 		this.CUSTOM_PARAMS = customParams;
 		this.IGNORE_DEFAULT_PARAMS = disableDefault;
 	}
@@ -88,6 +92,14 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 	}
 	
 	/**
+	 * partition on which the task should be executed
+	 * @return
+	 */
+	public String getPartition() {
+		return this.PARTITION;
+	}
+	
+	/**
 	 * custom parameters that can be added by the user to be passed to the SGE
 	 * @return
 	 */
@@ -111,6 +123,10 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 		return this.getCluster() != null && this.getCluster().length() > 0;
 	}
 	
+	public boolean hasPartitionSet() {
+		return this.getPartition() != null && this.getPartition().length() > 0;
+	}
+	
 	public boolean hasCustomParametersSet() {
 		return this.getCustomParameters() != null && this.getCustomParameters().length() > 0;
 	}
@@ -119,37 +135,37 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 	 * gets the command which is set on the grid
 	 * @return
 	 */
-	public String getCommandsForGrid() {
-		StringBuffer b = new StringBuffer();
+	public ArrayList<String> getCommandsForGrid() {
+		ArrayList<String> b = new ArrayList<>();
 
 		// ignores all parameters that can be set by default (cluster, memory, cpu, time)
 		if(!this.isDefaultParametersIgnored()) {
 			// add cluster
 			if(this.hasClusterSet()) {
-				b.append(Q);
-				b.append(this.getCluster());
-				b.append(SPACER);
-			}		
+				b.add(Q);
+				b.add(this.getCluster());
+			}	
+			if(this.hasPartitionSet()) {
+				b.add(P);
+				b.add(this.getPartition());
+			}	
 			// add memory
 			if(this.hasMemorySet()) {
-				b.append(M);
-				b.append(this.getMemory());
-				b.append(SPACER);
+				b.add(M);
+				b.add(this.getMemory());
 			}
 			// add slot
-			b.append(C);
-			b.append(this.getCPUs());
+			b.add(C);
+			b.add(Integer.toString(this.getCPUs()));
+			
 			// add timelimit
-			b.append(T);
-			b.append(this.TIMELIMIT);
+			b.add(T);
+			b.add(this.TIMELIMIT);
 		}
 		if(this.hasCustomParametersSet()) {
-			if(b.length() > 0)
-				b.append(SPACER);
-			b.append(this.getCustomParameters());
+			b.add(this.getCustomParameters());
 		}
-		
-		return b.toString();
+		return b;
 	}
 
 	/**
@@ -192,6 +208,8 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 				x.addQuotedAttribute(XMLParser.MEMORY, this.getMemory());
 			if(this.hasClusterSet())
 				x.addQuotedAttribute(XMLParser.CLUSTER, this.getCluster());
+			if(this.hasPartitionSet())
+				x.addQuotedAttribute(XMLParser.PARTITION, this.getPartition());
 			if(this.hasTimelimitSet()) {
 				x.addQuotedAttribute(XMLParser.TIMELIMIT, this.getTimelimit());
 			}
@@ -226,6 +244,11 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 
 	@Override
 	public Object[] getDataToLoadOnGUI() {
-		return new Object[] { this.getCluster(), this.getCPUs(), this.getMemory(), this.getTimelimit(), this.getCustomParameters(), this.isDefaultParametersIgnored() };		
+		return new Object[] { this.getCluster(), this.getPartition(), this.getCPUs(), this.getMemory(), this.getTimelimit(), this.getCustomParameters(), this.isDefaultParametersIgnored() };		
+	}
+
+	@Override
+	public boolean isWatchdogRestartSupported() {
+		return true;
 	}
 }

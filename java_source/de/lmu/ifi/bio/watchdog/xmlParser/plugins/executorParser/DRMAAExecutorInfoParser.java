@@ -52,17 +52,9 @@ public class DRMAAExecutorInfoParser extends XMLExecutorInfoParser<DRMAAExecutor
 		DefaultExecutorInfo di = this.parseMandatoryParameter(el, watchdogBaseDir, additionalData);
 		
 		// get additional grid attributes
-		int slots = Integer.parseInt(XMLParser.getAttribute(el, XMLParser.SLOTS));
-		String memory = XMLParser.getAttribute(el, XMLParser.MEMORY);
-		String queue = XMLParser.getAttribute(el, XMLParser.QUEUE);
-		String customParams = XMLParser.getAttribute(el, XMLParser.CUSTOM_PARAMETERS); 
-		boolean disableDefault = Boolean.parseBoolean(XMLParser.getAttribute(el, XMLParser.DISABLE_DEFAULT));
-		
-		// bound slots to 1
-		if(slots <= 0) 
-			slots = 1; 
-	
-		DRMAAExecutorInfo info = new DRMAAExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), slots, memory, queue, di.getWorkingDir(), customParams, disableDefault);
+		String customParams = XMLParser.getAttribute(el, XMLParser.CUSTOM_PARAMETERS); 		
+
+		DRMAAExecutorInfo info = new DRMAAExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getWorkingDir(), customParams);
 		if(di.getColor() != null)
 			info.setColor(di.getColor());
 		return info;

@@ -57,6 +57,12 @@ public class XMLBasedWatchdogParameters {
 	@Parameter(names={"-resume"}, description="resumes workflow execution whereby tasks that were executed successfully are ignored; expects a watchdog status log file from a previous watchdog run; can be used in combination with -start, -stop, -include and -exclude", required=false)
 	protected String resume;
 	
+	@Parameter(names={"-stopWheneverPossible"}, description="stops the execution of Watchdog whenever possible (running tasks on an external executor will not be terminated on stop); status of running tasks is checked when Watchdog is restarted with the -resume option;", required=false)
+	protected boolean stopWheneverPossible = false;
+	
+	@Parameter(names={"-restartInfo"}, description="path to a file that is used to restore the session info of a Watchdog run when Wathdog runs in start&stop mode ", required=false)
+	protected String restartInfo = null;
+	
 	@Parameter(names={"-useEnvBase"}, description="ignores the watchdogBase attribute of the XML workflow and overrides it with the content of the "+ XMLBasedWatchdogRunner.ENV_WATCHDOG_HOME_NAME +" environment variable", required=false)
 	protected boolean useEnvBase = false;
 	

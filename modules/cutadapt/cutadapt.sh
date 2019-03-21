@@ -13,19 +13,19 @@ if [ $CODE -ne 0 ]; then
 fi
 
 # define parameters
-DEFINE_string 'fastq' '' "path to one fastq file" 'f'
-DEFINE_string 'outfile' '' 'path to an outputfile' 'o'
+DEFINE_string 'fastq' '' "path to one FASTQ file" 'f'
+DEFINE_string 'outfile' '' 'path to an output file' 'o'
 DEFINE_string 'infofile' '' '[optional] path to a file which will contain trimming statistics' 'i'
 DEFINE_string 'prim3' '' "[optional] adapter that was ligated at the 3' end; '$' at the end will cause that the adapter is anchored at the end of the read" ''
 DEFINE_string 'prim5' '' "[optional] adapter that was ligated at the 5' end; '^' at the start will cause that the adapter is anchored at the beginning of the read" ''
-DEFINE_string 'adapter' '' "[optional] adapter might be addated at the 3' and 5' end" ''
+DEFINE_string 'adapter' '' "[optional] adapter that can be located at the 3' and 5' end" ''
 DEFINE_float 'errorRate' '0.05' '[optional] maximum allowed error rate' 'e'
 DEFINE_integer 'repeat' '1' '[optional] try to remove adapters at most COUNT times' 'r'
 DEFINE_integer 'minOverlap' '6' '[optional] minimum overlap length' ''
 DEFINE_integer 'minLength' '40' '[optional] minimum read length after trimming' ''
 DEFINE_integer 'maxLength' '-1' '[optional] maximum read length after trimming' '' 
 DEFINE_integer 'cutFixedLength' '0' '[optional] trimmes a fixed length from the beginning (positive numbers) or the end of the reads (negative numbers)' 'c'
-DEFINE_integer 'shortenReads' '0' '[optional] ' 'shorten reads to a maximal length after trimming; positive values keep the beginning of reads; negative ones the ends (starting from cutadapt version 1.17)'
+DEFINE_integer 'shortenReads' '0' '[optional] shorten reads to a maximal length after trimming; positive values keep the beginning of reads; negative ones the ends (starting from cutadapt version 1.17)'
 DEFINE_float 'qualityCutoff' '0' '[optional] trimmes reads at the ends using a sliding window approach' ''
 DEFINE_integer 'qualityBase' '33' '[optional] base quality value' ''
 DEFINE_boolean 'noIndels' '1' '[optional] does not allow indels between read and adapter' ''

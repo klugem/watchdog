@@ -6,10 +6,6 @@
 		<x:simpleContent>
 			<x:extension base="executorAbstractType">
 				<x:attribute name="type" type="x:string" fixed="cluster" />
-				<x:attribute ref="slots" default="1" />
-				<x:attribute ref="memory" default="3000M" />
-				<x:attribute name="queue" type="x:string" />
-				<x:attribute name="disableDefault" type="x:boolean" />
 				<x:attribute name="customParameters" type="x:string" />
 			</x:extension>
 		</x:simpleContent>

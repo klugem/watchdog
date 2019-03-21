@@ -2,6 +2,7 @@ package de.lmu.ifi.bio.multithreading;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,6 +20,7 @@ public class MonitorRunableExecutionTime extends StopableLoopRunnable {
 	private static MonitorRunableExecutionTime monitor = new MonitorRunableExecutionTime();
 	
 	private final Map<MonitorRunnable, Future<?>> FUTURES = Collections.synchronizedMap(new HashMap<MonitorRunnable, Future<?>>());
+	private final HashSet<MonitorRunnable> IS_CONSTANTLY_RUNNING = new HashSet<>(); // sync is done over FUTURE
 	
 	/**
 	 * hide constructor as it is a singleton class
@@ -40,17 +42,22 @@ public class MonitorRunableExecutionTime extends StopableLoopRunnable {
 			if(f.isCancelled()) {
 				print(r, true);
 				it.remove();
+				this.IS_CONSTANTLY_RUNNING.remove(r);
 			}
 			else if(f.isDone()) {
 				print(r, false);
 				it.remove();
+				this.IS_CONSTANTLY_RUNNING.remove(r);
 			}
 		}
 		// default wait time in any case
 		return 1;
 	}
 	
-
+	private int getNumberOfNotFinishedOrWaitingTasks() {
+		return this.FUTURES.size();
+	}
+	
 	private void shutdownTasks() {
 		Entry<MonitorRunnable, Future<?>> e = null;
 		MonitorRunnable r = null;
@@ -113,13 +120,16 @@ public class MonitorRunableExecutionTime extends StopableLoopRunnable {
 	 * @param f
 	 * @param r
 	 */
-	public static void addFutureToMonitor(Future<?> f, MonitorRunnable r) {
+	public static void addFutureToMonitor(Future<?> f, MonitorRunnable r, boolean isConstantlyRunning) {
 		MonitorRunableExecutionTime.monitor.FUTURES.put(r, f);
+		if(isConstantlyRunning)
+			MonitorRunableExecutionTime.monitor.IS_CONSTANTLY_RUNNING.add(r);
 	}
 
 	@Override
 	public void afterLoop() {
 		MonitorRunableExecutionTime.monitor.FUTURES.clear();
+		MonitorRunableExecutionTime.monitor.IS_CONSTANTLY_RUNNING.clear();
 		MonitorRunableExecutionTime.monitor = null;
 		MonitorRunableExecutionTime.monitor = new MonitorRunableExecutionTime();
 	}
@@ -130,4 +140,25 @@ public class MonitorRunableExecutionTime extends StopableLoopRunnable {
 
 	@Override
 	public void beforeLoop() {}
+
+	public static int getNumberOfNotFinishedTasks() {
+		return MonitorRunableExecutionTime.monitor.getNumberOfNotFinishedOrWaitingTasks();
+	}
+	
+	/**
+	 * test, if alll constantly running tasks can be restarted
+	 * @return
+	 */
+	public static boolean canAllConstantlyRunningTasksBeRestarted() {
+		for(MonitorRunnable r : MonitorRunableExecutionTime.monitor.IS_CONSTANTLY_RUNNING) {
+			if(!r.canBeStoppedForRestart())
+				return false;
+		}
+		return true;
+	}
+
+	@Override
+	public boolean canBeStoppedForRestart() {
+		return true;
+	}
 }

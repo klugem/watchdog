@@ -23,7 +23,7 @@ public class Environment implements XMLDataStore {
 	private static final String PATTERN_VALUE = "{$VALUE}";
 	private static final String REPLACE_QUOTE = "&quot;";
 	private static final String DEFAULT_COMMAND = "export " + PATTERN_NAME + "=" + REPLACE_QUOTE + PATTERN_VALUE + REPLACE_QUOTE;
-	private static final String DEFAULT_SHEBANG = "#!/bin/bash"; 
+	public static final String DEFAULT_SHEBANG = "#!/bin/bash"; 
 	private static final String DEFAULT_QUERY_FORMAT = "$" + PATTERN_NAME;
 	private static final Logger LOGGER = new Logger();
 	private static final Map<String, String> LOCAL_ENV = System.getenv();

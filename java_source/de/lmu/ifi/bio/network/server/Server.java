@@ -167,5 +167,9 @@ public class Server extends StopableLoopRunnable {
 	public void beforeLoop() {
 
 	}
-
+	
+	@Override
+	public boolean canBeStoppedForRestart() {
+		return true;
+	}
 }

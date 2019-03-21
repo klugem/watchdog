@@ -4,8 +4,8 @@ source $SCRIPT_FOLDER/../../core_lib/includeBasics.sh $@
 trap 'checkExitCode $LINENO' ERR # check, the exit code and paste the last command which failed
 
 # define parameters
-DEFINE_string 'bam' '' "path to bam file; multiple values can be separated by ','" 'b'
-DEFINE_string 'outdir' '' 'path to the output folder; files will be in a sub-folder with the BASE of the bam file' 'o'
+DEFINE_string 'bam' '' "path to one or more BAM file(s); multiple values can be separated by ','" 'b'
+DEFINE_string 'outdir' '' 'path to the output folder; individual files will be stored in a sub-folder (using the basename of the BAM file as folder name)' 'o'
 DEFINE_integer 'readLength' '' 'maximal length of the reads' 'r'
 DEFINE_integer 'sampleDepth' '100000' '[optional] number of reads which are used for sampling' 's'
 DEFINE_string 'annotation' '' '[optional] gene annotation in BED format' 'a'
@@ -31,7 +31,7 @@ DEFINE_boolean 'statistics' '0' '[optional] calculate reads mapping statistics' 
 DEFINE_boolean 'geneBodyCoverage' '1' '[optional] check if reads coverage is uniform and if there is any 5’ or 3’ bias' ''
 DEFINE_boolean 'paired' '1' '[optional] paired end library sequencing' ''
 DEFINE_boolean 'stranded' '1' '[optional] stranded library sequencing' ''
-DEFINE_boolean 'disableAllDefault' '1' '[optional] disable all which are not explicitely activated' ''
+DEFINE_boolean 'disableAllDefault' '1' '[optional] disable all which are not explicitly activated' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 
 # this parameters are disabled when not explicitely activated by the 'disableAllDefault' flag

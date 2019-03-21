@@ -15,13 +15,14 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 
 /**
- * Local executor has no additional settings --> nothing to do here
+ * 
  * @author kluge
  *
  */
 public class SlurmGUIExecutorViewController extends GUIExecutorViewController {
 
 	@FXML private TextField cluster;
+	@FXML private TextField partition;
 	@FXML private TextField cpu;
 	@FXML private TextField memory;
 	@FXML private TextField timelimit;
@@ -42,6 +43,7 @@ public class SlurmGUIExecutorViewController extends GUIExecutorViewController {
 		
 		// add validation commands
 		executorPropertyViewController.addValidateToControl(this.cluster, "cluster", f-> !executorPropertyViewController.isEmpty((TextField) f, "An name for the cluster queue must be given."), condition);
+		executorPropertyViewController.addValidateToControl(this.partition, "partition", f-> !executorPropertyViewController.isEmpty((TextField) f, "An name for the partition must be given."), condition);
 		executorPropertyViewController.addValidateToControl(this.cpu, "cpu", f -> executorPropertyViewController.isInteger((TextField) f, "CPU must be an integer."), condition);
 		executorPropertyViewController.addValidateToControl(this.memory, "memory", f -> !executorPropertyViewController.isEmpty((TextField) f, "A valid memory limit in form [0-9]+[MG]{0,1} must be entered."), condition);
 		executorPropertyViewController.addValidateToControl(this.timelimit, "timelimit", f -> !executorPropertyViewController.isEmpty((TextField) f, "A valid time limit in form [0-9]+-[0-9]+:[0-9]+ must be entered."), condition);
@@ -53,6 +55,7 @@ public class SlurmGUIExecutorViewController extends GUIExecutorViewController {
 		
 		// add event handler for GUI validation
 		this.cluster.textProperty().addListener(event -> executorPropertyViewController.validate());
+		this.partition.textProperty().addListener(event -> executorPropertyViewController.validate());
 		this.cpu.textProperty().addListener(event -> executorPropertyViewController.validate());
 		this.memory.textProperty().addListener(event -> executorPropertyViewController.validate());
 		this.timelimit.textProperty().addListener(event -> executorPropertyViewController.validate());
@@ -73,16 +76,17 @@ public class SlurmGUIExecutorViewController extends GUIExecutorViewController {
 		String watchdogBaseDir = (String) data[6];
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
-		return new SlurmExecutorInfo(XMLParser.CLUSTER, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, Integer.parseInt(this.cpu.getText()), this.memory.getText(), this.cluster.getText(), this.timelimit.getText(), workingDir, this.customParams.getText(), this.disableDefaultParams.isSelected());
+		return new SlurmExecutorInfo(XMLParser.CLUSTER, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, Integer.parseInt(this.cpu.getText()), this.memory.getText(), this.cluster.getText(), this.partition.getText(), this.timelimit.getText(), workingDir, this.customParams.getText(), this.disableDefaultParams.isSelected());
 	}
 
 	@Override
 	public void loadData(Object[] data) {
 		this.cluster.setText((String) data[0]);
-		this.cpu.setText(Integer.toString((Integer) data[1]));
-		this.memory.setText((String) data[2]);
-		this.timelimit.setText((String) data[3]);
-		this.customParams.setText((String) data[4]);
-		this.disableDefaultParams.setSelected((boolean) data[5]); 
+		this.partition.setText((String) data[1]);
+		this.cpu.setText(Integer.toString((Integer) data[2]));
+		this.memory.setText((String) data[3]);
+		this.timelimit.setText((String) data[4]);
+		this.customParams.setText((String) data[5]);
+		this.disableDefaultParams.setSelected((boolean) data[6]); 
 	}
 }

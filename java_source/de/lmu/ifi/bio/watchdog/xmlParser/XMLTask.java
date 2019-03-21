@@ -100,6 +100,7 @@ public class XMLTask {
 	private String prev_global_slave_id = null;
 	private final HashMap<String, String> SLAVE_IDS = new HashMap<>();
 	private final HashMap<String, ResumeInfo> RESUME_INFO = new HashMap<>();
+	private final HashMap<String, Task> RESTART_INFO = new HashMap<>();
 	private boolean forceSingleSlaveMode = false;
 	private boolean isIgnored = false;
 	private GUIInfo guiInfo = null;
@@ -1563,5 +1564,21 @@ public class XMLTask {
 	 */
 	public String getReturnParamName() {
 		return this.returnParamName;
+	}
+	
+	/**
+	 * adds the info if Watchdog is running in start&stop mode
+	 * @param t
+	 */
+	public void addRestartInfo(Task t) {
+		this.RESTART_INFO.put(t.getGroupFileName(), t);
+	}
+	
+	public Task getRestartInfo(String groupFileName) {
+		return this.RESTART_INFO.get(groupFileName);
+	}
+
+	public void removeRestartInfo(String inputName) {
+		this.RESTART_INFO.remove(inputName);
 	}
 }

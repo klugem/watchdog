@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 
 import org.apache.commons.lang3.StringUtils;
 
+import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
@@ -183,7 +184,11 @@ public abstract class Executor<A extends ExecutorInfo> {
 		File f = Functions.generateRandomTmpExecutionFile(EXECUTE_PREFIX, false);
 		try {
 			FileWriter w = new FileWriter(f);
-			w.write(this.TASK.getShebang());
+			String shebang = this.TASK.getShebang();
+			if(this.TASK.getShebang() == null)
+				shebang = Environment.DEFAULT_SHEBANG;
+			
+			w.write(shebang);
 			w.write(System.lineSeparator());
 			w.write(command);
 			w.flush();
@@ -210,12 +215,12 @@ public abstract class Executor<A extends ExecutorInfo> {
 	 * either returns the command itself, if it is only one command are sum up all command in a script
 	 * @return
 	 */
-	public String[] getFinalCommand(boolean removeQuoting) {
+	public String[] getFinalCommand(boolean removeQuoting, boolean addBashWrappingScript) {
 		ArrayList<String> c = new ArrayList<>();
 		c.addAll(this.PRE_COMMAND);
 		
 		// no script needed
-		if(c.size() == 0) {
+		if(c.size() == 0 && !addBashWrappingScript) {
 			c.add(this.TASK.getBinaryCall());
 			
 			// remove quoting, if needed
@@ -240,7 +245,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 	 * @return
 	 */
 	protected String getFinalJoinedCommand() {
-		return StringUtils.join(this.getFinalCommand(false), " ");
+		return StringUtils.join(this.getFinalCommand(false, false), " ");
 	}
 
 	/**

@@ -25,7 +25,7 @@ import de.lmu.ifi.watchdog.docu.Paramdocu;
  */
 public class PythonArgparseParameterExtractor implements Extractor<Paramdocu> {
 	
-	public static final String EQUAL = "=";
+	public static final String EQUAL = "\\s*=\\s*";
 	public static final String SPACE_START = "^\\s+";
 	public static final String SPACE_END = "\\s+$";
 	public static final String QUOTE_REMOVE = "^([\"'])(.*)\\1$";

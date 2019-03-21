@@ -9,7 +9,7 @@
 			<x:element name="readLength" type="paramIntegerRange_readLength_bamstats" minOccurs="1" maxOccurs="1" />
 			<x:element name="sampleDepth" type="paramIntegerRange_sampleDepth_bamstats" minOccurs="0" maxOccurs="1" />
 			<x:element name="annotation" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1" />
-			<x:element name="houseKeepingAnnotation" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1" />	
+			<x:element name="geneBodyAnnotation" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1" />	
 			<x:element name="idxstats" type="paramBoolean" minOccurs="0" maxOccurs="1" />
 			<x:element name="flagstat" type="paramBoolean" minOccurs="0" maxOccurs="1" />
 			<x:element name="count" type="paramBoolean" minOccurs="0" maxOccurs="1" />

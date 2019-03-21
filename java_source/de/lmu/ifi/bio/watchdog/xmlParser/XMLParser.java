@@ -121,6 +121,7 @@ public class XMLParser {
 	public static final String LOCAL = "local";
 	public static final String REMOTE = "remote";
 	public static final String CLUSTER = "cluster";
+	public static final String PARTITION = "partition";
 	public static final String CPU = "cpu";
 	public static final String TIMELIMIT = "timelimit";
 	public static final String PROCESS_BLOCK = "processBlock";
@@ -454,6 +455,7 @@ public class XMLParser {
 			
 			// document is valid --> parse it
 			docEle = XMLParser.getRootElement(dbf, tmpFile.toFile());
+			includedSchemaPath.delete();
 			tmpFile.toFile().delete();
 		}
 		else

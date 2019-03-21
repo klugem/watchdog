@@ -17,14 +17,18 @@ import de.lmu.ifi.bio.watchdog.executor.external.ExternalScheduledExecutor;
 import de.lmu.ifi.bio.watchdog.executor.external.ExternalWorkloadManagerConnector;
 import de.lmu.ifi.bio.watchdog.helper.AbortedJobInfo;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.Task;
+import de.lmu.ifi.bio.watchdog.xmlParser.plugins.XMLParserPlugin;
 
 public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnector<DRMAAExecutor> {
 
 	public static final String WATCHGOD_CORES = "WATCHDOG_CORES";
 	public static final String WATCHGOD_MEMORY = "WATCHDOG_MEMORY";
 	private static final String EXECUTOR_NAME = "cluster";
+	private static final String SESSION = "session="; // required for contact string (at least for SGE DRMAA)
 	private Session session;
+	private String contactString = null;
 	private boolean isInitComplete = false;
 	
 	public DRMAAWorkloadManagerConnector(Logger l) {
@@ -73,10 +77,16 @@ public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnec
 
 	@Override
 	public void init() {
+		// check, if the a different "contact string" should be set
+		if(XMLParserPlugin.hasAdditionalPluginInfo(XMLBasedWatchdogRunner.DRMAA_SESSION_NAME)) {
+			this.setContactString(XMLParserPlugin.getAdditionalPluginInfo(XMLBasedWatchdogRunner.DRMAA_SESSION_NAME).toString());
+		}
 		// init the DRMAA grid with the default system
         try {
         	this.session = SessionFactory.getFactory().getSession();
-			this.session.init(null);
+        	this.session.init(this.contactString);
+        	this.contactString = this.session.getContact();
+        	this.LOGGER.info("Used DRMAA version: " + this.session.getDrmaaImplementation() + "; contact string: " + this.contactString);
 			this.isInitComplete  = true;
 		} catch (DrmaaException e) {
 			e.printStackTrace();
@@ -123,7 +133,7 @@ public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnec
 		DRMAAExecutorInfo execinfo = ex.getExecutorInfo();
 		JobTemplate jt = this.session.createJobTemplate();
 		// set the command to call
-		jt.setRemoteCommand(ex.getFinalCommand(false)[0]); 
+		jt.setRemoteCommand(ex.getFinalCommand(false, false)[0]); 
 		
 		// set arguments, if not a summary script is called
 		if(ex.isSingleCommand())
@@ -141,10 +151,6 @@ public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnec
 		
 		// set the environment variables
 		HashMap<String, String> env = ex.getEnvironmentVariables();
-
-		// set infos about the number of used cores and the total memory
-		env.put(WATCHGOD_CORES, Integer.toString(execinfo.getSlots()));
-		env.put(WATCHGOD_MEMORY, Integer.toString(execinfo.getTotalMemorsInMB()));
 		jt.setJobEnvironment(env);
 
 		// set stdout
@@ -185,5 +191,32 @@ public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnec
 	@Override
 	public boolean isInitComplete() {
 		return this.isInitComplete;
+	}
+	
+	/**
+	 * returns the contact string that was returned by the DRMAA system after init() of the connection
+	 * @return
+	 */
+	public String getContactString() {
+		if(this.isInitComplete())
+			return this.session.getContact();
+		else
+			return null;
+	}
+	
+	/**
+	 * sets the contact string that is used to init the connection
+	 * @param contactString
+	 */
+	public void setContactString(String contactString) {
+		this.contactString = SESSION + contactString;
+	}
+
+	@Override
+	protected void updateJobStatusCache() {}
+
+	@Override
+	public int getMaxWaitCyclesUntilJobsIsVisible() {
+		return 0;
 	}
 }

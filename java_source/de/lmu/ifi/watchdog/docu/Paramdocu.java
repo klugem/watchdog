@@ -13,8 +13,8 @@ public class Paramdocu extends Docu {
 	
 	private String defaultV = null;
 	private String restrictions = null;
-	private int minOccurs = 1;
-	private int maxOccurs = 1;
+	private Integer minOccurs = 1;
+	private Integer maxOccurs = 1;
 	
 	/**
 	 * Constructor
@@ -46,10 +46,10 @@ public class Paramdocu extends Docu {
 	public void setDefault(String defaultValue) {
 		this.defaultV = defaultValue;
 	}
-	public int getMinOccurs() {
+	public Integer getMinOccurs() {
 		return this.minOccurs;
 	}
-	public int getMaxOccurs() {
+	public Integer getMaxOccurs() {
 		return this.maxOccurs;
 	}	
 	public boolean isOptional() {
@@ -57,7 +57,7 @@ public class Paramdocu extends Docu {
 	}
 	public void setOccurs(Integer min, Integer max) {
 		if(min != null) this.minOccurs = min;
-		if(max != null) this.maxOccurs = max;
+		this.maxOccurs = max;
 	}
 	
 	@Override
@@ -67,7 +67,10 @@ public class Paramdocu extends Docu {
 		if(this.hasRestrictions()) b.addQuotedAttribute(DocuXMLParser.RESTRICTIONS, this.getRestriction());
 		if(this.hasDefault()) b.addQuotedAttribute(DocuXMLParser.DEFAULT, this.getDefault());
 		b.addQuotedAttribute(DocuXMLParser.MIN_OCCURS, this.getMinOccurs());
-		b.addQuotedAttribute(DocuXMLParser.MAX_OCCURS, this.getMaxOccurs());
+		// unbounded if 0
+		if(this.getMaxOccurs() != null)
+			b.addQuotedAttribute(DocuXMLParser.MAX_OCCURS, this.getMaxOccurs());
+		
 		b.startTag(DocuXMLParser.DESCRIPTION, true);
 		b.endOpeningTag();
 		b.addContent(this.getDescription(), false);
@@ -84,11 +87,15 @@ public class Paramdocu extends Docu {
 	}
 
 	public String getOccurenceInfo() {
-		if(this.getMinOccurs() == this.getMaxOccurs())
+		if(this.getMaxOccurs() != null && this.getMinOccurs() == this.getMaxOccurs())
 			return Integer.toString(this.getMinOccurs());
-		if(this.isOptional())
+		if(this.isOptional() && (this.getMaxOccurs() != null && this.getMaxOccurs() == 1))
 			return "*";
-		else
-			return this.getMinOccurs() + SEP + this.getMaxOccurs();
+		else {
+			if(this.getMaxOccurs() != null)
+				return this.getMinOccurs() + SEP + this.getMaxOccurs();
+			else
+				return this.getMinOccurs() + SEP;
+		}
 	}
 }

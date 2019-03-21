@@ -28,6 +28,7 @@ public class Moduledocu {
 	private final String DATE;
 	private final String PAPER_DESC;
 	private final ArrayList<VersionedInfo<String>> DEPENDENCIES = new ArrayList<>();
+	private final ArrayList<VersionedInfo<String>> COMMENTS = new ArrayList<>();
 	private final ArrayList<VersionedInfo<String>> DESC = new ArrayList<>();
 	private final ArrayList<Paramdocu> PARAMS = new ArrayList<>();
 	private final ArrayList<Returndocu> RETURN = new ArrayList<>();
@@ -46,13 +47,14 @@ public class Moduledocu {
 	 * @param description description of the modules
 	 * @param params parameter of the module
 	 */
-	public Moduledocu(String name, ArrayList<String> categories, String date, ArrayList<String> authors, ArrayList<String> pmid, ArrayList<String> website, String paperDesc, ArrayList<VersionedInfo<String>> dependencies, ArrayList<VersionedInfo<String>> description, HashSet<Integer> versions, ArrayList<Paramdocu> params, ArrayList<Returndocu> returnV, ArrayList<String> maintainer) {
+	public Moduledocu(String name, ArrayList<String> categories, String date, ArrayList<String> authors, ArrayList<String> pmid, ArrayList<String> website, String paperDesc, ArrayList<VersionedInfo<String>> dependencies, ArrayList<VersionedInfo<String>> comments, ArrayList<VersionedInfo<String>> description, HashSet<Integer> versions, ArrayList<Paramdocu> params, ArrayList<Returndocu> returnV, ArrayList<String> maintainer) {
 		this.NAME = name;
 		this.CATEGORIES.addAll(categories);
 		this.AUTHORS.addAll(authors);
 		this.PMID.addAll(pmid);
 		this.PAPER_DESC = paperDesc;
 		this.DEPENDENCIES.addAll(dependencies);
+		this.COMMENTS.addAll(comments);
 		this.DESC.addAll(description);
 		this.MAINTAINER.addAll(maintainer);
 		this.VERSIONS.addAll(versions);
@@ -75,13 +77,14 @@ public class Moduledocu {
 	 * @param description description of the modules
 	 * @param params parameter of the module
 	 */
-	public Moduledocu(String name, ArrayList<String> categories, String date, ArrayList<String> authors, ArrayList<String> pmid, ArrayList<String> website, String paperDesc, ArrayList<VersionedInfo<String>> dependencies, ArrayList<VersionedInfo<String>> description, HashSet<Integer> versions, HashMap<String, ArrayList<Paramdocu>> params, HashMap<String, ArrayList<Returndocu>> returnV, ArrayList<String> maintainer) {
+	public Moduledocu(String name, ArrayList<String> categories, String date, ArrayList<String> authors, ArrayList<String> pmid, ArrayList<String> website, String paperDesc, ArrayList<VersionedInfo<String>> dependencies, ArrayList<VersionedInfo<String>> comments, ArrayList<VersionedInfo<String>> description, HashSet<Integer> versions, HashMap<String, ArrayList<Paramdocu>> params, HashMap<String, ArrayList<Returndocu>> returnV, ArrayList<String> maintainer) {
 		this.NAME = name;
 		this.CATEGORIES.addAll(categories);
 		this.AUTHORS.addAll(authors);
 		this.PMID.addAll(pmid);
 		this.PAPER_DESC = paperDesc;
 		this.DEPENDENCIES.addAll(dependencies);
+		this.COMMENTS.addAll(comments);
 		this.DESC.addAll(description);
 		this.MAINTAINER.addAll(maintainer);
 		this.VERSIONS.addAll(versions);
@@ -117,6 +120,9 @@ public class Moduledocu {
 	}
 	public ArrayList<VersionedInfo<String>> getDependencies() {
 		return this.DEPENDENCIES;
+	}
+	public ArrayList<VersionedInfo<String>> getComments() {
+		return this.COMMENTS;
 	}
 	public String getPaperDescription() {
 		return this.PAPER_DESC;
@@ -171,7 +177,6 @@ public class Moduledocu {
 	}
 
 	
-	 //TODO: add a short description for that module for the methods section in a paper
 	public String toXML(boolean isTemplate) {
 		XMLBuilder b = new XMLBuilder();
 		b.noNewlines(true);
@@ -204,6 +209,10 @@ public class Moduledocu {
 		b.addComment("external dependencies required for that module");
 		for(VersionedInfo<String> vi : this.DEPENDENCIES)
 			b.addTags(DocuXMLParser.DEPENDENCIES, Pair.of(vi.MIN_VER, vi.MAX_VER), vi.VALUE);
+		
+		b.addComment("module specific hints or comments");
+		for(VersionedInfo<String> vi : this.COMMENTS)
+			b.addTags(DocuXMLParser.COMMENTS, Pair.of(vi.MIN_VER, vi.MAX_VER), vi.VALUE);
 		b.endCurrentTag();
 		
 		// maintainer section

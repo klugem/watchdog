@@ -1,10 +1,18 @@
 package de.lmu.ifi.bio.watchdog.runner;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OptionalDataException;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +32,7 @@ import com.beust.jcommander.ParameterException;
 
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.HTTPListenerThread;
+import de.lmu.ifi.bio.watchdog.executor.MonitorThread;
 import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.Mailer;
 import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
@@ -36,6 +45,7 @@ import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask2TaskThread;
+import de.lmu.ifi.bio.watchdog.xmlParser.plugins.XMLParserPlugin;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
@@ -53,8 +63,12 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 	public static final String LOG_SEP = "#########################################################################################";
 	public static int PORT =  WatchdogThread.DEFAULT_HTTP_PORT;
 	public final static int SLEEP = 500; // check every 0.5s if all tasks are finished!
-	private static final String XML_PATTERN = "*.xml";
+	public static final String XML_PATTERN = "*.xml";
 	public static final String ENV_WATCHDOG_HOME_NAME = "WATCHDOG_HOME";
+	public static final String ENV_WATCHDOG_WORKING_DIR = "WATCHDOG_WORKING_DIR";
+	private static final int MIN_START_AND_STOP_CYCLES = 10;
+	public static final String DRMAA_SESSION_NAME = "drmaa_session_name-ExternalScheduledExecutor";
+	public static final int RESTART_EXIT_INDICATOR = 1;
 	
 	@SuppressWarnings({ "unchecked" })
 	public static void main(String[] args) throws SAXException, IOException, ParserConfigurationException, DrmaaException, InterruptedException {
@@ -180,6 +194,17 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				log.error("Can not find XSD watchdog schema '"+ xsdSchema.getAbsolutePath() +"'");
 				System.exit(1);
 			}
+			// prepare variables that can be used by plugins
+			HashMap<String, Object> additionalVariablesUsedByPlugins = new HashMap<>();
+			if(params.stopWheneverPossible && params.restartInfo != null) {
+				// ensure that the file exists
+				File rs = new File(params.restartInfo);
+				if(!rs.exists())
+					rs.createNewFile();
+				additionalVariablesUsedByPlugins.put(XMLBasedWatchdogRunner.DRMAA_SESSION_NAME, rs.getName());
+			}
+			// set variables that can be used by plugins
+			XMLParserPlugin.setAdditionalPluginInfo(additionalVariablesUsedByPlugins);
 			
 			// install signals to handle
 			Signal.handle(SIGINT, new XMLBasedWatchdogRunner());
@@ -200,7 +225,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			String mail = (String) ret[1];
 			HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = (HashMap<String, Pair<HashMap<String, ReturnType>, String>>) ret[3];
 			HashMap<String, Integer> name2id = (HashMap<String, Integer>) ret[4]; 
-			
+
 			log.info("Loaded resume info for "+ resumeInfo.size() +" task ids.");
 			log.info("Parsed " + xmlTasks.size() + " from the provided XML file.");
 
@@ -273,40 +298,120 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				
 				Task.setMail(mailer);
 			}
+			
+			// get resume info if some is there in order to give it to the corresponding monitor threads afterwards
+			MonitorThread.setRestartModeOnAllMonitorThreads(params.stopWheneverPossible);
+			ArrayList<Task> runningInfo = null;
+			if(params.stopWheneverPossible && params.restartInfo != null) {
+				// try to read restart info from file
+				runningInfo = getRunningJobInfo(new File(params.restartInfo));
+			}
 
 			// create a new watchdog object and xml2 thread stuff
 			WatchdogThread watchdog = new WatchdogThread(params.simulate, null, xsdSchema, logFile); 
 			watchdog.setWebserver(control);
-			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, xmlPath, params.mailWaitTime, resumeInfo);
+			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, xmlPath, params.mailWaitTime, resumeInfo, runningInfo);
 			
 			WatchdogThread.addUpdateThreadtoQue(xml2taskThread, true);
 			Executor.setXml2Thread(xml2taskThread);
 			Executor.setWatchdogBase(watchdogBase);
 			watchdog.start();
-
+			
 			// do not end program
-			while(xml2taskThread.hasUnfinishedTasks()) {
+			int waitCounter = 0;
+			int exitCode = 0;
+			while(xml2taskThread.hasUnfinishedTasks() && !xml2taskThread.wasStopped()) {
+				// test if it should be stopped
+				if(waitCounter >= MIN_START_AND_STOP_CYCLES && params.stopWheneverPossible) {
+					if(xml2taskThread.isWatchdogRestartSupportedNow()) {
+						// test, if restart is ok NOW!
+						if(xml2taskThread.hasUnfinishedTasks()) {
+							// do not spawn new tasks until we can shutdown Watchdog
+							xml2taskThread.setPauseScheduling(true);
+							if(watchdog.getNumberOfJobsRunningInRunPool() == 0 && watchdog.canAllConstantlyRunningTasksBeRestarted()) {
+								// get info about running jobs in orde/home/users/kluge/Download/Watchdog_test_reads.xmlr to restore them later on!
+								runningInfo = MonitorThread.getMappingsForRestartableTasksFromAllMonitorThreads();
+								ByteArrayOutputStream baos = saveRunningJobInfo(runningInfo);
+								Files.write(Paths.get(params.restartInfo), baos.toByteArray());
+								exitCode = RESTART_EXIT_INDICATOR;
+								xml2taskThread.requestStop(5, TimeUnit.SECONDS);
+								break;
+							}
+							else {
+								xml2taskThread.setPauseScheduling(false);
+							}
+						}
+					}
+				}
+				else if(params.stopWheneverPossible) {
+					waitCounter++;
+				}
+				// sleep until next check
 				Thread.sleep(SLEEP);
 			}
+			
 			// execute shutdown commands
 			watchdog.shutdown();
 
 			// print or send goodbye message
-			if(Task.isMailSet())
-				Task.getMailer().goodbye(xmlTasks);
-			else {
-				System.out.println(LOG_SEP);
-				System.out.println(Mailer.getGoodbyeTxt(xmlTasks));
-				System.out.println(LOG_SEP);				
+			if(exitCode == 0) {
+				if(Task.isMailSet())
+					Task.getMailer().goodbye(xmlTasks);
+				else {
+					System.out.println(LOG_SEP);
+					System.out.println(Mailer.getGoodbyeTxt(xmlTasks));
+					System.out.println(LOG_SEP);				
+				}	
+				log.info("All Tasks are finished!");
 			}
-			
-			log.info("All Tasks are finished!");
 			
 			// stop the threads
 			control.stop();
 			watchdog.requestStop(5, TimeUnit.SECONDS);
-			System.exit(0);
+			System.exit(exitCode);
 		}
+	}
+	
+	/**
+	 * reads the info of running jobs for start&stop mode from a file
+	 * @param f
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static ArrayList<Task> getRunningJobInfo(File f) {
+		if(!(f.isFile() && f.exists() && f.canRead() && f.length() > 0))
+			return null;
+		
+		ArrayList<Task> o = null;
+		try {
+			byte[] buffer = Files.readAllBytes(Paths.get(f.getAbsolutePath()));
+		
+			InputStream bais = new ByteArrayInputStream(buffer, 0, buffer.length);
+	        ObjectInputStream ois = new ObjectInputStream(bais); 
+	        try { o = (ArrayList<Task>) ois.readObject(); } 
+	        catch(OptionalDataException e) {
+	        	// TODO: add more sophisticated error checking
+	        	e.printStackTrace();
+	        }
+	        ois.close();
+        }
+		catch(Exception e) {
+	        e.printStackTrace();
+	    }
+        return o;
+	}
+	
+	/**
+	 * Object output stream containing the info about running jobs
+	 * --> can be used to restart watchdog
+	 * @return
+	 * @throws IOException
+	 */
+	public static ByteArrayOutputStream saveRunningJobInfo(ArrayList<Task> o) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(baos);
+		oos.writeObject(o);
+		return baos;
 	}
 	
 	/**

@@ -100,7 +100,7 @@ public class LocalExecutor extends ScheduledExecutor<LocalExecutorInfo> {
 				this.TASK.setStatus(TaskStatus.RUNNING);
 				this.LOG.writeLog(this.TASK.getBinaryCall() + " " + StringUtils.join(this.TASK.getArguments()), this.getType(), this.TASK.getID(), EXECUTE);
 
-				ProcessBuilder pb = new ProcessBuilder(this.getFinalCommand(true));
+				ProcessBuilder pb = new ProcessBuilder(this.getFinalCommand(true, false));
 				pb.environment().putAll(this.getEnvironmentVariables());
 				pb.directory(new File(this.getWorkingDir(true)));
 				this.p = pb.start();

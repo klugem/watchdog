@@ -87,6 +87,7 @@ public class Task implements Serializable {
 	protected boolean isBlocked = false;
 	protected boolean terminateTask = false;
 	private boolean isScheduledOnSlave = false;
+	private boolean isTaskAlreadyRunning4StartANDStop = false;
 	protected boolean consumeResources = true;
 	protected final Environment ENV;
 	private final ArrayList<StatusHandler> STATUS_HANDLER = new ArrayList<>(); // do not send it over network --> transient --> not final
@@ -95,6 +96,7 @@ public class Task implements Serializable {
 	private boolean forceSingleSlaveMode = false; 
 	private boolean taskStatusUpdateFinished = false;
 	private boolean MIGHT_PB_CONTAIN_FILE_NAMES;
+	private String externalExecutorID;
 	
 	/**
 	 * Constructor
@@ -1127,6 +1129,9 @@ public class Task implements Serializable {
 	 * @return
 	 */
 	public String getShebang() {
+		if(this.ENV == null)
+			return null;
+		
 		return this.ENV.getShebang();
 	}
 
@@ -1266,5 +1271,28 @@ public class Task implements Serializable {
 	
 	public boolean mightProcessblockContainFilenames() {
 		return this.MIGHT_PB_CONTAIN_FILE_NAMES;
+	}
+	
+	/** 
+	 * for start&stop mode
+	 */
+	public boolean isTaskAlreadyRunning() {
+		return this.isTaskAlreadyRunning4StartANDStop;
+	}
+	/** 
+	 * for start&stop mode
+	 */
+	public void setTaskIsAlreadyRunning(boolean value) {
+		this.isTaskAlreadyRunning4StartANDStop = value;
+	}
+
+	public String getExternalExecutorID() {
+		return this.externalExecutorID;
+	}
+	public void setExternalExecutorID(String externalID) {
+		this.externalExecutorID = externalID;
+	}
+	public boolean hasExternalExecutorID() {
+		return this.getExternalExecutorID() != null;
 	}
 }

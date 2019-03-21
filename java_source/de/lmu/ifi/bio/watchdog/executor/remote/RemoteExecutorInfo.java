@@ -173,4 +173,9 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 	public Object[] getDataToLoadOnGUI() {
 		return new Object[] { this.getOriginalHostList(), this.getUser(), this.getPrivateKey(), this.getPort(), !this.isStrictHostCheckingEnabled() };
 	}
+	
+	@Override
+	public boolean isWatchdogRestartSupported() {
+		return false;
+	}
 }

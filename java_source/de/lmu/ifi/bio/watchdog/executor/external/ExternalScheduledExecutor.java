@@ -135,7 +135,7 @@ public abstract class ExternalScheduledExecutor<A extends ExternalExecutorInfo> 
 		int i = 0;
 		while(retryCount-i > 0) {
 				// hold the job if the maximal number of jobs of that type are currently running
-				if(this.TASK.doesConsumeResources() && (this.TASK.isMaxRunningRestrictionReached() || this.EXEC_INFO.isMaxRunningRestrictionReached())) {
+				if(!task.isTaskAlreadyRunning() && this.TASK.doesConsumeResources() && (this.TASK.isMaxRunningRestrictionReached() || this.EXEC_INFO.isMaxRunningRestrictionReached())) {
 					this.TASK.setIsOnHold(true);
 					this.TASK.setStatus(TaskStatus.WAITING_RESTRICTIONS);
 				}

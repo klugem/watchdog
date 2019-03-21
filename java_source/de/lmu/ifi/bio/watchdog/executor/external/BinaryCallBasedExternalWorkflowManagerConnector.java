@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.commons.lang3.StringUtils;
+
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 
 public abstract class BinaryCallBasedExternalWorkflowManagerConnector<A extends ExternalScheduledExecutor<?>> extends ExternalWorkloadManagerConnector<A> {

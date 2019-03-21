@@ -187,5 +187,10 @@ public class LogViewController implements Initializable {
 		public void beforeLoop() {
 			
 		}
+
+		@Override
+		public boolean canBeStoppedForRestart() {
+			return false;
+		}
 	}
 }

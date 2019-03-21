@@ -18,32 +18,32 @@ fi
 # define parameters
 # params used in any version of the module
 DEFINE_string 'annotation' '' 'feature annotation in GTF or SAF format' 'a'
-DEFINE_string 'input' '' 'index bam file which should be used for counting' 'i'
+DEFINE_string 'input' '' 'indexed BAM file which should be used for counting' 'i'
 DEFINE_string 'output' '' 'path to output file' 'o'
-DEFINE_string 'annotationType' '' '[optional] disables automatic detection of the file type based on the file ending' ''
-DEFINE_string 'featureType' 'exon' '[optional] feature type which is used for counting in GTF mode' 'f'
+DEFINE_string 'annotationType' '' '[optional] disables automatic type detection based on the file ending of the input file; valid values: GTF or SAF;' ''
+DEFINE_string 'featureType' 'exon' '[optional] feature type (e.g. exon or intron) which is used for counting in GTF mode' 'f'
 DEFINE_string 'groupType' 'gene_id' '[optional] attribute which is used for summarization in GTF mode' 'g'
-DEFINE_boolean 'disableGroupSummarization' '1' '[optional] parameter can be used to turn summarization on groupType off' ''
+DEFINE_boolean 'disableGroupSummarization' '1' '[optional] flag that can be used to turn summarization on groupType off' ''
 DEFINE_integer 'stranded' '0' '[optional] indicates strand-specific read counting; possible values:  0 (unstranded), 1 (stranded) and 2 (reversely stranded)' 's'
 DEFINE_integer 'threads' '1' '[optional] number of threads used for counting' 't'
 DEFINE_boolean 'multiMapping' '1' 'when enabled all alignments of multi mapping reads are counted' ''
-DEFINE_boolean 'primary' '0' '[optional] when enabled only alignments which are flaged as primary alignments are counted' 'p'
-DEFINE_boolean 'countFragments' '1' '[optional] paired end parameter: counts fragments instead of reads' 'P'
+DEFINE_boolean 'primary' '0' '[optional] when enabled only alignments which are flagged as primary alignments are counted' 'p'
+DEFINE_boolean 'countFragments' '1' '[optional] counts fragments instead of reads; only for paired end data' 'P'
 DEFINE_string 'returnFilePath' '' 'path to the return variables file' ''
 DEFINE_boolean 'multiCountMetaFeatures' '1' '[optional] allows a read to be counted for more than one meta-feature' 'O'
 DEFINE_boolean 'detailedReadAssignments' '1' '[optional] saves for each read if it was assigned or not; filename: {input_file_name}.featureCounts; format: read name<TAB>status<TAB>feature name<TAB>number of counts for that read' 'd'
-# params only available in module version 1
+# params only available in module version 1 - #VER_TAG:1-1
 if [ ${MODULE_VERSION} -eq 1 ]; then
-	DEFINE_string 'minOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
-# params only available in module version 2
+	DEFINE_string 'minOverlap' '1' '[optional] minimum number of overlapping bases required to assign a read to a feature; also negative values are allowed' 'm'
+# params only available in module version 2 - #VER_TAG:2-2
 elif [ ${MODULE_VERSION} -eq 2 ]; then
-	DEFINE_string 'minReadOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
-	DEFINE_string 'minFracOverlap' '0' '[optional] assign reads to a meta-feature/feature that has the largest number of overlapping bases' ''
+	DEFINE_string 'minReadOverlap' '1' '[optional] minimum number of overlapping bases required to assign a read to a feature; also negative values are allowed' 'm'
+	DEFINE_string 'minFracOverlap' '0' '[optional] assign reads to the meta-feature/feature which has the largest number of overlapping bases' ''
 	DEFINE_integer 'readExtension5' '0' "[optional] extend reads at the 5' end" ''
 	DEFINE_integer 'readExtension3' '0' "[optional] extend reads at the 3' end" ''
 	DEFINE_boolean 'fraction' '1' '[optional] count fractional; only in combination with the assignToAllOverlappingFeatures or/and multiMapping flag(s)' ''
 	DEFINE_boolean 'largestOverlap' '1' '[optional] assign reads to a meta-feature/feature that has the largest number of overlapping bases.' ''
-	DEFINE_boolean 'longReads' '1' '[optional] counts long reads such as Nanopore and PacBio reads' ''
+	DEFINE_boolean 'longReads' '1' '[optional] mode for long read counting (e.g. Nanopore or PacBio)' ''
 fi
 DEFINE_integer 'moduleVersion' '1' '[optional] version of the module that should be used' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''

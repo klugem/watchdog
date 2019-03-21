@@ -28,7 +28,8 @@
 				<x:attribute name="type" type="x:string" fixed="slurm" />
 				<x:attribute ref="cpu" default="1" />
 				<x:attribute ref="memory" default="3000M" />
-				<x:attribute name="cluster" type="x:string" />
+				<x:attribute name="cluster" type="x:string" use="required"/>
+				<x:attribute name="partition" type="x:string" />
 				<x:attribute name="disableDefault" type="x:boolean" />
 				<x:attribute name="customParameters" type="x:string" />
 				<x:attribute ref="timelimit" default="0-12:0"/>

@@ -18,22 +18,10 @@
         </columnConstraints>
         <rowConstraints>
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Label text="name of queue" />
-            <Label text="slots" GridPane.rowIndex="1" />
-            <Label text="memory" GridPane.rowIndex="2" />
-            <Label text="additional custom parameters" GridPane.rowIndex="4" />
-            <Label text="disable default parameters" GridPane.rowIndex="3" />
-            <TextField fx:id="queue" GridPane.columnIndex="1" />
-            <TextField fx:id="slots" text="1" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <TextField fx:id="memory" text="3000M" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <TextField fx:id="customParams" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-            <CheckBox fx:id="disableDefaultParams" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label text="additional custom parameters" GridPane.rowIndex="1" />
+            <TextField fx:id="customParams" GridPane.columnIndex="1" GridPane.rowIndex="1" />
          </children>
          <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

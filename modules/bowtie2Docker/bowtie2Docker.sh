@@ -20,9 +20,9 @@ CONTAINER="${CONTAINER_NAME}:${CONTAINER_TAG}"
 DOCKER_BASE_DIR="/host_data"
 
 # define parameters
-DEFINE_string 'genome' '' 'path to indexed reference genome (minus trailing .X.bt2)' 'g'
+DEFINE_string 'genome' '' 'path to indexed reference genome (withouth trailing .X.bt2 ending)' 'g'
 DEFINE_string 'reads' '' 'path to reads in fastq format; for paired end separated by ,' 'r'
-DEFINE_string 'outfile' '' 'path to output file, which is written in SAM format (will also write outfile.log)' 's'
+DEFINE_string 'outfile' '' 'path to output file, which is written in SAM format; a log file with .log suffix will also be written' 's'
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 
 # parse parameters

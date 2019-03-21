@@ -15,4 +15,9 @@ public class ConvertedMonitorRunnable extends MonitorRunnable {
 		super.run();
 		this.RUNNABLE.run();
 	}
+
+	@Override
+	public boolean canBeStoppedForRestart() {
+		return false;
+	}
 }

@@ -212,6 +212,7 @@ public class ModuleDocuExtractorRunner extends BasicRunner {
 		ArrayList<String> authors = new ArrayList<>();
 		ArrayList<String> categories = new ArrayList<>();
 		ArrayList<VersionedInfo<String>> dependencies = new ArrayList<>();
+		ArrayList<VersionedInfo<String>> comments = new ArrayList<>();
 		ArrayList<String> maintainer = new ArrayList<>();
 		
 		// test, if some default values are avail
@@ -231,6 +232,7 @@ public class ModuleDocuExtractorRunner extends BasicRunner {
 		pmid.add("-1");
 		website.add("WEBSITE [1-]");
 		dependencies.add(new VersionedInfo<String>("DEPENDENCY [0-]", 1, 1));
+		comments.add(new VersionedInfo<String>("COMMENT [0-]", 1, 1));
 		
 		// get parameter and return values from basic XSD extractor plugin
 		HashMap<String, ArrayList<Paramdocu>> params = new XSDParameterExtractor(tmpBaseDir, xsdRootDir).getDocu(xsd);
@@ -240,7 +242,7 @@ public class ModuleDocuExtractorRunner extends BasicRunner {
 		description.add(new VersionedInfo<String>("DESCRIPTION [1x per version]", versions.stream().min(Integer::compare).orElse(1), versions.stream().max(Integer::compare).orElse(1)));
 		
 		// create the object
-		Moduledocu m = new Moduledocu(name, categories, updated, authors, pmid, website, paperDesc, dependencies, description, versions, params, returnValues, maintainer);
+		Moduledocu m = new Moduledocu(name, categories, updated, authors, pmid, website, paperDesc, dependencies, comments, description, versions, params, returnValues, maintainer);
 		return m;
 	}
 }

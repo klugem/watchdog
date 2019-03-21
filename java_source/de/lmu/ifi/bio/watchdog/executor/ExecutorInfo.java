@@ -1,9 +1,12 @@
 package de.lmu.ifi.bio.watchdog.executor;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import de.lmu.ifi.bio.watchdog.helper.Environment;
@@ -11,6 +14,7 @@ import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
 import de.lmu.ifi.bio.watchdog.interfaces.XMLPlugin;
+import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.Task;
 
 
@@ -27,18 +31,19 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	private final boolean IS_STICK2HOST;
 	private final int MAX_RUNNING;
 	private transient ConcurrentHashMap<String, Task> RUNNING_JOBS = new ConcurrentHashMap<>(); //do not send over network --> transient --> can not be final anymore
-	protected Environment env;
 	private final String WATCHDOG_BASE_DIR;
-	protected boolean isClone = false;
 	private final String PATH2JAVA;
 	private final String WORKING_DIR;
 	private final String STATIC_WORKING_DIR;
 	private static final String LOCAL = "/usr/local/storage/";
 	private static final String TMP = "/tmp/";
 	private static final String JAVA = "/usr/bin/java"; 
-	private String color;
 	private final Integer MAX_SLAVE_RUNNING;
 	private final String TYPE;
+	
+	protected Environment env;
+	protected boolean isClone = false;
+	private String color;
 	
 	/**
 	 * Constructor
@@ -52,8 +57,6 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 		// test, if we can use some of the default working dirs
 		if(workingDir == null)
 			workingDir = ExecutorInfo.getWorkingDir(watchdogBaseDir);
-		else
-			workingDir = Functions.generateRandomWorkingDir(workingDir).getAbsolutePath();
 		
 		if(path2java == null || path2java.length() == 0)
 			path2java = JAVA;
@@ -86,16 +89,27 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	public abstract Executor<?> getExecutorForTask(Task t, SyncronizedLineWriter logFile);
 	
 	public static String getWorkingDir(String watchdogBaseDir) {
-		String workingDir;
-		File local = new File(LOCAL);
-		File tmp = new File(TMP);
+		String envWork = System.getenv(XMLBasedWatchdogRunner.ENV_WATCHDOG_WORKING_DIR);
+		String workingDir = null;
 		
-		if(local.exists() && local.canWrite())
-			workingDir = local.getAbsolutePath();
-		else if(tmp.exists() && tmp.canWrite())
-			workingDir = tmp.getAbsolutePath();
-		else 
-			workingDir = new File(watchdogBaseDir + File.separator + TMP).getAbsolutePath();
+		if(envWork != null) {
+			File env = new File(envWork);
+			if(env.exists() && env.canWrite())
+				workingDir = env.getAbsolutePath();
+		}
+		if(workingDir == null) {
+			File local = new File(LOCAL);
+			File tmp = new File(TMP);
+
+			if(local.exists() && local.canWrite())
+				workingDir = local.getAbsolutePath();
+			else if(tmp.exists() && tmp.canWrite())
+				workingDir = tmp.getAbsolutePath();
+			else 
+				workingDir = new File(watchdogBaseDir + File.separator + TMP).getAbsolutePath();
+			
+			workingDir = Functions.generateRandomWorkingDir(workingDir).getAbsolutePath();
+		}		
 		return workingDir;
 	}
 	
@@ -277,5 +291,19 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 		in.defaultReadObject();
 		
 		this.RUNNING_JOBS = new ConcurrentHashMap<>();
+	}
+	
+	/**
+	 * true, if restart of Watchdog is supported by that executor
+	 * @return
+	 */
+	public abstract boolean isWatchdogRestartSupported();
+	
+	/**
+	 * returns all jobs that are currently executed
+	 * @return
+	 */
+	public HashMap<String, Task> getRunningJobs() {
+		return new HashMap<>(this.RUNNING_JOBS);
 	}
 }

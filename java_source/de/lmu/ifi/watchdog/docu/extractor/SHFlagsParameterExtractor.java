@@ -28,7 +28,7 @@ public class SHFlagsParameterExtractor implements Extractor<Paramdocu> {
 	public static String QUOTE = "(^[\"'])|([\"']$)";
 	public static String DEFINE = "DEFINE_";
 	public static String VAR_DEF_START = "^\\s*" + DEFINE + "[(string)|(boolean)|(float)|(integer)].+";
-	public static String VERSION_TAG_PATTERN = ".*#VER_TAG:\\s?([0-9]+)\\-([0-9]+).*";
+	public static String VERSION_TAG_PATTERN = ".*#VER_TAG:\\s?([0-9]+)-([0-9]+).*";
 	
 	@Override
 	public File findTarget(DocumentBuilderFactory dbfXSD, File moduleDir, File xsdFile) {

@@ -55,4 +55,9 @@ public class ShutdownManager extends MonitorRunnable {
 		}
 		this.wereTasksKilled = true;
 	}
+	
+	@Override
+	public boolean canBeStoppedForRestart() {
+		return true;
+	}
 }

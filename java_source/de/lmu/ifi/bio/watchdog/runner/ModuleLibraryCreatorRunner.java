@@ -3,13 +3,21 @@ package de.lmu.ifi.bio.watchdog.runner;
 import java.io.File;
 import java.util.ArrayList;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
 import de.lmu.ifi.bio.watchdog.helper.Functions;
+import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
+import de.lmu.ifi.watchdog.docu.DocuXMLParser;
 import de.lmu.ifi.watchdog.docu.ModuleLibraryGenerator;
+import de.lmu.ifi.watchdog.docu.Moduledocu;
 
 /**
  * Creates a web-based documentation of modules 
@@ -56,24 +64,6 @@ public class ModuleLibraryCreatorRunner extends BasicRunner {
 				System.exit(1);
 			}
 					
-			// ensure that the outputFolder folder is there
-			File outputFolder = null;
-			if(params.outputFolder != null && params.outputFolder.length() >0) 
-				outputFolder = new File(params.outputFolder);
-			else {
-				log.error("Output folder must be given!");
-			}
-				
-			if(!outputFolder.exists()) {
-				if(!outputFolder.mkdirs()) {
-					log.error("Could not output folder '"+outputFolder.getAbsolutePath()+"'.");
-					System.exit(1);
-				}
-			}
-			if(!outputFolder.canRead() || !outputFolder.canWrite()) {
-				log.error("Could not read/write to output folder '"+outputFolder.getAbsolutePath()+"'.");
-				System.exit(1);
-			}
 			// ensure that the entered module folders exist
 			ArrayList<String> moduleFolders = new ArrayList<>();
 			for(String ms : params.module) {
@@ -91,10 +81,51 @@ public class ModuleLibraryCreatorRunner extends BasicRunner {
 			}
 			
 			// do the work!
-			Functions.filterErrorStream();
-			int modules = ModuleLibraryGenerator.generateModuleLibraryPage(outputFolder, watchdogBase, moduleFolders);
-			log.info("Module library generation succeeded; the library contains " + modules + " modules.");
+			//Functions.filterErrorStream();
+		//	ArrayList<Pair<File, File>> moduleXSDandXMLDocuFiles = DocuXMLParser.findAllDocumentedModules(
+			//ArrayList<Moduledocu> documentedModules = DocuXMLParser.parseAllXMLFiles(watchdogBase.getAbsolutePath(), params.module);
+	/*	XMLParser.getXSDCacheDir(tmpBaseDir)
+		
+		else if(params.validate) {
+			File xml = new File(params.xml);				
+			// process the complete folder
+			if(xml.isDirectory()) {
+				
+				// check all files in the example folder
+				int succ = 0;
+				for(File xmlFile : xml.listFiles(new PatternFilenameFilter(XMLBasedWatchdogRunner.XML_PATTERN, false))) {
+					String xmlFilename = xmlFile.getAbsolutePath();
+					log.info("Validating '" + xmlFilename + "'...");
+					Object[] = XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename, params.useEnvBase, log).getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
+					succ++;
+				}
+				System.out.println("Validation of " + succ + " files stored in '"+ xml.getCanonicalPath() +"' succeeded.");
+			}
+			// process only that file
+			else {				
+				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath(), params.useEnvBase, log).getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
+				System.out.println("Validation of '"+ xml.getCanonicalPath() +"' succeeded!");
+			}
+			System.exit(0);
+		}*/
+			
+			
+			//log.info("Module library generation succeeded; the library contains " + modules + " modules.");
 		}
 		System.exit(0);
 	}
+	
+	
+	/*public boolean validateModuleXSDFile(File xsd) {
+		
+	}
+	
+	public boolean validateModuleDocuXSDFile(File xsd) {
+		parseXMLFile(DocumentBuilderFactory dbf, File xmlDocuFile, File xsdFile)
+		
+	}
+	
+	public boolean validateModuleDocuXMLFile(File xml) {
+		
+	}*/
 }

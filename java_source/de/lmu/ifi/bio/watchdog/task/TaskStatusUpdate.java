@@ -213,4 +213,8 @@ public class TaskStatusUpdate extends StopableLoopRunnable implements Serializab
 	
 	}
 
+	@Override
+	public boolean canBeStoppedForRestart() {
+		return false;
+	}
 }

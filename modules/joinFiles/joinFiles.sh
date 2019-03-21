@@ -14,10 +14,10 @@ fi
 
 # define parameters
 
-DEFINE_string 'input' '' 'multiple input files in the order how the should be joined, separated by , in pattern mode a folder to look for that pattern' 'i'
-DEFINE_string 'output' '' 'output file' 'o'
-DEFINE_boolean 'convertPairedEnd' '1' 'adds /1 and /2 to the read names, if casava format 1.8 or greater is used;default: disabled' 'c'
-DEFINE_string 'pattern' '' 'if enabled, input is a unix file pattern and all files matching that pattern are used, multiple patterns can be used separated by , (same order as in input is required)' 'p'
+DEFINE_string 'input' '' 'multiple input files (or input folders) in the order in which they should be joined; separated by ','; in pattern mode (--pattern) folder path(s) are expected' 'i'
+DEFINE_string 'output' '' 'path to output file' 'o'
+DEFINE_boolean 'convertPairedEnd' '1' 'special flag for joining of FASTQ files; adds /1 and /2 at the end of read names if casava format 1.8 or greater is used; default: disabled' 'c'
+DEFINE_string 'pattern' '' 'one ore more unix file pattern (e.g. *.txt) that are used to find files matching that pattern; multiple patterns can be used separated by ','; one pattern corresponds to one input folder path; order of files to join can not be influenced' 'p'
 DEFINE_string 'returnFilePath' '' 'path to the return variables file' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 

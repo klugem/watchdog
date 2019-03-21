@@ -38,6 +38,12 @@ public abstract class MonitorRunnable implements Runnable {
 		return this.getName().hashCode();
 	}
 	
+	/**
+	 * should return true, if it can be stopped for restart
+	 * @return
+	 */
+	public abstract boolean canBeStoppedForRestart();
+	
 	@Override
 	public boolean equals(Object o) {
 		if(o instanceof MonitorRunnable) {

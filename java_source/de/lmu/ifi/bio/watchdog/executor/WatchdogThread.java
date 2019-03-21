@@ -141,13 +141,16 @@ public class WatchdogThread extends StopableLoopThread {
 			if(t.willRunOnSlave() && t.isMaxRunningRestrictionReached())
 				continue;
 			
-			// task was never submitted
-			if(t.getStatus().isWaitingOnDependencies()) {
+
+			// task was never submitted or 
+			// check, if it is a start&stop task --> is alreay running and must be only added to the monitor thread
+			if(t.getStatus().isWaitingOnDependencies() || t.isTaskAlreadyRunning()) {
 				// check if dependencies are ok
 				if(t.hasTaskUnresolvedDependencies(isSlaveExecutor) == false) {
 					try {
 						if(this.execute(t, simulate, isSlaveExecutor))
-							executed++;
+							if(!t.isTaskAlreadyRunning())
+								executed++;
 					}
 					catch(Exception e) {
 						e.printStackTrace();
@@ -189,11 +192,14 @@ public class WatchdogThread extends StopableLoopThread {
 		}
 		
 		// execute that task with the given executor
-		t.setStatus(TaskStatus.WAITING_QUEUE);
+		if(!t.isTaskAlreadyRunning())
+			t.setStatus(TaskStatus.WAITING_QUEUE);
 		
 		// process the command
+		boolean alreadyRunning = t.isTaskAlreadyRunning();
 		if(!simulate) {
-			exec.getTask().setIsOnHold(true);
+			if(!alreadyRunning)
+				exec.getTask().setIsOnHold(true);
 			exec.execute();
 		}
 		else {
@@ -202,7 +208,8 @@ public class WatchdogThread extends StopableLoopThread {
 		}
 
 		// increase execution counter
-		t.increaseExecutionCounter();
+		if(!alreadyRunning)
+			t.increaseExecutionCounter();
 		return true;
 	}
 	
@@ -243,7 +250,27 @@ public class WatchdogThread extends StopableLoopThread {
 		
 		this.LOG_FILE.close();
 	}
-
+	
+	/**
+	 * tests how many jobs are currently running in the run pool
+	 * @return
+	 */
+	public int getNumberOfJobsRunningInRunPool() {
+		if(RUN_POOL == null)
+			return 0;
+		return RUN_POOL.getNumberOfShortRunningJobs();
+	}
+	
+	/**
+	 * tests if all constantly running tasks can be restarted 
+	 * @return
+	 */
+	public boolean canAllConstantlyRunningTasksBeRestarted() {
+		if(RUN_POOL == null)
+			return true;
+		return RUN_POOL.canAllConstantlyRunningTasksBeRestarted();
+	}
+	
 	/**
 	 * should be called when watchdog thread is shutdown because all tasks are finished
 	 */
