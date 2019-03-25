@@ -1,5 +1,7 @@
 package de.lmu.ifi.bio.watchdog.executor.local;
 
+import java.util.HashMap;
+
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
@@ -25,8 +27,8 @@ public class LocalExecutorInfo extends ExecutorInfo {
 	 * @param watchdogBaseDir
 	 * @param environment
 	 */
-	public LocalExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir) {
-		super(type, name, isDefault, isStick2Host, null, path2java, maxRunning, watchdogBaseDir, environment, workingDir);
+	public LocalExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang) {
+		super(type, name, isDefault, isStick2Host, null, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang);
 	}
 
 	
@@ -48,6 +50,8 @@ public class LocalExecutorInfo extends ExecutorInfo {
 			x.addQuotedAttribute(XMLParser.STICK2HOST, true);
 		if(this.hasColor())
 			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());
+		if(this.hasCustomShebang()) 
+			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
 		
 		// end the tag
 		x.endCurrentTag();
@@ -67,4 +71,7 @@ public class LocalExecutorInfo extends ExecutorInfo {
 	public boolean isWatchdogRestartSupported() {
 		return false;
 	}
+
+	@Override
+	public HashMap<String, String> getExecutorSpecificEnvironmentVariables() { return new HashMap<String, String>(); }
 }

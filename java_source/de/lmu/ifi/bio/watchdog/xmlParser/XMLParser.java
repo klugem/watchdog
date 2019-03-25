@@ -596,14 +596,14 @@ public class XMLParser {
 					
 					// ignore all the executor stuff and use only a local executor!
 					if(ignoreExecutor != 0) {
-						defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, ignoreExecutor, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null);		
+						defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, ignoreExecutor, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null, null);		
 					}
 					else {
 						/********** check for executor tag */
 						NodeList executors = docEle.getElementsByTagName(EXECUTORS);
 						// just add the default local executor
 						if(executors.getLength() == 0) {
-							defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, 1, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null);
+							defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, 1, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null, null);
 						}
 						else if(executors.getLength() == 1) {
 							Element el = (Element) executors.item(0);
@@ -1564,7 +1564,6 @@ public class XMLParser {
 			noExit = true;
 		boolean useExternalCommand = Boolean.parseBoolean(XMLParser.getAttribute(environment, USE_EXTERNAL_EXPORT));
 		String exportCommand = XMLParser.getAttribute(environment, EXPORT_COMMAND);
-		String shebang = XMLParser.getAttribute(environment, SHEBANG);
 		boolean copyGlobal = Boolean.parseBoolean(XMLParser.getAttribute(environment, COPY_LOCAL_VALUE));
 		String color = XMLParser.getAttribute(environment, COLOR);
 		Environment ret = new Environment(envname, isLocalExecutor, copyGlobal, useExternalCommand);
@@ -1574,8 +1573,6 @@ public class XMLParser {
 		if(useExternalCommand) {
 			if(exportCommand != null && exportCommand.length() > 0)
 				ret.setCommand(exportCommand);
-			if(!shebang.isEmpty())
-				ret.setShebang(shebang);
 		}
 		
 		// init with the values that are acutally part of the init element

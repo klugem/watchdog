@@ -8,7 +8,6 @@ import java.util.LinkedHashSet;
 
 import org.apache.commons.lang3.StringUtils;
 
-import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
@@ -27,23 +26,28 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask2TaskThread;
  */
 public abstract class Executor<A extends ExecutorInfo> {
 	
-	public static final String COMMAND_SEP = " && ";
+	public static final String WATCHGOD_CORES = "WATCHDOG_CORES";
+	public static final String WATCHGOD_MEMORY = "WATCHDOG_MEMORY";
+
+	public static final String COMMAND_SEP = System.lineSeparator();
 	public static final String EXECUTE = "execute";
 	public static final String WATCHGOD_ENV_IDENTIFIER = "IS_WATCHDOG_JOB";
 	public static final String WATCHGOD_ENV_IDENTIFIER_VALUE = "1";
 	protected static final String EXECUTE_PREFIX = "execute_";
+	protected static final String ENV_PREFIX = "env_";
+	public static final String ZERO_SEP = "\0";
 	
 	public static String default_working_dir;
-	private static final String SEPARATOR = "=";
 	private static XMLTask2TaskThread xml2taskThread;
 	private static File watchdogBase;
 	
 	private final Logger LOGGER = new Logger(LogLevel.DEBUG);
 	protected final Task TASK;
-	protected final HashMap<String, String> ENVIRONMENT = new HashMap<>();
 	protected final SyncronizedLineWriter LOG;
-	protected final ArrayList<String> PRE_COMMAND = new ArrayList<>();
+	protected final ArrayList<String> BEFORE_COMMAND = new ArrayList<>();
+	protected final ArrayList<String> AFTER_COMMAND = new ArrayList<>();
 	protected final A EXEC_INFO;
+	protected HashMap<String, String> internalEnv;
 	
 	/**
 	 * Constructor without any checker
@@ -54,9 +58,14 @@ public abstract class Executor<A extends ExecutorInfo> {
 		this.TASK = t;
 		this.LOG = log;
 		this.EXEC_INFO = execInfo;
-		 // add this value to allow the script to detect if it was called by watchdog
-		this.ENVIRONMENT.put(WATCHGOD_ENV_IDENTIFIER, WATCHGOD_ENV_IDENTIFIER_VALUE);
 		
+		 // add this value to allow the script to detect if it was called by watchdog
+		this.TASK.addEnvVariable(WATCHGOD_ENV_IDENTIFIER, WATCHGOD_ENV_IDENTIFIER_VALUE);
+		HashMap<String, String> esev  = this.EXEC_INFO.getExecutorSpecificEnvironmentVariables();
+		for(String name : esev.keySet()) {
+			this.TASK.addEnvVariable(name, esev.get(name));
+		}
+				
 		// check, if the task should be executed on the same host as preceding or following tasks
 		if(this.TASK.willRunOnSlave()) {
 			try {				
@@ -105,34 +114,6 @@ public abstract class Executor<A extends ExecutorInfo> {
 	}
 	
 	/**
-	 * sets new environment values
-	 * @param environment
-	 */
-	public void setEnvironment(HashMap<String, String> environment) {
-		this.ENVIRONMENT.putAll(environment);
-	}
-	
-	/**
-	 * returns a set of formated environment variables with name=value
-	 * @return
-	 */
-	public ArrayList<String> getFormatedEnvironmentVariables() {
-		ArrayList<String> e = new ArrayList<>();
-		for(String v : this.ENVIRONMENT.keySet()) {
-			e.add(v + SEPARATOR + this.ENVIRONMENT.get(v));
-		}
-		return e;
-	}
-	
-	/**
-	 * returns the set of environment variables
-	 * @return
-	 */
-	public HashMap<String, String> getEnvironmentVariables() {
-		return new HashMap<>(this.ENVIRONMENT);
-	}
-	
-	/**
 	 * returns the status of the task
 	 * @return
 	 */
@@ -170,10 +151,17 @@ public abstract class Executor<A extends ExecutorInfo> {
 	 * Commands, which are executed in the order of insertion before the actual command is executed
 	 * @param command
 	 */
-	public void addPreCommand(String command) {
-		this.PRE_COMMAND.add(command);
+	public void addBeforeCommand(String command) {
+		this.BEFORE_COMMAND.add(command);
 	}
 	
+	/**
+	 * Commands, which are executed in the order of insertion after the actual command is executed
+	 * @param command
+	 */
+	public void addAfterCommand(String command) {
+		this.AFTER_COMMAND.add(command);
+	}
 	
 	/**
 	 * writes the commands to a temporary file
@@ -186,7 +174,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 			FileWriter w = new FileWriter(f);
 			String shebang = this.TASK.getShebang();
 			if(this.TASK.getShebang() == null)
-				shebang = Environment.DEFAULT_SHEBANG;
+				shebang = ExecutorInfo.DEFAULT_SHEBANG;
 			
 			w.write(shebang);
 			w.write(System.lineSeparator());
@@ -208,7 +196,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 	 * @return
 	 */
 	public boolean isSingleCommand() {
-		return this.PRE_COMMAND.size() == 0;
+		return this.BEFORE_COMMAND.size() == 0 && this.AFTER_COMMAND.size() == 0;
 	}
 	
 	/**
@@ -217,10 +205,9 @@ public abstract class Executor<A extends ExecutorInfo> {
 	 */
 	public String[] getFinalCommand(boolean removeQuoting, boolean addBashWrappingScript) {
 		ArrayList<String> c = new ArrayList<>();
-		c.addAll(this.PRE_COMMAND);
-		
+
 		// no script needed
-		if(c.size() == 0 && !addBashWrappingScript) {
+		if(this.isSingleCommand() && !addBashWrappingScript) {
 			c.add(this.TASK.getBinaryCall());
 			
 			// remove quoting, if needed
@@ -235,7 +222,9 @@ public abstract class Executor<A extends ExecutorInfo> {
 		}
 		// write the stuff to a file
 		else {
+			c.addAll(this.BEFORE_COMMAND);
 			c.add(this.TASK.getBinaryCall() + (this.TASK.getArguments().size() > 0 ? " " + StringUtils.join(this.TASK.getArguments(), " ") : ""));
+			c.addAll(this.AFTER_COMMAND);
 			return new String[] {this.writeCommandsToFile(StringUtils.join(c, Executor.COMMAND_SEP))};
 		}
 	}
@@ -260,8 +249,54 @@ public abstract class Executor<A extends ExecutorInfo> {
 	 * sets a new watchdog base in order to spawn new slaves!
 	 * @param watchdogBase
 	 */
-	public static void setWatchdogBase(File watchdogBase) {
+	public static void setWatchdogBase(File watchdogBase, File customTmpDir) {
 		Executor.watchdogBase = watchdogBase;
-		Executor.default_working_dir = ExecutorInfo.getWorkingDir(watchdogBase.getAbsolutePath());
+		if(customTmpDir == null)
+			customTmpDir = watchdogBase;
+		Executor.default_working_dir = ExecutorInfo.getWorkingDir(customTmpDir.getAbsolutePath());
+	}
+	
+	/**
+	 * writes the lines to a temporary file
+	 * @param command
+	 * @return
+	 */
+	public static String writeStringsToFile(ArrayList<String> env, boolean zeroSeparated) {
+		String sep = System.lineSeparator();
+		if(zeroSeparated) {
+			sep = ZERO_SEP;
+		}
+		File f = Functions.generateRandomTmpExecutionFile(ENV_PREFIX, false);
+		try {
+			FileWriter w = new FileWriter(f);
+			for(String l : env) {
+				w.write(l);
+				w.write(sep);
+			}
+			w.flush();
+			w.close();
+		}
+		catch(Exception e) {
+			System.out.println("[ERROR] Could not write to create temporary file '"+f.getAbsolutePath()+"'.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		return f.getAbsolutePath();
+	}
+
+	/**
+	 * sets environment variables that must be handled by some internal mechanisms of the specific executors
+	 * @param envVales
+	 */
+	public void setEnvironmentVariablesToProcessInternally(HashMap<String, String> envVales) {
+		this.internalEnv = envVales;
+	}
+	
+	public HashMap<String, String> getInternalEnvVars() {
+		return this.internalEnv;
+	}
+	
+	public boolean hasInternalEnvVars() {
+		return this.internalEnv != null && this.internalEnv.size() > 0;
 	}
 }

@@ -393,7 +393,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			}
 			Task.setMail(new Mailer(mail));
 			String watchdogBase = (String) ret[9];
-			Executor.setWatchdogBase(new File(watchdogBase)); 
+			Executor.setWatchdogBase(new File(watchdogBase), this.commandlineParams.tmpFolder == null ? null : new File(this.commandlineParams.tmpFolder));
 			@SuppressWarnings("unused")
 			HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = (HashMap<String, Pair<HashMap<String, ReturnType>, String>>) ret[3];
 			LinkedHashMap<String, ProcessBlock> processblocks = new LinkedHashMap<>();
@@ -1272,7 +1272,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 												
 			WatchdogThread.addUpdateThreadtoQue(xml2taskThread, true);
 			Executor.setXml2Thread(xml2taskThread);
-			Executor.setWatchdogBase(new File(PreferencesStore.getWatchdogBaseDir())); 
+			Executor.setWatchdogBase(new File(PreferencesStore.getWatchdogBaseDir()), this.commandlineParams.tmpFolder == null ? null : new File(this.commandlineParams.tmpFolder));
 			watchdog.start();
 			
 			this.runFinishedCheckerThread = new FinishedCheckerThread(() -> this.processingHasFinished(xmlTasks), xml2taskThread);

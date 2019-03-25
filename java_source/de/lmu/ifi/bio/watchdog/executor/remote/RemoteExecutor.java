@@ -111,16 +111,18 @@ public class RemoteExecutor extends ScheduledExecutor<RemoteExecutorInfo> {
 		try {
 			// check, if working directory should be changed
 			if(this.getWorkingDir(false) == null)
-				this.addPreCommand(CD + this.getWorkingDir(false));
+				this.addBeforeCommand(CD + this.getWorkingDir(false));
 			
 			this.getExecInfo().increaseRunningCounter(host);
 			this.channel = (ChannelExec) this.session.openChannel(EXEC);
 			this.channel.setPty(true);
 			this.channel.setCommand(this.getFinalJoinedCommand()); // set remote command
-			// send env variables
-			HashMap<String, String> env = this.getEnvironmentVariables();
-			for(String name : env.keySet()) {
-				this.channel.setEnv(name, env.get(name));
+			
+			// set the environment variables that should not be set by an external command
+			if(this.hasInternalEnvVars()) {
+				HashMap<String, String> env = this.getInternalEnvVars();
+				for(String name : env.keySet()) 
+					this.channel.setEnv(name, env.get(name));
 			}
 			
 			// set stdout

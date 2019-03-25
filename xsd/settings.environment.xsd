@@ -20,7 +20,6 @@
 		</x:all>
 		<x:attribute name="name" type="x:string" />
 		<x:attribute name="copyLocalValue" type="x:boolean" />
-		<x:attribute name="shebang" type="x:string" default="#!/bin/bash"/>
 		<x:attribute name="useExternalExport" type="x:boolean" default="true"/>
 		<x:attribute name="exportCommand" type="x:string"/>
 		<x:attribute name="color" type="x:string" default=""/>

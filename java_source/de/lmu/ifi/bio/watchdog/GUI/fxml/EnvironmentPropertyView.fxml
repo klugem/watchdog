@@ -55,14 +55,11 @@
                     <rowConstraints>
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
                         <CheckBox fx:id="externalExport" mnemonicParsing="false" selected="true" GridPane.columnIndex="1" />
-                        <TextField fx:id="exportHeader" text="#!/bin/bash" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Label text="shebang for export script" GridPane.rowIndex="1" />
-                        <Label text="export command" GridPane.rowIndex="2" />
-                        <TextField fx:id="exportCommand" text="export {$NAME}=&quot;{$VALUE}&quot;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <Label text="export command" GridPane.rowIndex="1" />
+                        <TextField fx:id="exportCommand" text="export {$NAME}=&quot;{$VALUE}&quot;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                         <Label text="use external export option" />
                      </children>
                      <padding>

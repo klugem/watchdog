@@ -7,7 +7,9 @@ import java.util.Map;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
 
 /**
  * class which contains the environment stuff
@@ -23,7 +25,6 @@ public class Environment implements XMLDataStore {
 	private static final String PATTERN_VALUE = "{$VALUE}";
 	private static final String REPLACE_QUOTE = "&quot;";
 	private static final String DEFAULT_COMMAND = "export " + PATTERN_NAME + "=" + REPLACE_QUOTE + PATTERN_VALUE + REPLACE_QUOTE;
-	public static final String DEFAULT_SHEBANG = "#!/bin/bash"; 
 	private static final String DEFAULT_QUERY_FORMAT = "$" + PATTERN_NAME;
 	private static final Logger LOGGER = new Logger();
 	private static final Map<String, String> LOCAL_ENV = System.getenv();
@@ -37,10 +38,10 @@ public class Environment implements XMLDataStore {
 	private final boolean IS_LOCAL_EXECUTOR;
 	private boolean COPY_GLOBAL;
 	private final boolean USE_EXTERNAL_COMMAND;
-	private String shebang = DEFAULT_SHEBANG;
 	private String baseCommand = DEFAULT_COMMAND;
 	private String queryFormat = DEFAULT_QUERY_FORMAT;
-
+	
+	
 	/**
 	 * Constructor for local executor
 	 * @param name
@@ -80,14 +81,6 @@ public class Environment implements XMLDataStore {
 	 */
 	public boolean useExternalCommand() {
 		return !this.IS_LOCAL_EXECUTOR && this.USE_EXTERNAL_COMMAND;
-	}
-	
-	/**
-	 * retuns the shebang for the external command
-	 * @return
-	 */
-	public String getShebang() {
-		return this.shebang;
 	}
 	
 	public String getName() {
@@ -183,14 +176,6 @@ public class Environment implements XMLDataStore {
 		this.baseCommand = command;
 	}
 	
-	public void setShebang(String shebang) {
-		if(shebang.isEmpty()) {
-			LOGGER.error("Shebang can not be empty.");
-			System.exit(1);
-		}
-		this.shebang = shebang;
-	}
-	
 	/**
 	 * sets a new default query format, which is used to update the variable
 	 * @param command
@@ -210,9 +195,13 @@ public class Environment implements XMLDataStore {
 	 * @param value
 	 */
 	private void addCommand(String name, String value, String sep) {
+		this.COMMANDS.put(name, this.getCommand(name, value, sep)); 
+	}
+	
+	public String getCommand(String name, String value, String sep) {
 		if(sep != null)
 			value = value + sep + this.queryFormat.replace(PATTERN_NAME, name);
-		this.COMMANDS.put(name, StringEscapeUtils.unescapeHtml4(this.getExternalCommand()).replace(PATTERN_NAME, name).replace(PATTERN_VALUE, value)); 
+		return StringEscapeUtils.unescapeHtml4(this.getExternalCommand()).replace(PATTERN_NAME, name).replace(PATTERN_VALUE, value);
 	}
 	
 	/**
@@ -255,7 +244,6 @@ public class Environment implements XMLDataStore {
 			x.addQuotedAttribute(XMLParser.COPY_LOCAL_VALUE, this.COPY_GLOBAL);
 		if(this.useExternalCommand()) {
 			x.addQuotedAttribute(XMLParser.USE_EXTERNAL_EXPORT, true);
-			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
 			x.addQuotedAttribute(XMLParser.EXPORT_COMMAND, this.getExternalCommand().replace("\"", REPLACE_QUOTE));
 		}
 		if(this.hasColor())
@@ -314,4 +302,45 @@ public class Environment implements XMLDataStore {
 	
 	@Override
 	public Object[] getDataToLoadOnGUI() { return null; }
+	
+	
+	/**
+	 * returns a hash map which contains the environment variables
+	 * @param inputReplacement
+	 * @param processBlockClass
+	 * @param spawnedTaskCounter
+	 * @param mapping
+	 * @return
+	 */
+	public HashMap<String, String> getEnvironment(int taskID, String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping, boolean valueMightBeFilePath) {
+		String workingDir = XMLTask.hasXMLTask(taskID) ? XMLTask.getXMLTask(taskID).getExecutor().getWorkingDir() : "";
+		HashMap<String, String> env = new HashMap<>();
+		HashMap<String, String> vars = this.getEnv();
+		// replace all the variables and $()
+		for(String k : vars.keySet()) {
+			String v = ReplaceSpecialConstructs.replaceValues(vars.get(k), inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true, valueMightBeFilePath);
+			env.put(k, v);
+		}
+		return env;
+	}
+	
+	/**
+	 * returns commands for setting the environment variables
+	 * @param inputReplacement
+	 * @param processBlockClass
+	 * @param spawnedTaskCounter
+	 * @param mapping
+	 * @return
+	 */
+	public ArrayList<String> getEnvironmentCommands(int taskID, String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping, boolean valueMightBeFilePath) {
+		String workingDir = XMLTask.hasXMLTask(taskID) ? XMLTask.getXMLTask(taskID).getExecutor().getWorkingDir() : "";
+		ArrayList<String> env = new ArrayList<>();
+		ArrayList<String> vars = this.getCommands();
+		// replace all the variables and $()
+		for(String k : vars) {
+			k = ReplaceSpecialConstructs.replaceValues(k, inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true, valueMightBeFilePath);
+			env.add(k);
+		}
+		return env;
+	}
 }

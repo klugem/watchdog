@@ -43,7 +43,8 @@ public class LocalGUIExecutorViewController extends GUIExecutorViewController {
 		String watchdogBaseDir = (String) data[6];
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
+		String shebang = (String) data[9];
 		
-		return new LocalExecutorInfo(XMLParser.LOCAL, name, isDefault, isStick2Host, path2java, maxRunning, watchdogBaseDir, environment, workingDir);
+		return new LocalExecutorInfo(XMLParser.LOCAL, name, isDefault, isStick2Host, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang);
 	}
 }

@@ -13,8 +13,8 @@ Changelog started with version 1.2.0
 - [PLUGIN] Implemented binary-based executor (<sge>) to support Sun Grid Engine (tested with v6.1); SGE control binaries must be accessible via the $PATH variable TODO: add to DOCU
 - [DOCU] PDF version of the documentation is provided in addition to the HTML version
 - [GUI] Added -tmpFolder folder parameter to Workflow designer
-- [PLUGIN]
-
+- [CMD] TODO: describe detach/attach mode
+ 
 ### Changed
 - [PLUGIN] Executor <cluster> is now used for DRMAA cluster implementations; custom attributes (memory, slots, queue) were removed  TODO: add to DOCU
 - [] Watchdog releases require now Java 11 (and JavaFX SDK for workflow designer)
@@ -26,7 +26,7 @@ Changelog started with version 1.2.0
 - [EXAMPLE] Fixed wrong dependency in example workflow 1 for task 5
 - [BASH] Corrected wrong array access that caused an error in new bash versions
 - [BASH] Last parameter of called command was not shown 
-- [PLUGIN] Slurm executor plugin was not using the <cluster> tag
+- [PLUGIN] Slurm executor plugin was not using the <cluster> tag 
 
 ## [1.2.7] - 2018-08-30
 ### Added

@@ -314,7 +314,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			
 			WatchdogThread.addUpdateThreadtoQue(xml2taskThread, true);
 			Executor.setXml2Thread(xml2taskThread);
-			Executor.setWatchdogBase(watchdogBase);
+			Executor.setWatchdogBase(watchdogBase, params.tmpFolder == null ? null : new File(params.tmpFolder));
 			watchdog.start();
 			
 			// do not end program

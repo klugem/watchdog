@@ -23,8 +23,6 @@ import de.lmu.ifi.bio.watchdog.xmlParser.plugins.XMLParserPlugin;
 
 public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnector<DRMAAExecutor> {
 
-	public static final String WATCHGOD_CORES = "WATCHDOG_CORES";
-	public static final String WATCHGOD_MEMORY = "WATCHDOG_MEMORY";
 	private static final String EXECUTOR_NAME = "cluster";
 	private static final String SESSION = "session="; // required for contact string (at least for SGE DRMAA)
 	private Session session;
@@ -149,9 +147,11 @@ public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnec
 		// set the working directory
 		jt.setWorkingDirectory(ex.getWorkingDir(false));
 		
-		// set the environment variables
-		HashMap<String, String> env = ex.getEnvironmentVariables();
-		jt.setJobEnvironment(env);
+		// set the environment variables that should not be set by an external command
+		if(ex.hasInternalEnvVars()) {
+			HashMap<String, String> env = ex.getInternalEnvVars();
+			jt.setJobEnvironment(env);
+		}
 
 		// set stdout
 		if(task.getStdOut(false) != null) {

@@ -80,7 +80,9 @@ public class SGEGUIExecutorViewController extends GUIExecutorViewController {
 		String watchdogBaseDir = (String) data[6];
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
+		String shebang = (String) data[9];
+		
 		// create the instance
-		return new SGEExecutorInfo(SGEWorkloadManagerConnector.EXECUTOR_NAME, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, Integer.parseInt(this.slots.getText()), this.memory.getText(), this.queue.getText(), workingDir, this.customParams.getText(), this.disableDefaultParams.isSelected());
+		return new SGEExecutorInfo(SGEWorkloadManagerConnector.EXECUTOR_NAME, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, Integer.parseInt(this.slots.getText()), this.memory.getText(), this.queue.getText(), workingDir, this.customParams.getText(), this.disableDefaultParams.isSelected());
 	}
 }

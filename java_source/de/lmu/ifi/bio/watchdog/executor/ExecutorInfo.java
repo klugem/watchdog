@@ -1,10 +1,11 @@
 package de.lmu.ifi.bio.watchdog.executor;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,12 +39,17 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	private static final String LOCAL = "/usr/local/storage/";
 	private static final String TMP = "/tmp/";
 	private static final String JAVA = "/usr/bin/java"; 
+	public static final String DEFAULT_SHEBANG = "#!/bin/bash"; 
 	private final Integer MAX_SLAVE_RUNNING;
 	private final String TYPE;
 	
 	protected Environment env;
 	protected boolean isClone = false;
 	private String color;
+	private String shebang = DEFAULT_SHEBANG;
+	private ArrayList<String> beforeCommands = new ArrayList<String>();
+	private ArrayList<String> afterCommands = new ArrayList<String>();
+	
 	
 	/**
 	 * Constructor
@@ -53,7 +59,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	 * @param watchdogBaseDir
 	 * @param environment
 	 */
-	public ExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir) {
+	public ExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, String workingDir) {
 		// test, if we can use some of the default working dirs
 		if(workingDir == null)
 			workingDir = ExecutorInfo.getWorkingDir(watchdogBaseDir);
@@ -78,6 +84,13 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 			this.MAX_SLAVE_RUNNING = null;
 		
 		this.setEnvironment(environment);
+		
+		// to to read command files
+		Path p = Paths.get(this.WATCHDOG_BASE_DIR + "/core_lib/executor_scripts/ulimitMemory.sh");
+		try { 
+			this.beforeCommands.addAll(Files.readAllLines(p));
+		}
+		catch(Exception e) {}
 	}
 	
 	/**
@@ -244,7 +257,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	}
 	
 	/**
-	 * sets new environment values but does not remove the old one
+	 * sets a new environment
 	 * @param environment
 	 */
 	public void setEnvironment(Environment environment) {
@@ -306,4 +319,51 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	public HashMap<String, Task> getRunningJobs() {
 		return new HashMap<>(this.RUNNING_JOBS);
 	}
+	
+	
+	/**
+	 * returns the shebang for the external command
+	 * @return
+	 */
+	public String getShebang() {
+		return this.shebang;
+	}
+	
+	public void setShebang(String shebang) {
+		if(shebang == null || shebang.isEmpty()) {
+			System.out.println("[ERROR] Shebang can not be empty.");
+			System.exit(1);
+		}
+		this.shebang = shebang;
+	}
+	
+	/**
+	 * true, if a non-default shebang was set
+	 * @return
+	 */
+	public boolean hasCustomShebang() {
+		return !DEFAULT_SHEBANG.equals(this.shebang);
+	}
+	
+	/**
+	 * commands that should be executed before the actual command
+	 * @return
+	 */
+	public ArrayList<String> getBeforeCommands() {
+		return this.beforeCommands;
+	}
+
+	/**
+	 * commands that should be executed after the actual command
+	 * @return
+	 */
+	public ArrayList<String> getAfterCommands() {
+		return this.afterCommands;
+	}
+
+	/**
+	 * might return some executor specific environment variables that should be set
+	 * @return
+	 */
+	public abstract HashMap<String, String> getExecutorSpecificEnvironmentVariables();
 }

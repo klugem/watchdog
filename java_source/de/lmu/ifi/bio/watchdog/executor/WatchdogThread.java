@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -76,7 +77,7 @@ public class WatchdogThread extends StopableLoopThread {
 		this.SIMULATE = simulate;
 		this.SLAVE_MODE = slaveMode;
 
-		this.SLAVE_EXEC_INFO = new LocalExecutorInfo(XMLParser.LOCAL, "slave executor", false, false, null, maxRunningOnSlave, watchdogXSDPath.getAbsoluteFile().getParentFile().getParent(), new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), "");
+		this.SLAVE_EXEC_INFO = new LocalExecutorInfo(XMLParser.LOCAL, "slave executor", false, false, null, maxRunningOnSlave, watchdogXSDPath.getAbsoluteFile().getParentFile().getParent(), new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), "", null);
 		
 		if(executionLog != null) {
 			try {
@@ -181,16 +182,45 @@ public class WatchdogThread extends StopableLoopThread {
 			exec = execInfo.getExecutorForTask(t, this.LOG_FILE);
 		}
 		
-		// set env variables
-		if(!t.useExternalCommand4Env())
-			exec.setEnvironment(t.getEnvironment(t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames()));
-		// set some commands which are executed before
-		else {
-			for(String command : t.getEnvironmentCommands(t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames())) {
-				exec.addPreCommand(command);
+		// test if any environment variables should be set
+		Environment executorENV = t.getExecutor().getEnv();
+		Environment taskENV = t.getTaskEnvironment();
+		if(taskENV != null ||executorENV != null) {
+			boolean useExternalCommand = false;
+			if((taskENV != null && taskENV.useExternalCommand()) || (executorENV != null && executorENV.useExternalCommand()))
+				useExternalCommand = true;
+			
+			// external commands are used --> get commands
+			if(useExternalCommand) {
+				ArrayList<String> commands = new ArrayList<>();
+				if(executorENV != null) 
+					commands.addAll(executorENV.getEnvironmentCommands(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames()));
+				if(taskENV != null) 
+					commands.addAll(taskENV.getEnvironmentCommands(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames()));
+				
+				// add env export commands as before commands
+				for(String command : commands) 
+					exec.addBeforeCommand(command);
+			}
+			// get HashMap that must be handled by the executor itself (update of variables will likely not work!!!)
+			else {
+				HashMap<String, String> envVales = new HashMap<>();
+				if(executorENV != null) 
+					envVales.putAll(executorENV.getEnvironment(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames()));
+				if(taskENV != null) 
+					envVales.putAll(taskENV.getEnvironment(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames()));
+				
+				exec.setEnvironmentVariablesToProcessInternally(envVales);
 			}
 		}
 		
+		// add before and after commands from executor info
+		ExecutorInfo ei = t.getExecutor();
+		for(String c : ei.getBeforeCommands())
+			exec.addBeforeCommand(c);
+		for(String c : ei.getAfterCommands())
+			exec.addAfterCommand(c);
+
 		// execute that task with the given executor
 		if(!t.isTaskAlreadyRunning())
 			t.setStatus(TaskStatus.WAITING_QUEUE);

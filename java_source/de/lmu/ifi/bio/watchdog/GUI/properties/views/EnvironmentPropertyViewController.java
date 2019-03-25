@@ -30,7 +30,6 @@ public class EnvironmentPropertyViewController extends PropertyViewController {
 	@FXML private Button addButton;
 	@FXML private Button deleteEmptyButton;
 	@FXML private CheckBox externalExport;
-	@FXML private TextField exportHeader;
 	@FXML private TextField exportCommand;
 	@FXML private VBox envs;
 	@FXML private Label l_name;
@@ -67,13 +66,11 @@ public class EnvironmentPropertyViewController extends PropertyViewController {
 		
 		// add checker
 		this.addValidateToControl(this.name, "name", f -> this.checkName((TextField) f));
-		this.addValidateToControl(this.exportHeader,"exportHeader", f -> !this.externalExport.isSelected() || !this.isEmpty((TextField) f, "Shebang for external export command can not be empty."));
 		this.addValidateToControl(this.exportCommand, "exportCommand", f -> validateExportCommand());
 		this.addValidateToControl(null, null, e -> this.validateEnvironmentVariables());
 
 		// add event handler for GUI validation
 		this.name.textProperty().addListener(event -> this.validate());
-		this.exportHeader.textProperty().addListener(event -> this.validate());
 		this.exportCommand.textProperty().addListener(event -> this.validate());
 		this.copy.selectedProperty().addListener(event -> this.validate());
 
@@ -146,11 +143,9 @@ public class EnvironmentPropertyViewController extends PropertyViewController {
 	private void onChangeExternalExport() {
 		if(this.externalExport.isSelected()) {
 			this.exportCommand.setDisable(false);
-			this.exportHeader.setDisable(false);
 		}
 		else {
 			this.exportCommand.setDisable(true);
-			this.exportHeader.setDisable(true);
 		}
 		this.validate();
 	}
@@ -218,7 +213,6 @@ public class EnvironmentPropertyViewController extends PropertyViewController {
 		Environment e = new Environment(this.name.getText(), false, this.copy.isSelected(), this.externalExport.isSelected());
 		// add external commands
 		if(this.externalExport.isSelected()) {
-			e.setShebang(this.exportHeader.getText());
 			e.setCommand(this.exportCommand.getText());
 		}
 		// save the variables
@@ -294,7 +288,7 @@ public class EnvironmentPropertyViewController extends PropertyViewController {
 			if(data.useExternalCommand()) {
 				this.externalExport.setSelected(true);
 				this.exportCommand.setText(data.getExternalCommand());
-				this.exportHeader.setText(data.getShebang());
+			//	this.exportHeader.setText(data.getShebang());
 				this.onChangeExternalExport();
 			}
 			

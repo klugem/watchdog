@@ -1,6 +1,7 @@
 package de.lmu.ifi.bio.watchdog.executor.external.slurm;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.external.ExternalExecutorInfo;
@@ -24,10 +25,10 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 	
 	private final static String T = "--time";
 	private final static String C = "--cpus-per-task";
-	private final static String M = "--mem-per-cpu";
+	private final static String M = "--mem";
 	private final static String Q = "--clusters";
 	private final static String P = "--partition";
-	
+
 	private final String CUSTOM_PARAMS;
 	private final boolean IGNORE_DEFAULT_PARAMS;
 	private final int CPU;
@@ -36,6 +37,12 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 	private final String PARTITION;
 	private final String TIMELIMIT;
 	
+	private static final ArrayList<String> DEFAULT_SLURM_ARGS = new ArrayList<>();
+	
+	static {
+		DEFAULT_SLURM_ARGS.add("--ntasks-per-node=1");
+		DEFAULT_SLURM_ARGS.add("--nodes=1");
+	}
 
 	/**
 	 * Constructor
@@ -56,8 +63,8 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 	 * @param customParams
 	 * @param disableDefault
 	 */
-	public SlurmExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, int cpu, String memory, String clusters, String partition, String timelimit, String workingDir, String customParams, boolean disableDefault) {
-		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir);
+	public SlurmExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, int cpu, String memory, String clusters, String partition, String timelimit, String workingDir, String customParams, boolean disableDefault) {
+		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang);
 		this.CPU = Math.max(1, cpu);
 		this.MEMORY = memory;
 		this.CLUSTERS = clusters;
@@ -140,6 +147,7 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 
 		// ignores all parameters that can be set by default (cluster, memory, cpu, time)
 		if(!this.isDefaultParametersIgnored()) {
+			b.addAll(DEFAULT_SLURM_ARGS);
 			// add cluster
 			if(this.hasClusterSet()) {
 				b.add(Q);
@@ -152,7 +160,7 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 			// add memory
 			if(this.hasMemorySet()) {
 				b.add(M);
-				b.add(this.getMemory());
+				b.add(Integer.toString(this.getTotalMemorsInMB()));
 			}
 			// add slot
 			b.add(C);
@@ -223,6 +231,9 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 		
 		if(this.hasColor())
 			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());
+		if(this.hasCustomShebang()) 
+			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
+		
 		
 		// end the tag
 		x.endCurrentTag();
@@ -250,5 +261,14 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 	@Override
 	public boolean isWatchdogRestartSupported() {
 		return true;
+	}
+	
+	@Override
+	public HashMap<String, String> getExecutorSpecificEnvironmentVariables() {
+		// set infos about the number of used cores and the total memory
+		HashMap<String, String> env = new HashMap<>();
+		env.put(Executor.WATCHGOD_CORES, Integer.toString(this.getCPUs()));
+		env.put(Executor.WATCHGOD_MEMORY, Integer.toString(this.getTotalMemorsInMB()));
+		return env; 
 	}
 }

@@ -35,7 +35,7 @@ public class ExecutorPropertyViewController extends PluginPropertyViewController
 	@FXML private VBox parentBox;
 	@FXML private BorderPane root;
 	@FXML private ChoiceBox<Environment> environment;
-
+	@FXML private TextField shebangHeader;
 	private static final Environment NOT_SELECT;
 	
 	static { 
@@ -84,6 +84,7 @@ public class ExecutorPropertyViewController extends PluginPropertyViewController
 		String path2java = this.javaPath.getText();
 		int maxRunning = Integer.parseInt(this.maxRunning.getText());
 		String workingDir = this.workingDir.getText();
+		String shebang = this.shebangHeader.getText();
 		
 		// read max slave running property
 		Integer maxSlaveRunning = null;
@@ -94,7 +95,7 @@ public class ExecutorPropertyViewController extends PluginPropertyViewController
 		Environment environment = this.getSelectedEnvironment();
 
 		// get the executor info
-		ExecutorInfo e = this.activeGUIView.getXMLPluginObject(new Object[] {name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir});
+		ExecutorInfo e = this.activeGUIView.getXMLPluginObject(new Object[] {name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang});
 		
 		// save the executor.
 		this.storeXMLData(e);
@@ -138,11 +139,13 @@ public class ExecutorPropertyViewController extends PluginPropertyViewController
 		this.addValidateToControl(this.workingDir, "workingDir", f -> this.isAbsoluteFolder((TextField) f, "Working directory must be an absolute path to a file."));
 		this.addValidateToControl(this.javaPath, "javaPath", f -> !this.isSlaveMode.isSelected() || this.isAbsoluteFile((TextField) f, "Java path must be an absolute path to a file."));
 		this.addValidateToControl(this.maxRunning, "maxRunning", f -> this.isInteger((TextField) f, "Max running must be an integer value."));
+		this.addValidateToControl(this.shebangHeader,"commandHeader", f -> !this.isEmpty((TextField) f, "Shebang for external command call can not be empty."));
 
 		// add event handler for GUI validation
 		this.workingDir.textProperty().addListener(event -> this.validate());
 		this.javaPath.textProperty().addListener(event -> this.validate());
 		this.maxRunning.textProperty().addListener(event -> this.validate());
+		this.shebangHeader.textProperty().addListener(event -> this.validate());
 		
 		// add suggest constants support
 		@SuppressWarnings("unused") SuggestPopup p1 = new SuggestPopup(this.workingDir);
@@ -160,6 +163,7 @@ public class ExecutorPropertyViewController extends PluginPropertyViewController
 			this.workingDir.setText(data.getStaticWorkingDir());
 			this.javaPath.setText(data.getPath2Java());
 			this.maxRunning.setText(Integer.toString(data.getMaxSimRunning()));
+			this.shebangHeader.setText(data.getShebang());
 			try { this.maxSlaveRunning.setText(Integer.toString(data.getMaxSlaveRunningTasks())); } catch(Exception e) {}
 			
 			// check, if environment is set and can be loaded

@@ -1,5 +1,7 @@
 package de.lmu.ifi.bio.watchdog.executor.external.drmaa;
 
+import java.util.HashMap;
+
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.external.ExternalExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
@@ -28,8 +30,8 @@ public class DRMAAExecutorInfo extends ExternalExecutorInfo {
 	 * @param watchdogBaseDir
 	 * @param environment
 	 */
-	public DRMAAExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String customParams) {
-		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir);
+	public DRMAAExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, String workingDir, String customParams) {
+		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang);
 		this.CUSTOM_PARAMS = customParams;
 	}
 	
@@ -81,6 +83,8 @@ public class DRMAAExecutorInfo extends ExternalExecutorInfo {
 		
 		if(this.hasColor())
 			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());
+		if(this.hasCustomShebang()) 
+			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
 		
 		// end the tag
 		x.endCurrentTag();
@@ -101,4 +105,7 @@ public class DRMAAExecutorInfo extends ExternalExecutorInfo {
 	public boolean isWatchdogRestartSupported() {
 		return true;
 	}
+	
+	@Override
+	public HashMap<String, String> getExecutorSpecificEnvironmentVariables() { return new HashMap<String, String>(); }
 }

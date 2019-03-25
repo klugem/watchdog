@@ -80,7 +80,7 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 	public synchronized String submitJob(Task task, SGEExecutor ex) throws DrmaaException {
 		ArrayList<String> args = new ArrayList<>();
 		SGEExecutorInfo execinfo = ex.getExecutorInfo();
-		
+
 		// set stdout
 		if(task.getStdOut(false) != null) {
 			File out = task.getStdOut(true);
@@ -110,6 +110,14 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 			args.add("-i"); 
 			args.add(task.getStdIn().getAbsolutePath()); 
 		}
+		
+		// set the working directory
+		String wd = ex.getWorkingDir(false);
+		if(wd != null) {
+			args.add("-wd");
+			args.add(wd);
+		}
+		
 		// set on hold if required
 		if(task.isTaskOnHold()) 
 			args.add("-h"); 
@@ -118,6 +126,15 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 		// add queue, memory, slots and custom parameter
 		args.addAll(execinfo.getCommandsForGrid());
 		
+		// set the environment variables that should not be set by an external command
+		if(ex.hasInternalEnvVars()) {
+			HashMap<String, String> env = ex.getInternalEnvVars();
+			for(String key : env.keySet()) {
+				args.add("-v"); 
+				args.add(env.get(key)); 
+			}
+		}
+
 		// add command
 		args.add("-b");
 		args.add("y");

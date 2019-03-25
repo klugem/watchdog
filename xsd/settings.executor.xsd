@@ -63,6 +63,9 @@
 				<x:attribute name="workingDir" type="absolutePathType" default="/usr/local/storage/" />
 				<x:attribute name="pathToJava" type="absoluteOrRelativeFileType" default="/usr/bin/java" />
 				<x:attribute name="environment" type="x:string" default="" />
+				<x:attribute name="shebang" type="x:string" default="#!/bin/bash"/>
+				<x:attribute name="beforeCommandScripts" type="x:string" default=""/>
+				<x:attribute name="afterCommandScripts" type="x:string" default=""/>
 			</x:extension>
 		</x:simpleContent>
 	</x:complexType>

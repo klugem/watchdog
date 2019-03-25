@@ -46,9 +46,10 @@ public abstract class XMLExecutorInfoParser<A extends ExecutorInfo> extends XMLP
 		int maxRunning = Integer.parseInt(XMLParser.getAttribute(el, XMLParser.MAX_RUNNING));
 		String color = XMLParser.getAttribute(el, XMLParser.COLOR);
 		String path2java = XMLParser.getAttribute(el, XMLParser.PATH2JAVA);
-		
+		String shebang = XMLParser.getAttribute(el, XMLParser.SHEBANG);
+
 		// generate info class
-		DefaultExecutorInfo exinfo = new DefaultExecutorInfo(name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, envExecutor, workingDir);
+		DefaultExecutorInfo exinfo = new DefaultExecutorInfo(name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, envExecutor, workingDir, shebang);
 		// set color, if some is set
 		if(color != null)
 			exinfo.setColor(color);

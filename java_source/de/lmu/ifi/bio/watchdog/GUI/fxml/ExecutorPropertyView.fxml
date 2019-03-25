@@ -38,7 +38,8 @@
                     </columnConstraints>
                     <rowConstraints>
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
@@ -48,6 +49,8 @@
                         <Label text="executor type" GridPane.rowIndex="2" />
                         <Label text="use as default executor" GridPane.rowIndex="1" />
                         <CheckBox fx:id="useAsDefault" mnemonicParsing="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <TextField fx:id="shebangHeader" text="#!/bin/bash" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <Label text="shebang for command script" GridPane.rowIndex="3" />
                      </children>
                      <padding>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

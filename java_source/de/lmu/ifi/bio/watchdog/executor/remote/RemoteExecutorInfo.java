@@ -28,8 +28,8 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 	private final String ORIGINAL_HOST_LIST;
 	private SSHPassphraseAuth AUTH;
 
-	public RemoteExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String host, String user, int port, boolean strictHostChecking, String workingDir, SSHPassphraseAuth auth) {
-		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir);
+	public RemoteExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, String host, String user, int port, boolean strictHostChecking, String workingDir, SSHPassphraseAuth auth) {
+		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang);
 		
 		// save the additional stuff
 		this.USER = user;
@@ -160,6 +160,8 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 			x.addQuotedAttribute(XMLParser.DISABLE_STRICT_HOST_CHECK, true);
 		if(this.isStick2Host())
 			x.addQuotedAttribute(XMLParser.STICK2HOST, true);
+		if(this.hasCustomShebang()) 
+			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
 		
 		if(this.hasColor())
 			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());
@@ -178,4 +180,7 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 	public boolean isWatchdogRestartSupported() {
 		return false;
 	}
+	
+	@Override
+	public HashMap<String, String> getExecutorSpecificEnvironmentVariables() { return new HashMap<String, String>(); }
 }

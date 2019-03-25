@@ -56,7 +56,9 @@ public class ClusterGUIExecutorViewController extends GUIExecutorViewController 
 		String watchdogBaseDir = (String) data[6];
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
+		String shebang = (String) data[9];
+		
 		// create the instance
-		return new DRMAAExecutorInfo(XMLParser.CLUSTER, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, this.customParams.getText());
+		return new DRMAAExecutorInfo(XMLParser.CLUSTER, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, workingDir, this.customParams.getText());
 	}
 }

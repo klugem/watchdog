@@ -66,7 +66,7 @@ public class XMLBasedWatchdogParameters {
 	@Parameter(names={"-useEnvBase"}, description="ignores the watchdogBase attribute of the XML workflow and overrides it with the content of the "+ XMLBasedWatchdogRunner.ENV_WATCHDOG_HOME_NAME +" environment variable", required=false)
 	protected boolean useEnvBase = false;
 	
-	@Parameter(names={"-tmpFolder", "-t"}, description="uses a different tmp folder; default: ${watchdogBase}/tmp", required=false)
+	@Parameter(names={"-tmpFolder", "-t"}, description="uses a different tmp folder; should be accessible by external executors; default: ${watchdogBase}/tmp", required=false)
 	protected String tmpFolder;
 	
 	@Parameter(names={"-version"}, description="prints the version number of Watchdog", required=false, help=true)

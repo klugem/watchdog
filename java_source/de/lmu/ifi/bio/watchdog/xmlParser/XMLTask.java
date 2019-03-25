@@ -1307,7 +1307,7 @@ public class XMLTask {
 	
 	
 	/**
-	 * sets new environment values but does not remove the old one
+	 * sets new environment values
 	 * @param environment
 	 */
 	public void setEnvironment(Environment environment) {

@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobInfo;
 
+import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.external.BinaryCallBasedExternalWorkflowManagerConnector;
 import de.lmu.ifi.bio.watchdog.executor.external.BinaryCallInfo;
 import de.lmu.ifi.bio.watchdog.executor.external.GenericJobInfo;
@@ -38,6 +39,7 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 	private static final String CLUSTER_SEP = "@";
 	private final Pattern STATE_SACCT_PATTERN = Pattern.compile(STATE_SACCT); 
 	private String start_date_for_query = new SimpleDateFormat("MM/dd/YY-HH:mm:ss").format(new Date()) ; // date that is used for sacct query (--starttime)
+	private static final String SEPARATOR = "=";
 	
 	public SlurmWorkloadManagerConnector(Logger l) {
 		super(l);
@@ -51,6 +53,19 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 	public void setStartDateForQuery(String date) {
 		this.start_date_for_query = date;
 	}
+	
+	/**
+	 * returns a set of formated environment variables with name=value
+	 * @return
+	 */
+	public static ArrayList<String> getFormatedEnvironmentVariables(HashMap<String, String> env) {
+		ArrayList<String> e = new ArrayList<>();
+		for(String v : env.keySet()) {
+			e.add(v + SEPARATOR + env.get(v));
+		}
+		return e;
+	}
+	
 
 	@Override
 	public synchronized String submitJob(Task task, SlurmExecutor ex) throws DrmaaException {
@@ -88,12 +103,30 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 			args.add(task.getStdIn().getAbsolutePath()); 
 		}
 		
+		// set the working directory
+		String wd = ex.getWorkingDir(false);
+		if(wd != null) {
+			args.add("--workdir");
+			args.add(wd);
+		}
+		
 		// BUG https://bugs.schedmd.com/show_bug.cgi?id=3197 might cause problems in older versions
 		if(task.isTaskOnHold()) args.add("--hold"); 
 		// BUG
 		args.add("--job-name"); args.add(task.getProjectShortCut() + " " + task.getName() + " " + task.getID());
 		args.addAll(execinfo.getCommandsForGrid());
-
+		
+		// set the environment variables that should not be set by an external command
+		if(ex.hasInternalEnvVars()) {
+			ArrayList<String> env = getFormatedEnvironmentVariables(ex.getInternalEnvVars());
+			String f = Executor.writeStringsToFile(env, true);
+			if(f != null) {
+				args.add("--export-file"); 
+				args.add(f); 
+			}
+		}
+		
+		// add final command
 		for(String part : ex.getFinalCommand(false, true))
 			args.add(part);
 

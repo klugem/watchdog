@@ -1,5 +1,7 @@
 package de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser;
 
+import java.util.HashMap;
+
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
@@ -22,8 +24,8 @@ public class DefaultExecutorInfo extends ExecutorInfo {
 	 * @param environment
 	 * @param workingDir
 	 */
-	public DefaultExecutorInfo(String name, boolean isDefault, boolean isStick2Host, int maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir) {
-		super(null, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir);
+	public DefaultExecutorInfo(String name, boolean isDefault, boolean isStick2Host, int maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang) {
+		super(null, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang);
 	}
 
 	@Override
@@ -45,4 +47,7 @@ public class DefaultExecutorInfo extends ExecutorInfo {
 	public boolean isWatchdogRestartSupported() {
 		return false;
 	}
+
+	@Override
+	public HashMap<String, String> getExecutorSpecificEnvironmentVariables() { return new HashMap<String, String>(); }
 }

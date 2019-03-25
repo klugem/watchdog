@@ -159,8 +159,13 @@ public class Task implements Serializable {
 		this.STR_ERR_APPEND = stdErrAppend;
 		this.PROCESS_BLOCK_CLASS = processBlockClass;
 		this.PROCESS_TABLE_MAPPING = processTableMapping;
-		this.ENV = env;
 		this.SAVE_RES = saveRes;
+		
+		if(env != null)
+			this.ENV = env;
+		else {
+			this.ENV = new Environment(null, false, false);
+		}
 		
 		// add the task actions
 		for(TaskAction a : taskActions) {
@@ -1071,68 +1076,22 @@ public class Task implements Serializable {
 	}
 	
 	/**
-	 * returns a hash map which contains the environment variables
-	 * @param inputReplacement
-	 * @param processBlockClass
-	 * @param spawnedTaskCounter
-	 * @param mapping
+	 * gets the environment that is set for that task
 	 * @return
 	 */
-	public HashMap<String, String> getEnvironment(String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping, boolean valueMightBeFilePath) {
-		if(this.ENV == null)
-			return new HashMap<>();
-		
-		String workingDir = XMLTask.hasXMLTask(this.getTaskID()) ? XMLTask.getXMLTask(this.getTaskID()).getExecutor().getWorkingDir() : "";
-		HashMap<String, String> env = new HashMap<>();
-		HashMap<String, String> vars = this.ENV.getEnv();
-		// replace all the variables and $()
-		for(String k : vars.keySet()) {
-			String v = ReplaceSpecialConstructs.replaceValues(vars.get(k), inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true, valueMightBeFilePath);
-			env.put(k, v);
-		}
-		return env;
+	public Environment getTaskEnvironment() {
+		return this.ENV;
 	}
-		
-	/**
-	 * true, if external command for environment variables should be used
-	 * @return
-	 */
-	public boolean useExternalCommand4Env() {
-		return this.ENV != null && this.ENV.useExternalCommand();
-	}
-	
-	/**
-	 * returns commands for setting the environment variables
-	 * @param inputReplacement
-	 * @param processBlockClass
-	 * @param spawnedTaskCounter
-	 * @param mapping
-	 * @return
-	 */
-	public ArrayList<String> getEnvironmentCommands(String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping, boolean valueMightBeFilePath) {
-		if(this.ENV == null)
-			return new ArrayList<>();
-		
-		ArrayList<String> env = new ArrayList<>();
-		ArrayList<String> vars = this.ENV.getCommands();
-		String workingDir = XMLTask.hasXMLTask(this.getTaskID()) ? XMLTask.getXMLTask(this.getTaskID()).getExecutor().getWorkingDir() : "";
-		// replace all the variables and $()
-		for(String k : vars) {
-			k = ReplaceSpecialConstructs.replaceValues(k, inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true, valueMightBeFilePath);
-			env.add(k);
-		}
-		return env;
-	}
-	 
+		 
 	/**
 	 * shebang for external export
 	 * @return
 	 */
 	public String getShebang() {
-		if(this.ENV == null)
+		if(this.executor == null)
 			return null;
 		
-		return this.ENV.getShebang();
+		return this.executor.getShebang();
 	}
 
 	/**
@@ -1294,5 +1253,14 @@ public class Task implements Serializable {
 	}
 	public boolean hasExternalExecutorID() {
 		return this.getExternalExecutorID() != null;
+	}
+
+	/**
+	 * sets environment variables that are used and set by Watchdog
+	 * @param name
+	 * @param value
+	 */
+	public void addEnvVariable(String name, String value) {
+		this.ENV.add(name, value, null, false, false);
 	}
 }

@@ -1,6 +1,7 @@
 package de.lmu.ifi.bio.watchdog.executor.external.sge;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.external.ExternalExecutorInfo;
@@ -46,8 +47,8 @@ public class SGEExecutorInfo extends ExternalExecutorInfo {
 	 * @param memory
 	 * @param queue
 	 */
-	public SGEExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, int slots, String memory, String queue, String workingDir, String customParams, boolean disableDefault) {
-		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir);
+	public SGEExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, int slots, String memory, String queue, String workingDir, String customParams, boolean disableDefault) {
+		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang);
 		this.SLOTS = Math.max(1, slots);
 		this.MEMORY = memory;
 		this.QUEUE = queue;
@@ -188,6 +189,9 @@ public class SGEExecutorInfo extends ExternalExecutorInfo {
 		
 		if(this.hasColor())
 			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());
+		if(this.hasCustomShebang()) 
+			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
+		
 		
 		// end the tag
 		x.endCurrentTag();
@@ -207,5 +211,14 @@ public class SGEExecutorInfo extends ExternalExecutorInfo {
 	@Override
 	public boolean isWatchdogRestartSupported() {
 		return true;
+	}
+	
+	@Override
+	public HashMap<String, String> getExecutorSpecificEnvironmentVariables() {
+		// set infos about the number of used cores and the total memory
+		HashMap<String, String> env = new HashMap<>();
+		env.put(Executor.WATCHGOD_CORES, Integer.toString(this.getSlots()));
+		env.put(Executor.WATCHGOD_MEMORY, Integer.toString(this.getTotalMemorsInMB()));
+		return env; 
 	}
 }

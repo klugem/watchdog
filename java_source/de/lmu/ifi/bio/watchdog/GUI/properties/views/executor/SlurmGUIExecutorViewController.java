@@ -76,7 +76,9 @@ public class SlurmGUIExecutorViewController extends GUIExecutorViewController {
 		String watchdogBaseDir = (String) data[6];
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
-		return new SlurmExecutorInfo(XMLParser.CLUSTER, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, Integer.parseInt(this.cpu.getText()), this.memory.getText(), this.cluster.getText(), this.partition.getText(), this.timelimit.getText(), workingDir, this.customParams.getText(), this.disableDefaultParams.isSelected());
+		String shebang = (String) data[9];
+		
+		return new SlurmExecutorInfo(XMLParser.CLUSTER, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, Integer.parseInt(this.cpu.getText()), this.memory.getText(), this.cluster.getText(), this.partition.getText(), this.timelimit.getText(), workingDir, this.customParams.getText(), this.disableDefaultParams.isSelected());
 	}
 
 	@Override
