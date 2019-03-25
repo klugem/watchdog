@@ -59,7 +59,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	 * @param watchdogBaseDir
 	 * @param environment
 	 */
-	public ExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, String workingDir) {
+	public ExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang) {
 		// test, if we can use some of the default working dirs
 		if(workingDir == null)
 			workingDir = ExecutorInfo.getWorkingDir(watchdogBaseDir);
