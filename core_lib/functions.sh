@@ -596,3 +596,29 @@ function verifyRun2End() {
 	fi
 }
 
+function handle_int() {
+	echo ""
+	echoWarn "Do you really want to..."
+	echoWarn "terminate Watchdog and abort all running tasks ('Y')"
+	echoWarn "detach Watchdog as soon as possible and leave external tasks running ('D')"
+	echoWarn "do nothing ('N')"
+	echoWarn "awaiting user input: "
+	USER_INPUT=$(getInput)
+
+	# sent signals to executed command
+	if [ "${USER_INPUT}" == "D" ]; then
+		kill -SIGUSR1 ${BACKGROUND_PID}
+	elif [ "${USER_INPUT}" == "Y" ]; then
+		kill -SIGUSR2 ${BACKGROUND_PID}	
+	fi
+}
+
+function waitForCommandToFinish() {
+	BACKGROUND_PID=$1
+	BACKGROUND_EXIT_CODE=130
+	# wait while exit code is not SIGINT exit code
+	while [ ${BACKGROUND_EXIT_CODE} -eq 130 ]; do
+		wait ${BACKGROUND_PID}
+		BACKGROUND_EXIT_CODE=$?
+	done
+}

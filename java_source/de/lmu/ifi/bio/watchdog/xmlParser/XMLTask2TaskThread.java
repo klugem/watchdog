@@ -192,6 +192,10 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						x.block();
 						continue;
 					}
+					
+					// do not spawn new tasks (on executors that do not support restart) until we can shutdown Watchdog
+					if(this.isSchedulingPaused() || (MonitorThread.wasRestartModeOnAllMonitorThreads() && !x.getExecutor().isWatchdogRestartSupported()))
+						continue;
 
 					// task can be scheduled and is new one
 					Task t = null;

@@ -91,6 +91,10 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 		}
 	}
 	
+	public static boolean wasRestartModeOnAllMonitorThreads() {
+		return MonitorThread.WAS_RESTART_MODE_SET;
+	}
+	
 	private void setRestartMode(boolean isRestartMode) {
 		this.restartMode = isRestartMode;
 	}

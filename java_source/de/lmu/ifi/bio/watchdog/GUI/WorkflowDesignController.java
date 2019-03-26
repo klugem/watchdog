@@ -393,7 +393,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			}
 			Task.setMail(new Mailer(mail));
 			String watchdogBase = (String) ret[9];
-			Executor.setWatchdogBase(new File(watchdogBase), this.commandlineParams.tmpFolder == null ? null : new File(this.commandlineParams.tmpFolder));
+			Executor.setWatchdogBase(new File(watchdogBase), this.commandlineParams.tmpFolder == null ? null : new File(this.commandlineParams.tmpFolder)); 
 			@SuppressWarnings("unused")
 			HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = (HashMap<String, Pair<HashMap<String, ReturnType>, String>>) ret[3];
 			LinkedHashMap<String, ProcessBlock> processblocks = new LinkedHashMap<>();

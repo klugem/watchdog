@@ -6,7 +6,7 @@ package de.lmu.ifi.bio.watchdog.helper;
  *
  */
 public enum ControlAction {
-	RELEASE("release checkpoint", "was released out of this checkpoint state"), RESTART("restart task", "was added to the scheduler again"), MODIFY("modify parameters", "use modified parameters"), DISPLAY("display parameters", "parameters were displayed"), LIST("show information", "show information"), TERMINATE("terminate all", "terminate watchdog and all running tasks"), IGNORE("ignore task", "ignore"), TERMINATE_TASK("terminate task", "terminate task"), RELEASE_RESOURCE_RESTRICTIONS("release resource restrictions", "resource restrictions were released"), USERINTERFACE_ACTION("GO!", "action from user interface"), RESOLVE("mark as resolved", "was marked as resolved"), RESOLVE_RETURN_USERINTERFACE("mark as resolved", "was marked as resolved");
+	RELEASE("release checkpoint", "was released out of this checkpoint state"), RESTART("restart task", "was added to the scheduler again"), MODIFY("modify parameters", "use modified parameters"), DISPLAY("display parameters", "parameters were displayed"), LIST("show information", "show information"), TERMINATE("terminate all", "terminate watchdog and all running tasks"), IGNORE("ignore task", "ignore"), TERMINATE_TASK("terminate task", "terminate task"), RELEASE_RESOURCE_RESTRICTIONS("release resource restrictions", "resource restrictions were released"), USERINTERFACE_ACTION("GO!", "action from user interface"), RESOLVE("mark as resolved", "was marked as resolved"), RESOLVE_RETURN_USERINTERFACE("mark as resolved", "was marked as resolved"), DETACH("detach Watchdog", "detach request was sent");
 
 	private final String ACTION_NAME;
 	private final String DESCRIPTION;
@@ -79,6 +79,14 @@ public enum ControlAction {
 	}
 	
 	/**
+	 * true, if a detach action
+	 * @return
+	 */
+	public boolean isDetachAction() {
+		return ControlAction.DETACH.name().equals(this.name());
+	}
+	
+	/**
 	 * true, if a resolve action
 	 * @return
 	 */
@@ -115,7 +123,7 @@ public enum ControlAction {
 	 * @return
 	 */
 	public boolean requiresNoID() {
-		if(this.isListAction() || this.isTerminateAction())
+		if(this.isListAction() || this.isTerminateAction() || this.isDetachAction())
 			return true;
 		
 		return false;
@@ -149,6 +157,8 @@ public enum ControlAction {
 			return ControlAction.USERINTERFACE_ACTION;
 		else if(ControlAction.RESOLVE.name().equals(value))
 			return ControlAction.RESOLVE;
+		else if(ControlAction.DETACH.name().equals(value))
+			return ControlAction.DETACH;
 		else
 			return null;
 	}

@@ -15,7 +15,10 @@ of the files is located in ${PREFIX}/share/watchdog-wms-${VERSION}.
 ################################## CALLS ###################################
 In order to run a xml-file using the command line tool, call
 
-./watchdog.sh -x xml-file or java -jar jars/watchdog.jar -x xml-file
+./watchdog.sh -x xml-file (or java -jar jars/watchdog.jar -x xml-file)
+
+To call the jar file directly is not recommended as STRG+C signal will be 
+forwarded to all child processes, which might cause some errors.
 
 The workflow designer can be started using 
 

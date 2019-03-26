@@ -3,6 +3,9 @@ SCRIPT_FOLDER=$(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || re
 source "$SCRIPT_FOLDER/core_lib/includeBasics.sh"
 SLEEP_TIME="60s"
 
+# capture STRG+C signals
+trap 'handle_int' SIGINT
+
 # auto-configure examples if environment variable WATCHDOG_HOME is set and WATCHDOG_AUTO_CONFIG is set to 1
 if [ "$WATCHDOG_AUTO_CONFIG" == "1" ] && [ ! -z "$WATCHDOG_HOME" ]; then
 	if [ -d "$WATCHDOG_HOME/examples" ] && [ ! -f "$WATCHDOG_HOME/examples/example_basic_sleep.xml" ]; then
@@ -28,6 +31,9 @@ if [ $(echo "$@" | grep -c "stopWheneverPossible") -eq 1 ]; then
 		RET=$?
 	done
 else
-	java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" $@
+	java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" &
+	BACKGROUND_PID=$!
+	waitForCommandToFinish ${BACKGROUND_PID}
+	exit $BACKGROUND_EXIT_CODE
 fi
 exit $?

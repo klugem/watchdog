@@ -19,6 +19,7 @@ import de.lmu.ifi.bio.watchdog.helper.HTMLHelper;
 import de.lmu.ifi.bio.watchdog.helper.Mailer;
 import de.lmu.ifi.bio.watchdog.helper.returnType.BooleanReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
+import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.slave.Master;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.task.TaskStatus;
@@ -32,8 +33,6 @@ import sun.misc.Signal;
  *
  */
 public class HTTPListenerThread extends NanoHTTPD {
-	private static final Signal SIGTERM = new Signal("TERM"); // kill request
-	
 	private static final String MINUS = "-";
     private static final String QUERY_STRING_PARAMETER = "NanoHttpd.QUERY_STRING";
 	public static final String WEB_BASE = "webserver_data";
@@ -197,8 +196,11 @@ public class HTTPListenerThread extends NanoHTTPD {
 			if(action.isListAction()) {
 				this.performListAction(parms);
 			}
+			else if(action.isDetachAction()) {
+				Signal.raise(XMLBasedWatchdogRunner.SIGUSR1); // send detach request
+			}
 			else if(action.isTerminateAction()) {
-				Signal.raise(SIGTERM); // send kill request
+				Signal.raise(XMLBasedWatchdogRunner.SIGUSR2); // send kill request
 			}
 			// test, if a task ID is given
 			else if(parms.containsKey(TASK_ID)) {

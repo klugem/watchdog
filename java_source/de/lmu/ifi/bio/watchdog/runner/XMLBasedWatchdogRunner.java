@@ -58,6 +58,8 @@ import sun.misc.SignalHandler;
 public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler {
 	private static final Signal SIGTERM = new Signal("TERM"); // kill request
 	private static final Signal SIGINT = new Signal("INT"); // Strg + C
+	public static final Signal SIGUSR1 = new Signal("USR1"); //SIGUSR1 for detach request sent from SH script
+	public static final Signal SIGUSR2 = new Signal("USR2"); //SIGUSR2 for kill request sent from SH script
 	private static final String BASE_STRING = "watchdogBase"; 
 	private static final Pattern WATCHDOG_BASE = Pattern.compile("<"+XMLParser.ROOT+".+"+BASE_STRING+"=\"([^\"]+)\".+");  
 	public static final String LOG_SEP = "#########################################################################################";
@@ -202,12 +204,15 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				if(!rs.exists())
 					rs.createNewFile();
 				additionalVariablesUsedByPlugins.put(XMLBasedWatchdogRunner.DRMAA_SESSION_NAME, rs.getName());
+				// TODO: use unique identifier here
 			}
 			// set variables that can be used by plugins
 			XMLParserPlugin.setAdditionalPluginInfo(additionalVariablesUsedByPlugins);
 			
 			// install signals to handle
 			Signal.handle(SIGINT, new XMLBasedWatchdogRunner());
+			Signal.handle(SIGUSR1, new XMLBasedWatchdogRunner());
+			Signal.handle(SIGUSR2, new XMLBasedWatchdogRunner());
 			
 			log.info("XML file: " + xmlPath.getAbsolutePath());
 			log.info("XSD file: " + xsdSchema.getAbsolutePath());
@@ -322,23 +327,18 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			int exitCode = 0;
 			while(xml2taskThread.hasUnfinishedTasks() && !xml2taskThread.wasStopped()) {
 				// test if it should be stopped
-				if(waitCounter >= MIN_START_AND_STOP_CYCLES && params.stopWheneverPossible) {
+				if(waitCounter >= MIN_START_AND_STOP_CYCLES && (params.stopWheneverPossible || MonitorThread.wasRestartModeOnAllMonitorThreads())) {
 					if(xml2taskThread.isWatchdogRestartSupportedNow()) {
 						// test, if restart is ok NOW!
 						if(xml2taskThread.hasUnfinishedTasks()) {
-							// do not spawn new tasks until we can shutdown Watchdog
-							xml2taskThread.setPauseScheduling(true);
 							if(watchdog.getNumberOfJobsRunningInRunPool() == 0 && watchdog.canAllConstantlyRunningTasksBeRestarted()) {
-								// get info about running jobs in orde/home/users/kluge/Download/Watchdog_test_reads.xmlr to restore them later on!
+								// get info about running jobs in order to restore them later on!
 								runningInfo = MonitorThread.getMappingsForRestartableTasksFromAllMonitorThreads();
 								ByteArrayOutputStream baos = saveRunningJobInfo(runningInfo);
 								Files.write(Paths.get(params.restartInfo), baos.toByteArray());
 								exitCode = RESTART_EXIT_INDICATOR;
 								xml2taskThread.requestStop(5, TimeUnit.SECONDS);
 								break;
-							}
-							else {
-								xml2taskThread.setPauseScheduling(false);
 							}
 						}
 					}
@@ -472,11 +472,47 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 		return null;
 	}
 	
+	/**
+	 * detach Wachdog
+	 */
+	private void detach() {
+		if(!MonitorThread.wasRestartModeOnAllMonitorThreads()) {
+			MonitorThread.setRestartModeOnAllMonitorThreads(true);
+			LOGGER.info("Watchdog will stop to schedule new tasks and detach as soon as possible.");
+		}
+	}
+	
+	/** 
+	 * terminate Wachdog
+	 */
+	private void terminate() {
+		if(Task.getMailer() != null)
+			Task.getMailer().setOrderedShutdown();
+		Signal.raise(SIGTERM);
+	}
+	
 	
 	@Override
 	public void handle(Signal arg0) {
-		if(SIGINT.equals(arg0)) {
-			System.out.println("Do you really want to terminate Watchdog and abort all running tasks? (Y or N)");
+		// detach mode sent from SH script
+		if(SIGUSR1.equals(arg0)) {
+			this.detach();
+			return;
+		}
+		// kill request sent from SH script
+		else if(SIGUSR2.equals(arg0)) {
+			this.terminate();
+			return;
+		}
+		// normal SIGINT request --> might cause problems as child processes of Watchdog will also recieve this signal and might be killed!
+		// we strongly recommend to use the SH script!
+		else if(SIGINT.equals(arg0)) {
+			System.out.println("[WARNING] Please use the SH script to start Watchdog. Otherwise STRG+C requests might cause errors as they are forwarded to all child processes.");
+			System.out.println("Do you really want to...");
+			System.out.println("terminate Watchdog and abort all running tasks ('Y')");
+			System.out.println("detach Watchdog as soon as possible and leave external tasks running ('D')");
+			System.out.println("do nothing ('N')");
+			System.out.println("awaiting user input: ");
 			try {
 				int b;
 				boolean first = true;
@@ -484,10 +520,12 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				// send termination event
 					if(first) { 
 						if(b == ((int) 'Y') && ((b = System.in.read()) == 10 || b == 13)) {
-							if(Task.getMailer() != null)
-								Task.getMailer().setOrderedShutdown();
-							Signal.raise(SIGTERM);
+							this.terminate();
 							return; 
+						}
+						else if(b == ((int) 'D')  && ((b = System.in.read()) == 10 || b == 13)) {
+							this.detach();
+							return;
 						}
 						else if(b == ((int) 'N')  && ((b = System.in.read()) == 10 || b == 13))
 							return;
@@ -498,12 +536,11 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 						break;
 				} 
 				// if we are still here, entry was not Y or N!
-				System.out.println("Only 'Y' (yes) or 'N' (no) are valid answers!");
+				System.out.println("Only 'Y' (terminate), 'D' (detach) or 'N' (keep running) are valid answers!");
 			}
 			catch(Exception e) { e.printStackTrace(); }
 		}
 	}
-	
 	
 	/**
 	 * checks, if the port is in use by another tool

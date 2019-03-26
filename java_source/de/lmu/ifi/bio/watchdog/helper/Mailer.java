@@ -346,7 +346,7 @@ public class Mailer {
 			for(String key : t.getUsedResources().keySet()) {
 				if(!(key.equals("start_time") || key.equals("end_time") || key.equals("submission_time"))) {
 					
-					if(!res.containsKey(s))
+					if(!res.containsKey(key))
 						res.put(key, 0.0);
 					
 					// sum up the values
@@ -462,9 +462,14 @@ public class Mailer {
 		text.append(NEWLINE);
 		text.append("Check status of tasks: ");
 		text.append(getLink(ControlAction.LIST, true, null, false));
-		text.append(NEWLINE);text.append(NEWLINE);
-		text.append("Terminate watchdog and abort all running tasks: ");
+		text.append(NEWLINE);
+		text.append(NEWLINE);
+		text.append("Terminate Watchdog and abort all running tasks: ");
 		text.append(getLink(ControlAction.TERMINATE, true, null, false));
+		text.append(NEWLINE);
+		text.append(NEWLINE);
+		text.append("Detach Watchdog and keep all tasks running: ");
+		text.append(getLink(ControlAction.DETACH, true, null, false));
 		return text.toString();
 	}
 	
