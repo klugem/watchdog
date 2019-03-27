@@ -25,7 +25,7 @@
 		</processBlock>
 		<!-- instruct watchdog to copy all environment variables that are set on the local system; set "useExternalExport" to true if it is not working in your system environment (see online documentation)-->
 		<environments>
-			<environment name="local" copyLocalValue="true" useExternalExport="true" shebang="#!/bin/bash" exportCommand="export {$NAME}=&amp;quot;{$VALUE}&amp;quot;" color="0xbdb76bff" />
+			<environment name="local" copyLocalValue="true" useExternalExport="true" exportCommand="export {$NAME}=&amp;quot;{$VALUE}&amp;quot;" color="0xbdb76bff" />
 		</environments>
 	</settings>
 	<tasks mail="{%MAIL%}">

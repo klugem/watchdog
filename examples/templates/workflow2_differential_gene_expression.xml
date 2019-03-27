@@ -26,8 +26,8 @@
 		</constants>
 		<!-- executors with different resource requirements; TODO: adjust that on your environment -->
 		<executors>
-			<cluster name="cluster mapping" environment="local copy" maxRunning="8" slots="16" memory="2G" queue="hpclient.q" color="0xffa500ff" />
-			<cluster name="cluster normal" environment="local copy" slots="1" default="true" queue="hpclient.q" memory="1G"/>
+			<sge name="cluster mapping" environment="local copy" maxRunning="8" slots="16" memory="2G" queue="hpclient.q" color="0xffa500ff" />
+			<sge name="cluster normal" environment="local copy" slots="1" default="true" queue="hpclient.q" memory="1G"/>
 			<local name="local host" maxRunning="4" color="0x0cff09ff" />
 		</executors>
 		<processBlock>
@@ -38,7 +38,7 @@
 		</processBlock>
 		<environments>
 			<!-- instruct watchdog to copy all environment variables that are set on the local system; set "useExternalExport" to true if it is not working in your system environment (see online documentation)-->
-			<environment name="local copy" copyLocalValue="true" useExternalExport="true" shebang="#!/bin/bash" exportCommand="export {$NAME}=&amp;quot;{$VALUE}&amp;quot;" color="0xc45052ff">
+			<environment name="local copy" copyLocalValue="true" useExternalExport="true" exportCommand="export {$NAME}=&amp;quot;{$VALUE}&amp;quot;" color="0xc45052ff">
 				<var name="WORKING">yes</var>
 			</environment>
 		</environments>
