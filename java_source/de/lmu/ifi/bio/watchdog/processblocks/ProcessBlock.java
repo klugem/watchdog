@@ -79,7 +79,7 @@ public abstract class ProcessBlock implements XMLDataStore, XMLPlugin {
 	 * key: group name --> value
 	 * @return
 	 */
-	public abstract HashMap<String, String> getValues();
+	public abstract LinkedHashMap<String, String> getValues();
 	
 	/**
 	 * number of elements in this processblock

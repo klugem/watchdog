@@ -16,6 +16,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.HTTPListenerThread;
+import de.lmu.ifi.bio.watchdog.executor.MonitorThread;
 import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.ActionType;
 import de.lmu.ifi.bio.watchdog.helper.CheckerContainer;
@@ -100,7 +101,7 @@ public class XMLTask {
 	private String prev_global_slave_id = null;
 	private final HashMap<String, String> SLAVE_IDS = new HashMap<>();
 	private final HashMap<String, ResumeInfo> RESUME_INFO = new HashMap<>();
-	private final HashMap<String, Task> RESTART_INFO = new HashMap<>();
+	private final HashMap<String, Task> ATTACH_INFO = new HashMap<>();
 	private boolean forceSingleSlaveMode = false;
 	private boolean isIgnored = false;
 	private GUIInfo guiInfo = null;
@@ -337,7 +338,7 @@ public class XMLTask {
 		String gfn = t.getGroupFileName();
 		if(this.RESUME_INFO.containsKey(gfn))
 			this.RESUME_INFO.get(gfn).setDirty();
-		
+
 		// set it dirty for global dependencies
 		this.setOneSubTaskIsDirty();
 	}
@@ -591,8 +592,10 @@ public class XMLTask {
 	 * Ends the checking if this XML Task can spawn new elements (is set when it has only global dependencies or the same number of tasks was spawned in separate mode)
 	 */
 	public void endCheckingForNewTasks() {
-		this.hasXMLTaskSpawnedAllTasks = true;
-		LOGGER.info("XMLTask with ID '" + this.getXMLID() + "' will not spawn any more tasks. It spawned " + this.SPAWNED_TASKS.size() + " tasks!");
+		if(!MonitorThread.wasDetachModeOnAllMonitorThreads()) {
+			this.hasXMLTaskSpawnedAllTasks = true;
+			LOGGER.info("XMLTask with ID '" + this.getXMLID() + "' will not spawn any more tasks. It spawned " + this.SPAWNED_TASKS.size() + " tasks!");
+		}
 	}
 	
 	/**
@@ -1567,18 +1570,18 @@ public class XMLTask {
 	}
 	
 	/**
-	 * adds the info if Watchdog is running in start&stop mode
+	 * adds the info if Watchdog is running in detach&attacg mode
 	 * @param t
 	 */
-	public void addRestartInfo(Task t) {
-		this.RESTART_INFO.put(t.getGroupFileName(), t);
+	public void addAttachInfo(Task t) {
+		this.ATTACH_INFO.put(t.getGroupFileName(), t);
 	}
 	
-	public Task getRestartInfo(String groupFileName) {
-		return this.RESTART_INFO.get(groupFileName);
+	public Task getAttachInfo(String groupFileName) {
+		return this.ATTACH_INFO.get(groupFileName);
 	}
 
-	public void removeRestartInfo(String inputName) {
-		this.RESTART_INFO.remove(inputName);
+	public void removeAttachInfo(String inputName) {
+		this.ATTACH_INFO.remove(inputName);
 	}
 }

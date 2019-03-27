@@ -57,7 +57,7 @@ public class ShutdownManager extends MonitorRunnable {
 	}
 	
 	@Override
-	public boolean canBeStoppedForRestart() {
+	public boolean canBeStoppedForDetach() {
 		return true;
 	}
 }

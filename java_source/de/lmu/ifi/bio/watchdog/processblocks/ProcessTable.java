@@ -27,7 +27,7 @@ public class ProcessTable extends ProcessMultiParam {
 	private final File TABLE;
 	private boolean wasRead = false;
 	private final ArrayList<String> BUFFER = new ArrayList<>();
-	private final HashMap<String, String> RES = new HashMap<>();
+	private final LinkedHashMap<String, String> RES = new LinkedHashMap<>();
 	private static final Logger LOGGER = new Logger(LogLevel.ERROR);
 	private final String KEY_COLUMN;
 	private static final LinkedHashMap<String, String> OFFER_VAR = new LinkedHashMap<>();
@@ -156,9 +156,9 @@ public class ProcessTable extends ProcessMultiParam {
 	}
 
 	@Override
-	public HashMap<String, String> getValues() {
+	public LinkedHashMap<String, String> getValues() {
 		this.readFile();
-		return new HashMap<String, String>(this.RES);
+		return new LinkedHashMap<String, String>(this.RES);
 	}
 	
 	@Override

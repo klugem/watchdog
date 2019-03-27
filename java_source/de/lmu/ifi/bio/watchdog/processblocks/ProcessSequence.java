@@ -101,8 +101,8 @@ public class ProcessSequence extends ProcessBlock {
 	}
 	
 	@Override
-	public HashMap<String, String> getValues() {
-		HashMap<String, String> ret = new LinkedHashMap<>();
+	public LinkedHashMap<String, String> getValues() {
+		LinkedHashMap<String, String> ret = new LinkedHashMap<>();
 		for(String v : this.VALUES) {
 			ret.put(v, v);
 		}

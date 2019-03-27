@@ -158,7 +158,7 @@ public abstract class ExternalScheduledMonitorThread<A extends ExternalScheduled
 	public void setPauseScheduling(boolean pause) {
 		super.setPauseScheduling(pause);
 		// if not in start&stop mode --> set all tasks on hold
-		if(!this.isInRestartMode()) {
+		if(!this.isInDetachMode()) {
 			LinkedHashMap<String, A> tasks = this.getMonitorTasks();
 			// do not schedule any more tasks --> set all on hold
 			for(String id : tasks.keySet()) {

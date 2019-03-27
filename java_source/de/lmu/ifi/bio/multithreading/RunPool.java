@@ -71,18 +71,18 @@ public class RunPool implements Logable {
 	 * returns the number of jobs in the short queue
 	 * @return
 	 */
-	public int getNumberOfShortRunningJobs() {
+	public synchronized int getNumberOfShortRunningJobs() {
 		return Math.min(0, MonitorRunableExecutionTime.getNumberOfNotFinishedTasks() - this.constantRunningTasks);
 	}
 	
-	public boolean canAllConstantlyRunningTasksBeRestarted() {
+	public synchronized boolean canAllConstantlyRunningTasksBeRestarted() {
 		return MonitorRunableExecutionTime.canAllConstantlyRunningTasksBeRestarted();
 	}
 	
 	/**
 	 * does not accept any more tasks and terminate thread pool after all tasks are finished
 	 */
-	public void shutdown() {
+	public synchronized void shutdown() {
 		if(!this.POOL.isShutdown() && !this.POOL.isTerminated()) {
 			LOGGER.info("Shutting down thread pool...");
 			MonitorRunableExecutionTime.shutdown();
@@ -93,7 +93,7 @@ public class RunPool implements Logable {
 	/** 
 	 * forces to shutdown via interrupt
 	 */
-	public void shutdownNow() {
+	public synchronized void shutdownNow() {
 		if(!this.POOL.isShutdown() && !this.POOL.isTerminated()) {
 			LOGGER.info("Fored shut down of thread pool!");
 			this.POOL.shutdownNow();

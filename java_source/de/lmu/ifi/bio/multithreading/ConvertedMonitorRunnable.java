@@ -17,7 +17,7 @@ public class ConvertedMonitorRunnable extends MonitorRunnable {
 	}
 
 	@Override
-	public boolean canBeStoppedForRestart() {
+	public boolean canBeStoppedForDetach() {
 		return false;
 	}
 }

@@ -77,7 +77,7 @@ public class FileWatcherLockguard extends StopableLoopRunnable {
 	}
 	
 	@Override
-	public boolean canBeStoppedForRestart() {
+	public boolean canBeStoppedForDetach() {
 		return this.MONITOR.size() == 0;
 	}
 	

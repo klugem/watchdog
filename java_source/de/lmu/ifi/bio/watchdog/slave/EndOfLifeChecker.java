@@ -95,7 +95,7 @@ public class EndOfLifeChecker extends StopableLoopRunnable {
 	}
 
 	@Override
-	public boolean canBeStoppedForRestart() {
+	public boolean canBeStoppedForDetach() {
 		return this.CHECK_IDS.size() == 0;
 	}
 }

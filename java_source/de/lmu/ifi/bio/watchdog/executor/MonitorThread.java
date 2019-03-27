@@ -24,21 +24,21 @@ import de.lmu.ifi.bio.watchdog.task.TaskStatus;
 public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopThread {
 	protected static final Logger LOGGER = new Logger(LogLevel.DEBUG);
 	public final LinkedHashMap<String, E> MONITOR_TASKS = new LinkedHashMap<>();
-	private static boolean WAS_RESTART_MODE_SET = false;
+	private static boolean WAS_DETACH_MODE_SET = false;
 	
 	// used for pausing / resume of scheduling
 	private static boolean stopWasCalled = false;
 	private static final Set<MonitorThread<? extends Executor<?>>> CREATED_MONITOR_THREADS = Collections.synchronizedSet(new LinkedHashSet<MonitorThread<? extends Executor<?>>>());
 	private boolean isSchedulingPaused = false;
 	private boolean isDead = false;
-	private boolean restartMode = false;
+	private boolean detachMode = false;
 	
 	public MonitorThread(String name) {
 		super(name);
 		MonitorThread.CREATED_MONITOR_THREADS.add(this);
 	
 		// ensure that all monitor threads have restart mode set
-		this.setRestartMode(MonitorThread.WAS_RESTART_MODE_SET);
+		this.setDetachMode(MonitorThread.WAS_DETACH_MODE_SET);
 	}
 	
 	public void setPauseScheduling(boolean pause) {
@@ -84,27 +84,28 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 		}
 	}
 	
-	public static void setRestartModeOnAllMonitorThreads(boolean isRestartMode) {
-		MonitorThread.WAS_RESTART_MODE_SET = isRestartMode;
+	public static void setDetachModeOnAllMonitorThreads(boolean isDetachMode) {
+		LOGGER.debug("Detach of Watchdog was requested!");
+		MonitorThread.WAS_DETACH_MODE_SET = isDetachMode;
 		for(MonitorThread<? extends Executor<?>> mt : CREATED_MONITOR_THREADS) {
-			mt.setRestartMode(isRestartMode);
+			mt.setDetachMode(isDetachMode);
 		}
 	}
 	
-	public static boolean wasRestartModeOnAllMonitorThreads() {
-		return MonitorThread.WAS_RESTART_MODE_SET;
+	public static boolean wasDetachModeOnAllMonitorThreads() {
+		return MonitorThread.WAS_DETACH_MODE_SET;
 	}
 	
-	private void setRestartMode(boolean isRestartMode) {
-		this.restartMode = isRestartMode;
+	private void setDetachMode(boolean isDetachMode) {
+		this.detachMode = isDetachMode;
 	}
 	
 	/**
-	 * true, if watchdog is running in start&stop = restart mode
+	 * true, if watchdog is running in detach / attach mode
 	 * @return
 	 */
-	public boolean isInRestartMode() {
-		return this.restartMode;
+	public boolean isInDetachMode() {
+		return this.detachMode;
 	}
 	
 
@@ -158,31 +159,31 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 		// stop all other running tasks
 		for(String key : this.MONITOR_TASKS.keySet()) {
 			E ex = this.MONITOR_TASKS.get(key);
-			if(!this.isInRestartMode() || !ex.EXEC_INFO.isWatchdogRestartSupported()) {
+			if(!this.isInDetachMode() || !ex.EXEC_INFO.isWatchdogDetachSupported()) {
 				ex.stopExecution();
 			}
 		}
 	}
 	
 	/**
-	 * returns the mapping for all tasks that support start&stop mode
+	 * returns the mapping for all tasks that support detach&attach mode
 	 * @return
 	 */
-	public synchronized HashMap<String, Task> getMappingForRestartableTasks() {
+	public synchronized HashMap<String, Task> getMappingForDetachableTasks() {
 		HashMap<String, Task> ids2task = new HashMap<>();
 		for(String key : this.MONITOR_TASKS.keySet()) {
 			E ex = this.MONITOR_TASKS.get(key);
-			if(this.isInRestartMode()  && ex.EXEC_INFO.isWatchdogRestartSupported()) {
+			if(this.isInDetachMode()  && ex.EXEC_INFO.isWatchdogDetachSupported()) {
 				ids2task.put(key, ex.getTask());
 			}
 		}
 		return ids2task;
 	}
 	
-	public static ArrayList<Task> getMappingsForRestartableTasksFromAllMonitorThreads() {
+	public static ArrayList<Task> getMappingsForDetachableTasksFromAllMonitorThreads() {
 		ArrayList<Task> info = new ArrayList<>();
 		for(MonitorThread<? extends Executor<?>> mt : CREATED_MONITOR_THREADS) {
-			HashMap<String, Task> runInfo = mt.getMappingForRestartableTasks();
+			HashMap<String, Task> runInfo = mt.getMappingForDetachableTasks();
 			for(String externalID : runInfo.keySet()) {
 				Task t = runInfo.get(externalID);
 				t.setExternalExecutorID(externalID);

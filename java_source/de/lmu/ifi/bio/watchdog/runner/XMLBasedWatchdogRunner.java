@@ -41,11 +41,11 @@ import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.resume.LoadResumeInfoFromFile;
 import de.lmu.ifi.bio.watchdog.resume.ResumeInfo;
+import de.lmu.ifi.bio.watchdog.resume.WorkflowResumeLogger;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask2TaskThread;
-import de.lmu.ifi.bio.watchdog.xmlParser.plugins.XMLParserPlugin;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
@@ -68,9 +68,24 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 	public static final String XML_PATTERN = "*.xml";
 	public static final String ENV_WATCHDOG_HOME_NAME = "WATCHDOG_HOME";
 	public static final String ENV_WATCHDOG_WORKING_DIR = "WATCHDOG_WORKING_DIR";
-	private static final int MIN_START_AND_STOP_CYCLES = 10;
+	private static final int MIN_SPAWN_CYCLES = 5; // minimum cycles of xml2task calls in detach&attach mode
 	public static final String DRMAA_SESSION_NAME = "drmaa_session_name-ExternalScheduledExecutor";
-	public static final int RESTART_EXIT_INDICATOR = 1;
+	public static final int RESTART_EXIT_INDICATOR = 123; // exit code that indicates normal termination caused by detach of Watchdog
+	public static final int FAILED_WRITE_DETACH_FILE = 124;
+	public static final int FAILED_READ_ATTACH_FILE = 125;
+	private static final long WAIT_DETACH = 5*1000; // wait a few seconds in order to give the monitor threads enough time to finish all ongoing stuff
+	public static final String DETACH_LOG_ENDING = WorkflowResumeLogger.LOG_ENDING.replace(WorkflowResumeLogger.LAST_PART_OF_ENDING, "attach");
+	
+	// key names for detach/attach mode
+	public static final String ATTACH_RESUME_FILE = "ATTACH_RESUME_FILE";
+	public static final String ATTACH_RUNNING_TASKS = "ATTACH_RUNNING_TASKS";
+	public static final HashSet<String> ATTACH_TEST = new HashSet<>();
+	
+	static {
+		// these fields are automatically tested for existence after de-serialization
+		ATTACH_TEST.add(ATTACH_RESUME_FILE);
+		ATTACH_TEST.add(ATTACH_RUNNING_TASKS);
+	}
 	
 	@SuppressWarnings({ "unchecked" })
 	public static void main(String[] args) throws SAXException, IOException, ParserConfigurationException, DrmaaException, InterruptedException {
@@ -127,19 +142,6 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				logFile = new File(params.log);
 			int port = params.port;
 			
-			// read resume info
-			HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo = new HashMap<>();
-			if(params.resume != null) {
-				File resume = new File(params.resume);
-				if(resume.exists() && resume.canRead()) {
-					resumeInfo = LoadResumeInfoFromFile.getResumeInfo(resume);
-				}
-				else {
-					log.error("Could not find watchdog status log file '"+resume.getAbsolutePath()+"'.");
-					System.exit(1);
-				}
-			}
-			
 			PORT = port; // copy that for other classes which want to access that
 			int startID = params.start;
 			int stopID = params.stop;
@@ -168,6 +170,12 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				System.exit(1);
 			}
 			
+			// test if resume file is given when attach info is there
+			if(params.attachInfo != null && params.resume != null) {
+				log.error("Parameter '-attachInfo' can not be used in combination with '-resume' as resume file is automatically loaded.");
+				System.exit(1);
+			}
+			
 			// check, if the port is ok
 			if(!portOK(port)) {
 				log.error("Port '"+port+"' is already used by another programm.");
@@ -191,13 +199,42 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 					System.exit(1);
 				}
 			}
-			
 			if(!(xsdSchema.isFile() && xsdSchema.canRead())) {
 				log.error("Can not find XSD watchdog schema '"+ xsdSchema.getAbsolutePath() +"'");
 				System.exit(1);
 			}
+	
+			// get resume info if some is there (in order to forward it to the corresponding monitor threads afterwards)
+			HashMap<String, Object> allInfo = null;
+			ArrayList<Task> runningInfo = null;
+			if(params.attachInfo != null) {
+				File af = new File(params.attachInfo);
+				if(af.exists() && af.length() > 0) {
+					// try to read restart info from file
+					allInfo = getRunningJobInfo(af);
+					runningInfo = (ArrayList<Task>) allInfo.get(ATTACH_RUNNING_TASKS);
+					params.resume = allInfo.get(ATTACH_RESUME_FILE).toString();
+				}
+				else {
+					log.info("Started Watchdog with empty attach file '"+af.getAbsolutePath()+"'.");
+				}
+			}
+		
+			// read resume info
+			HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo = new HashMap<>();
+			if(params.resume != null) {
+				File resume = new File(params.resume);
+				if(resume.exists() && resume.canRead()) {
+					resumeInfo = LoadResumeInfoFromFile.getResumeInfo(resume);
+				}
+				else {
+					log.error("Could not find Watchdog's resume file '"+resume.getAbsolutePath()+"'.");
+					System.exit(1);
+				}
+			}
+
 			// prepare variables that can be used by plugins
-			HashMap<String, Object> additionalVariablesUsedByPlugins = new HashMap<>();
+		/*	HashMap<String, Object> additionalVariablesUsedByPlugins = new HashMap<>();
 			if(params.stopWheneverPossible && params.restartInfo != null) {
 				// ensure that the file exists
 				File rs = new File(params.restartInfo);
@@ -207,7 +244,9 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				// TODO: use unique identifier here
 			}
 			// set variables that can be used by plugins
-			XMLParserPlugin.setAdditionalPluginInfo(additionalVariablesUsedByPlugins);
+			XMLParserPlugin.setAdditionalPluginInfo(additionalVariablesUsedByPlugins); 
+			TODO:
+			*/
 			
 			// install signals to handle
 			Signal.handle(SIGINT, new XMLBasedWatchdogRunner());
@@ -221,9 +260,18 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			else
 				log.info("Log file: ** not saved **");
 			
-			if(params.resume != null)
-				log.info("Resume file: " + new File(params.resume).getAbsolutePath());
-
+			File resumeFile = null;
+			if(params.resume != null) {
+				resumeFile = new File(params.resume);
+				log.info("Resume file: " + resumeFile.getAbsolutePath());
+			}
+			else {
+				resumeFile = new File(WorkflowResumeLogger.generateResumeFilename(xmlPath, false));
+			}
+			
+			if(params.attachInfo != null)
+				log.info("Attach file: " + new File(params.attachInfo).getAbsolutePath());
+			
 			// parse the XML Tasks
 			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading, params.disableMails);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
@@ -232,6 +280,8 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			HashMap<String, Integer> name2id = (HashMap<String, Integer>) ret[4]; 
 
 			log.info("Loaded resume info for "+ resumeInfo.size() +" task ids.");
+			if(runningInfo != null)
+				log.info("Loaded attach info for "+ runningInfo.size() +" task ids.");
 			log.info("Parsed " + xmlTasks.size() + " from the provided XML file.");
 
 			// check, if some of the tasks should be removed
@@ -304,18 +354,10 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				Task.setMail(mailer);
 			}
 			
-			// get resume info if some is there in order to give it to the corresponding monitor threads afterwards
-			MonitorThread.setRestartModeOnAllMonitorThreads(params.stopWheneverPossible);
-			ArrayList<Task> runningInfo = null;
-			if(params.stopWheneverPossible && params.restartInfo != null) {
-				// try to read restart info from file
-				runningInfo = getRunningJobInfo(new File(params.restartInfo));
-			}
-
 			// create a new watchdog object and xml2 thread stuff
 			WatchdogThread watchdog = new WatchdogThread(params.simulate, null, xsdSchema, logFile); 
 			watchdog.setWebserver(control);
-			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, xmlPath, params.mailWaitTime, resumeInfo, runningInfo);
+			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, xmlPath, params.mailWaitTime, resumeInfo, runningInfo, resumeFile);
 			
 			WatchdogThread.addUpdateThreadtoQue(xml2taskThread, true);
 			Executor.setXml2Thread(xml2taskThread);
@@ -326,26 +368,59 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			int waitCounter = 0;
 			int exitCode = 0;
 			while(xml2taskThread.hasUnfinishedTasks() && !xml2taskThread.wasStopped()) {
-				// test if it should be stopped
-				if(waitCounter >= MIN_START_AND_STOP_CYCLES && (params.stopWheneverPossible || MonitorThread.wasRestartModeOnAllMonitorThreads())) {
-					if(xml2taskThread.isWatchdogRestartSupportedNow()) {
-						// test, if restart is ok NOW!
-						if(xml2taskThread.hasUnfinishedTasks()) {
-							if(watchdog.getNumberOfJobsRunningInRunPool() == 0 && watchdog.canAllConstantlyRunningTasksBeRestarted()) {
-								// get info about running jobs in order to restore them later on!
-								runningInfo = MonitorThread.getMappingsForRestartableTasksFromAllMonitorThreads();
-								ByteArrayOutputStream baos = saveRunningJobInfo(runningInfo);
-								Files.write(Paths.get(params.restartInfo), baos.toByteArray());
-								exitCode = RESTART_EXIT_INDICATOR;
-								xml2taskThread.requestStop(5, TimeUnit.SECONDS);
-								break;
+				// test if Wachdog should be detached
+				if(MonitorThread.wasDetachModeOnAllMonitorThreads()) {
+					// test if detach is supported now (e.g. no task is running on a executor that does not support detach mode)
+					if(xml2taskThread.isWatchdogDetachSupportedNow()) {
+						// do not schedule more tasks
+						xml2taskThread.setPauseScheduling(true);
+						
+						// test, if all internal threads allow restart
+						if(watchdog.getNumberOfJobsRunningInRunPool() == 0 && watchdog.canAllConstantlyRunningTasksBeRestarted()) {
+							 //give the monitor threads some time to finish with their current activity
+							Thread.sleep(WAIT_DETACH); 
+							
+							// get info about running jobs in order to attach to them later on!
+							runningInfo = MonitorThread.getMappingsForDetachableTasksFromAllMonitorThreads();
+							HashMap<String, Object> dataToSave = new HashMap<>();
+							dataToSave.put(ATTACH_RESUME_FILE, resumeFile.getAbsolutePath());
+							dataToSave.put(ATTACH_RUNNING_TASKS, runningInfo);
+							ByteArrayOutputStream baos = saveRunningJobInfo(dataToSave);
+							String outFile = params.attachInfo;
+							if(outFile == null) { 
+								outFile = resumeFile.getAbsolutePath().replaceFirst(WorkflowResumeLogger.LOG_ENDING + "$", DETACH_LOG_ENDING);
 							}
+							String outFileBak = outFile + ".bak";
+							// write it first and then move replace it in order to (nearly) ensure that a complete file exists
+							Files.write(Paths.get(outFileBak), baos.toByteArray());
+							File detachFile = new File(outFile);
+							new File(outFileBak).renameTo(detachFile);
+							if(!detachFile.exists()) {
+								exitCode = FAILED_WRITE_DETACH_FILE;
+								log.error("Failed to write detach info file '"+detachFile.getAbsolutePath()+"'!");
+								exitCode = FAILED_WRITE_DETACH_FILE;
+							}
+							else {
+								exitCode = RESTART_EXIT_INDICATOR;
+								log.info("Attach info was written to '"+detachFile.getAbsolutePath()+"'.");
+							}
+							
+							// request stop of xml2task thread 
+							xml2taskThread.requestStop(5, TimeUnit.SECONDS);
+							break;
 						}
 					}
 				}
-				else if(params.stopWheneverPossible) {
-					waitCounter++;
+				else if(params.autoDetach && !MonitorThread.wasDetachModeOnAllMonitorThreads()) {
+					// activate auto detach mode (do it only if all resume tasks were resumed) 
+					if(!xml2taskThread.hasAnyXMLTaskResumeInfo()) {
+						// give Watchdog some time to spawn new tasks
+						waitCounter++;
+						if(waitCounter >= MIN_SPAWN_CYCLES)
+							MonitorThread.setDetachModeOnAllMonitorThreads(true);
+					}
 				}
+				
 				// sleep until next check
 				Thread.sleep(SLEEP);
 			}
@@ -358,9 +433,9 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				if(Task.isMailSet())
 					Task.getMailer().goodbye(xmlTasks);
 				else {
-					System.out.println(LOG_SEP);
-					System.out.println(Mailer.getGoodbyeTxt(xmlTasks));
-					System.out.println(LOG_SEP);				
+					log.info(LOG_SEP);
+					log.info(Mailer.getGoodbyeTxt(xmlTasks));
+					log.info(LOG_SEP);				
 				}	
 				log.info("All Tasks are finished!");
 			}
@@ -373,30 +448,41 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 	}
 	
 	/**
-	 * reads the info of running jobs for start&stop mode from a file
+	 * reads the info of running jobs and other data for detach&attach mode from a file
 	 * @param f
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static ArrayList<Task> getRunningJobInfo(File f) {
+	public static HashMap<String, Object> getRunningJobInfo(File f) {
 		if(!(f.isFile() && f.exists() && f.canRead() && f.length() > 0))
 			return null;
 		
-		ArrayList<Task> o = null;
+		HashMap<String, Object> o = null;
 		try {
 			byte[] buffer = Files.readAllBytes(Paths.get(f.getAbsolutePath()));
 		
 			InputStream bais = new ByteArrayInputStream(buffer, 0, buffer.length);
 	        ObjectInputStream ois = new ObjectInputStream(bais); 
-	        try { o = (ArrayList<Task>) ois.readObject(); } 
-	        catch(OptionalDataException e) {
-	        	// TODO: add more sophisticated error checking
+	        try { o = (HashMap<String, Object>) ois.readObject(); } 
+	        catch(Exception e) {
+	        	LOGGER.error("File '"+f.getAbsolutePath()+"' does not contain a valid attach info.");
 	        	e.printStackTrace();
+	        	System.exit(1);
 	        }
 	        ois.close();
+	        
+	        // test, if the required fields are there
+	        for(String key : ATTACH_TEST) {
+	        	if(!o.containsKey(key)) {
+	        		LOGGER.error("File '"+f.getAbsolutePath()+"' does not contain a value for attach key '"+key+"'.");
+	        		System.exit(FAILED_READ_ATTACH_FILE);
+	        	}
+	        }
         }
 		catch(Exception e) {
-	        e.printStackTrace();
+        	LOGGER.error("File '"+f.getAbsolutePath()+"' does not contain a valid attach info.");
+        	e.printStackTrace();
+        	System.exit(1);
 	    }
         return o;
 	}
@@ -407,7 +493,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 	 * @return
 	 * @throws IOException
 	 */
-	public static ByteArrayOutputStream saveRunningJobInfo(ArrayList<Task> o) throws IOException {
+	public static ByteArrayOutputStream saveRunningJobInfo(HashMap<String, Object> o) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(baos);
 		oos.writeObject(o);
@@ -476,8 +562,8 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 	 * detach Wachdog
 	 */
 	private void detach() {
-		if(!MonitorThread.wasRestartModeOnAllMonitorThreads()) {
-			MonitorThread.setRestartModeOnAllMonitorThreads(true);
+		if(!MonitorThread.wasDetachModeOnAllMonitorThreads()) {
+			MonitorThread.setDetachModeOnAllMonitorThreads(true);
 			LOGGER.info("Watchdog will stop to schedule new tasks and detach as soon as possible.");
 		}
 	}

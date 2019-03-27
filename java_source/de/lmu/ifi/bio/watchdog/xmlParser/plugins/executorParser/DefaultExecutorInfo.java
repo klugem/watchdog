@@ -44,7 +44,7 @@ public class DefaultExecutorInfo extends ExecutorInfo {
 	public Object[] getDataToLoadOnGUI() { return null; }
 
 	@Override
-	public boolean isWatchdogRestartSupported() {
+	public boolean isWatchdogDetachSupported() {
 		return false;
 	}
 

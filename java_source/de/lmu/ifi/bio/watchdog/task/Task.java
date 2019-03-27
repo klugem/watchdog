@@ -1214,6 +1214,7 @@ public class Task implements Serializable {
     }
 
 	public void setTaskStatusUpdateFinished() {
+		this.LOGGER.debug("Task status update for task '"+this.getID()+"' is finished!");
 		this.taskStatusUpdateFinished = true;
 	}
 	

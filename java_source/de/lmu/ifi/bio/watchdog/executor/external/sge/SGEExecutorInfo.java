@@ -209,7 +209,7 @@ public class SGEExecutorInfo extends ExternalExecutorInfo {
 	}
 	
 	@Override
-	public boolean isWatchdogRestartSupported() {
+	public boolean isWatchdogDetachSupported() {
 		return true;
 	}
 	

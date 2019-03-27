@@ -102,7 +102,7 @@ public class DRMAAExecutorInfo extends ExternalExecutorInfo {
 	}
 	
 	@Override
-	public boolean isWatchdogRestartSupported() {
+	public boolean isWatchdogDetachSupported() {
 		return true;
 	}
 	

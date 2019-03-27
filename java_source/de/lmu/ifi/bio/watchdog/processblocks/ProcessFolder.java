@@ -2,9 +2,12 @@ package de.lmu.ifi.bio.watchdog.processblocks;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+
+import org.apache.commons.io.comparator.NameFileComparator;
 
 import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
@@ -152,15 +155,16 @@ public class ProcessFolder extends ProcessBlock {
 	}
 	
 	@Override
-	public HashMap<String, String> getValues() {
+	public LinkedHashMap<String, String> getValues() {
 		ArrayList<File> files = new ArrayList<>();
 		// find all matching files for all different process folders
 		for(int i = 0; i < this.ROOT_PATH.size(); i++) {
 			this.findMatchingFiles(this.ROOT_PATH.get(i), this.PATTERN.get(i), this.IGNORE.get(i), this.MAX_DEPTH.get(i), files, false, 0);
 		}
-		
-		HashMap<String, String> v = new HashMap<>();
-		for(File f : files) {
+		File[] fs = files.toArray(new File[0]);
+		Arrays.sort(fs, NameFileComparator.NAME_COMPARATOR);
+		LinkedHashMap<String, String> v = new LinkedHashMap<>();
+		for(File f : fs) {
 			v.put(f.getAbsolutePath(), f.getAbsolutePath());
 		}
 		return v;

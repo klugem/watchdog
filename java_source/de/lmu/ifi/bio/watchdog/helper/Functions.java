@@ -212,11 +212,12 @@ public class Functions {
 		// reset it
 		TimedExecution.addRunableNamed(() -> resetErrorStream(filter, err), 2, TimeUnit.SECONDS, "resetErrorStream");
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {resetErrorStream(filter, err); try {Thread.sleep(2500);} catch(Exception e) {} }));
+		// TODO!
 	}
 	
 	public static void resetErrorStream(ErrorParserFilter filter, PrintStream err) {
 		System.setErr(err);
-		try { filter.close(); } catch(Exception e) {}
+		try { filter.close(); } catch(Exception e) { }
 	}
 
 	public static void write(Path file, String data) {

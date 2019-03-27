@@ -307,10 +307,10 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	}
 	
 	/**
-	 * true, if restart of Watchdog is supported by that executor
+	 * true, if detach/attach mode of Watchdog is supported by that executor while tasks are running on it
 	 * @return
 	 */
-	public abstract boolean isWatchdogRestartSupported();
+	public abstract boolean isWatchdogDetachSupported();
 	
 	/**
 	 * returns all jobs that are currently executed

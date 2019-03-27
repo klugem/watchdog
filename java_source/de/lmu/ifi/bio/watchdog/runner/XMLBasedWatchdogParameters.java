@@ -54,14 +54,14 @@ public class XMLBasedWatchdogParameters {
 	@Parameter(names={"-exclude", "-e"}, description="xml task id that should be ignored during execution; can be used several times; can be used in combination with -start and -stop", required=false)
 	protected List<String> exclude = new ArrayList<>();
 	
-	@Parameter(names={"-resume"}, description="resumes workflow execution whereby tasks that were executed successfully are ignored; expects a watchdog status log file from a previous watchdog run; can be used in combination with -start, -stop, -include and -exclude", required=false)
+	@Parameter(names={"-resume"}, description="resumes workflow execution whereby tasks that were executed successfully (and parameters are unchanged) are ignored; expects a watchdog status log file from a previous watchdog run; can be used in combination with -start, -stop, -include and -exclude", required=false)
 	protected String resume;
 	
-	@Parameter(names={"-stopWheneverPossible"}, description="stops the execution of Watchdog whenever possible (running tasks on an external executor will not be terminated on stop); status of running tasks is checked when Watchdog is restarted with the -restartInfo option;", required=false)
-	protected boolean stopWheneverPossible = false;
+	@Parameter(names={"-autoDetach"}, description="stops the execution of Watchdog whenever possible (running tasks on an external executor will not be terminated on detach); status of previously running tasks is checked when Watchdog is started with the -restart and -attachInfo option;", required=false)
+	protected boolean autoDetach = false;
 	
-	@Parameter(names={"-restartInfo"}, description="path to a file that is used to restore the session info of a Watchdog run when Wathdog runs in detach/attach mode ", required=false)
-	protected String restartInfo = null;
+	@Parameter(names={"-attachInfo"}, description="path to a file that is used to restore the info on previously running tasks when Wathdog should be re-attached to running tasks; (can not be used in combination with -resume as resume file is automatically loaded)", required=false)
+	protected String attachInfo = null;
 	
 	@Parameter(names={"-useEnvBase"}, description="ignores the watchdogBase attribute of the XML workflow and overrides it with the content of the "+ XMLBasedWatchdogRunner.ENV_WATCHDOG_HOME_NAME +" environment variable", required=false)
 	protected boolean useEnvBase = false;

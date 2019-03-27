@@ -22,14 +22,14 @@ public abstract class StopableLoopRunnable extends MonitorRunnable implements St
 		try {
 			// run executeLoop until stop is requested
 			while(!this.isStopRequested()) {
-				int factor = Math.max(this.executeLoop(), 1);
+				int factor = Math.max(this.executeLoop(), 0);
 				
 				if(this.isStopRequested()) {
 					this.wasStopped = true;
 					break;
 				}
-				
-				Thread.sleep(this.getDefaultWaitTime()*factor);
+				if(factor > 0)
+					Thread.sleep(this.getDefaultWaitTime()*factor);
 			}
 			LOGGER.debug("LoopRunnable '" + this.getName() + "' was stopped after stop request.");
 		}

@@ -189,7 +189,7 @@ public class LogViewController implements Initializable {
 		}
 
 		@Override
-		public boolean canBeStoppedForRestart() {
+		public boolean canBeStoppedForDetach() {
 			return false;
 		}
 	}

@@ -39,10 +39,10 @@ public abstract class MonitorRunnable implements Runnable {
 	}
 	
 	/**
-	 * should return true, if it can be stopped for restart
+	 * should return true, if it can be stopped for restart / detach
 	 * @return
 	 */
-	public abstract boolean canBeStoppedForRestart();
+	public abstract boolean canBeStoppedForDetach();
 	
 	@Override
 	public boolean equals(Object o) {

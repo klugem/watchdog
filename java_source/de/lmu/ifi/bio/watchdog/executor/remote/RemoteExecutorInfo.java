@@ -177,7 +177,7 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 	}
 	
 	@Override
-	public boolean isWatchdogRestartSupported() {
+	public boolean isWatchdogDetachSupported() {
 		return false;
 	}
 	

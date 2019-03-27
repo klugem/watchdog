@@ -259,7 +259,7 @@ public class SlurmExecutorInfo extends ExternalExecutorInfo {
 	}
 
 	@Override
-	public boolean isWatchdogRestartSupported() {
+	public boolean isWatchdogDetachSupported() {
 		return true;
 	}
 	

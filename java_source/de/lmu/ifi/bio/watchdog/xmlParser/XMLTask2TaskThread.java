@@ -58,7 +58,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	* @param xmlTasks
 	* @param returnTypeInfo
 	*/
-	public XMLTask2TaskThread(WatchdogThread watchdog, ArrayList<XMLTask> xmlTasks, Mailer mailer, HashMap<String, Pair<HashMap<String, ReturnType>, String>> returnTypeInfo, File xmlPath, int mailWaitTime, HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo, ArrayList<Task> runningInfo) {
+	public XMLTask2TaskThread(WatchdogThread watchdog, ArrayList<XMLTask> xmlTasks, Mailer mailer, HashMap<String, Pair<HashMap<String, ReturnType>, String>> returnTypeInfo, File xmlPath, int mailWaitTime, HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo, ArrayList<Task> attachInfo, File resumeFile) {
 		super("XMLTask2Task");
 		this.WATCHDOG = watchdog;
 		this.MAILER = mailer;
@@ -68,12 +68,12 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	
 		
 		// add the workflow resume logger task status update handler
-		this.addTaskStatusHandler(new WorkflowResumeLogger(this.XML_PATH));
+		this.addTaskStatusHandler(new WorkflowResumeLogger(resumeFile, true));
 		
-		// add the restart info for start&stop
+		// add the attach info for detach&attach
 		HashMap<Integer, ArrayList<Task>> runningHash = new HashMap<>();
-		if(runningInfo != null) {
-			for(Task runnningTaskInfo : runningInfo) {
+		if(attachInfo != null) {
+			for(Task runnningTaskInfo : attachInfo) {
 				int tid = runnningTaskInfo.getTaskID();
 				if(!runningHash.containsKey(tid)) 
 					runningHash.put(tid, new ArrayList<Task>());
@@ -92,10 +92,10 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 			if(resumeInfo != null && resumeInfo.containsKey(x.getXMLID()))
 				x.addResumeInfo(resumeInfo.get(x.getXMLID()));
 			
-			// add the info required for start&stop mode
+			// add the info required for attach&detach mode
 			if(runningHash.containsKey(x.getXMLID())) {
 				for(Task t : runningHash.get(x.getXMLID()))
-					x.addRestartInfo(t);
+					x.addAttachInfo(t);
 			}
 			
 			// add the task to the scheduler queue
@@ -131,9 +131,11 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 
 	/**
 	* tries to convert some XML tasks to normal tasks, if they do not depend on anything
+	* no sleep time when at least one resume task was spawned (indicated by "false" return)
 	* @return
 	*/
 	public synchronized boolean createAndAddTasks() {
+		boolean noResume = true;
 		int newTasks = 0;
 		// test if some the the xml tasks can be converted
 		for(XMLTask x : new ArrayList<XMLTask>(this.XML_TASKS.values())) {
@@ -183,7 +185,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						resumeInfo = x.getResumeInfo(inputName);
 					
 					// check, if the task is currently running
-					Task restartInfo = x.getRestartInfo(inputName);
+					Task attachInfo = x.getAttachInfo(inputName);
 
 					// check, if the user want to verify the parameters first
 					if(resumeInfo == null && (x.getConfirmParam().isEnabled() || x.getConfirmParam().isSubtaskEnabled()) && !x.getConfirmParam().wasPerformed()) {
@@ -193,13 +195,13 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						continue;
 					}
 					
-					// do not spawn new tasks (on executors that do not support restart) until we can shutdown Watchdog
-					if(this.isSchedulingPaused() || (MonitorThread.wasRestartModeOnAllMonitorThreads() && !x.getExecutor().isWatchdogRestartSupported()))
+					// do not spawn new tasks (on executors that do not support detach&attach) until we can shutdown Watchdog
+					if(this.isSchedulingPaused() || (MonitorThread.wasDetachModeOnAllMonitorThreads() && !x.getExecutor().isWatchdogDetachSupported()))
 						continue;
 
 					// task can be scheduled and is new one
 					Task t = null;
-					if(restartInfo == null) {
+					if(attachInfo == null) {
 						String completeRawargumentList = completeArguments.get(inputName);
 						t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled(), x.mightProcessblockContainFilenames());
 						t.setMaxRunning(x.getMaxRunning());
@@ -243,7 +245,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					}
 					// use de-serialized Task Info
 					else {
-						t = restartInfo;
+						t = attachInfo;
 						t.setTaskIsAlreadyRunning(true);
 					}
 					x.addExecutionTask(t);
@@ -265,14 +267,17 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					if(resumeInfo == null) {
 						this.WATCHDOG.addToQue(t);
 					}
-					// task was already executed successfully
+					// task was already executed successfully (-resume)
 					else {
 						t.increaseExecutionCounter();
 						t.setJobInfo(new ResumeJobInfo());
 						if(resumeInfo.hasReturnParams()) {
 							t.setReturnParams(resumeInfo.getReturnParams());
 						}
+						// remove the resume info
+						x.removeResumeInfo(inputName);
 					}
+					noResume = false;
 					newTasks++;
 				}
 				if(!x.isBlocked())
@@ -290,7 +295,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 			}
 			x.schedulingWasPerformed();
 		}
-		return newTasks > 0;
+		return newTasks > 0 && noResume;
 	}
 	
 	/**
@@ -443,29 +448,42 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	}
 	
 	/**
-	* tests, if restarting of watchdog is supported currently as not tasks are running on executor that do
-	* not support restarting
+	* tests, if detach of watchdog is supported currently as not tasks are running on executor that do
+	* not support detach&attach
 	* @return
 	*/
-	public synchronized boolean isWatchdogRestartSupportedNow() {
-		// check, if only tasks are running on executors that support restart
+	public synchronized boolean isWatchdogDetachSupportedNow() {
+		// check, if only tasks are running on executors that support detach&attach
 		for(XMLTask x : new ArrayList<XMLTask>(this.XML_TASKS.values())) {
-			if(x.isCompleteTaskReady())
+			if(x.isCompleteTaskReady()) {
 				continue;
+			}
 			
 			//check, if some of the spawned tasks are still running
 			for(Task t : x.getExecutionTasks().values()) {
-				// we can not restart while some tasks are running on a slave
-				if(t.isRunningOnSlave())
+				// we can not detach while some tasks are running on a slave
+				if(t.isRunningOnSlave()) {
 					return false;
-				
-				// task is currently running and no restart is possible
-				if(t.isTaskRunning() && !x.getExecutor().isWatchdogRestartSupported()) {
+				}
+				// task is currently running and no detach is possible
+				if(t.isTaskRunning() && !x.getExecutor().isWatchdogDetachSupported()) {
 					return false;
 				}	
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * checks, if any of the XML tasks has a resume info left
+	 * @return
+	 */
+	public boolean hasAnyXMLTaskResumeInfo() {
+		for(XMLTask x : this.XML_TASKS.values()) {
+			if(x.hasResumeInfo())
+				return true;
+		}
+		return false;
 	}
 
 	public void addTaskStatusHandler(StatusHandler sh) {
@@ -487,8 +505,10 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		
 		// check, if new tasks can be scheduled
 		if(!this.isSchedulingPaused()) {
-			this.createAndAddTasks();
-			return 1;
+			if(this.createAndAddTasks())
+				return 1;
+			else // no wait time when at least one task as resumed
+				return 0;
 		}		
 		return 5;
 	}
@@ -529,7 +549,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	}
 	
 	@Override
-	public boolean canBeStoppedForRestart() {
+	public boolean canBeStoppedForDetach() {
 		return true;
 	}
 }

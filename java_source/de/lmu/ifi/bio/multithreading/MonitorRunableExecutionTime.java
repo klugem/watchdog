@@ -146,19 +146,19 @@ public class MonitorRunableExecutionTime extends StopableLoopRunnable {
 	}
 	
 	/**
-	 * test, if alll constantly running tasks can be restarted
+	 * test, if all constantly running tasks can be restarted (detached)
 	 * @return
 	 */
 	public static boolean canAllConstantlyRunningTasksBeRestarted() {
 		for(MonitorRunnable r : MonitorRunableExecutionTime.monitor.IS_CONSTANTLY_RUNNING) {
-			if(!r.canBeStoppedForRestart())
+			if(!r.canBeStoppedForDetach())
 				return false;
 		}
 		return true;
 	}
 
 	@Override
-	public boolean canBeStoppedForRestart() {
+	public boolean canBeStoppedForDetach() {
 		return true;
 	}
 }

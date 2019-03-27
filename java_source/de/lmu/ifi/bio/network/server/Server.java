@@ -169,7 +169,7 @@ public class Server extends StopableLoopRunnable {
 	}
 	
 	@Override
-	public boolean canBeStoppedForRestart() {
+	public boolean canBeStoppedForDetach() {
 		return true;
 	}
 }
