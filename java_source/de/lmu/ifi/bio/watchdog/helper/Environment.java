@@ -20,6 +20,7 @@ public class Environment implements XMLDataStore {
 
 	private static final long serialVersionUID = -3644008624943186138L;
 	private static final String BASH_FUNCTION = "()";
+	private static final String BASH_ILLEGAL_CHARS = ".*[\\.-].*";
 	public static final String DEFAULT_UPDATE_SEP = ":";
 	private static final String PATTERN_NAME = "{$NAME}";
 	private static final String PATTERN_VALUE = "{$VALUE}";
@@ -110,7 +111,7 @@ public class Environment implements XMLDataStore {
 	 */
 	public void add(String name, String value, String sep, boolean copy, boolean update) {
 		// do not try to export any functions
-		if(name.endsWith(BASH_FUNCTION) || value.startsWith(BASH_FUNCTION))
+		if(name.endsWith(BASH_FUNCTION) || value.startsWith(BASH_FUNCTION) || name.matches(BASH_ILLEGAL_CHARS))
 			return;
 
 		if(!copy && !update) {

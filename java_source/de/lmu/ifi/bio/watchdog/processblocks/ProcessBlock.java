@@ -124,4 +124,11 @@ public abstract class ProcessBlock implements XMLDataStore, XMLPlugin {
 	 * @return
 	 */
 	public abstract boolean addsReturnInfoToTasks();
+	
+	/**
+	 * if true is, returned the input parameter of resume and re-attach tasks are added to the process block
+	 * is required, f.e. for ProcessFolder when input files are deleted after successfull execution
+	 * @return
+	 */
+	public abstract boolean isResumeReattachValueAddingRequired();
 }

@@ -23,7 +23,7 @@ public class FileWatcherLockguard extends StopableLoopRunnable {
 	private final Map<Task, ArrayList<File>> MONITOR = new ConcurrentHashMap<Task, ArrayList<File>>();
 	
 	private static FileWatcherLockguard lock = null;
-	private static final int CREATE_DIFF_MILLI = 5000; // was not modifed for at least 5 seconds
+	private static final int CREATE_DIFF_MILLI = 5000; // was not modified for at least 5 seconds
 	private static final int WAIT_TIME_MILLI = 1000;
 	
 	/**

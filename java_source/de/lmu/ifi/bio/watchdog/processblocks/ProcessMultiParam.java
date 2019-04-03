@@ -31,4 +31,9 @@ public abstract class ProcessMultiParam extends ProcessBlock {
 	public HashMap<String, Integer> getNameMapping() {
 		return this.getNameMapping(false);
 	}
+	
+	@Override
+	public boolean isResumeReattachValueAddingRequired() {
+		return false;
+	}
 }

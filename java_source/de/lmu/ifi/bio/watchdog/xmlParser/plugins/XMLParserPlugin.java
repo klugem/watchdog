@@ -18,7 +18,6 @@ import de.lmu.ifi.bio.watchdog.logger.Logger;
  */
 public abstract class XMLParserPlugin<A extends XMLPlugin> {
 
-	private static HashMap<String, Object> ADDITIONAL_PLUGIN_INFO = new HashMap<>();
 	protected boolean no_exit;
 	protected boolean GUI_load_attempt;
 	protected final Logger LOGGER;
@@ -30,22 +29,6 @@ public abstract class XMLParserPlugin<A extends XMLPlugin> {
 	 */
 	public XMLParserPlugin(Logger l) {
 		this.LOGGER = l;
-	}
-	
-	/**
-	 * adds some additional info that can be used by any plugin
-	 * @param info
-	 */
-	public static void setAdditionalPluginInfo(HashMap<String, Object> info) {
-		ADDITIONAL_PLUGIN_INFO.putAll(info);
-	}
-	
-	public static Object getAdditionalPluginInfo(String key) {
-		return ADDITIONAL_PLUGIN_INFO.get(key);
-	}
-	
-	public static boolean hasAdditionalPluginInfo(String key) {
-		return ADDITIONAL_PLUGIN_INFO.containsKey(key);
 	}
 	
 	public static <A extends XMLPlugin, B extends XMLParserPlugin<A>> B getInstance(Class<B> c, Logger logger, Boolean noExit, Boolean isGUILoadAttempt) {

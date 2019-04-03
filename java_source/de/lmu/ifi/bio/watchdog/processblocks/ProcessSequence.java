@@ -171,4 +171,9 @@ public class ProcessSequence extends ProcessBlock {
 	public Object[] getDataToLoadOnGUI() { 
 		return new Object[] { this.gui_start, this.gui_end, this.gui_step };
 	}
+	
+	@Override
+	public boolean isResumeReattachValueAddingRequired() {
+		return false;
+	}
 }

@@ -22,9 +22,10 @@ import de.lmu.ifi.bio.watchdog.task.TaskStatus;
  *
  */
 public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopThread {
-	protected static final Logger LOGGER = new Logger(LogLevel.DEBUG);
+	protected static final Logger LOGGER = new Logger(LogLevel.INFO);
 	public final LinkedHashMap<String, E> MONITOR_TASKS = new LinkedHashMap<>();
 	private static boolean WAS_DETACH_MODE_SET = false;
+	private static ArrayList<Task> DETACH_INFO = new ArrayList<>();
 	
 	// used for pausing / resume of scheduling
 	private static boolean stopWasCalled = false;
@@ -35,7 +36,7 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 	
 	public MonitorThread(String name) {
 		super(name);
-		MonitorThread.CREATED_MONITOR_THREADS.add(this);
+		synchronized(CREATED_MONITOR_THREADS) { MonitorThread.CREATED_MONITOR_THREADS.add(this); }
 	
 		// ensure that all monitor threads have restart mode set
 		this.setDetachMode(MonitorThread.WAS_DETACH_MODE_SET);
@@ -54,41 +55,46 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 			stopWasCalled = true;
 			// avoid modification while iterating
 			HashSet<MonitorThread<? extends Executor<?>>> copy = new HashSet<>();
-			copy.addAll(CREATED_MONITOR_THREADS);
+			synchronized(CREATED_MONITOR_THREADS) { copy.addAll(CREATED_MONITOR_THREADS); }
 			// remove all that threads
 			for(MonitorThread<? extends Executor<?>> mt : copy) {
 				if(nicely) mt.requestStop(5, TimeUnit.SECONDS);
 				else mt.requestForcedStop();
 			}
-			CREATED_MONITOR_THREADS.clear();
 		}
 	}
 	
 	@Override
 	public void requestStop(long timeout, TimeUnit u) {
-		CREATED_MONITOR_THREADS.remove(this);
+		LOGGER.debug("Stop for thread named '"+this.getName()+"' requested.");
 		this.isDead = true;
 		super.requestStop(timeout, u);
 	}
 	
 	@Override
 	public void requestForcedStop() {
-		CREATED_MONITOR_THREADS.remove(this);
+		LOGGER.debug("Forced stop for thread named '"+this.getName()+"' detected!");
 		this.isDead = true;
 		super.requestForcedStop();
 	}
 
 	public static void setPauseSchedulingOnAllMonitorThreads(boolean pause) {
-		for(MonitorThread<? extends Executor<?>> mt : CREATED_MONITOR_THREADS) {
-			mt.setPauseScheduling(pause);
+		synchronized(CREATED_MONITOR_THREADS) { 
+			for(MonitorThread<? extends Executor<?>> mt : CREATED_MONITOR_THREADS) {
+				mt.setPauseScheduling(pause);
+			}
 		}
 	}
 	
 	public static void setDetachModeOnAllMonitorThreads(boolean isDetachMode) {
-		LOGGER.debug("Detach of Watchdog was requested!");
+		if(isDetachMode) {
+			LOGGER.info("Detach of Watchdog was requested!");
+		}
 		MonitorThread.WAS_DETACH_MODE_SET = isDetachMode;
-		for(MonitorThread<? extends Executor<?>> mt : CREATED_MONITOR_THREADS) {
-			mt.setDetachMode(isDetachMode);
+		synchronized(CREATED_MONITOR_THREADS) { 
+			for(MonitorThread<? extends Executor<?>> mt : CREATED_MONITOR_THREADS) {
+				mt.setDetachMode(isDetachMode);
+			}
 		}
 	}
 	
@@ -159,38 +165,41 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 		// stop all other running tasks
 		for(String key : this.MONITOR_TASKS.keySet()) {
 			E ex = this.MONITOR_TASKS.get(key);
-			if(!this.isInDetachMode() || !ex.EXEC_INFO.isWatchdogDetachSupported()) {
+			// get info for detach
+			if(this.isInDetachMode() && ex.EXEC_INFO.isWatchdogDetachSupported()) {
+				Task t = ex.getTask();
+				t.setExternalExecutorID(key);
+				DETACH_INFO.add(t);
+			}
+			 // stop execution if not detach mode
+			else {
 				ex.stopExecution();
 			}
 		}
+		// do some cleaning
+		synchronized(CREATED_MONITOR_THREADS) { CREATED_MONITOR_THREADS.remove(this); }
 	}
 	
 	/**
-	 * returns the mapping for all tasks that support detach&attach mode
+	 * test, if some monitor threads are still running
 	 * @return
 	 */
-	public synchronized HashMap<String, Task> getMappingForDetachableTasks() {
-		HashMap<String, Task> ids2task = new HashMap<>();
-		for(String key : this.MONITOR_TASKS.keySet()) {
-			E ex = this.MONITOR_TASKS.get(key);
-			if(this.isInDetachMode()  && ex.EXEC_INFO.isWatchdogDetachSupported()) {
-				ids2task.put(key, ex.getTask());
+	public static boolean hasRunningMonitorThreads() {
+		if(CREATED_MONITOR_THREADS.size() > 0) {
+			synchronized(CREATED_MONITOR_THREADS) { 
+				for(MonitorThread<?> t : CREATED_MONITOR_THREADS) {
+					// if wasThreadStartedOnce() is true, afterLoop was not run as otherwise the entry wouldn't be in the list!
+					if(t.isAlive() || t.wasThreadStartedOnce()) {
+						return true;
+					}
+				}
 			}
 		}
-		return ids2task;
+		return false;
 	}
-	
+
 	public static ArrayList<Task> getMappingsForDetachableTasksFromAllMonitorThreads() {
-		ArrayList<Task> info = new ArrayList<>();
-		for(MonitorThread<? extends Executor<?>> mt : CREATED_MONITOR_THREADS) {
-			HashMap<String, Task> runInfo = mt.getMappingForDetachableTasks();
-			for(String externalID : runInfo.keySet()) {
-				Task t = runInfo.get(externalID);
-				t.setExternalExecutorID(externalID);
-				info.add(t);
-			}
-		}
-		return info;
+		return DETACH_INFO;
 	}
 	
 	/**

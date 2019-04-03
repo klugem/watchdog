@@ -10,6 +10,7 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.Session;
 
 import de.lmu.ifi.bio.watchdog.executor.ScheduledExecutor;
+import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
@@ -25,7 +26,7 @@ public class RemoteExecutor extends ScheduledExecutor<RemoteExecutorInfo> {
 
 	private static final String CD = "cd ";
 	private static final String EXEC_NAME = "remote";
-	private static final Logger LOGGER = new Logger(LogLevel.DEBUG);
+	private static final Logger LOGGER = new Logger(LogLevel.INFO);
 	private static RemoteMonitorThread REMOTE_MONITOR = new RemoteMonitorThread();
 	private static final String EXEC = "exec";
 	private Session session;
@@ -63,8 +64,9 @@ public class RemoteExecutor extends ScheduledExecutor<RemoteExecutorInfo> {
 		if(REMOTE_MONITOR.isDead())
 			REMOTE_MONITOR = new RemoteMonitorThread();
 		// check, if the local monitor thread is running and start it, if it is not
-		if(!REMOTE_MONITOR.isAlive()) {
-			REMOTE_MONITOR.start();
+		if(!REMOTE_MONITOR.isAlive() && !REMOTE_MONITOR.wasThreadStartedOnce()) {
+			// add thread to run pool
+			WatchdogThread.addUpdateThreadtoQue(REMOTE_MONITOR, true, true);
 		}
 		
 		// add job to remote monitor

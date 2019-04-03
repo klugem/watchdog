@@ -4,8 +4,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -22,9 +24,11 @@ import de.lmu.ifi.bio.watchdog.executor.local.LocalExecutor;
 import de.lmu.ifi.bio.watchdog.executor.local.LocalExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.remote.RemoteJobInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
+import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.ReadExitCodes;
 import de.lmu.ifi.bio.watchdog.helper.ShutdownManager;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
+import de.lmu.ifi.bio.watchdog.resume.AttachInfo;
 import de.lmu.ifi.bio.watchdog.slave.Master;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
@@ -38,7 +42,7 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
  *
  */
 public class WatchdogThread extends StopableLoopThread {
-	
+
 	public static final String DEFAULT_WORKDIR = "/usr/local/storage/";
 	public static final String EXIT_CODE_PATH = ".." + File.separator + "core_lib" + File.separator + "exitCodes.sh";
 	public static final int RETRY_WAIT_TIME = 10000; // wait 10s before next contact try
@@ -78,6 +82,14 @@ public class WatchdogThread extends StopableLoopThread {
 		this.SLAVE_MODE = slaveMode;
 
 		this.SLAVE_EXEC_INFO = new LocalExecutorInfo(XMLParser.LOCAL, "slave executor", false, false, null, maxRunningOnSlave, watchdogXSDPath.getAbsoluteFile().getParentFile().getParent(), new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), "", null);
+		
+		// set start date
+		String qName = AttachInfo.ATTACH_INITIAL_START_TIME;
+		if(!AttachInfo.hasLoadedData(qName))
+			AttachInfo.setValue(qName, Functions.getCurrentDateAndTime());
+		else {
+			AttachInfo.setValue(qName, AttachInfo.getLoadedData(qName));
+		}
 		
 		if(executionLog != null) {
 			try {
@@ -134,6 +146,13 @@ public class WatchdogThread extends StopableLoopThread {
 		ArrayList<Task> copy;
 		synchronized(this.TASKS) { copy = new ArrayList<>(this.TASKS); }
 		for(Task t : copy) {
+			// check, if it is a detach/attach task --> is already running and must be only added to the monitor thread
+			if(t.isTaskAlreadyRunning()) {
+				this.execute(t, simulate, isSlaveExecutor);
+				continue;
+			}
+			// NORMAL TEST FROM HERE
+			
 			// do not schedule normal tasks
 			if(unfinished+executed >= MAX_TASKS_NOT_FINISHED && t.getTaskID() >= 0)
 				continue;
@@ -142,16 +161,13 @@ public class WatchdogThread extends StopableLoopThread {
 			if(t.willRunOnSlave() && t.isMaxRunningRestrictionReached())
 				continue;
 			
-
-			// task was never submitted or 
-			// check, if it is a start&stop task --> is alreay running and must be only added to the monitor thread
-			if(t.getStatus().isWaitingOnDependencies() || t.isTaskAlreadyRunning()) {
+			// task was never submitted
+			if(t.getStatus().isWaitingOnDependencies()) {
 				// check if dependencies are ok
 				if(t.hasTaskUnresolvedDependencies(isSlaveExecutor) == false) {
 					try {
 						if(this.execute(t, simulate, isSlaveExecutor))
-							if(!t.isTaskAlreadyRunning())
-								executed++;
+							executed++;
 					}
 					catch(Exception e) {
 						e.printStackTrace();
@@ -327,9 +343,9 @@ public class WatchdogThread extends StopableLoopThread {
 		return WatchdogThread.RUN_POOL.addRunnable(r, isConstantlyRunning) != null;
 	}
 	
-	public static boolean addUpdateThreadtoQue(Runnable r, boolean isConstantlyRunning) {
+	public static boolean addUpdateThreadtoQue(Runnable r, boolean isConstantlyRunning, boolean canBeStoppedForDetach) {
 		ensureRunPool();
-		return WatchdogThread.RUN_POOL.addRunnable(new ConvertedMonitorRunnable(r), isConstantlyRunning) != null;
+		return WatchdogThread.RUN_POOL.addRunnable(new ConvertedMonitorRunnable(r, canBeStoppedForDetach), isConstantlyRunning) != null;
 	}
 
 	public void setWebserver(HTTPListenerThread webserver) {
@@ -355,4 +371,21 @@ public class WatchdogThread extends StopableLoopThread {
 		if(RUN_POOL == null)
 			RUN_POOL = new RunPool(WORKER_THREADS, MANAGEMENT_THREADS);
 	}
+
+	/**
+	 * tests, if all re-attach tasks were scheduled
+	 * @return
+	 */
+	public boolean wereAttachTasksScheduled() {
+		ArrayList<Task> copy = null;
+		synchronized(this.TASKS) { copy = new ArrayList<>(this.TASKS); }
+		for(Task t : copy) {
+			// this value is reset to false if a task is executed
+			if(t.isTaskAlreadyRunning()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 }

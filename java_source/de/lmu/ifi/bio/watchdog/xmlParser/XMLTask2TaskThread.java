@@ -4,11 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import de.lmu.ifi.bio.multithreading.StopableLoopRunnable;
@@ -22,6 +24,7 @@ import de.lmu.ifi.bio.watchdog.helper.Mailer;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.interfaces.ErrorChecker;
 import de.lmu.ifi.bio.watchdog.interfaces.SuccessChecker;
+import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessMultiParam;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessReturnValueAdder;
 import de.lmu.ifi.bio.watchdog.resume.ResumeInfo;
@@ -155,8 +158,6 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					nameMapping = ((ProcessMultiParam) x.getProcessBlock()).getNameMapping(true);
 					// no data is there yet --> process this task later
 					if(nameMapping.size() == 0) {
-						// check, if separate dependencies are finished for that task
-						this.checkSeparateDep(x);
 						continue;
 					}
 				}
@@ -195,14 +196,18 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						continue;
 					}
 					
-					// do not spawn new tasks (on executors that do not support detach&attach) until we can shutdown Watchdog
-					if(this.isSchedulingPaused() || (MonitorThread.wasDetachModeOnAllMonitorThreads() && !x.getExecutor().isWatchdogDetachSupported()))
+					// do not spawn new tasks
+					if(this.isSchedulingPaused())
 						continue;
 
 					// task can be scheduled and is new one
 					Task t = null;
 					if(attachInfo == null) {
-						String completeRawargumentList = completeArguments.get(inputName);
+						// check if required for values that were added by resume/re-attach stuff
+						String completeRawargumentList = inputName;
+						if(completeArguments.containsKey(inputName))
+							completeRawargumentList = completeArguments.get(inputName);
+						
 						t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled(), x.mightProcessblockContainFilenames());
 						t.setMaxRunning(x.getMaxRunning());
 						t.setProject(x.getProjectName());
@@ -245,7 +250,14 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					}
 					// use de-serialized Task Info
 					else {
+						// remove the attach info
+						x.removeAttachInfo(inputName);
 						t = attachInfo;
+						
+						// set status handler if some are set
+						for(StatusHandler sh : this.STATUS_HANDLER) 
+							t.addStatusHandler(sh);
+						
 						t.setTaskIsAlreadyRunning(true);
 					}
 					x.addExecutionTask(t);
@@ -280,13 +292,12 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					noResume = false;
 					newTasks++;
 				}
-				if(!x.isBlocked())
+				if(!x.isBlocked() && !x.hasRunningTasks())
 					this.checkSeparateDep(x);
 				
 				// delete, tasks which should be rescheduled.
 				if(x.isRescheduled())
 					x.clearRescheduled();
-						
 			}
 			else {
 				// check, if all tasks had been executed
@@ -314,7 +325,10 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		}
 		// mark XML task as finished if all tasks were spawned
 		if(allSeparateDependenciesAreReady) { // if this is a problem implement more complex check, that includes ignored tasks
-			x.endCheckingForNewTasks();
+			// no new values were added --> end checking
+			if(!this.addDependingReturnModifingProcessBlocks(x)) {
+				x.endCheckingForNewTasks();
+			}
 		}
 	}
 
@@ -332,15 +346,25 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		}
 		// process group block! :-)
 		else {
-			HashMap<String, String> v = x.getProcessBlock().getValues();
+			ProcessBlock pr = x.getProcessBlock();
+			HashMap<String, String> v = pr.getValues();
+			boolean isMultiParam = pr instanceof ProcessMultiParam;			
 			// check, which type of process block it is
-			if(x.getProcessBlock() instanceof ProcessMultiParam) {
+			if(isMultiParam) {
 				for(String input : v.keySet()) {
-					list.put(input, Task.parseArguments(x.getArguments(v.get(input), ((ProcessMultiParam) x.getProcessBlock()).getNameMapping())));
+					list.put(input, Task.parseArguments(x.getArguments(v.get(input), ((ProcessMultiParam) pr).getNameMapping())));
 				}
 			}
 			else {
-				for(String input : v.keySet()) {
+				HashSet<String> vv = new HashSet<>();
+				vv.addAll(v.keySet());
+				
+				// tests, if values should be added from resume / re-attach info
+				if(pr.isResumeReattachValueAddingRequired()) {
+					vv.addAll(x.getGroupFileNamesOfResumeAndAttachInfo());
+				}
+				
+				for(String input : vv) {
 					list.put(input, Task.parseArguments(x.getArguments(input, null)));
 				}
 			}
@@ -353,7 +377,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	* @param x
 	*/
 	public boolean addDependingReturnModifingProcessBlocks(XMLTask x) {
-		if(!((x.getProcessBlock() instanceof ProcessReturnValueAdder)))
+		if(x.getProcessBlock() == null || !((x.getProcessBlock() instanceof ProcessReturnValueAdder)))
 			return false;
 			
 		boolean retVal = false;
@@ -453,6 +477,9 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	* @return
 	*/
 	public synchronized boolean isWatchdogDetachSupportedNow() {
+		if(this.hasAnyXMLTaskResumeOrAttachInfo())
+			return false;
+			
 		// check, if only tasks are running on executors that support detach&attach
 		for(XMLTask x : new ArrayList<XMLTask>(this.XML_TASKS.values())) {
 			if(x.isCompleteTaskReady()) {
@@ -478,9 +505,9 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	 * checks, if any of the XML tasks has a resume info left
 	 * @return
 	 */
-	public boolean hasAnyXMLTaskResumeInfo() {
+	public synchronized boolean hasAnyXMLTaskResumeOrAttachInfo() {
 		for(XMLTask x : this.XML_TASKS.values()) {
-			if(x.hasResumeInfo())
+			if(x.hasResumeInfo() || x.hasAttachInfo())
 				return true;
 		}
 		return false;

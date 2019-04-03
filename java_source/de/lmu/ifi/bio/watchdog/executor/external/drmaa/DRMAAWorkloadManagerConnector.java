@@ -4,7 +4,9 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.ExitTimeoutException;
 import org.ggf.drmaa.InvalidJobException;
@@ -15,16 +17,21 @@ import org.ggf.drmaa.SessionFactory;
 
 import de.lmu.ifi.bio.watchdog.executor.external.ExternalScheduledExecutor;
 import de.lmu.ifi.bio.watchdog.executor.external.ExternalWorkloadManagerConnector;
+import de.lmu.ifi.bio.watchdog.executor.external.sge.SGEExecutor;
 import de.lmu.ifi.bio.watchdog.helper.AbortedJobInfo;
+import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.resume.AttachInfo;
 import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.plugins.XMLParserPlugin;
 
 public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnector<DRMAAExecutor> {
 
+	public static final String DRMAA_SESSION_NAME = "drmaa_session_name-ExternalScheduledExecutor";
 	private static final String EXECUTOR_NAME = "cluster";
 	private static final String SESSION = "session="; // required for contact string (at least for SGE DRMAA)
+	private static final String WATCHDOG = "watchdog_drmaa_";
 	private Session session;
 	private String contactString = null;
 	private boolean isInitComplete = false;
@@ -76,9 +83,18 @@ public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnec
 	@Override
 	public void init() {
 		// check, if the a different "contact string" should be set
-		if(XMLParserPlugin.hasAdditionalPluginInfo(XMLBasedWatchdogRunner.DRMAA_SESSION_NAME)) {
-			this.setContactString(XMLParserPlugin.getAdditionalPluginInfo(XMLBasedWatchdogRunner.DRMAA_SESSION_NAME).toString());
+		String sessionName = null;
+		if(AttachInfo.hasLoadedData(DRMAA_SESSION_NAME)) {
+			sessionName = AttachInfo.getLoadedData(DRMAA_SESSION_NAME).toString();;
 		}
+		else {
+			sessionName = WATCHDOG + RandomStringUtils.randomAlphanumeric(16);
+		}
+		
+		// set the session name and make it persistent
+		this.setContactString(sessionName);
+		AttachInfo.setValue(DRMAA_SESSION_NAME, sessionName);
+		
 		// init the DRMAA grid with the default system
         try {
         	this.session = SessionFactory.getFactory().getSession();
@@ -94,11 +110,21 @@ public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnec
 	}
 
 	@Override
-	public void clean(HashSet<String> ids) {
+	public void clean(HashMap<String, DRMAAExecutor> ids, boolean isInDetachMode) {
 		// do clean-up!
 		try {
 			this.isInitComplete = false;
-			this.session.synchronize(Arrays.asList(Session.JOB_IDS_SESSION_ALL), 15, true);
+			// kill running jobs if required
+			if(!isInDetachMode) {
+				this.session.synchronize(Arrays.asList(Session.JOB_IDS_SESSION_ALL), 15, true);
+			}
+			else {
+				for(Entry<String, DRMAAExecutor> job : ids.entrySet()) {
+					if(!job.getValue().getExecutorInfo().isWatchdogDetachSupported())
+						try { this.cancelJob(job.getKey()); } catch(Exception e) { e.printStackTrace(); }
+				}
+			}
+			
 			// and some more!
 			this.session.exit();
 			this.session = null;

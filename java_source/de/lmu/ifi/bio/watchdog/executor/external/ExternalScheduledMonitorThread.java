@@ -1,6 +1,7 @@
 package de.lmu.ifi.bio.watchdog.executor.external;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 
@@ -228,10 +229,10 @@ public abstract class ExternalScheduledMonitorThread<A extends ExternalScheduled
 	
 	@Override
 	public void afterLoop() {
-		HashSet<String> ids = new HashSet<>();
-		ids.addAll(this.getMonitorTasks().keySet());
+		HashMap<String, A> ids = new HashMap<>();
+		ids.putAll(this.getMonitorTasks());
 		super.afterLoop();
-		this.connector.clean(ids);
+		this.connector.clean(ids, this.isInDetachMode());
 	}
 	
 	public boolean isInitComplete() {

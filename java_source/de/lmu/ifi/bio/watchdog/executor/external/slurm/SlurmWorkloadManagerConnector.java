@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,11 +15,15 @@ import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobInfo;
 
 import de.lmu.ifi.bio.watchdog.executor.Executor;
+import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.executor.external.BinaryCallBasedExternalWorkflowManagerConnector;
 import de.lmu.ifi.bio.watchdog.executor.external.BinaryCallInfo;
 import de.lmu.ifi.bio.watchdog.executor.external.GenericJobInfo;
 import de.lmu.ifi.bio.watchdog.executor.external.sge.QacctBinaryCallInfo;
+import de.lmu.ifi.bio.watchdog.executor.external.sge.SGEExecutor;
+import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.resume.AttachInfo;
 import de.lmu.ifi.bio.watchdog.task.Task;
 
 public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkflowManagerConnector<SlurmExecutor> {
@@ -38,7 +43,7 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 	private static final String STATE_SACCT = "^([0-9]+)\\|(.+)\\|(.+)";
 	private static final String CLUSTER_SEP = "@";
 	private final Pattern STATE_SACCT_PATTERN = Pattern.compile(STATE_SACCT); 
-	private String start_date_for_query = new SimpleDateFormat("MM/dd/YY-HH:mm:ss").format(new Date()) ; // date that is used for sacct query (--starttime)
+	private String start_date_for_query = Functions.getCurrentDateAndTime();
 	private static final String SEPARATOR = "=";
 	
 	public SlurmWorkloadManagerConnector(Logger l) {
@@ -106,8 +111,9 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		// set the working directory
 		String wd = ex.getWorkingDir(false);
 		if(wd != null) {
-			args.add("--workdir");
-			args.add(wd);
+		//	args.add("--workdir");
+		//	args.add(wd);
+		// TODO
 		}
 		
 		// BUG https://bugs.schedmd.com/show_bug.cgi?id=3197 might cause problems in older versions
@@ -274,7 +280,6 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 					cluster = m.group(3);
 					id = this.addClusterInfo(id, cluster);
 					this.CACHED_JOB_STATUS.put(id, status);
-				//	System.out.println("#################" + id + " -> " + status);
 				}
 			}
 			s.close();
@@ -338,20 +343,27 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 			info.printInfo(this.LOGGER, true);
 			System.exit(1);
 		}
-		return new GenericJobInfo(id, exitCode, signal, COMPLETED.equals(runningInfo), res);
+		return new GenericJobInfo(id, exitCode, signal, COMPLETED.equals(runningInfo) || signal == 0, res);
 	}
 	
 	@Override
 	public void init() {
+		// set query start time if some is set
+		if(AttachInfo.hasLoadedData(AttachInfo.ATTACH_INITIAL_START_TIME)) {
+			this.setStartDateForQuery(AttachInfo.getLoadedData(AttachInfo.ATTACH_INITIAL_START_TIME).toString());
+		}
+		
 		executeCommand("sinfo"); // test, if sinfo works
 		this.isInitComplete = true;
 	}
 
 	@Override
-	public void clean(HashSet<String> ids) {
+	public void clean(HashMap<String, SlurmExecutor> ids, boolean isInDetachMode) {
 		this.isInitComplete = false;
-		for(String id : ids) 
-			try { this.cancelJob(id); } catch(Exception e) { e.printStackTrace(); }
+		for(Entry<String, SlurmExecutor> job : ids.entrySet()) {
+			if(!(isInDetachMode && job.getValue().getExecutorInfo().isWatchdogDetachSupported()))
+				try { this.cancelJob(job.getKey()); } catch(Exception e) { e.printStackTrace(); }
+		}
 		this.CACHED_JOB_STATUS.clear();
 		this.SUBMITTED_JOB_STATUS.clear();
 	}
@@ -417,13 +429,13 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 	}
 	
 	protected BinaryCallInfo executeCommand(String command, ArrayList<String> args) {
-		return this.executeCommand(command, args, null, null);
+		return this.executeCommand(command, args, null, null, null);
 	}
 	
 	protected BinaryCallInfo executeCommand(String command) {
-		return this.executeCommand(command, new ArrayList<>(), null, null);
+		return this.executeCommand(command, new ArrayList<>(), null, null, null);
 	}
-
+	
 	@Override
 	public int getMaxWaitCyclesUntilJobsIsVisible() {
 		return MAX_WAIT_CYLCES;

@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ggf.drmaa.JobInfo;
 
 import de.lmu.ifi.bio.watchdog.executor.ScheduledExecutor;
+import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.executor.remote.RemoteJobInfo;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
@@ -31,7 +32,7 @@ import de.lmu.ifi.bio.watchdog.task.TaskStatus;
 public class LocalExecutor extends ScheduledExecutor<LocalExecutorInfo> {
 	
 	private static final String EXEC_NAME = "localhost";
-	private static final Logger LOGGER = new Logger(LogLevel.DEBUG);
+	private static final Logger LOGGER = new Logger(LogLevel.INFO);
 	private static LocalMonitorThread LOCAL_MONITOR = new LocalMonitorThread(); // not final any more caused by GUI
 	private static int count_id = 0;
 	private Process p;
@@ -60,8 +61,9 @@ public class LocalExecutor extends ScheduledExecutor<LocalExecutorInfo> {
 		// check, if the local monitor thread is running and start it, if it is not
 		if(LOCAL_MONITOR.isDead())
 			LOCAL_MONITOR = new LocalMonitorThread();
-		if(!LOCAL_MONITOR.isAlive()) {
-			LOCAL_MONITOR.start();
+		if(!LOCAL_MONITOR.isAlive() && !LOCAL_MONITOR.wasThreadStartedOnce()) {
+			// add thread to run pool
+			WatchdogThread.addUpdateThreadtoQue(LOCAL_MONITOR, true, true);
 		}
 		
 		// add job to local monitor

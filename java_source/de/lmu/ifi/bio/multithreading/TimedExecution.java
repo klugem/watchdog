@@ -12,7 +12,7 @@ import de.lmu.ifi.bio.watchdog.interfaces.RunnableExecutor;
 
 /**
  * Does execute runables after a specific time passed
- * [WARNING] Does not garantee that a runable is executed at a specific time (only that is executed afterwards)
+ * [WARNING] Does not garantee that a runable is executed at a specific time or order (only that is executed afterwards)
  * Works most exact when only small tasks are used!
  * FOR short running update stuff only!
  * @author kluge

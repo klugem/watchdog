@@ -27,6 +27,7 @@ import de.lmu.ifi.bio.watchdog.interfaces.SuccessChecker;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
+import de.lmu.ifi.bio.watchdog.resume.ResumeJobInfo;
 import de.lmu.ifi.bio.watchdog.slave.Master;
 import de.lmu.ifi.bio.watchdog.slave.SlaveStatusHandler;
 import de.lmu.ifi.bio.watchdog.slave.clientEvents.TerminateTaskEvent;
@@ -40,7 +41,7 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
 public class Task implements Serializable {
 
 	private static final long serialVersionUID = -7420829492775645742L;
-	protected final Logger LOGGER = new Logger(LogLevel.DEBUG);
+	protected final Logger LOGGER = new Logger(LogLevel.INFO);
 	protected static Mailer mailer;
 	public static final String SEP = "-";
 	public static final String PFEIL = ">";
@@ -451,7 +452,7 @@ public class Task implements Serializable {
 	 * resets a task and makes it ready for rescheduling
 	 */
 	public boolean restartTask() {
-		if(!this.hasTaskFinishedWithoutBlockingInfo()) { // this.hasJobInfo() && 
+		if(!this.hasTaskFinishedWithoutBlockingInfo()) {
 			this.terminateTask();
 			try { Thread.sleep(2500); } catch(Exception e) {} // give the system some time to terminate the stuff
 			this.isOnHold = false;
@@ -459,6 +460,8 @@ public class Task implements Serializable {
 			this.terminateTask = false;
 			this.terminationSignal = null;
 			this.exitStatus = null;
+			this.externalExecutorID = null;
+			this.isTaskAlreadyRunning4StartANDStop = false;
 			this.host = null;
 			this.info = null;
 			this.ERRORS.clear();
@@ -963,9 +966,10 @@ public class Task implements Serializable {
 	
 	public synchronized void setStatus(TaskStatus status) {
 		this.status = status;
-		
-		for(StatusHandler sh : this.STATUS_HANDLER)
-			sh.handle(this);
+		if(!(this.info instanceof ResumeJobInfo)) {
+			for(StatusHandler sh : this.STATUS_HANDLER)
+				sh.handle(this);
+		}
 	}
 	
  	/**

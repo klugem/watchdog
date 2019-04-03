@@ -12,6 +12,7 @@ import de.lmu.ifi.bio.utils.interfaces.StopableLoop;
  */
 public abstract class StopableLoopThread extends Thread implements StopableLoop {
 
+	private boolean runWasCalled = false;
 	private boolean requestStop = false;
 	private boolean forcedInterrupt = false;
 	private static int counter = 0;
@@ -25,6 +26,7 @@ public abstract class StopableLoopThread extends Thread implements StopableLoop 
 	
 	@Override
 	public final void run() {
+		this.runWasCalled = true;
 		LOGGER.debug("Thread '" + this.getName() + "' was started.");
 		this.beforeLoop();
 		try {
@@ -40,9 +42,10 @@ public abstract class StopableLoopThread extends Thread implements StopableLoop 
 			LOGGER.debug("Thread '" + this.getName() + "' was stopped after stop request.");
 		}
 		catch(InterruptedException e) {
-			LOGGER.debug("Thread '" + this.getName() + "' was interrupped (forced: " + this.isForcedStopRequested() + ").");
+			LOGGER.warn("Thread '" + this.getName() + "' was interrupped (forced: " + this.isForcedStopRequested() + ").");
 		}
 		finally {
+			LOGGER.debug("After loop call of '"+ this.getClass().getCanonicalName() +"'.");
 			this.afterLoop();
 		}
 	}
@@ -78,5 +81,13 @@ public abstract class StopableLoopThread extends Thread implements StopableLoop 
 	 */
 	public boolean isForcedStopRequested() {
 		return this.forcedInterrupt;
+	}
+	
+	/**
+	 * true, if run() method was called 
+	 * @return
+	 */
+	public boolean wasThreadStartedOnce() {
+		return this.runWasCalled;
 	}
 }

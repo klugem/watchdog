@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -112,11 +113,11 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 		}
 		
 		// set the working directory
-		String wd = ex.getWorkingDir(false);
-		if(wd != null) {
-			args.add("-wd");
-			args.add(wd);
-		}
+		String wd = ex.getWorkingDir(false); // TODO
+		//if(wd != null) {
+		//	args.add("-wd");
+//			args.add(wd);
+	//	}
 		
 		// set on hold if required
 		if(task.isTaskOnHold()) 
@@ -215,12 +216,12 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 					id = m.group(1);
 					status = m.group(2);
 					this.CACHED_JOB_STATUS.put(id, status);
-					//System.out.println(id + " -> " + status);
 				}
 			}
 			s.close();
 		}
 	}
+	
 			
 	@Override
 	public JobInfo getJobInfo(String id) throws DrmaaException {
@@ -231,7 +232,7 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 		String runningInfo = this.CACHED_JOB_STATUS.get(id);
 		if(runningInfo != null && (PENDING.equals(runningInfo) || RUNNING.equals(runningInfo) || HOLD.equals(runningInfo) || TRANSFERING.equals(runningInfo)))
 			return null;
-		
+
 		this.ensurePreparedPatternAreThere(id);
 		// we don't want block with this call until flushing for qacct is ready as it is really slow 
 		// (and it depends on the GRID config see: reporting_params; flush_time; sge_conf;)
@@ -249,7 +250,7 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 		ArrayList<String> args = new ArrayList<>();
 		args.add("-j");
 		args.add(id);
-		
+				
 		// get exit code and resource info
 		BinaryCallInfo info = this.executeCommand("qacct", args);
 		
@@ -325,10 +326,12 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 	}
 
 	@Override
-	public void clean(HashSet<String> ids) {
+	public void clean(HashMap<String, SGEExecutor> ids, boolean isInDetachMode) {
 		this.isInitComplete = false;
-		for(String id : ids) 
-			try { this.cancelJob(id); } catch(Exception e) { e.printStackTrace(); }
+		for(Entry<String, SGEExecutor> job : ids.entrySet()) {
+			if(!(isInDetachMode && job.getValue().getExecutorInfo().isWatchdogDetachSupported()))
+				try { this.cancelJob(job.getKey()); } catch(Exception e) { e.printStackTrace(); }
+		}
 		this.QACCT_TRIES .clear();
 		this.NOT_KNOWN_MATCH.clear();
 		this.CACHED_JOB_STATUS.clear();
@@ -336,7 +339,7 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 	}
 
 	@Override
-	public String getNameOfExecutionNode(String id, String watchdogBaseDir) {	
+	public String getNameOfExecutionNode(String id, String watchdogBaseDir) {
 		ArrayList<String> args = new ArrayList<>();
 		args.add("-xml");
 		args.add("-j");
@@ -381,12 +384,16 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 		return this.isInitComplete;
 	}
 	
+	protected BinaryCallInfo executeCommand(String command, ArrayList<String> args, File redirectOutput) {
+		return this.executeCommand(command, args, null, null, redirectOutput);
+	}
+	
 	protected BinaryCallInfo executeCommand(String command, ArrayList<String> args) {
-		return this.executeCommand(command, args, null, null);
+		return this.executeCommand(command, args, null, null, null);
 	}
 	
 	protected BinaryCallInfo executeCommand(String command) {
-		return this.executeCommand(command, new ArrayList<>(), null, null);
+		return this.executeCommand(command, new ArrayList<>(), null, null, null);
 	}
 
 	@Override

@@ -115,8 +115,9 @@ public abstract class ExternalWorkloadManagerConnector<A extends ExternalSchedul
 	 * ends the connection to grid system
 	 * and performs clean up if required
 	 * @param ids 
+	 * @param isInDetachMode
 	 */
-	public abstract void clean(HashSet<String> ids);
+	public abstract void clean(HashMap<String, A> ids, boolean isInDetachMode);
 
 	/**
 	 * returns the host name of the execution node

@@ -14,22 +14,34 @@ if [ "$WATCHDOG_AUTO_CONFIG" == "1" ] && [ ! -z "$WATCHDOG_HOME" ]; then
 fi
 
 # check if watchdog should run in start&stop mode 
-if [ $(echo "$@" | grep -c "stopWheneverPossible") -eq 1 ]; then
+AUTO_DETACH_COUNT=$(echo "$@" | grep -c "\-autoDetach")
+ATTACH_INFO_COUNT=$(echo "$@" | grep -c "\-attachInfo")
+if [ $AUTO_DETACH_COUNT -eq 1 ]; then
 	# generate tmp location for status information 
-	SESSION_INFO_FILE=$(getTmpFile watchdog.stopWheneverPossible.info)
-	# ensure that file is deleted on exit
-	deleteFileOnExit $SESSION_INFO_FILE
+	if [ $ATTACH_INFO_COUNT -eq 0 ]; then
+		ATTACH_FILE=$(getTmpFile watchdog.attach)
+		APPEND_PARAM="-attachInfo \"$ATTACH_FILE\""
 
-	java -jar $SCRIPT_FOLDER/jars/watchdog.jar $@ -restartInfo "$SESSION_INFO_FILE"
-	RET=$?
-	while [ $RET -eq 1 ]; do
-		echo "------------------"
-		echo "sleeping for $SLEEP_TIME"
-		echo "------------------"
-		sleep "$SLEEP_TIME"
-		java -jar $SCRIPT_FOLDER/jars/watchdog.jar $@ -restartInfo "$SESSION_INFO_FILE"
-		RET=$?
+		# ensure that file is deleted on exit
+		deleteFileOnExit $ATTACH_FILE
+	fi
+
+	RET=123
+	while [ $RET -eq 123 ]; do
+		java -jar $SCRIPT_FOLDER/jars/watchdog.jar $@ $APPEND_PARAM &
+		BACKGROUND_PID=$!
+		waitForCommandToFinish ${BACKGROUND_PID}
+		RET=${BACKGROUND_EXIT_CODE}
+
+		if [ $RET -eq 123 ]; then
+			# wait some time until watchdog is re-attached
+			echo "------------------"
+			echo "sleeping for $SLEEP_TIME"
+			echo "------------------"
+			sleep "$SLEEP_TIME"
+		fi
 	done
+	exit $RET
 else
 	java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" &
 	BACKGROUND_PID=$!

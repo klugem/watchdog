@@ -34,7 +34,7 @@ public abstract class StopableLoopRunnable extends MonitorRunnable implements St
 			LOGGER.debug("LoopRunnable '" + this.getName() + "' was stopped after stop request.");
 		}
 		catch(InterruptedException e) {
-			LOGGER.debug("LoopRunnable '" + this.getName() + "' was interrupped (forced: " + this.forcedInterrupt + ").");
+			LOGGER.warn("LoopRunnable '" + this.getName() + "' was interrupped (forced: " + this.forcedInterrupt + ").");
 		}
 		catch(Exception e) {
 			LOGGER.error("Some error occured during loop...see below:");

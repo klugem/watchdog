@@ -1971,7 +1971,7 @@ public class XMLParser {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			System.out.println(e.getMessage());
+			LOGGER.error(e.getMessage());
 			LOGGER.error("Failed to get the modules setting info.");
 			if(!noExit) System.exit(1);
 		}

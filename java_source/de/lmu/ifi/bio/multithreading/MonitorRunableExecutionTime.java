@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -19,7 +20,7 @@ public class MonitorRunableExecutionTime extends StopableLoopRunnable {
 	private static int WAIT_TIME_MS = 250;
 	private static MonitorRunableExecutionTime monitor = new MonitorRunableExecutionTime();
 	
-	private final Map<MonitorRunnable, Future<?>> FUTURES = Collections.synchronizedMap(new HashMap<MonitorRunnable, Future<?>>());
+	private final Map<MonitorRunnable, Future<?>> FUTURES = new ConcurrentHashMap<MonitorRunnable, Future<?>>();
 	private final HashSet<MonitorRunnable> IS_CONSTANTLY_RUNNING = new HashSet<>(); // sync is done over FUTURE
 	
 	/**
@@ -151,8 +152,10 @@ public class MonitorRunableExecutionTime extends StopableLoopRunnable {
 	 */
 	public static boolean canAllConstantlyRunningTasksBeRestarted() {
 		for(MonitorRunnable r : MonitorRunableExecutionTime.monitor.IS_CONSTANTLY_RUNNING) {
-			if(!r.canBeStoppedForDetach())
+			if(!r.canBeStoppedForDetach()) {
+				LOGGER.debug("Thread " + r.getName() + " can not be restarted for detach.");
 				return false;
+			}
 		}
 		return true;
 	}

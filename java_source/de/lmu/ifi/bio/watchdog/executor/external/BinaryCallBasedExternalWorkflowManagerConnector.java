@@ -23,19 +23,23 @@ public abstract class BinaryCallBasedExternalWorkflowManagerConnector<A extends 
 
 	private synchronized void readStream(InputStream stream, OutputStream out, boolean flush) throws IOException {
 		int read = 0;
-		while(stream.available() > 0) {
+		while(stream != null && stream.available() > 0) {
 			 if((read = stream.read(BUFFER)) != -1) {
 				out.write(BUFFER, 0, read);
 				if(flush) out.flush();
 			 }
 		}
 	}
-		
+	
 	protected BinaryCallInfo executeCommand(String command, HashMap<String, String> env, String workingdir) {
-		return this.executeCommand(command, new ArrayList<String>(), env, workingdir);
+		return this.executeCommand(command, new ArrayList<String>(), env, workingdir, null);
+	}
+		
+	protected BinaryCallInfo executeCommand(String command, HashMap<String, String> env, String workingdir, File redirectOutput) {
+		return this.executeCommand(command, new ArrayList<String>(), env, workingdir, redirectOutput);
 	}
 	
-	protected synchronized BinaryCallInfo executeCommand(String command, ArrayList<String> arguments, HashMap<String, String> env, String workingdir) {
+	protected synchronized BinaryCallInfo executeCommand(String command, ArrayList<String> arguments, HashMap<String, String> env, String workingdir, File redirectOutput) {
 		BinaryCallInfo info = new BinaryCallInfo();
 		info.command = command;
 		info.args = arguments.toArray(new String[0]);
@@ -49,6 +53,7 @@ public abstract class BinaryCallBasedExternalWorkflowManagerConnector<A extends 
 			// create process
 			ProcessBuilder pb = new ProcessBuilder();
 			pb.command(arguments.toArray(new String[0]));
+			if(redirectOutput != null) pb.redirectOutput(redirectOutput);
 			if(env != null) pb.environment().putAll(env);
 			if(workingdir != null) pb.directory(new File(workingdir));
 			Process p = pb.start();
@@ -60,7 +65,7 @@ public abstract class BinaryCallBasedExternalWorkflowManagerConnector<A extends 
 				this.readStream(p.getErrorStream(), err, false);
 			}
 			// empty streams
-			this.readStream(p.getErrorStream(), out, true);
+			this.readStream(p.getInputStream(), out, true);
 			this.readStream(p.getErrorStream(), err, true);
 			info.err = err.toString();
 			info.out = out.toString();

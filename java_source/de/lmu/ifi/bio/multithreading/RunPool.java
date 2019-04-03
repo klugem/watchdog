@@ -20,7 +20,7 @@ public class RunPool implements Logable {
 	private final int NUMBER_OF_CONSTANTLY_RESERVED;
 	
 	private int constantRunningTasks = 0;
-	private boolean first = false;
+	private boolean first = true;
 	
 	public RunPool(int workerThreads, int constantlyRunningTasks) {
 		this.NUMBER_OF_THREADS = workerThreads + constantlyRunningTasks;
@@ -38,10 +38,10 @@ public class RunPool implements Logable {
 	 */
 	public synchronized Future<?> addRunnable(MonitorRunnable r, boolean isConstantlyRunning) {	
 		// add the monitor thread
-		if(this.first)
+		if(this.first) {
+			this.first = false;
 			this.addRunnable(MonitorRunableExecutionTime.getInstance(), true);
-		
-		this.first = false;
+		}
 		
 		if(this.POOL.isTerminated() || this.POOL.isShutdown()) {
 			return null;
@@ -72,7 +72,8 @@ public class RunPool implements Logable {
 	 * @return
 	 */
 	public synchronized int getNumberOfShortRunningJobs() {
-		return Math.min(0, MonitorRunableExecutionTime.getNumberOfNotFinishedTasks() - this.constantRunningTasks);
+		int n = Math.max(0, MonitorRunableExecutionTime.getNumberOfNotFinishedTasks() - this.constantRunningTasks);
+		return n;
 	}
 	
 	public synchronized boolean canAllConstantlyRunningTasksBeRestarted() {

@@ -10,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Hex;
@@ -17,6 +19,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import de.lmu.ifi.bio.multithreading.TimedExecution;
+import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 
@@ -27,6 +30,7 @@ import de.lmu.ifi.bio.watchdog.logger.Logger;
  */
 public class Functions {
 	
+	private static final String DATE_FORMAT = "MM/dd/YY-HH:mm:ss";
 	private static final String UTF8 = "UTF-8";
 	public static MessageDigest MD;
 	private static final Logger LOGGER = new Logger(LogLevel.WARNING);
@@ -52,6 +56,14 @@ public class Functions {
 		if(System.getProperties().containsKey(JAVA_FX)) {
 			hasJavaFX = true;
 		}
+	}
+	
+	/**
+	 * returns a current date in a specific format
+	 * @return
+	 */
+	public static String getCurrentDateAndTime() {
+		return new SimpleDateFormat(DATE_FORMAT).format(new Date()); 
 	}
 	
 	/**
@@ -160,8 +172,8 @@ public class Functions {
 			File f = Files.createTempFile(prefix, TMP_ENDING).toFile();
 			f.delete();
 			File ff = new File(temporaryFolder + File.separator + f.getName());
-			if(!noDelete)
-				ff.deleteOnExit();
+			//if(!noDelete) // TODO: remove comment
+			//	ff.deleteOnExit(); 
 			return ff;
 		}
 		catch(Exception e) {

@@ -1548,6 +1548,13 @@ public class XMLTask {
 		return this.RESUME_INFO.size() > 0;
 	}
 	
+	public HashSet<String> getGroupFileNamesOfResumeAndAttachInfo() {
+		HashSet<String> r = new HashSet<>();
+		if(ATTACH_INFO.size() > 0) r.addAll(this.ATTACH_INFO.keySet());
+		if(RESUME_INFO.size() > 0) r.addAll(this.RESUME_INFO.keySet());
+		return r;
+	}
+	
 	/**
 	 * returns the resume info or null if no resume info is given for that group file name
 	 * @param groupFileName
@@ -1579,6 +1586,14 @@ public class XMLTask {
 	
 	public Task getAttachInfo(String groupFileName) {
 		return this.ATTACH_INFO.get(groupFileName);
+	}
+	
+	/**
+	 * true, if it has an attach info
+	 * @return
+	 */
+	public boolean hasAttachInfo() {
+		return this.ATTACH_INFO.size() > 0;
 	}
 
 	public void removeAttachInfo(String inputName) {

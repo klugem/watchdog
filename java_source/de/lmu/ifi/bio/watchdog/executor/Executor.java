@@ -41,7 +41,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 	private static XMLTask2TaskThread xml2taskThread;
 	private static File watchdogBase;
 	
-	private final Logger LOGGER = new Logger(LogLevel.DEBUG);
+	private final Logger LOGGER = new Logger(LogLevel.INFO);
 	protected final Task TASK;
 	protected final SyncronizedLineWriter LOG;
 	protected final ArrayList<String> BEFORE_COMMAND = new ArrayList<>();

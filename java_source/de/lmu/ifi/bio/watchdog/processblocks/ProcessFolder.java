@@ -228,4 +228,9 @@ public class ProcessFolder extends ProcessBlock {
 	public Object[] getDataToLoadOnGUI() { 
 		return new Object[] { this.gui_rootPath, this.gui_pattern, this.gui_ignorePattern, !this.gui_disableExistanceCheck, this.gui_maxDepth };
 	}
+	
+	@Override
+	public boolean isResumeReattachValueAddingRequired() {
+		return true;
+	}
 }

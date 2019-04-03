@@ -11,6 +11,7 @@ import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobTemplate;
 
 import de.lmu.ifi.bio.watchdog.executor.Executor;
+import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
@@ -28,7 +29,7 @@ public abstract class ExternalScheduledExecutor<A extends ExternalExecutorInfo> 
 	public static final String JOBID2HOSTNAME_FILE = "/tmp/.jobID2hostname.txt";
 	private static final String TAB = "\t";
 	private static final int NUMBER_OF_TRIES = 10;
-	private static final Logger LOGGER = new Logger(LogLevel.DEBUG);
+	private static final Logger LOGGER = new Logger(LogLevel.INFO);
 	private final int RETRY_COUNT;
 	private String gridJobID;
 		
@@ -94,18 +95,20 @@ public abstract class ExternalScheduledExecutor<A extends ExternalExecutorInfo> 
 		if(this.getMonitor() == null) {
 			throw new IllegalStateException("setExternalScheduledMonitorThread() was not called before execute()!");
 		}
-		if(!this.getMonitor().isAlive()) {
-			this.getMonitor().start();
+		ExternalScheduledMonitorThread<ExternalScheduledExecutor<?>> mt = this.getMonitor();
+		if(!mt.isAlive() && !mt.wasThreadStartedOnce()) {
+			// add thread to run pool
+			WatchdogThread.addUpdateThreadtoQue(mt, true, true);
 			
 			// block until thread is running and connection is active
-			long w = this.getMonitor().getDefaultWaitTime();
+			long w = mt.getDefaultWaitTime();
 			int wait = 0;
-			while(!this.getMonitor().isInitComplete() && wait <= MAX_WAIT_FOR_INIT) {
+			while(!mt.isInitComplete() && wait <= MAX_WAIT_FOR_INIT) {
 				try { Thread.sleep(w); } catch(Exception e) {}
 				wait += w;
 			}
 			// test if init is complete now
-			if(!this.getMonitor().isInitComplete()) {
+			if(!mt.isInitComplete()) {
 				try {
 					throw new IllegalStateException("init() of ExternalScheduledMonitorThread does not end!");
 				} catch(Exception e) { e.printStackTrace(); }				
@@ -132,23 +135,35 @@ public abstract class ExternalScheduledExecutor<A extends ExternalExecutorInfo> 
 	 * @return true, if job was submitted successfully
 	 */
 	private boolean submitJob(Task task, int retryCount) throws Exception {
+		boolean isTaskAlreadyRunning = task.isTaskAlreadyRunning();
 		int i = 0;
 		while(retryCount-i > 0) {
 				// hold the job if the maximal number of jobs of that type are currently running
-				if(!task.isTaskAlreadyRunning() && this.TASK.doesConsumeResources() && (this.TASK.isMaxRunningRestrictionReached() || this.EXEC_INFO.isMaxRunningRestrictionReached())) {
-					this.TASK.setIsOnHold(true);
-					this.TASK.setStatus(TaskStatus.WAITING_RESTRICTIONS);
+				if(!isTaskAlreadyRunning && task.doesConsumeResources() && (task.isMaxRunningRestrictionReached() || this.EXEC_INFO.isMaxRunningRestrictionReached())) {
+					task.setIsOnHold(true);
+					task.setStatus(TaskStatus.WAITING_RESTRICTIONS);
 				}
 				else {
-					this.TASK.setIsOnHold(false);
-					this.EXEC_INFO.addIDofRunningJob(this.TASK);
+					// don't change anything on already running jobs
+					if(!isTaskAlreadyRunning) {
+						task.setIsOnHold(false);
+					}
+					// if task is not on hold --> it is running
+					else if(!task.isTaskOnHold()) {
+						this.EXEC_INFO.addIDofRunningJob(this.TASK);
+					}
 				}
-				
+						
 				String gridJobID = this.getMonitor().submit(task, this);
 				i++;
 				if(gridJobID != null) {
 					this.setGridJobID(gridJobID);
-					LOGGER.info("Task with name '" + this.TASK.getName()+ "' was submitted with grid ID '" + gridJobID + "' and internal ID '" + this.TASK.getID() + "'.");
+					if(isTaskAlreadyRunning) {
+						LOGGER.info("Re-attaching to task with name '" + task.getName()+ "', grid ID '" + gridJobID + "' and internal ID '" + this.TASK.getID() + "'.");
+					}
+					else {
+						LOGGER.info("Task with name '" + task.getName()+ "' was submitted with grid ID '" + gridJobID + "' and internal ID '" + this.TASK.getID() + "'.");
+					}
 					return true;
 				}
 		}
