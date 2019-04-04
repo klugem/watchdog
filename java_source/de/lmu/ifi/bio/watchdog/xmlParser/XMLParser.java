@@ -223,6 +223,8 @@ public class XMLParser {
 	public static final String MIN_VERSION_ATTR = "minVersion";
 	public static final String MAX_VERSION_ATTR = "maxVersion";
 	public static final String MODULE_VERSION_PARAM_NAME_TO_SET = "watchdogModuleVersionParameter";
+	public static final String BEFORE_SCRIPTS = "beforeScripts";
+	public static final String AFTER_SCRIPTS = "afterScripts";
 	
 	/* values for the return param */
 	private static final String X_EXTENSION = "x:extension";
@@ -596,14 +598,14 @@ public class XMLParser {
 					
 					// ignore all the executor stuff and use only a local executor!
 					if(ignoreExecutor != 0) {
-						defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, ignoreExecutor, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null, null);		
+						defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, ignoreExecutor, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null, null, null, null);		
 					}
 					else {
 						/********** check for executor tag */
 						NodeList executors = docEle.getElementsByTagName(EXECUTORS);
 						// just add the default local executor
 						if(executors.getLength() == 0) {
-							defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, 1, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null, null);
+							defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, 1, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null, null, null, null);
 						}
 						else if(executors.getLength() == 1) {
 							Element el = (Element) executors.item(0);

@@ -271,7 +271,6 @@ public abstract class ExternalScheduledMonitorThread<A extends ExternalScheduled
 		return id;
 	}
 	
-	
 	/**
 	 * stops execution of a job with that id
 	 * @param id

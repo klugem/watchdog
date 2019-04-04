@@ -20,6 +20,7 @@ public class ExecuteToolbarController implements Initializable {
 
 	@FXML private Button run;
 	@FXML private Button pause;
+	@FXML private Button detach;
 	@FXML private Button stop;
 	@FXML private ToolBar toolbar;
 	
@@ -30,10 +31,12 @@ public class ExecuteToolbarController implements Initializable {
 		this.run.setGraphic(ImageLoader.getImage(ImageLoader.RUN_SMALL));
 		this.pause.setGraphic(ImageLoader.getImage(ImageLoader.PAUSE_SMALL));
 		this.stop.setGraphic(ImageLoader.getImage(ImageLoader.STOP_SMALL));
+		this.detach.setGraphic(ImageLoader.getImage(ImageLoader.DETACH_SMALL));
 		
 		this.run.setOnMouseClicked(x -> this.runWorkflow());
 		this.stop.setOnMouseClicked(x -> this.stopWorkflow());
 		this.pause.setOnMouseClicked(x -> this.pauseWorkflow());
+		this.detach.setOnMouseClicked(x -> this.requestDetach());
 	}
 	
 	protected void stopWorkflow() {
@@ -45,6 +48,11 @@ public class ExecuteToolbarController implements Initializable {
 	private void pauseWorkflow() {
 		boolean paused = this.mainController.isProcessingPaused();
 		this.pauseWorkflow(paused);
+	}
+	
+	private void requestDetach() {
+		this.mainController.requestDetach();
+		this.detach.setDisable(true);
 	}
 
 	public void pauseWorkflow(boolean paused) {
@@ -65,6 +73,7 @@ public class ExecuteToolbarController implements Initializable {
 			this.run.setDisable(true);
 			this.stop.setDisable(false);
 			this.pause.setDisable(false);
+			this.detach.setDisable(false);
 		}
 	}
 
@@ -76,6 +85,8 @@ public class ExecuteToolbarController implements Initializable {
 		this.run.setDisable(false);
 		this.stop.setDisable(true);
 		this.pause.setDisable(true);
+		this.detach.setDisable(true);
+		
 		// update value
 		Platform.runLater(() -> this.pauseWorkflow(true));
 	}

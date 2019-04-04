@@ -27,6 +27,7 @@ import de.lmu.ifi.bio.watchdog.interfaces.SuccessChecker;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessMultiParam;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessReturnValueAdder;
+import de.lmu.ifi.bio.watchdog.resume.AttachInfo;
 import de.lmu.ifi.bio.watchdog.resume.ResumeInfo;
 import de.lmu.ifi.bio.watchdog.resume.ResumeJobInfo;
 import de.lmu.ifi.bio.watchdog.resume.WorkflowResumeLogger;
@@ -53,6 +54,8 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	private static final int LOOP_CHECK = 10;
 	private final File XML_PATH;
 	private final int MAIL_WAIT_TIME;
+	public final static int SLEEP = 1000; // check every 1s if all tasks are finished!
+	private static final int MIN_SPAWN_CYCLES = 30; // minimum cycles of xml2task calls in automatic detach&attach mode
 	
 	/**
 	* Adds a new watchdog to which the tasks are added, if some are available
@@ -578,5 +581,86 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	@Override
 	public boolean canBeStoppedForDetach() {
 		return true;
+	}
+
+	/**
+	 * blocks while tasks are processed
+	 * also releases the block when detach should be performed 
+	 * @param autoDetach
+	 * @return true, if detach can be performed NOW
+	 * @throws InterruptedException 
+	 */
+	public boolean processAllTasksAndBlock(boolean autoDetach) throws InterruptedException {
+		int waitCounter = 0;
+		while(this.hasUnfinishedTasks() && !this.wasStopped()) {
+			// test if Wachdog should be detached
+			if(MonitorThread.wasDetachModeOnAllMonitorThreads()) {
+				// test if detach is supported now (e.g. no task is running on a executor that does not support detach mode)
+				if(this.isWatchdogDetachSupportedNow() && this.WATCHDOG.wereAttachTasksScheduled()) {
+					// do not schedule more tasks
+					this.setPauseScheduling(true);
+					// give threads time to finish running tasks
+					Thread.sleep(SLEEP*5);
+					// stop monitoring 
+					MonitorThread.stopAllMonitorThreads(true);
+
+					// test, if all internal threads allow restart
+					while(this.WATCHDOG.getNumberOfJobsRunningInRunPool() > 0 || !this.WATCHDOG.canAllConstantlyRunningTasksBeRestarted() || MonitorThread.hasRunningMonitorThreads()) {
+						Thread.sleep(50);
+					} 
+					return true;
+				}
+			}
+			else if(autoDetach && !MonitorThread.wasDetachModeOnAllMonitorThreads()) {
+				// activate auto detach mode (do it only if all resume tasks were resumed) 
+				if(!this.hasAnyXMLTaskResumeOrAttachInfo() && this.WATCHDOG.wereAttachTasksScheduled()) {
+					// give Watchdog some time to spawn new tasks
+					waitCounter++;
+					if(waitCounter >= MIN_SPAWN_CYCLES) {
+						MonitorThread.setDetachModeOnAllMonitorThreads(true);
+					}
+				}
+			}
+			
+			// sleep until next check
+			Thread.sleep(SLEEP);
+		}
+		return false;
+	}
+	
+	/**
+	 * writes the attachInfo
+	 * @param attachInfo
+	 * @param resumeFile
+	 * @return
+	 */
+	public int writeReattchFile(String attachInfo, File resumeFile) { 
+		int exitCode = 0;
+		// get info about running jobs in order to attach to them later on!
+		ArrayList<Task> runningInfo = MonitorThread.getMappingsForDetachableTasksFromAllMonitorThreads();
+		AttachInfo.setValue(AttachInfo.ATTACH_RESUME_FILE, resumeFile.getAbsolutePath());
+		AttachInfo.setValue(AttachInfo.ATTACH_RUNNING_TASKS, runningInfo);
+		AttachInfo.setValue(AttachInfo.ATTACH_INITIAL_START_TIME, runningInfo);
+
+		// get the filename were the attach info should be saved
+		String outFile = attachInfo;
+		if(outFile == null) { 
+			outFile = resumeFile.getAbsolutePath().replaceFirst(WorkflowResumeLogger.LOG_ENDING + "$", XMLBasedWatchdogRunner.DETACH_LOG_ENDING);
+		}
+		
+		// write info to a file
+		File detachFile = new File(outFile);
+		if(!AttachInfo.saveAttachInfoToFile(outFile)) {
+			exitCode = XMLBasedWatchdogRunner.FAILED_WRITE_DETACH_FILE;
+			this.LOGGER.error("Failed to write detach info file '"+detachFile.getAbsolutePath()+"'!");
+		}
+		else {
+			exitCode = XMLBasedWatchdogRunner.RESTART_EXIT_INDICATOR;
+			this.LOGGER.info("Attach info was written to '"+detachFile.getAbsolutePath()+"'.");
+		}
+		
+		// request stop of xml2task thread 
+		this.requestStop(5, TimeUnit.SECONDS);
+		return exitCode;
 	}
 }

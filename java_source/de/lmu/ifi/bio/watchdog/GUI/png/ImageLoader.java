@@ -44,6 +44,7 @@ public class ImageLoader {
 	public static final String PAUSE_SMALL = "pause_small.gif";
 	public static final String RESUME_SMALL = "resum_small.gif";
 	public static final String STOP_SMALL = "stop_small.gif";
+	public static final String DETACH_SMALL = "term_restart_small.gif";
 	public static final String LOCK = "lock.gif";
 	public static final String CLEAR = "clear.gif";
 	

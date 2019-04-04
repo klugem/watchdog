@@ -42,7 +42,7 @@ public class RemoteExecutorInfoParser extends XMLExecutorInfoParser<RemoteExecut
 		final String privKey = XMLParser.getAttribute(el, XMLParser.PRIVATE_KEY);
 		final boolean disableStrictHostCheck = Boolean.parseBoolean(XMLParser.getAttribute(el, XMLParser.DISABLE_STRICT_HOST_CHECK));
 		SSHPassphraseAuth authStore = new SSHPassphraseAuth(di.getName(), privKey, this.no_exit);
-		RemoteExecutorInfo info = new RemoteExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getShebang(), host, user, port, !disableStrictHostCheck, di.getWorkingDir(), authStore);
+		RemoteExecutorInfo info = new RemoteExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getShebang(), host, user, port, !disableStrictHostCheck, di.getWorkingDir(), authStore, di.getBeforeScriptNames(), di.getAfterScriptNames());
 				
 		if(di.getColor() != null)
 			info.setColor(di.getColor());

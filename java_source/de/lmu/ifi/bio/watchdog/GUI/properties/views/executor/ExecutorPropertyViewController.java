@@ -12,6 +12,7 @@ import de.lmu.ifi.bio.watchdog.GUI.properties.views.PropertyViewType;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
+import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser.XMLExecutorInfoParser;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
@@ -36,6 +37,8 @@ public class ExecutorPropertyViewController extends PluginPropertyViewController
 	@FXML private BorderPane root;
 	@FXML private ChoiceBox<Environment> environment;
 	@FXML private TextField shebangHeader;
+	@FXML private TextField beforeScripts;
+	@FXML private TextField afterScripts;
 	private static final Environment NOT_SELECT;
 	
 	static { 
@@ -93,9 +96,11 @@ public class ExecutorPropertyViewController extends PluginPropertyViewController
 		
 		String watchdogBaseDir = PreferencesStore.getWatchdogBaseDir();
 		Environment environment = this.getSelectedEnvironment();
+		ArrayList<String> beforeScripts = XMLExecutorInfoParser.splitString(this.beforeScripts.getText());
+		ArrayList<String> afterScripts = XMLExecutorInfoParser.splitString(this.afterScripts.getText());
 
 		// get the executor info
-		ExecutorInfo e = this.activeGUIView.getXMLPluginObject(new Object[] {name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang});
+		ExecutorInfo e = this.activeGUIView.getXMLPluginObject(new Object[] {name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts});
 		
 		// save the executor.
 		this.storeXMLData(e);
@@ -164,6 +169,8 @@ public class ExecutorPropertyViewController extends PluginPropertyViewController
 			this.javaPath.setText(data.getPath2Java());
 			this.maxRunning.setText(Integer.toString(data.getMaxSimRunning()));
 			this.shebangHeader.setText(data.getShebang());
+			this.beforeScripts.setText(XMLExecutorInfoParser.joinString(data.getBeforeScriptNames()));
+			this.afterScripts.setText(XMLExecutorInfoParser.joinString(data.getAfterScriptNames()));
 			try { this.maxSlaveRunning.setText(Integer.toString(data.getMaxSlaveRunningTasks())); } catch(Exception e) {}
 			
 			// check, if environment is set and can be loaded

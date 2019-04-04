@@ -12,6 +12,7 @@ import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
+import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser.XMLExecutorInfoParser;
 
 /**
  * Executor info for ssh executor
@@ -28,8 +29,8 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 	private final String ORIGINAL_HOST_LIST;
 	private SSHPassphraseAuth AUTH;
 
-	public RemoteExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, String host, String user, int port, boolean strictHostChecking, String workingDir, SSHPassphraseAuth auth) {
-		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang);
+	public RemoteExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, String host, String user, int port, boolean strictHostChecking, String workingDir, SSHPassphraseAuth auth, ArrayList<String> beforeScripts, ArrayList<String> afterScripts) {
+		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts);
 		
 		// save the additional stuff
 		this.USER = user;
@@ -162,6 +163,10 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 			x.addQuotedAttribute(XMLParser.STICK2HOST, true);
 		if(this.hasCustomShebang()) 
 			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
+		if(this.hasBeforeScripts()) 
+			x.addQuotedAttribute(XMLParser.BEFORE_SCRIPTS, XMLExecutorInfoParser.joinString(this.getBeforeScriptNames()));
+		if(this.hasAfterScripts()) 
+			x.addQuotedAttribute(XMLParser.AFTER_SCRIPTS, XMLExecutorInfoParser.joinString(this.getAfterScriptNames()));
 		
 		if(this.hasColor())
 			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());

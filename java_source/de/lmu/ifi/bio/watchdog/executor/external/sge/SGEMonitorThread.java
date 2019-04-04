@@ -26,8 +26,9 @@ public class SGEMonitorThread extends ExternalScheduledMonitorThread<SGEExecutor
 	}
 	
 	public static ExternalScheduledMonitorThread<?> getMonitorThreadInstance() {
-		if(instance == null || instance.isDead())
+		if(instance == null || instance.isDead()) {
 			instance = new SGEMonitorThread();
+		}
 		
 		return instance;
 	}

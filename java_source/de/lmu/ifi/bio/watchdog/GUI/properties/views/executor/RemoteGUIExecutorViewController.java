@@ -1,6 +1,7 @@
 package de.lmu.ifi.bio.watchdog.GUI.properties.views.executor;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
@@ -72,8 +73,12 @@ public class RemoteGUIExecutorViewController extends GUIExecutorViewController {
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
 		String shebang = (String) data[9];
+		@SuppressWarnings("unchecked")
+		ArrayList<String> beforeScripts = (ArrayList<String>) data[10];
+		@SuppressWarnings("unchecked")
+		ArrayList<String> afterScripts = (ArrayList<String>) data[11];
 		
-		return new RemoteExecutorInfo(XMLParser.REMOTE, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, this.host.getText(), this.user.getText(), Integer.parseInt(this.port.getText()), !this.disableStrictHostCheck.isSelected(), workingDir, new SSHPassphraseAuth(name, this.privateKey.getText(), true));
+		return new RemoteExecutorInfo(XMLParser.REMOTE, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, this.host.getText(), this.user.getText(), Integer.parseInt(this.port.getText()), !this.disableStrictHostCheck.isSelected(), workingDir, new SSHPassphraseAuth(name, this.privateKey.getText(), true), beforeScripts, afterScripts);
 	}
 
 	@Override

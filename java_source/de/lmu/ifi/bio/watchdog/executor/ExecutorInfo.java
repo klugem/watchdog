@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
@@ -17,6 +18,7 @@ import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
 import de.lmu.ifi.bio.watchdog.interfaces.XMLPlugin;
 import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.Task;
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 
 /**
@@ -36,10 +38,14 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	private final String PATH2JAVA;
 	private final String WORKING_DIR;
 	private final String STATIC_WORKING_DIR;
+	private final ArrayList<String> BEFORE_SCRIPT;
+	private final ArrayList<String> AFTER_SCRIPT;
 	private static final String LOCAL = "/usr/local/storage/";
 	private static final String TMP = "/tmp/";
 	private static final String JAVA = "/usr/bin/java"; 
-	public static final String DEFAULT_SHEBANG = "#!/bin/bash"; 
+	public static final String DEFAULT_SHEBANG = "#!/bin/bash";
+	public static final String DEFAULT_EXEUCOTR_SCRIPT_PATH = "core_lib" + File.separator + "executor_scripts";
+	
 	private final Integer MAX_SLAVE_RUNNING;
 	private final String TYPE;
 	
@@ -59,7 +65,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	 * @param watchdogBaseDir
 	 * @param environment
 	 */
-	public ExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang) {
+	public ExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang, ArrayList<String> beforeScripts, ArrayList<String> afterScripts) {
 		// test, if we can use some of the default working dirs
 		if(workingDir == null)
 			workingDir = ExecutorInfo.getWorkingDir(watchdogBaseDir);
@@ -76,6 +82,8 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 		this.PATH2JAVA = path2java;
 		this.STATIC_WORKING_DIR = workingDir;
 		this.WORKING_DIR = workingDir;
+		this.BEFORE_SCRIPT = beforeScripts;
+		this.AFTER_SCRIPT = afterScripts;
 		
 		// set slave mode stuff
 		if(isStick2Host)
@@ -85,12 +93,45 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 		
 		this.setEnvironment(environment);
 		
-		// to to read command files
-		Path p = Paths.get(this.WATCHDOG_BASE_DIR + "/core_lib/executor_scripts/ulimitMemory.sh");
-		try { 
-			this.beforeCommands.addAll(Files.readAllLines(p));
+		// read before and after script command files
+		if(this.BEFORE_SCRIPT != null)
+			this.BEFORE_SCRIPT.forEach(path -> this.readAndAddScriptFile(path, this.beforeCommands, true));
+		if(this.AFTER_SCRIPT != null)
+			this.AFTER_SCRIPT.forEach(path -> this.readAndAddScriptFile(path, this.afterCommands, false));
+	}
+	
+	/**
+	 * tries to read a before/after script file and adds it to the ArrayList
+	 * @param pathToScriptFile
+	 * @param listToAdd
+	 * @param beforeScript
+	 */
+	private void readAndAddScriptFile(String pathToScriptFile, ArrayList<String> listToAdd, boolean beforeScript) {
+		if(pathToScriptFile == null || pathToScriptFile.length() == 0)
+			return;
+		// test if relative path
+		if(!pathToScriptFile.startsWith(File.separator)) {
+			pathToScriptFile = this.WATCHDOG_BASE_DIR + File.separator + DEFAULT_EXEUCOTR_SCRIPT_PATH + File.separator + pathToScriptFile;
 		}
-		catch(Exception e) {}
+		// test if file exists
+		File f = new File(pathToScriptFile);
+		if(f.isFile() && f.exists() && f.canRead()) {
+			try { listToAdd.addAll(Files.readAllLines(Paths.get(f.getAbsolutePath()))); }
+			catch(Exception e) {
+				if(beforeScript)
+					System.out.println("[ERROR] Failed to read before script '"+ f.getAbsolutePath() +"'.");
+				else 
+					System.out.println("[ERROR] Failed to read after script '"+ f.getAbsolutePath() +"'.");
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+		else {
+			if(beforeScript)
+				System.out.println("[WARN] Before script '"+ f.getAbsolutePath() +"' was not found and will be ignored!");
+			else 
+				System.out.println("[WARN] After script '"+ f.getAbsolutePath()  +"' was not found and will be ignored!");
+		}
 	}
 	
 	/**
@@ -172,6 +213,38 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	 */
 	public boolean isDefaultExecutor() {
 		return this.IS_DEFAULT;
+	}
+	
+	/**
+	 * before script(s) if some are set
+	 * @return
+	 */
+	public ArrayList<String> getBeforeScriptNames() {
+		return this.BEFORE_SCRIPT != null ? this.BEFORE_SCRIPT : new ArrayList<String>();
+	}
+	
+	/**
+	 * after script(s) if some are set
+	 * @return
+	 */
+	public ArrayList<String> getAfterScriptNames() {
+		return this.AFTER_SCRIPT != null ? this.AFTER_SCRIPT : new ArrayList<String>();
+	}
+	
+	/**
+	 * tests if before scripts are set
+	 * @return
+	 */
+	public boolean hasBeforeScripts() {
+		return this.BEFORE_SCRIPT != null && this.BEFORE_SCRIPT.size() > 0;
+	}
+	
+	/**
+	 * tests if after scripts are set
+	 * @return
+	 */
+	public boolean hasAfterScripts() {
+		return this.AFTER_SCRIPT != null && this.AFTER_SCRIPT.size() > 0;
 	}
 	
 	/**

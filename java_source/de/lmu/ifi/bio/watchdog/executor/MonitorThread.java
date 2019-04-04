@@ -2,7 +2,6 @@ package de.lmu.ifi.bio.watchdog.executor;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,8 +29,8 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 	// used for pausing / resume of scheduling
 	private static boolean stopWasCalled = false;
 	private static final Set<MonitorThread<? extends Executor<?>>> CREATED_MONITOR_THREADS = Collections.synchronizedSet(new LinkedHashSet<MonitorThread<? extends Executor<?>>>());
-	private boolean isSchedulingPaused = false;
 	private boolean isDead = false;
+	private boolean isSchedulingPaused = false;
 	private boolean detachMode = false;
 	
 	public MonitorThread(String name) {
@@ -41,6 +40,7 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 		// ensure that all monitor threads have restart mode set
 		this.setDetachMode(MonitorThread.WAS_DETACH_MODE_SET);
 	}
+	
 	
 	public void setPauseScheduling(boolean pause) {
 		this.isSchedulingPaused = pause;

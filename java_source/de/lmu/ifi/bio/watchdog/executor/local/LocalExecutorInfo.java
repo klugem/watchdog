@@ -1,5 +1,6 @@
 package de.lmu.ifi.bio.watchdog.executor.local;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import de.lmu.ifi.bio.watchdog.executor.Executor;
@@ -9,6 +10,7 @@ import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
+import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser.XMLExecutorInfoParser;
 
 /**
  * Local executor info
@@ -27,8 +29,8 @@ public class LocalExecutorInfo extends ExecutorInfo {
 	 * @param watchdogBaseDir
 	 * @param environment
 	 */
-	public LocalExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang) {
-		super(type, name, isDefault, isStick2Host, null, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang);
+	public LocalExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang, ArrayList<String> beforeScripts, ArrayList<String> afterScripts) {
+		super(type, name, isDefault, isStick2Host, null, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts);
 	}
 
 	
@@ -52,6 +54,10 @@ public class LocalExecutorInfo extends ExecutorInfo {
 			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());
 		if(this.hasCustomShebang()) 
 			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
+		if(this.hasBeforeScripts()) 
+			x.addQuotedAttribute(XMLParser.BEFORE_SCRIPTS, XMLExecutorInfoParser.joinString(this.getBeforeScriptNames()));
+		if(this.hasAfterScripts()) 
+			x.addQuotedAttribute(XMLParser.AFTER_SCRIPTS, XMLExecutorInfoParser.joinString(this.getAfterScriptNames()));
 		
 		// end the tag
 		x.endCurrentTag();

@@ -65,11 +65,9 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 	private static final Pattern WATCHDOG_BASE = Pattern.compile("<"+XMLParser.ROOT+".+"+BASE_STRING+"=\"([^\"]+)\".+");  
 	public static final String LOG_SEP = "#########################################################################################";
 	public static int PORT =  WatchdogThread.DEFAULT_HTTP_PORT;
-	public final static int SLEEP = 1000; // check every 1s if all tasks are finished!
 	public static final String XML_PATTERN = "*.xml";
 	public static final String ENV_WATCHDOG_HOME_NAME = "WATCHDOG_HOME";
 	public static final String ENV_WATCHDOG_WORKING_DIR = "WATCHDOG_WORKING_DIR";
-	private static final int MIN_SPAWN_CYCLES = 30; // minimum cycles of xml2task calls in automatic detach&attach mode
 	public static final int RESTART_EXIT_INDICATOR = 123; // exit code that indicates normal termination caused by detach of Watchdog
 	public static final int FAILED_WRITE_DETACH_FILE = 124;
 	public static final int FAILED_READ_ATTACH_FILE = 125;
@@ -354,68 +352,13 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			Executor.setWatchdogBase(watchdogBase, params.tmpFolder == null ? null : new File(params.tmpFolder));
 			watchdogThread.start();
 			
-			// do not end program
-			int waitCounter = 0;
 			int exitCode = 0;
-			while(xml2taskThread.hasUnfinishedTasks() && !xml2taskThread.wasStopped()) {
-				// test if Wachdog should be detached
-				if(MonitorThread.wasDetachModeOnAllMonitorThreads()) {
-					// test if detach is supported now (e.g. no task is running on a executor that does not support detach mode)
-					if(xml2taskThread.isWatchdogDetachSupportedNow() && watchdogThread.wereAttachTasksScheduled()) {
-						// do not schedule more tasks
-						xml2taskThread.setPauseScheduling(true);
-						// give threads time to finish running tasks
-						Thread.sleep(SLEEP*5);
-						// stop monitoring 
-						MonitorThread.stopAllMonitorThreads(true);
-
-						// test, if all internal threads allow restart
-						while(watchdogThread.getNumberOfJobsRunningInRunPool() > 0 || !watchdogThread.canAllConstantlyRunningTasksBeRestarted() || MonitorThread.hasRunningMonitorThreads()) {
-							Thread.sleep(50);
-						} 
-
-						// get info about running jobs in order to attach to them later on!
-						runningInfo = MonitorThread.getMappingsForDetachableTasksFromAllMonitorThreads();
-						AttachInfo.setValue(AttachInfo.ATTACH_RESUME_FILE, resumeFile.getAbsolutePath());
-						AttachInfo.setValue(AttachInfo.ATTACH_RUNNING_TASKS, runningInfo);
-						AttachInfo.setValue(AttachInfo.ATTACH_INITIAL_START_TIME, runningInfo);
-
-						// get the filename were the attach info should be saved
-						String outFile = params.attachInfo;
-						if(outFile == null) { 
-							outFile = resumeFile.getAbsolutePath().replaceFirst(WorkflowResumeLogger.LOG_ENDING + "$", DETACH_LOG_ENDING);
-						}
-						
-						// write info to a file
-						File detachFile = new File(outFile);
-						if(!AttachInfo.saveAttachInfoToFile(outFile)) {
-							exitCode = FAILED_WRITE_DETACH_FILE;
-							log.error("Failed to write detach info file '"+detachFile.getAbsolutePath()+"'!");
-						}
-						else {
-							exitCode = RESTART_EXIT_INDICATOR;
-							log.info("Attach info was written to '"+detachFile.getAbsolutePath()+"'.");
-						}
-						
-						// request stop of xml2task thread 
-						xml2taskThread.requestStop(5, TimeUnit.SECONDS);
-						break;
-					}
-				}
-				else if(params.autoDetach && !MonitorThread.wasDetachModeOnAllMonitorThreads()) {
-					// activate auto detach mode (do it only if all resume tasks were resumed) 
-					if(!xml2taskThread.hasAnyXMLTaskResumeOrAttachInfo() && watchdogThread.wereAttachTasksScheduled()) {
-						// give Watchdog some time to spawn new tasks
-						waitCounter++;
-						if(waitCounter >= MIN_SPAWN_CYCLES) {
-							MonitorThread.setDetachModeOnAllMonitorThreads(true);
-						}
-					}
-				}
-				
-				// sleep until next check
-				Thread.sleep(SLEEP);
+			// do not end program
+			boolean wasDetachPerformed = xml2taskThread.processAllTasksAndBlock(params.autoDetach);
+			if(wasDetachPerformed) {
+				exitCode = xml2taskThread.writeReattchFile(params.attachInfo, resumeFile);
 			}
+			xml2taskThread.requestStop(5, TimeUnit.SECONDS);
 			
 			// execute shutdown commands
 			watchdogThread.shutdown();

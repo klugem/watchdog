@@ -64,6 +64,7 @@ import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
+import de.lmu.ifi.bio.watchdog.resume.WorkflowResumeLogger;
 import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.task.TaskAction;
@@ -139,6 +140,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 	private WatchdogThread runWatchdog;
 	private XMLTask2TaskThread runXml2taskThread; 
 	private FinishedCheckerThread runFinishedCheckerThread;
+	private File resumeFile = null;
 	private StatusConsole runLogConsole;
 	private HTTPListenerThread runHttp;
 	private LogMessageEventHandler GLOBAL_MESSAGE_HANDLER;
@@ -1261,7 +1263,8 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			}
 			
 			// create a new watchdog object and xml2 thread stuff
-			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, f, 10, null, null, null);
+			this.resumeFile = new File(WorkflowResumeLogger.generateResumeFilename(f, false));
+			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, f, 10, null, null, this.resumeFile);
 			
 			// change detail degree of output
 			watchdog.setLogLevel(LogLevel.ERROR);
@@ -1275,7 +1278,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			Executor.setWatchdogBase(new File(PreferencesStore.getWatchdogBaseDir()), this.commandlineParams.tmpFolder == null ? null : new File(this.commandlineParams.tmpFolder));
 			watchdog.start();
 			
-			this.runFinishedCheckerThread = new FinishedCheckerThread(() -> this.processingHasFinished(xmlTasks), xml2taskThread);
+			this.runFinishedCheckerThread = new FinishedCheckerThread(() -> this.processingHasFinished(xmlTasks), xml2taskThread, null, this.resumeFile);
 			this.runFinishedCheckerThread.start();
 
 			// set some stuff
@@ -1293,11 +1296,21 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 	private void processingHasFinished(ArrayList<XMLTask> xmlTasks) {
 		this.EXEC_TOOLBAR.setIsFinished();
 		
+		if(this.resumeFile != null)
+			StatusConsole.addGlobalMessage(MessageType.INFO, "Resume file was written to '"+this.resumeFile.getAbsolutePath()+"'");
+		
 		if(Task.isMailSet()) 
 			Task.getMailer().goodbye(xmlTasks);
 		this.runFinishedCheckerThread.requestStop(100, TimeUnit.MILLISECONDS);
 		// do all stuff before this or thread will be killed by itself!
 		Platform.runLater(() -> this.stopWorkflow()); 
+	}
+	
+	public void requestDetach() {
+		if(!MonitorThread.wasDetachModeOnAllMonitorThreads()) {
+			MonitorThread.setDetachModeOnAllMonitorThreads(true);
+			StatusConsole.addGlobalMessage(MessageType.INFO, "Watchdog will stop to schedule new tasks and detach as soon as possible.");
+		}
 	}
 
 	public boolean setPauseWorkflow(boolean pause) {
@@ -1314,9 +1327,13 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 	
 	public boolean stopWorkflow() {
 		if(this.isProcessingActive()) {
+			if(this.resumeFile != null)
+				StatusConsole.addGlobalMessage(MessageType.INFO, "Resume file was written to '"+this.resumeFile.getAbsolutePath()+"'");
+			
 			this.runFinishedCheckerThread.interrupt();
 			this.runWatchdog.stopExecution();
 			this.runWatchdog = null;
+			this.resumeFile = null;
 			
 			if(this.runHttp != null) {
 				this.runHttp.stop();
@@ -1326,6 +1343,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			this.runFinishedCheckerThread = null;
 			this.runXml2taskThread = null;
 			MonitorThread.stopAllMonitorThreads(true);
+			MonitorThread.setDetachModeOnAllMonitorThreads(false);
 			return true;
 		}
 		return false;

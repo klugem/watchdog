@@ -1,12 +1,10 @@
 package de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser;
 
 import java.io.File;
-import java.util.HashSet;
-
 import org.w3c.dom.Element;
 
-import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.ClusterGUIExecutorView;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.ExecutorPropertyViewController;
+import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.SGEGUIExecutorView;
 import de.lmu.ifi.bio.watchdog.executor.external.sge.SGEExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.external.sge.SGEMonitorThread;
 import de.lmu.ifi.bio.watchdog.executor.external.sge.SGEWorkloadManagerConnector;
@@ -25,7 +23,7 @@ public class SGEExecutorInfoParser extends XMLExecutorInfoParser<SGEExecutorInfo
 		
 		// register the executor plugins shipped with watchdog on GUI
 		if(Functions.hasJavaFXInstalled()) {
-			ExecutorPropertyViewController.registerWatchdogPluginOnGUI(SGEExecutorInfo.class, ClusterGUIExecutorView.class);
+			ExecutorPropertyViewController.registerWatchdogPluginOnGUI(SGEExecutorInfo.class, SGEGUIExecutorView.class);
 		}
 	}
 	
@@ -53,7 +51,7 @@ public class SGEExecutorInfoParser extends XMLExecutorInfoParser<SGEExecutorInfo
 		if(slots <= 0) 
 			slots = 1; 
 	
-		SGEExecutorInfo info = new SGEExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getShebang(), slots, memory, queue, di.getWorkingDir(), customParams, disableDefault);
+		SGEExecutorInfo info = new SGEExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getShebang(), slots, memory, queue, di.getWorkingDir(), customParams, disableDefault, di.getBeforeScriptNames(), di.getAfterScriptNames());
 		if(di.getColor() != null)
 			info.setColor(di.getColor());
 		return info;
@@ -65,20 +63,5 @@ public class SGEExecutorInfoParser extends XMLExecutorInfoParser<SGEExecutorInfo
 	}
 
 	@Override
-	public void runAdditionalTestsOnElement(String name) {
-		// check, if the cluster env variables are at least set
-		/*if(this.firstSge) {
-			ArrayList<String> missing = new ArrayList<>();
-			for(String envCheck : CLUSTER_ENV) {
-				if(System.getenv(envCheck) == null)
-					missing.add(envCheck);
-			}
-			if(missing.size() > 0) {
-				this.LOGGER.error("In order to use the SGE cluster extension the following environment variables must be set correctly: '" + StringUtils.join(missing, "','") + "'");
-				if(!this.no_exit) System.exit(1);
-			}
-			this.firstSge = false;
-		}*/
-		// TODO: check, if binaries are there
-	}
+	public void runAdditionalTestsOnElement(String name) {}
 }

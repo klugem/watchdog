@@ -34,7 +34,7 @@ public class LocalExecutorInfoParser extends XMLExecutorInfoParser<LocalExecutor
 	public LocalExecutorInfo parseElement(Element el, String watchdogBaseDir, Object[] additionalData) {
 		DefaultExecutorInfo di = this.parseMandatoryParameter(el, watchdogBaseDir, additionalData);
 		// disable stick2host on local executor by default
-		LocalExecutorInfo info =  new LocalExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), false, null, di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getWorkingDir(), di.getShebang());
+		LocalExecutorInfo info =  new LocalExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), false, null, di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getWorkingDir(), di.getShebang(), di.getBeforeScriptNames(), di.getAfterScriptNames());
 		
 		if(di.getColor() != null)
 			info.setColor(di.getColor());

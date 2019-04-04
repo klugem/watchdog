@@ -1,6 +1,7 @@
 package de.lmu.ifi.bio.watchdog.GUI.properties.views.executor;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
@@ -81,8 +82,12 @@ public class SGEGUIExecutorViewController extends GUIExecutorViewController {
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
 		String shebang = (String) data[9];
+		@SuppressWarnings("unchecked")
+		ArrayList<String> beforeScripts = (ArrayList<String>) data[10];
+		@SuppressWarnings("unchecked")
+		ArrayList<String> afterScripts = (ArrayList<String>) data[11];
 		
 		// create the instance
-		return new SGEExecutorInfo(SGEWorkloadManagerConnector.EXECUTOR_NAME, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, Integer.parseInt(this.slots.getText()), this.memory.getText(), this.queue.getText(), workingDir, this.customParams.getText(), this.disableDefaultParams.isSelected());
+		return new SGEExecutorInfo(SGEWorkloadManagerConnector.EXECUTOR_NAME, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, Integer.parseInt(this.slots.getText()), this.memory.getText(), this.queue.getText(), workingDir, this.customParams.getText(), this.disableDefaultParams.isSelected(), beforeScripts, afterScripts);
 	}
 }
