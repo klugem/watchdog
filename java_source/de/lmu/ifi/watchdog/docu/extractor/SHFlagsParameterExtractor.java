@@ -13,9 +13,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import de.lmu.ifi.bio.watchdog.docu.Moduledocu;
+import de.lmu.ifi.bio.watchdog.docu.Paramdocu;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
-import de.lmu.ifi.watchdog.docu.Moduledocu;
-import de.lmu.ifi.watchdog.docu.Paramdocu;
 
 /**
  * extracts parameter for sh files that use the shflags library for parameter definition

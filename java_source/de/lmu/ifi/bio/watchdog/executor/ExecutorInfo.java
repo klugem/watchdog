@@ -4,13 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
@@ -18,7 +16,6 @@ import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
 import de.lmu.ifi.bio.watchdog.interfaces.XMLPlugin;
 import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.Task;
-import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 
 /**

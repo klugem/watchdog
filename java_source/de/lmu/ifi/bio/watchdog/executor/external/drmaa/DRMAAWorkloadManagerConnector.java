@@ -3,7 +3,6 @@ package de.lmu.ifi.bio.watchdog.executor.external.drmaa;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.RandomStringUtils;
@@ -17,14 +16,10 @@ import org.ggf.drmaa.SessionFactory;
 
 import de.lmu.ifi.bio.watchdog.executor.external.ExternalScheduledExecutor;
 import de.lmu.ifi.bio.watchdog.executor.external.ExternalWorkloadManagerConnector;
-import de.lmu.ifi.bio.watchdog.executor.external.sge.SGEExecutor;
 import de.lmu.ifi.bio.watchdog.helper.AbortedJobInfo;
-import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.resume.AttachInfo;
-import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.Task;
-import de.lmu.ifi.bio.watchdog.xmlParser.plugins.XMLParserPlugin;
 
 public class DRMAAWorkloadManagerConnector extends ExternalWorkloadManagerConnector<DRMAAExecutor> {
 

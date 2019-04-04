@@ -1,4 +1,4 @@
-package de.lmu.ifi.watchdog.docu;
+package de.lmu.ifi.bio.watchdog.docu;
 
 import java.io.File;
 import java.io.IOException;

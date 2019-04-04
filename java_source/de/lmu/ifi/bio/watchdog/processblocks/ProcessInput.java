@@ -1,7 +1,6 @@
 package de.lmu.ifi.bio.watchdog.processblocks;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;

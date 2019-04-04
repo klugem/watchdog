@@ -3,21 +3,11 @@ package de.lmu.ifi.bio.watchdog.runner;
 import java.io.File;
 import java.util.ArrayList;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
-import de.lmu.ifi.bio.watchdog.helper.Functions;
-import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
-import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
-import de.lmu.ifi.watchdog.docu.DocuXMLParser;
-import de.lmu.ifi.watchdog.docu.ModuleLibraryGenerator;
-import de.lmu.ifi.watchdog.docu.Moduledocu;
 
 /**
  * Creates a web-based documentation of modules 

@@ -1,7 +1,6 @@
 package de.lmu.ifi.bio.watchdog.executor.external;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import org.ggf.drmaa.DrmaaException;

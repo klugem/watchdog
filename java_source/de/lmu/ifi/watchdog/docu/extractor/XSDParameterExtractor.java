@@ -10,11 +10,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Element;
 
+import de.lmu.ifi.bio.watchdog.docu.Moduledocu;
+import de.lmu.ifi.bio.watchdog.docu.Paramdocu;
 import de.lmu.ifi.bio.watchdog.helper.Parameter;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
-import de.lmu.ifi.watchdog.docu.Moduledocu;
-import de.lmu.ifi.watchdog.docu.Paramdocu;
 
 /**
  * Extracts the parameters from the XSD file itself

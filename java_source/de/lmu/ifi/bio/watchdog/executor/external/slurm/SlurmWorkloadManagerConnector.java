@@ -1,13 +1,10 @@
 package de.lmu.ifi.bio.watchdog.executor.external.slurm;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Scanner;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,12 +12,10 @@ import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobInfo;
 
 import de.lmu.ifi.bio.watchdog.executor.Executor;
-import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.executor.external.BinaryCallBasedExternalWorkflowManagerConnector;
 import de.lmu.ifi.bio.watchdog.executor.external.BinaryCallInfo;
 import de.lmu.ifi.bio.watchdog.executor.external.GenericJobInfo;
 import de.lmu.ifi.bio.watchdog.executor.external.sge.QacctBinaryCallInfo;
-import de.lmu.ifi.bio.watchdog.executor.external.sge.SGEExecutor;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.resume.AttachInfo;

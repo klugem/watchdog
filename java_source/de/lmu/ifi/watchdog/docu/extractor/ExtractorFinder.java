@@ -6,8 +6,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import de.lmu.ifi.bio.watchdog.docu.Docu;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
-import de.lmu.ifi.watchdog.docu.Docu;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;

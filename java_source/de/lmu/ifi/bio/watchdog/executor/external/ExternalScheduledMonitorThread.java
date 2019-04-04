@@ -2,7 +2,6 @@ package de.lmu.ifi.bio.watchdog.executor.external;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 
 import org.ggf.drmaa.DrmaaException;

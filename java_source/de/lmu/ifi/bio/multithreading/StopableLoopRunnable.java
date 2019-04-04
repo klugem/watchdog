@@ -3,7 +3,6 @@ package de.lmu.ifi.bio.multithreading;
 import java.util.concurrent.TimeUnit;
 
 import de.lmu.ifi.bio.utils.interfaces.StopableLoop;
-import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 
 public abstract class StopableLoopRunnable extends MonitorRunnable implements StopableLoop {
 

@@ -9,10 +9,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import de.lmu.ifi.bio.watchdog.docu.Moduledocu;
+import de.lmu.ifi.bio.watchdog.docu.Returndocu;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
-import de.lmu.ifi.watchdog.docu.Moduledocu;
-import de.lmu.ifi.watchdog.docu.Returndocu;
 
 /**
  * Extracts the return values from the XSD file itself

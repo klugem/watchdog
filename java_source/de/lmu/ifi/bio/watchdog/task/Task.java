@@ -21,7 +21,6 @@ import de.lmu.ifi.bio.watchdog.helper.ActionType;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.FileWatcherLockguard;
 import de.lmu.ifi.bio.watchdog.helper.Mailer;
-import de.lmu.ifi.bio.watchdog.helper.ReplaceSpecialConstructs;
 import de.lmu.ifi.bio.watchdog.interfaces.ErrorChecker;
 import de.lmu.ifi.bio.watchdog.interfaces.SuccessChecker;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
@@ -31,7 +30,6 @@ import de.lmu.ifi.bio.watchdog.resume.ResumeJobInfo;
 import de.lmu.ifi.bio.watchdog.slave.Master;
 import de.lmu.ifi.bio.watchdog.slave.SlaveStatusHandler;
 import de.lmu.ifi.bio.watchdog.slave.clientEvents.TerminateTaskEvent;
-import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
 
 /**
  * Implements a task which can be executed by different executor classes

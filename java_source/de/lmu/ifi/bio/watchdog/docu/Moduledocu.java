@@ -1,11 +1,10 @@
-package de.lmu.ifi.watchdog.docu;
+package de.lmu.ifi.bio.watchdog.docu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.gson.Gson;

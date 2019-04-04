@@ -6,8 +6,8 @@ import java.util.LinkedHashMap;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import de.lmu.ifi.watchdog.docu.Docu;
-import de.lmu.ifi.watchdog.docu.Moduledocu;
+import de.lmu.ifi.bio.watchdog.docu.Docu;
+import de.lmu.ifi.bio.watchdog.docu.Moduledocu;
 
 /**
  * Generic interface for docu element extractor classes

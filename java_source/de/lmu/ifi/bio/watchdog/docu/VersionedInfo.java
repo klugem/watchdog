@@ -1,4 +1,4 @@
-package de.lmu.ifi.watchdog.docu;
+package de.lmu.ifi.bio.watchdog.docu;
 
 public class VersionedInfo<T extends Object> {
 	public int MAX_VER = 1;

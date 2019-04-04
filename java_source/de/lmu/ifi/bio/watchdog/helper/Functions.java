@@ -19,7 +19,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import de.lmu.ifi.bio.multithreading.TimedExecution;
-import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 

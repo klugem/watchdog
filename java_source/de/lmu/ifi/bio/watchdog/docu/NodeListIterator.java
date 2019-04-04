@@ -1,4 +1,4 @@
-package de.lmu.ifi.watchdog.docu;
+package de.lmu.ifi.bio.watchdog.docu;
 
 import java.util.Iterator;
 import java.util.stream.Stream;

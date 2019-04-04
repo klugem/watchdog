@@ -1,5 +1,5 @@
 
-package de.lmu.ifi.watchdog.docu;
+package de.lmu.ifi.bio.watchdog.docu;
 
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 
