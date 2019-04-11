@@ -12,6 +12,7 @@ import de.lmu.ifi.bio.utils.interfaces.StopableLoop;
  */
 public abstract class StopableLoopThread extends Thread implements StopableLoop {
 
+	private boolean afterLoopWasFinished = false;
 	private boolean runWasCalled = false;
 	private boolean requestStop = false;
 	private boolean forcedInterrupt = false;
@@ -47,6 +48,7 @@ public abstract class StopableLoopThread extends Thread implements StopableLoop 
 		finally {
 			LOGGER.debug("After loop call of '"+ this.getClass().getCanonicalName() +"'.");
 			this.afterLoop();
+			this.afterLoopWasFinished = true;
 		}
 	}
 
@@ -89,5 +91,13 @@ public abstract class StopableLoopThread extends Thread implements StopableLoop 
 	 */
 	public boolean wasThreadStartedOnce() {
 		return this.runWasCalled;
+	}
+	
+	/**
+	 * true, if afterLoop() method was called and is finished 
+	 * @return
+	 */
+	public boolean isAfterLoopFinished() {
+		return this.afterLoopWasFinished;
 	}
 }

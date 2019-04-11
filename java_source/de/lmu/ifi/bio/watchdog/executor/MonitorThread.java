@@ -189,7 +189,7 @@ public abstract class MonitorThread<E extends Executor<?>> extends StopableLoopT
 			synchronized(CREATED_MONITOR_THREADS) { 
 				for(MonitorThread<?> t : CREATED_MONITOR_THREADS) {
 					// if wasThreadStartedOnce() is true, afterLoop was not run as otherwise the entry wouldn't be in the list!
-					if(t.isAlive() || t.wasThreadStartedOnce()) {
+					if(t.wasThreadStartedOnce() && !t.isAfterLoopFinished()) {
 						return true;
 					}
 				}

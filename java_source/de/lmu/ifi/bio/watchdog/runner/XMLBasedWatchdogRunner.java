@@ -452,6 +452,9 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 
 		// stop monitoring and shutdown gracefully 
 		MonitorThread.stopAllMonitorThreads(true);
+		while(MonitorThread.hasRunningMonitorThreads()) {
+			try{ Thread.sleep(50); } catch (Exception e) {} 
+		}
 		if(xml2taskThread != null)
 			xml2taskThread.requestStop(5, TimeUnit.SECONDS);
 		
