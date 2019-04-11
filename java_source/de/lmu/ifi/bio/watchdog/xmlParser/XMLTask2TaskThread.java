@@ -33,6 +33,7 @@ import de.lmu.ifi.bio.watchdog.resume.WorkflowResumeLogger;
 import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.StatusHandler;
 import de.lmu.ifi.bio.watchdog.task.Task;
+import de.lmu.ifi.bio.watchdog.task.TaskStore;
 
 /**
  * Creates Tasks based on XMLTask definitions
@@ -255,6 +256,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						// remove the attach info
 						x.removeAttachInfo(inputName);
 						t = attachInfo;
+						TaskStore.addTask(t); // save task in the global list
 						
 						// set status handler if some are set
 						for(StatusHandler sh : this.STATUS_HANDLER) 
@@ -651,11 +653,11 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		File detachFile = new File(outFile);
 		if(!AttachInfo.saveAttachInfoToFile(outFile)) {
 			exitCode = XMLBasedWatchdogRunner.FAILED_WRITE_DETACH_FILE;
-			this.LOGGER.error("Failed to write detach info file '"+detachFile.getAbsolutePath()+"'!");
+			LOGGER.error("Failed to write detach info file '"+detachFile.getAbsolutePath()+"'!");
 		}
 		else {
 			exitCode = XMLBasedWatchdogRunner.RESTART_EXIT_INDICATOR;
-			this.LOGGER.info("Attach info was written to '"+detachFile.getAbsolutePath()+"'.");
+			LOGGER.info("Attach info was written to '"+detachFile.getAbsolutePath()+"'.");
 		}
 		
 		// request stop of xml2task thread 

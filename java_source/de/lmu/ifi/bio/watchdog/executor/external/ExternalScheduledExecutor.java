@@ -138,34 +138,32 @@ public abstract class ExternalScheduledExecutor<A extends ExternalExecutorInfo> 
 		boolean isTaskAlreadyRunning = task.isTaskAlreadyRunning();
 		int i = 0;
 		while(retryCount-i > 0) {
+			if(!isTaskAlreadyRunning) {
 				// hold the job if the maximal number of jobs of that type are currently running
-				if(!isTaskAlreadyRunning && task.doesConsumeResources() && (task.isMaxRunningRestrictionReached() || this.EXEC_INFO.isMaxRunningRestrictionReached())) {
+				if(task.doesConsumeResources() && (task.isMaxRunningRestrictionReached() || this.EXEC_INFO.isMaxRunningRestrictionReached())) {
 					task.setIsOnHold(true);
-					task.setStatus(TaskStatus.WAITING_RESTRICTIONS);
 				}
 				else {
-					// don't change anything on already running jobs
-					if(!isTaskAlreadyRunning) {
-						task.setIsOnHold(false);
-					}
-					// if task is not on hold --> it is running
-					else if(!task.isTaskOnHold()) {
-						this.EXEC_INFO.addIDofRunningJob(this.TASK);
-					}
+					task.setIsOnHold(false);
 				}
-						
-				String gridJobID = this.getMonitor().submit(task, this);
-				i++;
-				if(gridJobID != null) {
-					this.setGridJobID(gridJobID);
-					if(isTaskAlreadyRunning) {
-						LOGGER.info("Re-attaching to task with name '" + task.getName()+ "', grid ID '" + gridJobID + "' and internal ID '" + this.TASK.getID() + "'.");
-					}
-					else {
-						LOGGER.info("Task with name '" + task.getName()+ "' was submitted with grid ID '" + gridJobID + "' and internal ID '" + this.TASK.getID() + "'.");
-					}
-					return true;
+			}
+			// running tasks that is not on hold --> add it to list of running tasks
+			else if(!task.isTaskOnHold()) {
+				this.EXEC_INFO.addIDofRunningJob(task);
+			}
+
+			String gridJobID = this.getMonitor().submit(task, this);
+			i++;
+			if(gridJobID != null) {
+				this.setGridJobID(gridJobID);
+				if(isTaskAlreadyRunning) {
+					LOGGER.info("Re-attaching to task with name '" + task.getName()+ "', grid ID '" + gridJobID + "' and internal ID '" + this.TASK.getID() + "'.");
 				}
+				else {
+					LOGGER.info("Task with name '" + task.getName()+ "' was submitted with grid ID '" + gridJobID + "' and internal ID '" + this.TASK.getID() + "'.");
+				}
+				return true;
+			}
 		}
 		return false;
 	}
