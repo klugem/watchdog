@@ -156,7 +156,8 @@ public class ProcessTable extends ProcessMultiParam {
 	}
 
 	@Override
-	public LinkedHashMap<String, String> getValues() {
+	public LinkedHashMap<String, String> getValues(boolean cachedCall) {
+		// cachedCall parameter is ignored here as Wachdog does only read the table file once
 		this.readFile();
 		return new LinkedHashMap<String, String>(this.RES);
 	}

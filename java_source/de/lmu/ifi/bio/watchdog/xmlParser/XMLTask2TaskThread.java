@@ -165,9 +165,12 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					}
 				}
 				LinkedHashMap<String, ArrayList<String>> argumentLists = this.getArgumentLists(x);
+				// do not further process this task as the last cached getValues() call of the process block failed --> try later again
+				if(argumentLists == null)
+					continue;
 				HashMap<String, String> completeArguments = new HashMap<>();
 				if(x.getProcessBlock() != null)
-					completeArguments.putAll(x.getProcessBlock().getValues());
+					completeArguments.putAll(x.getProcessBlock().getValues(true));
 
 				// check each of the files separately if there are any dependencies left
 				for(String inputName : argumentLists.keySet()) {
@@ -351,7 +354,13 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		// process group block! :-)
 		else {
 			ProcessBlock pr = x.getProcessBlock();
-			HashMap<String, String> v = pr.getValues();
+			// query new process block results as it is the first getValues call during createAndAddTasks()
+			HashMap<String, String> v = pr.getValues(false);
+			
+			// test if the non-cached call failed --> if yes return null in order to indicate that this call also failed!
+			if(v == null)
+				return null;
+			
 			boolean isMultiParam = pr instanceof ProcessMultiParam;			
 			// check, which type of process block it is
 			if(isMultiParam) {

@@ -120,22 +120,33 @@ public class ProcessFolder extends ProcessBlock {
 	 * @param getOnlyNewOnces
 	 * @param depth
 	 */
-	private void findMatchingFiles(File parent, String pattern, String ignore, int maxDepth, ArrayList<File> newfoundFiles, boolean getOnlyNewOnces, int depth) {
+	private boolean findMatchingFiles(File parent, String pattern, String ignore, int maxDepth, ArrayList<File> newfoundFiles, boolean getOnlyNewOnces, int depth) {
 		PatternFilenameFilter patternMatcher = new PatternFilenameFilter(pattern, true);
 		PatternFilenameFilter ignoreMatcher = null;
 		if(ignore != null)
 			ignoreMatcher = new PatternFilenameFilter(ignore, false);
+		
+		// this check should prevent I/O errors but in combination with network storage once a null pointer occurred after these checks
+		// --> getValues() will return null when this function fails which indicates that the XMLTask must be processed later on again
 		if(parent.exists() && parent.isDirectory() && parent.canRead()) {
 			// get files to ignore
 			HashSet<String> ignoreFiles = new HashSet<>();
+			File[] res = null;
 			if(ignoreMatcher != null) {
-				for(File f: parent.listFiles(ignoreMatcher)) {
+				res = parent.listFiles(ignoreMatcher);
+				if(res == null)
+					return false;
+				for(File f : res) {
 					ignoreFiles.add(f.getAbsolutePath());
 				}
+				res = null;
 			}
 
 			// run through all file
-			for(File f : parent.listFiles(patternMatcher)) {
+			res = parent.listFiles(patternMatcher);
+			if(res == null)
+				return false;
+			for(File f : res) {
 				if(!ignoreFiles.contains(f.getAbsolutePath())) {
 					// check, if file is already in HashSet
 					if(f.canRead()) {
@@ -151,14 +162,20 @@ public class ProcessFolder extends ProcessBlock {
 				}
 			}
 		}
+		return true;
 	}
 	
 	@Override
-	public LinkedHashMap<String, String> getValues() {
+	public LinkedHashMap<String, String> getValues(boolean cachedCall) {
 		ArrayList<File> files = new ArrayList<>();
-		// find all matching files for all different process folders
-		for(int i = 0; i < this.ROOT_PATH.size(); i++) {
-			this.findMatchingFiles(this.ROOT_PATH.get(i), this.PATTERN.get(i), this.IGNORE.get(i), this.MAX_DEPTH.get(i), files, false, 0);
+		if(!cachedCall) {
+			// find all matching files for all different process folders
+			for(int i = 0; i < this.ROOT_PATH.size(); i++) {
+				boolean wasCallOK = this.findMatchingFiles(this.ROOT_PATH.get(i), this.PATTERN.get(i), this.IGNORE.get(i), this.MAX_DEPTH.get(i), files, false, 0);
+				// if call was not ok --> return null in order to indicate that
+				if(!wasCallOK)
+					return null;
+			}
 		}
 		File[] fs = files.toArray(new File[0]);
 		Arrays.sort(fs, NameFileComparator.NAME_COMPARATOR);
@@ -171,7 +188,7 @@ public class ProcessFolder extends ProcessBlock {
 
 	@Override
 	public int size() {
-		return this.getValues().size();
+		return this.getValues(true).size();
 	}
 
 

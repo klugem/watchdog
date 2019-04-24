@@ -43,7 +43,7 @@ public class ProcessInput extends ProcessReturnValueAdder {
 	}
 
 	@Override
-	public LinkedHashMap<String, String> getValues() {
+	public LinkedHashMap<String, String> getValues(boolean cachedCall) {
 		return new LinkedHashMap<String, String>(this.BLOCK_ENTRIES);
 	}
 	

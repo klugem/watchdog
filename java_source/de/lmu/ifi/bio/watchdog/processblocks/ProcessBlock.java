@@ -76,9 +76,10 @@ public abstract class ProcessBlock implements XMLDataStore, XMLPlugin {
 	/**
 	 * Returns the values of this block the function can work with
 	 * key: group name --> value
-	 * @return
+	 * @param cachedCall if set to true, the same results should be returned as in case of the last call of this function with the value set to false
+	 * @return null is returned in case of cachedCall is set to false and query of the new parameters failed!
 	 */
-	public abstract LinkedHashMap<String, String> getValues();
+	public abstract LinkedHashMap<String, String> getValues(boolean cachedCall);
 	
 	/**
 	 * number of elements in this processblock

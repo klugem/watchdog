@@ -100,7 +100,7 @@ public class ProcessSequence extends ProcessBlock {
 	}
 	
 	@Override
-	public LinkedHashMap<String, String> getValues() {
+	public LinkedHashMap<String, String> getValues(boolean cachedCall) {
 		LinkedHashMap<String, String> ret = new LinkedHashMap<>();
 		for(String v : this.VALUES) {
 			ret.put(v, v);
