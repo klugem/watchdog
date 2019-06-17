@@ -39,6 +39,7 @@
 			<x:element name="verbose" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
 			<x:element name="keeptmp" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
 			<x:element name="sequenceDB" type="paramBoolean" minOccurs="0" maxOccurs="1"/>
+			<x:element name="memoryScaleFactor" type="paramInteger" minOccurs="0" maxOccurs="1"/>
 		</x:all>
 	</x:complexType>
 

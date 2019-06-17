@@ -9,6 +9,7 @@
 			<x:element name="threads" type="paramIntegerRange_threads_sam2bam" minOccurs="0" maxOccurs="1" />
 			<x:element name="quality" type="paramIntegerRange_quality_sam2bam" minOccurs="0" maxOccurs="1" />
 			<x:element name="memory" type="paramString_quality_sam2bam" minOccurs="0" maxOccurs="1" />
+			<x:element name="tmpFolder" type="paramAbsoluteFilePath" minOccurs="0" maxOccurs="1" />
 		</x:all>
 	</x:complexType>
 

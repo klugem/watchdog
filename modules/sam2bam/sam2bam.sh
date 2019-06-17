@@ -18,6 +18,7 @@ DEFINE_string 'bam' '' 'path to ouput BAM file' 'b'
 DEFINE_integer 'threads' '1' 'number of threads to use for compression' 't'
 DEFINE_integer 'quality' '9' 'compression level; [1, 9] whereby 1 is the worst/fastest and 9 is the best/slowest compression' 'q'
 DEFINE_string 'memory' '768M' 'maximal memory that can be used per thread; only an estimation and might be exceeded!' 'm'
+DEFINE_string 'tmpFolder' '' 'write temporary files to that folder' 'T'
 DEFINE_string 'returnFilePath' '' 'path to the return variables file' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 
@@ -57,7 +58,13 @@ verifyFileExistence "$FLAGS_sam"
 
 # create output folder
 OUT_BASE=$(createOutputFolder "$FLAGS_bam")
-TMP_PREFIX=$(getTmpFile sam2bam)
+if [ ! -z "$FLAGS_tmpFolder" ]; then
+	TMP_PREFIX=$(getTmpFile sam2bam "$FLAGS_tmpFolder")
+	TMP_FILE=$(getTmpFile sam2bam "$FLAGS_tmpFolder")
+else
+	TMP_PREFIX=$(getTmpFile sam2bam)
+	TMP_FILE=$(getTmpFile sam2bam /tmp) 
+fi
 
 # run it
 MESSAGE=$(samtools sort -@ $FLAGS_threads -m $FLAGS_memory -l $FLAGS_quality -O bam -T "${TMP_PREFIX}.part" "$FLAGS_sam" > "$FLAGS_bam")
@@ -65,7 +72,6 @@ RET=$?
 
 # check for error
 FAIL=0
-TMP_FILE=$(getTmpFile sam2bam /tmp)
 touch "$TMP_FILE"
 trap "rm -f \"$TMP_FILE\" 2>&1 > /dev/null" EXIT
 printf "$MESSAGE" > "$TMP_FILE"

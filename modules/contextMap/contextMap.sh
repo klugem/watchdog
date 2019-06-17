@@ -49,6 +49,7 @@ DEFINE_boolean 'keeptmp' '1' '[optional] does not delete some temporary files' '
 DEFINE_boolean 'sequenceDB' '1' '[optional] sequence mapping to disk; recommended for very large data sets.' ''
 DEFINE_string 'returnFilePath' '' 'path to the return variables file' ''
 DEFINE_string 'localTmpFolder' '/usr/local/storage' 'path to a local storage that is used for temporary data' ''
+DEFINE_integer 'memoryScaleFactor' '75' 'scale factor [0,100] in percent that defines the proportion of the memory that is used for java; default memory: 3GB*threads*(scaleFactor/100)' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 
 #ContextMap_v2.7.1.jar
@@ -240,6 +241,8 @@ FLAGS_maxhits=$(ensureLowerBound "$FLAGS_maxhits" 0)
 FLAGS_minsize=$(ensureLowerBound "$FLAGS_minsize" 1)
 FLAGS_threads=$(ensureLowerBound "$FLAGS_threads" 1)
 FLAGS_maxindelsize=$(ensureLowerBound "$FLAGS_maxindelsize" 0)
+FLAGS_memoryScaleFactor=$(ensureLowerBound "$FLAGS_memoryScaleFactor" 1)
+FLAGS_memoryScaleFactor=$(ensureUpperBound "$FLAGS_memoryScaleFactor" 100)
 
 # create output folder
 OUT_BASE=$(createOutputFolder "$FLAGS_output/.dummyFile")
@@ -247,13 +250,13 @@ OUT_BASE=$(createOutputFolder "$FLAGS_output/.dummyFile")
 # set output path to temporary path
 TMP_FOLDER=$(getTmpFile contextMap "$FLAGS_localTmpFolder")
 createOutputFolder "$TMP_FOLDER/.dummyFile"
-MEMORY=$(getMemoryForJava $FLAGS_threads 3072) #use 3GB as default if not running on grid
+MEMORY=$(getMemoryForJava $FLAGS_threads 3072 $FLAGS_memoryScaleFactor) #use 3GB as default if not running on grid
 
 COMMAND="java $MEMORY -XX:+UseConcMarkSweepGC -XX:NewSize=300M -XX:MaxNewSize=300M -jar '$FLAGS_jarPath' mapper"
 # build the command
 for PARAM in $__flags_longNames; do
 	# ignore that parameter since it is only for the module
-	if [ "$PARAM" == "jarPath" ] || [ "$PARAM" == "localTmpFolder" ] || [ "$PARAM" == "returnFilePath" ]; then
+	if [ "$PARAM" == "jarPath" ] || [ "$PARAM" == "localTmpFolder" ] || [ "$PARAM" == "returnFilePath" ] || [ "$PARAM" == "memoryScaleFactor" ]; then
 		continue
 	fi
 
