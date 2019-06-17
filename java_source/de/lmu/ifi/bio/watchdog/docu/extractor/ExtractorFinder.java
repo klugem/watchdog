@@ -1,4 +1,4 @@
-package de.lmu.ifi.watchdog.docu.extractor;
+package de.lmu.ifi.bio.watchdog.docu.extractor;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

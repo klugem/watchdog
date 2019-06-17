@@ -325,6 +325,19 @@ ensureLowerBound() {
 	fi
 }
 
+ensureUpperBound() {
+	VALUE=$1
+	BOUND=$2
+
+	if [ ! -z "$VALUE" ]; then
+		if [ $VALUE -gt $BOUND ]; then
+			echo $BOUND
+		else 
+			echo $VALUE
+		fi
+	fi
+}
+
 function abspath() {
     if [ -d "$1" ]; then
         echo "$(cd "$1"; pwd)"
@@ -401,9 +414,10 @@ function removeModuleVersionParamsAndPrint() {
 
 # first parameter: number of cores
 # second parameter: memory in MB per core
+# third parameter: optional scale factor in percentage
 # does override these settings, if executed on the GRID
 function getMemoryForJava() {
-	if [ $# -eq 2 ]; then
+	if [ $# -ge 2 ]; then
 		# check, if core and memory information is set
 		if [ ! -z $IS_WATCHDOG_JOB ] && [ $IS_WATCHDOG_JOB -eq 1 ]; then
 			# override user settings for threads with the number of set cores
@@ -423,7 +437,7 @@ function getMemoryForJava() {
 			if [ -f /proc/meminfo ]; then
 				MEM=$(grep MemTotal /proc/meminfo | awk '{print $2}')
 				MEM=$((MEM/1024))
-				MAX_MEMORY=$((MEM*100/47)) # take maximal less than the half of the machines memory
+				MAX_MEMORY=$((MEM*90/100)) # take max. 90% of the machines memory
 				# take 3 GB per core as default
 				NEEDED_MEM=$(($1*$2))
 				# get the minimum used stuff
@@ -431,6 +445,11 @@ function getMemoryForJava() {
 				MAX_MEMORY=$(max 4096 $MAX_MEMORY)
 			fi
 		fi	
+
+		# scale the calculated memory according to the scale factor
+		if [ $# -eq 3 ]; then
+			MAX_MEMORY=$(echo "((${MAX_MEMORY}*($3/100))+0.5)/1" | bc)
+		fi
 
 		# reserve one third of the max memory fixed but at least 2GB
 		MIN_MEMORY=$((MAX_MEMORY/3))
@@ -569,7 +588,7 @@ function executeCommand() {
 		echoError "$NAME run failed with exit code '$CODE'.!"
 		echoAError "Output: $MESSAGE"
 		echoAError "Log file ($LOGFILE):" 
-		cat $LOGFILE 
+		#cat $LOGFILE 
 		exit $EXIT_FAILED
 	else
 		#check, if we can find an default error message in the return code

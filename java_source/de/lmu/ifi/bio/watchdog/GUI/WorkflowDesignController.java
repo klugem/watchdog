@@ -958,6 +958,9 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			// check, if it is the default folder
 			if(!new File(path).getAbsolutePath().equals(new File(PreferencesStore.getWatchdogBaseDir() + File.separator + XMLParser.MODULES).getAbsolutePath())) {
 				defaultInUse = true;
+				if(!path.endsWith(File.separator))
+					path = path + File.separator;
+				
 				requiredModules.add(path);
 			}
 		}

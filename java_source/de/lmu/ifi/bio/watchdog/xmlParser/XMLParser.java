@@ -275,7 +275,7 @@ public class XMLParser {
 	private static final String REPLACE = "@";
 	private static final String REPLACE_IMPORT_PATH = "<x:include schemaLocation=\"";
 	private static final String INCLUDE_XSD = REPLACE_IMPORT_PATH + REPLACE+"\" />";
-	private static final String XSD_PATTERN = "*.xsd";
+	public static final String XSD_PATTERN = "*.xsd";
 	private static final String REPLACE_MODULE_IMPORT = "<!-- @!JAVA_REPLACE_MODULE_INCLUDE!@ -->";
 	private static final String REPLACE_PLUGIN_IMPORT = "<!-- @!JAVA_REPLACE_PLUGIN_INCLUDE!@ -->";
 	private static final HashMap<String, String> BLOCKED_CONST_NAMES = new HashMap<>();

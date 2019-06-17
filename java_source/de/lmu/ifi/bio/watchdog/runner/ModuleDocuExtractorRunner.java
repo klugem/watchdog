@@ -20,14 +20,14 @@ import de.lmu.ifi.bio.watchdog.docu.Moduledocu;
 import de.lmu.ifi.bio.watchdog.docu.Paramdocu;
 import de.lmu.ifi.bio.watchdog.docu.Returndocu;
 import de.lmu.ifi.bio.watchdog.docu.VersionedInfo;
+import de.lmu.ifi.bio.watchdog.docu.extractor.Extractor;
+import de.lmu.ifi.bio.watchdog.docu.extractor.ExtractorFinder;
+import de.lmu.ifi.bio.watchdog.docu.extractor.XSDParameterExtractor;
+import de.lmu.ifi.bio.watchdog.docu.extractor.XSDReturnValueExtractor;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
-import de.lmu.ifi.watchdog.docu.extractor.Extractor;
-import de.lmu.ifi.watchdog.docu.extractor.ExtractorFinder;
-import de.lmu.ifi.watchdog.docu.extractor.XSDParameterExtractor;
-import de.lmu.ifi.watchdog.docu.extractor.XSDReturnValueExtractor;
 
 /**
  * Creates module documentation templates based on XSD (and other files)
