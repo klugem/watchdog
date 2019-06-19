@@ -1,13 +1,19 @@
 package de.lmu.ifi.bio.watchdog.resume;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLTask;
@@ -23,6 +29,8 @@ public class ResumeInfo {
 	public static String RET = "ret";
 	public static String HASH = "hash";
 	public static String TMP_CONST_NAME = "${TMP}";
+	public static String COMMAND = "finalCommand";
+	public static String SOFTWARE_VERSION_INFO = "softwareVersion";
 	
 	private final int TASK_ID;
 	private final String GROUP_FILE_NAME;
@@ -127,6 +135,26 @@ public class ResumeInfo {
 		if(ret != null && ret.size() > 0) {
 			String retJson = GSON.toJson(ret); 
 			values.put(RET, retJson);
+		}
+		
+		// add software version and detailed parameter args
+		String sep = " ";
+		String command = new StringBuffer(task.getBinaryCall()) + sep + StringUtils.join(task.getArguments(), sep);
+		values.put(COMMAND, command);
+		
+		if(task.hasVersionQueryInfoFile()) {
+			try {
+				File v = task.getVersionQueryInfoFile();
+				String vc = StringUtils.join(Files.readAllLines(Paths.get(v.getAbsolutePath())), System.lineSeparator());
+				values.put(SOFTWARE_VERSION_INFO, vc);
+			}
+			catch(IOException ex) {
+				Logger l = task.getLogger();
+				if(l != null) {
+					l.error("Failed to read version query file '"+ task.getVersionQueryInfoFile().getAbsolutePath() +"'.");
+				}
+				ex.printStackTrace();
+			}
 		}
 		
 		return GSON.toJson(values);

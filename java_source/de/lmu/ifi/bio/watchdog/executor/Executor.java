@@ -28,6 +28,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 	
 	public static final String WATCHGOD_CORES = "WATCHDOG_CORES";
 	public static final String WATCHGOD_MEMORY = "WATCHDOG_MEMORY";
+	public static final String VERSION_INFO_PREFIX = "version_";
 
 	public static final String COMMAND_SEP = System.lineSeparator();
 	public static final String EXECUTE = "execute";
@@ -65,7 +66,14 @@ public abstract class Executor<A extends ExecutorInfo> {
 		for(String name : esev.keySet()) {
 			this.TASK.addEnvVariable(name, esev.get(name));
 		}
-				
+
+		// add before command that will query the software version
+		if(this.TASK.getVersionQueryParameter() != null) {
+			File v = Functions.generateRandomTmpExecutionFile(VERSION_INFO_PREFIX + this.TASK.getID(), false);
+			this.addBeforeCommand(this.TASK.getBinaryCall() + " " + this.TASK.getVersionQueryParameter() + " 2>&1 > " + v.getAbsolutePath());
+			this.TASK.setVersionQueryInfoFile(v);
+		}
+	
 		// check, if the task should be executed on the same host as preceding or following tasks
 		if(this.TASK.willRunOnSlave()) {
 			try {				

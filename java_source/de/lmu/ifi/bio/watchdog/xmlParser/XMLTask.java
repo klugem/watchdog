@@ -109,6 +109,7 @@ public class XMLTask {
 	private String moduleVersionParameterSetName = null;
 	private boolean isResumeInfoDirty = false;
 	private boolean isOneSubtaskResumeInfoDirty = false;
+	private String versionQueryParameter = null; // used to get the software version of third-party software
 	
 	/**
 	 * Constructor
@@ -201,6 +202,21 @@ public class XMLTask {
 	
 	public HashMap<String, ReturnType> getReturnParameters() {
 		return new HashMap<String, ReturnType>(this.RETURN_PARAMS);
+	}
+	
+	/**
+	 * sets the parameter used to query the version of third-party software
+	 * @param pname
+	 */
+	public void setVersionQueryParameter(String pname) {
+		this.versionQueryParameter = pname;
+	}
+	
+	/**
+	 * return parameter used to query the version of third-party software
+	 */
+	public String getVersionQueryParameter() {
+		return this.versionQueryParameter;
 	}
 	
 	/**

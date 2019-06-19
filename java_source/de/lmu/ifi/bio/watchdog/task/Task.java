@@ -96,6 +96,8 @@ public class Task implements Serializable {
 	private boolean taskStatusUpdateFinished = false;
 	private boolean MIGHT_PB_CONTAIN_FILE_NAMES;
 	private String externalExecutorID;
+	private String versionQueryParameter = null; // used to get the software version of third-party software
+	private File versionQueryInfoFile = null;
 	
 	/**
 	 * Constructor
@@ -1265,5 +1267,52 @@ public class Task implements Serializable {
 	 */
 	public void addEnvVariable(String name, String value) {
 		this.ENV.add(name, value, null, false, false);
+	}
+	
+	
+	/**
+	 * sets the parameter used to query the version of third-party software
+	 * @param pname
+	 */
+	public void setVersionQueryParameter(String pname) {
+		this.versionQueryParameter = pname;
+	}
+	
+	/**
+	 * return parameter used to query the version of third-party software
+	 */
+	public String getVersionQueryParameter() {
+		return this.versionQueryParameter;
+	}
+
+	/**
+	 * sets the file that will contain the version of third-party software
+	 * @param v
+	 */
+	public void setVersionQueryInfoFile(File v) {
+		this.versionQueryInfoFile = v;
+	}
+	
+	/**
+	 * 
+	 * @return file that will contain the version of third-party software
+	 */
+	public File getVersionQueryInfoFile() {
+		return this.versionQueryInfoFile;
+	}
+	
+	/**
+	 * tests if a version query file for that task was set
+	 */
+	public boolean hasVersionQueryInfoFile() {
+		return this.getVersionQueryInfoFile() != null;
+	}
+	
+	/**
+	 * retuns the logger of the task
+	 * @return
+	 */
+	public Logger getLogger() {
+		return this.LOGGER;
 	}
 }

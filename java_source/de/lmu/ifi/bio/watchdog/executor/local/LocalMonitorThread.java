@@ -90,7 +90,7 @@ public class LocalMonitorThread extends ScheduledMonitorThread<LocalExecutor> {
 						// finish the stderr and stdout streams
 						this.readStream(e.getStdoutStream(), e.getStdoutFile(), true);
 						this.readStream(e.getStderrStream(), e.getStderrFile(), true);
-						e.sync(); // write files physicall to disk!
+						e.sync(); // write files physically to disk!
 						
 						JobInfo info = e.getJobInfo();
 						// destroy the process

@@ -89,6 +89,7 @@ public class FileWatcherLockguard extends StopableLoopRunnable {
 		ArrayList<File> files = new ArrayList<>();
 		if(t.getStdOut(false) != null) files.add(t.getStdOut(false));
 		if(t.getStdErr(false) != null) files.add(t.getStdErr(false));
+		if(t.hasVersionQueryInfoFile()) files.add(t.getVersionQueryInfoFile());
 
 		// add it to monitor if required or perform update instantly if possible
 		if(files.size() > 0)

@@ -163,6 +163,7 @@ public class XMLParser {
 	public static final String TASKS = "tasks";
 	public static final String ID = "id";
 	public static final String BIN_NAME = "binName";
+	public static final String VERSION_QUERY_PARAMETER = "versionQueryParameter";
 	public static final String PRE_BIN_COMMAND = "preBinCommand";
 	public static final String SEPARATE = "separate";
 	public static final String KEEP4SLAVE = "keep4Slave";
@@ -720,6 +721,8 @@ public class XMLParser {
 								
 								ProcessBlock pb = null;
 								OptionFormat globalOptionFormater = getFormater(task);
+								String versionQueryParameter = task.getAttribute(VERSION_QUERY_PARAMETER);
+								
 								ExecutorInfo executorInfo = null;
 								Environment env = null;
 								ArrayList<TaskAction> taskActions = new ArrayList<>();
@@ -825,6 +828,9 @@ public class XMLParser {
 								x.setCheckpoint(checkpointEnum);
 								x.setConfirmParam(confirmParamEnum);
 								x.setModuleVersionParameterSetName(versionSetName);
+								
+								if(versionQueryParameter != null)
+									x.setVersionQueryParameter(globalOptionFormater.formatFlag(versionQueryParameter));
 
 								if(retInfo.containsKey(taskType))
 									x.setReturnParameter(retInfo.get(taskType).getKey());

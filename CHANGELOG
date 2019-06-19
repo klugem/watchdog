@@ -13,27 +13,36 @@ Changelog started with version 1.2.0
 - [PLUGIN] Implemented binary-based executor (<sge>) to support Sun Grid Engine (tested with v6.1); SGE control binaries must be accessible via the $PATH variable TODO: add to DOCU
 - [DOCU] PDF version of the documentation is provided in addition to the HTML version
 - [GUI] Added -tmpFolder folder parameter to Workflow designer
-- [CMD] TODO: describe detach/attach mode
- 
+- [CMD] Implemented detach/attach mode that can be used to stop Watchdog and restart it later while tasks are running on external executors; TODO: add to DOCU
+- [XSD] Custom before and after command script(s) can be added to actual command calls using the 'beforeScripts' and 'afterScripts' attributes of executor tags; TODO: update DOCU
+- [BASH] Implemented before script that will enforce the requested memory using ulimit (for SGE or Slurm executor). 
+- [CMD] Detach mode can be requested via STRG+C or by using the webserver 
+- [XSD] Version of third-party software used in modules can be queried using the 'versionQueryParameter' attribute of tasks; TODO: add to DOCU
+  
 ### Changed
-- [PLUGIN] Executor <cluster> is now used for DRMAA cluster implementations; custom attributes (memory, slots, queue) were removed  TODO: add to DOCU
+- [PLUGIN] Executor <cluster> is now used for DRMAA cluster implementations; custom attributes (memory, slots, queue) were removed; TODO: add to DOCU
 - [] Watchdog releases require now Java 11 (and JavaFX SDK for workflow designer)
+- [PLUGIN] Moved 'shebang' attribute from environment to executor; TODO: update DOCU and examples
  
 ### Fixed
 - [] Fixed small memory leak caused by not closed ScanResult objects
 - [CMD] Removed unnecessary nesting of pre-defined TMP constant  
 - [GUI] In some cases not all task parameters were loaded from a XML file
+- [GUI] When using custom module folders the trailing '/' was missing when the workflow was written
 - [EXAMPLE] Fixed wrong dependency in example workflow 1 for task 5
 - [BASH] Corrected wrong array access that caused an error in new bash versions
 - [BASH] Last parameter of called command was not shown 
-- [PLUGIN] Slurm executor plugin was not using the <cluster> tag 
+- [PLUGIN] Slurm executor plugin was not using the <cluster> tag
+- [CMD] STRG+C signal is now caught by watchdog.sh as otherwise SIGINT is forwarded to all processes forked by the java process 
+- [] Do not export environment variables that contain a '.' or '-' in the name
+- [CMD] Fixed very rare null pointer exception that could occurr when a process folder is used (e.g. network failure during usage of network storage I/O call after existence checks)
 
 ## [1.2.7] - 2018-08-30
 ### Added
 - [] New task action links, part of the summary mail, can control multiple failed subtasks at once
 - [XSD] Added concept of module versions that allows the use of different XSD definition versions (of the same module without copy&paste)
 - [DOCU] Added documentation on module versions (5.6)
-- [MOD] Added versiodn 2 of the featureCount module which supports a newer featureCount release
+- [MOD] Added version 2 of the featureCount module which supports a newer featureCount release
 - [MOD] New parameter 'shortenReads' for cutadapt module that shortens reads to a maximal length after trimming
 
 ### Fixed

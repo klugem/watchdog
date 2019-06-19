@@ -376,6 +376,7 @@
 		<x:attribute name="isWatchdogModule" type="x:boolean" default="true" />
 		<x:attribute name="watchdogModuleVersionParameter" type="x:string" default="moduleVersion" />
 		<x:attribute name="returnFilePathParameter" type="x:string" default="returnFilePath"/>
+		<x:attribute name="versionQueryParameter" type="x:string" default=""/>
 		<x:attribute ref="paramFormat" default="longShort"/>
 		<x:attribute ref="spacingFormat" default="blankSeparated"/>
 		<x:attribute ref="separateFormat" default=","/>
