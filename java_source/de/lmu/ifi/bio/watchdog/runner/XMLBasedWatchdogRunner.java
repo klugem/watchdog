@@ -8,7 +8,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -207,22 +209,9 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			}
 		
 			// read resume info
-			HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo = new HashMap<>();
-			int resumeInfoTaskNumber = 0;
-			if(params.resume != null) {
-				File resume = new File(params.resume);
-				if(resume.exists() && resume.canRead()) {
-					resumeInfo = LoadResumeInfoFromFile.getResumeInfo(resume);
-					for(HashMap<String, ResumeInfo> hm : resumeInfo.values()) {
-						resumeInfoTaskNumber = resumeInfoTaskNumber + hm.size();
-					}
-				}
-				else {
-					log.error("Could not find Watchdog's resume file '"+resume.getAbsolutePath()+"'.");
-					System.exit(1);
-				}
-			}
-						
+			AtomicInteger resumeInfoTaskNumber = new AtomicInteger(0);
+			HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo = getResumeInfo(params.resume, log, resumeInfoTaskNumber);
+	
 			// install signals to handle
 			Signal.handle(SIGINT, new XMLBasedWatchdogRunner());
 			Signal.handle(SIGUSR1, new XMLBasedWatchdogRunner());
@@ -246,7 +235,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			
 			if(params.attachInfo != null)
 				log.info("Attach file: " + new File(params.attachInfo).getAbsolutePath());
-			
+
 			// parse the XML Tasks
 			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading, params.disableMails);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
@@ -374,6 +363,31 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 		}
 	}
 	
+	/**
+	 * reads the resume info from a resume file
+	 * @param resumeFile path to a resume file
+	 * @param log Logger
+	 * @param resumeInfoTaskNumber number of task (ids) for which resume info was loaded --> will be updaed by the method
+	 * @return
+	 */
+	public static LinkedHashMap<Integer, HashMap<String, ResumeInfo>> getResumeInfo(String resumeFile, Logger log, AtomicInteger resumeInfoTaskNumber) {
+		LinkedHashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo = new LinkedHashMap<>();
+		if(resumeFile != null) {
+			File resume = new File(resumeFile);
+			if(resume.exists() && resume.canRead()) {
+				resumeInfo = LoadResumeInfoFromFile.getResumeInfo(resume);
+				for(HashMap<String, ResumeInfo> hm : resumeInfo.values()) {
+					resumeInfoTaskNumber.addAndGet(hm.size());
+				}
+			}
+			else {
+				log.error("Could not find Watchdog's resume file '"+resume.getAbsolutePath()+"'.");
+				System.exit(1);
+			}
+		}
+		return resumeInfo;
+	}
+
 	/**
 	 * gets an int ID based on a String ID
 	 * @param sID

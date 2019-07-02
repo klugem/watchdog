@@ -30,15 +30,20 @@ public class ResumeInfo {
 	public static String HASH = "hash";
 	public static String TMP_CONST_NAME = "${TMP}";
 	public static String COMMAND = "finalCommand";
+	public static String MODULE = "module";
 	public static String SOFTWARE_VERSION_INFO = "softwareVersion";
+	public static String MODULE_VERSION = "moduleVersion";
+	private static final String VERSION_REP = XMLParser.VERSION_SEP + "[0-9]+$"; 
 	
 	private final int TASK_ID;
+	private final String MOD;
+	private final int MOD_VERSION;
 	private final String GROUP_FILE_NAME;
 	private final HashMap<String, String> RETURN_PARAMS = new HashMap<>();
 	private final String ARG_HASH_CODE; 
 	private boolean isDirty = false;
 	
-	public static final Gson GSON = new Gson(); 
+	public static final Gson GSON = new Gson();
 	
 	/**
 	 * constructor
@@ -46,17 +51,29 @@ public class ResumeInfo {
 	 * @param groupFileName
 	 * @param hash
 	 * @param returnParams
+	 * @param moduleVersion
+	 * @param returnParams
 	 */
-	private ResumeInfo(int taskID, String groupFileName, String hash, HashMap<String, String> returnParams) {
+	private ResumeInfo(int taskID, String groupFileName, String hash, HashMap<String, String> returnParams, String module, int moduleVersion) {
 		this.TASK_ID = taskID;
 		this.GROUP_FILE_NAME = groupFileName;
 		this.ARG_HASH_CODE = hash;
+		this.MOD = module;
+		this.MOD_VERSION = moduleVersion;
 		if(returnParams != null)
 			this.RETURN_PARAMS.putAll(returnParams);
 	}
 
 	public int getTaskID() {
 		return TASK_ID;
+	}
+	
+	public String getModuleName() {
+		return MOD;
+	}
+	
+	public int getModuleVersion() {
+		return MOD_VERSION;
 	}
 
 	public String getGroupFileName() {
@@ -115,8 +132,10 @@ public class ResumeInfo {
 			reVal = GSON.fromJson(retJsonString, new TypeToken<HashMap<String, String>>() {}.getType());
 		
 		int tid = Integer.parseInt(retMap.get(ID));
+		int modV = Integer.parseInt(retMap.get(MODULE_VERSION));
 		String groupFileName = retMap.get(SUB);
-		return new ResumeInfo(tid, groupFileName == null ? "" : groupFileName, retMap.get(HASH), reVal);
+		String module = retMap.get(MODULE);
+		return new ResumeInfo(tid, groupFileName == null ? "" : groupFileName, retMap.get(HASH), reVal, module, modV);
 	}
 	
 	public static String getResumeInfo(XMLTask x, Task task) {		
@@ -124,10 +143,12 @@ public class ResumeInfo {
 		int taskID = task.getTaskID();
 		String groupFileName = task.getGroupFileName();
 		HashMap<String, String> ret = task.getReturnParams();
-		
+	
 		// build string
 		HashMap<String, String> values = new HashMap<>();
 		values.put(ID, Integer.toString(taskID));
+		values.put(MODULE_VERSION, Integer.toString(x.getVersion()));
+		values.put(MODULE, x.getTaskType().replaceFirst(VERSION_REP, ""));
 		values.put(HASH, getArgHash(x, task.getBinaryCall(), task.getDetailedArguments()));
 		
 		if(groupFileName != null && groupFileName.length() > 0)

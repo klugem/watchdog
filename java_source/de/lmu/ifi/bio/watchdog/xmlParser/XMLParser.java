@@ -829,7 +829,7 @@ public class XMLParser {
 								x.setConfirmParam(confirmParamEnum);
 								x.setModuleVersionParameterSetName(versionSetName);
 								
-								if(versionQueryParameter != null)
+								if(versionQueryParameter != null && versionQueryParameter.length() > 0)
 									x.setVersionQueryParameter(globalOptionFormater.formatFlag(versionQueryParameter));
 
 								if(retInfo.containsKey(taskType))
@@ -1397,7 +1397,7 @@ public class XMLParser {
 			el.getAttributes().removeNamedItem(MAX_VERSION_ATTR);
 		}
 
-		// check, if node should be keeped
+		// check, if node should be kept
 		boolean keep = false;
 		if(minVersion == null && maxVersion == null)
 			keep = true;

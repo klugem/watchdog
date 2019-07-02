@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Loads the resume info from a file
@@ -13,9 +14,9 @@ import java.util.HashMap;
 public class LoadResumeInfoFromFile {
 
 	// TODO: add some checks: file ending, json format check for line
-	public static HashMap<Integer, HashMap<String, ResumeInfo>> getResumeInfo(File resumeLogFile) {
+	public static LinkedHashMap<Integer, HashMap<String, ResumeInfo>> getResumeInfo(File resumeLogFile) {
 		try {
-			HashMap<Integer, HashMap<String, ResumeInfo>> info = new HashMap<>();
+			LinkedHashMap<Integer, HashMap<String, ResumeInfo>> info = new LinkedHashMap<>();
 			// load all the stuff into the memory *diabolic*
 			for(String line : Files.readAllLines(Paths.get(resumeLogFile.getAbsolutePath()))) {
 				ResumeInfo r = ResumeInfo.parseResumeInfo(line);

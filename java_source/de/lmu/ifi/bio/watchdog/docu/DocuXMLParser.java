@@ -30,8 +30,8 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 public class DocuXMLParser {
 	private static final String DOCUMENT_XSD = "xsd" + File.separator + "documentation.xsd";
 	private static final String DOC_PREFIX = "<documentation ";
-	private static final String REPLACE_SUFFIX = "Task$";
-	
+	public static final String REPLACE_SUFFIX = "Task$";
+
 	// section elements
 	public static final String MAINTAINER = "maintainer";
 	public static final String PARAMETER = "parameter";
@@ -169,7 +169,6 @@ public class DocuXMLParser {
 	 */
 	public static Moduledocu parseXMLFile(DocumentBuilderFactory dbf, File xmlDocuFile, File xsdFile) {
 		try {
-			System.out.println(xmlDocuFile.getAbsolutePath());
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			Document dom = db.parse(xmlDocuFile);
 

@@ -437,7 +437,8 @@ function getMemoryForJava() {
 			if [ -f /proc/meminfo ]; then
 				MEM=$(grep MemTotal /proc/meminfo | awk '{print $2}')
 				MEM=$((MEM/1024))
-				MAX_MEMORY=$((MEM*90/100)) # take max. 90% of the machines memory
+				MAX_MEMORY=$(echo "((${MEM}*(90/100)))/1" | bc -l | grep -oP "(^[0-9]+)")
+
 				# take 3 GB per core as default
 				NEEDED_MEM=$(($1*$2))
 				# get the minimum used stuff
@@ -448,7 +449,7 @@ function getMemoryForJava() {
 
 		# scale the calculated memory according to the scale factor
 		if [ $# -eq 3 ]; then
-			MAX_MEMORY=$(echo "((${MAX_MEMORY}*($3/100))+0.5)/1" | bc)
+			MAX_MEMORY=$(echo "((${MAX_MEMORY}*($3/100))+0.5)/1" | bc -l | grep -oP "(^[0-9]+)")
 		fi
 
 		# reserve one third of the max memory fixed but at least 2GB

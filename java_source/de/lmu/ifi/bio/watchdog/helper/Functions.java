@@ -231,12 +231,14 @@ public class Functions {
 		try { filter.close(); } catch(Exception e) { }
 	}
 
-	public static void write(Path file, String data) {
+	public static boolean write(Path file, String data) {
+		boolean ret = false;
 		BufferedWriter output = null;
 		try {
 			output = new BufferedWriter(new FileWriter(file.toFile()));
 			output.write(data);
 			output.flush();
+			ret = true;
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -244,6 +246,7 @@ public class Functions {
 				try { output.close(); } catch(Exception e) {}
 			}
 		}
+		return ret;
 	}
 	
 	public static String getHash(String stringToHash) throws UnsupportedEncodingException {

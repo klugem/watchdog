@@ -67,10 +67,11 @@ public abstract class Executor<A extends ExecutorInfo> {
 			this.TASK.addEnvVariable(name, esev.get(name));
 		}
 
-		// add before command that will query the software version
-		if(this.TASK.getVersionQueryParameter() != null) {
+		// add after command that will query the software version
+		String vqp = this.TASK.getVersionQueryParameter();
+		if(vqp != null && vqp.length() > 0) {
 			File v = Functions.generateRandomTmpExecutionFile(VERSION_INFO_PREFIX + this.TASK.getID(), false);
-			this.addBeforeCommand(this.TASK.getBinaryCall() + " " + this.TASK.getVersionQueryParameter() + " 2>&1 > " + v.getAbsolutePath());
+			this.addAfterCommand(this.TASK.getBinaryCall() + " " + this.TASK.getVersionQueryParameter() + " 2>&1 > " + v.getAbsolutePath());
 			this.TASK.setVersionQueryInfoFile(v);
 		}
 	

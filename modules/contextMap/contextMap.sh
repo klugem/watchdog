@@ -50,10 +50,8 @@ DEFINE_boolean 'sequenceDB' '1' '[optional] sequence mapping to disk; recommende
 DEFINE_string 'returnFilePath' '' 'path to the return variables file' ''
 DEFINE_string 'localTmpFolder' '/usr/local/storage' 'path to a local storage that is used for temporary data' ''
 DEFINE_integer 'memoryScaleFactor' '75' 'scale factor [0,100] in percent that defines the proportion of the memory that is used for java; default memory: 3GB*threads*(scaleFactor/100)' ''
+DEFINE_integer 'memoryPerThread' '3072' 'total memory per thread in MB if running on local host; otherwise memory limit of executor might be set; default: 3072' ''
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
-
-#ContextMap_v2.7.1.jar
-
 
 # parse parameters
 FLAGS "$@" || exit $EXIT_INVALID_ARGUMENTS
@@ -134,7 +132,7 @@ if [ $FLAGS_mining -eq 0 ]; then
 		exit $EXIT_MISSING_ARGUMENTS
 	fi
 	if [ -z "$FLAGS_speciesindex" ]; then
-		echoError "Parameter --speciesindex must be set in mining mode. (see --help for details)";
+		echoError "Parameter --speciesindex must be set in mining mode. (1see --help for details)";
 		exit $EXIT_MISSING_ARGUMENTS
 	fi
 fi
@@ -153,12 +151,12 @@ for I in "${!READS[@]}"; do
 done
 
 if [ ${#READS[@]} -eq 2 ]; then
-	F=$(basename "${READS[0]}")
-	S=$(basename "${READS[1]}")
+	F=$(basename "${READS[0]}" | tr -d '\0')
+	S=$(basename "${READS[1]}" | tr -d '\0')
 	BASENAME=$(echo -e "$F\n$S" | grep -zoP '^(.*)(?=.*?\n\1)')
 	BASENAME=${BASENAME%_R}
 else
-	BASENAME=$(basename "${FLAGS_reads}")
+	BASENAME=$(basename "${FLAGS_reads}" | tr -d '\0')
 	BASENAME=${BASENAME%.*}
 fi
 
@@ -243,6 +241,7 @@ FLAGS_threads=$(ensureLowerBound "$FLAGS_threads" 1)
 FLAGS_maxindelsize=$(ensureLowerBound "$FLAGS_maxindelsize" 0)
 FLAGS_memoryScaleFactor=$(ensureLowerBound "$FLAGS_memoryScaleFactor" 1)
 FLAGS_memoryScaleFactor=$(ensureUpperBound "$FLAGS_memoryScaleFactor" 100)
+FLAGS_memoryPerThread=$(ensureLowerBound "$FLAGS_memoryPerThread" 512)
 
 # create output folder
 OUT_BASE=$(createOutputFolder "$FLAGS_output/.dummyFile")
@@ -250,13 +249,13 @@ OUT_BASE=$(createOutputFolder "$FLAGS_output/.dummyFile")
 # set output path to temporary path
 TMP_FOLDER=$(getTmpFile contextMap "$FLAGS_localTmpFolder")
 createOutputFolder "$TMP_FOLDER/.dummyFile"
-MEMORY=$(getMemoryForJava $FLAGS_threads 3072 $FLAGS_memoryScaleFactor) #use 3GB as default if not running on grid
+MEMORY=$(getMemoryForJava $FLAGS_threads $FLAGS_memoryPerThread $FLAGS_memoryScaleFactor) #use 3GB as default if not running on grid
 
 COMMAND="java $MEMORY -XX:+UseConcMarkSweepGC -XX:NewSize=300M -XX:MaxNewSize=300M -jar '$FLAGS_jarPath' mapper"
 # build the command
 for PARAM in $__flags_longNames; do
 	# ignore that parameter since it is only for the module
-	if [ "$PARAM" == "jarPath" ] || [ "$PARAM" == "localTmpFolder" ] || [ "$PARAM" == "returnFilePath" ] || [ "$PARAM" == "memoryScaleFactor" ]; then
+	if [ "$PARAM" == "jarPath" ] || [ "$PARAM" == "localTmpFolder" ] || [ "$PARAM" == "returnFilePath" ] || [ "$PARAM" == "memoryScaleFactor" ] || [ "$PARAM" == "memoryPerThread" ]; then
 		continue
 	fi
 
