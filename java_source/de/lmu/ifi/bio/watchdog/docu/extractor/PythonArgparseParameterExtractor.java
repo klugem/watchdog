@@ -118,8 +118,8 @@ public class PythonArgparseParameterExtractor implements Extractor<Paramdocu> {
 		Pattern argPattern = Pattern.compile(ARG_PATTERN);
 		LinkedHashMap<String, ArrayList<Paramdocu>> ret = new LinkedHashMap<>();
 		List<String> lines = Files.readAllLines(Paths.get(f.getAbsolutePath()));
-		int minVersion = 0;
-		int maxVersion = 0;
+		int minVersion = 1;
+		int maxVersion = 1;
 		
 		// get parameter
 		boolean inSingle = false;
@@ -179,7 +179,7 @@ public class PythonArgparseParameterExtractor implements Extractor<Paramdocu> {
 							
 						// save it
 						Paramdocu p = new Paramdocu(name, "n.a.", description, defaultValue, "[VALUE_RESTRICTION]");
-						if(minVersion != 0 && maxVersion != 0)
+						if(minVersion != 1 && maxVersion != 1)
 							p.setVersions(minVersion, maxVersion);
 						
 						// save in hash

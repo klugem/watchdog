@@ -16,16 +16,17 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import de.lmu.ifi.bio.watchdog.helper.Functions;
+import de.lmu.ifi.bio.watchdog.logger.Logger;
 
 /**
  * Class that generates the module library website based on the module docu XML files
  * @author Michael Kluge
  *
  */
-public class ModuleLibraryGenerator {
+public class ModuleLibraryGenerator { 
 
 	/////////////////// CONFIG VARIABLES ///////////////////
-	public static int MAX_FILTER_BUTTON_NUMBER = 4; 
+	public static int MAX_FILTER_BUTTON_NUMBER = 5; 
 	public static String FILTER_VALUE_SEP = "§";
 	public static String META_NAME = "meta_info"; // name of var in JS file
 	////////////////////////////////////////////////////////
@@ -40,7 +41,7 @@ public class ModuleLibraryGenerator {
 	// meta fields to filter to replace
 	public static final String FILTER_BUTTON_TEMPLATE_CATEGORY = "<!--FILTER_BUTTON_TEMPLATE_CATEGORY-->";
 	public static final String FILTER_BUTTON_TEMPLATE_AUTHOR = "<!--FILTER_BUTTON_TEMPLATE_AUTHOR-->";
-	public static final String FILTER_BUTTON_TEMPLATE_UPDATE = "<!--FILTER_BUTTON_TEMPLATE_UPDATE-->";
+	public static final String FILTER_BUTTON_TEMPLATE_AGE = "<!--FILTER_BUTTON_TEMPLATE_AGE-->";
 	public static final String DETAIL_PARAM_TEMPLATE = "<!--DETAIL_PARAM_TEMPLATE-->";
 	public static final String DETAIL_DEPENDENCY_TEMPLATE = "<!--DETAIL_DEPENDENCY_TEMPLATE-->";
 	public static final String DETAIL_CITE_TEMPLATE = "<!--DETAIL_CITE_TEMPLATE-->";
@@ -75,9 +76,10 @@ public class ModuleLibraryGenerator {
 	public static String LINK_COUNTER = "{@LINK_COUNTER@}";
 	
 	// remove comment tags
-	public static String REMOVE_MOD_GIT = "<!--GIT_LINK-->";
-	public static String REMOVE_MOD_URL = "<!--URL_LINK-->";
-	public static String REMOVE_MOD_PMID = "<!--PMID_LINK-->";
+	public static String REMOVE_LINK_PREFIX = "\\s*<a.+";
+	public static String REMOVE_MOD_GIT = REMOVE_LINK_PREFIX + "<!--GIT_LINK-->";
+	public static String REMOVE_MOD_URL = REMOVE_LINK_PREFIX + "<!--URL_LINK-->";
+	public static String REMOVE_MOD_PMID = REMOVE_LINK_PREFIX + "<!--PMID_LINK-->";
 	
 	// full detail fields to replace
 	public static String DEPENDENCIES = "{@DEPENDENCIES@}";
@@ -121,19 +123,29 @@ public class ModuleLibraryGenerator {
 	static {
 		FILTER_GROUPS.put(FILTER_BUTTON_TEMPLATE_CATEGORY, new HashMap<String, Integer>());
 		FILTER_GROUPS.put(FILTER_BUTTON_TEMPLATE_AUTHOR, new HashMap<String, Integer>());
-		FILTER_GROUPS.put(FILTER_BUTTON_TEMPLATE_UPDATE, new HashMap<String, Integer>());
+		
+		HashMap<String, Integer> categoryAgeMap = new HashMap<>();
+		categoryAgeMap.put("3 days".toUpperCase(), 3);
+		categoryAgeMap.put("1 week".toUpperCase(), 2);
+		categoryAgeMap.put("3 weeks".toUpperCase(), 1);
+		FILTER_GROUPS.put(FILTER_BUTTON_TEMPLATE_AGE, categoryAgeMap);
 	}
 		
 	public static int generateModuleLibraryPage(File outputDir, File watchdogBasedir, ArrayList<String> moduleFoldersToInclude) {
+		Logger log = new Logger();
 		int ok = 0;
 		if(!outputDir.exists())
 			outputDir.mkdirs();
+		else {
+			log.error("Output directory '"+outputDir.getAbsolutePath()+"' already exists!");
+			System.exit(1);
+		}
 		if(!outputDir.exists()) {
-			System.out.println("Failed to generate output directory '"+outputDir.getAbsolutePath()+"'");
+			log.error("Failed to generate output directory '"+outputDir.getAbsolutePath()+"'");
 			System.exit(1);
 		}
 		if(!outputDir.canWrite()) {
-			System.out.println("Output directory '"+outputDir.getAbsolutePath()+"' is not writable.");
+			log.error("Output directory '"+outputDir.getAbsolutePath()+"' is not writable.");
 			System.exit(1);
 		}
 		// get the modules to use
@@ -183,12 +195,15 @@ public class ModuleLibraryGenerator {
 			ArrayList<String> search = new ArrayList<>();
 			int i = 0;
 			for(Moduledocu md : documentedModules) {
+				log.info("Processing '" +md.getName()+ "'...");
 				// get new template
 				String newEntry = moduleTemplate;
 				
 				// replace meta filter values
-				newEntry = newEntry.replace(META_AUTHOR, FILTER_VALUE_SEP + StringUtils.join(md.getAuthorNames(), sep) + FILTER_VALUE_SEP);
-				newEntry = newEntry.replace(META_CATEGORY, FILTER_VALUE_SEP + StringUtils.join(md.getCategories(), sep) + FILTER_VALUE_SEP);
+				ArrayList<String> authors = md.getAuthorNames().stream().map(String::toUpperCase).collect(Collectors.toCollection(ArrayList::new));
+				ArrayList<String> cats = md.getCategories().stream().map(String::toUpperCase).collect(Collectors.toCollection(ArrayList::new));
+				newEntry = newEntry.replace(META_AUTHOR, FILTER_VALUE_SEP + StringUtils.join(authors, sep) + FILTER_VALUE_SEP);
+				newEntry = newEntry.replace(META_CATEGORY, FILTER_VALUE_SEP + StringUtils.join(cats, sep) + FILTER_VALUE_SEP);
 				newEntry = newEntry.replace(META_AGE, md.getDate());
 
 				// replace values
@@ -200,7 +215,10 @@ public class ModuleLibraryGenerator {
 				newEntry = newEntry.replace(VERSION, Integer.toString(md.getMaxVersion()));
 								
 				// replace links
-				newEntry = newEntry.replace(GITHUB, i+""); // TODO
+				if(md.hasGithubURL())
+					newEntry = newEntry.replace(GITHUB, md.getGithub());
+				else
+					newEntry = newEntry.replaceAll(REMOVE_MOD_GIT, "");
 				if(md.getWebsite().size() > 0)
 					newEntry = newEntry.replace(URL, md.getWebsite().get(0));
 				else
@@ -270,7 +288,7 @@ public class ModuleLibraryGenerator {
 				else {
 					newEntry = newEntry.replace(RETURN_VALUES_HIDE, Boolean.toString(true));
 				}
-				/////////////////////////////
+				////////////////////////////ok/
 				///////////////////////////// CITATION INFO
 				if(!(md.getPMIDs().size() == 0 && (md.getPaperDescription() == null || md.getPaperDescription().length() == 0))) {
 					StringBuilder citeb = new StringBuilder();
@@ -310,8 +328,8 @@ public class ModuleLibraryGenerator {
 				allModules.put(md, newEntry);
 				
 				// update categories 
-				md.getAuthorNames().stream().forEachOrdered(n -> updateHashMapCounter(authorCountMap, n));
-				md.getCategories().stream().forEachOrdered(n -> updateHashMapCounter(categoryCountMap, n));
+				md.getAuthorNames().stream().forEachOrdered(n -> updateHashMapCounter(authorCountMap, n.toUpperCase()));
+				md.getCategories().stream().forEachOrdered(n -> updateHashMapCounter(categoryCountMap, n.toUpperCase()));
 				
 				// collect JS json search info
 				search.add(md.getJsonInfo());
@@ -326,7 +344,6 @@ public class ModuleLibraryGenerator {
 				// get key map and sort it
 				HashMap<String, Integer> buttonKeys = FILTER_GROUPS.get(type);
 				ArrayList<String> sortedCountMap = buttonKeys.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).map(Map.Entry::getKey).collect(Collectors.toCollection(ArrayList::new));
-				
 				// replace the values
 				String template = filter.stream().filter(l -> l.contains(type)).findFirst().orElse(null);
 				if(template != null) {
@@ -342,7 +359,8 @@ public class ModuleLibraryGenerator {
 						for(Map.Entry<Moduledocu, String> e : allModules.entrySet()) {
 							Moduledocu m = e.getKey();
 							// replace it
-							if(m.getCategories().contains(catName)) {
+							String catNameHigh = catName.toUpperCase();
+							if(m.getCategories().stream().filter(x -> x.toUpperCase().equals(catNameHigh)).count() > 0) {
 								String v = e.getValue().replace(CAT_ID, Integer.toString(i+1));
 								allModules.put(m, v);
 							}

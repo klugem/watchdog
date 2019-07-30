@@ -11,6 +11,7 @@ import org.w3c.dom.Element;
 
 import de.lmu.ifi.bio.watchdog.interfaces.XMLPlugin;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
@@ -68,7 +69,7 @@ public abstract class XMLPluginTypeLoaderAndProcessor<A extends XMLPlugin> {
            		System.exit(1);
 			}
 			this.init = true;
-			return this.getALLXSDFiles(watchdogBase + File.separator + "xsd");
+			return this.getALLXSDFiles(watchdogBase + File.separator + XMLParser.XSD);
 		}
 		// clear parses for this run
 		for(XMLParserPlugin<A> xp : PARSER.values()) {

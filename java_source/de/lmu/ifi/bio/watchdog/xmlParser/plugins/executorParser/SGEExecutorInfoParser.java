@@ -16,7 +16,6 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 public class SGEExecutorInfoParser extends XMLExecutorInfoParser<SGEExecutorInfo> {
 	
 	private static final String XSD_DEF = "plugins" + File.separator + "executor.sge.xsd";
-	private boolean firstSge = false;
 	
 	static {	
 		// set monitor thread on Executor

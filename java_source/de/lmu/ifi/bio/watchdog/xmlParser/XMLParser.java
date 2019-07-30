@@ -95,7 +95,8 @@ public class XMLParser {
 	
 	private static final String REPLACE_CHARS = "^[\\[{\\(\\$].*";
 	public static final String NEWLINE = System.lineSeparator();
-	public static final String FILE_CHECK = "xsd" + File.separator + "watchdog.xsd";
+	public static final String XSD = "xsd";
+	public static final String FILE_CHECK = XSD + File.separator + "watchdog.xsd";
 	public static final String DEFAULT_LOCAL_NAME = "default local executor";
 	public static final String DEFAULT_LOCAL_COPY_ENV = "default local copy environment";
 	public static final String TMP_FOLDER = "tmp";
@@ -242,7 +243,7 @@ public class XMLParser {
 	private static final String MIN_OCCURS = "minOccurs";
 	private static final String MAX_OCCURS = "maxOccurs";
 	public static final String TYPE = "type";
-	private static final String ABSTRACT_TASK_PATH = "xsd" + File.separator + "abstract_task.xsd";
+	public static final String ABSTRACT_TASK_PATH = XSD + File.separator + "abstract_task.xsd";
 	private static final String EXTENSION_RETURN = "taskReturnType";
 	private static final String X = "x:";
 	private static final String STRING = "string";
@@ -380,7 +381,7 @@ public class XMLParser {
 		// get all module folders
 		ArrayList<String> moduleFolders = getModuleFolders(dbf, xmlFile, watchdogBaseDir);
 		// get all modules stored in that folders
-		HashMap<String, String> moduleName2Path = findModules(dbf, moduleFolders);
+		HashMap<String, String> moduleName2Path = findModules(dbf, moduleFolders, false);
 				
 		// get all the modules that must be loaded
 		getModules2LoadAndCheckID(dbf, xmlFile);
@@ -1474,32 +1475,49 @@ public class XMLParser {
 		}
 		return false;
 	}
+	
+	/**
+	 * adds all files with a XSD pattern to an array list
+	 * @param dir
+	 * @param result
+	 * @return
+	 */
+	public static void getFilesWithXSDPattern(File dir, ArrayList<String> result) {
+		if(dir.isDirectory()  && dir.canRead()) {
+			File[] res = dir.listFiles(new PatternFilenameFilter(XSD_PATTERN, false));
+			if(res == null) {
+				LOGGER.warn("Failed to load modules from folder '"+dir.getAbsolutePath()+"'.");
+			} else {
+				for(File f : res) {
+					result.add(f.getAbsolutePath());
+				}
+			}
+		}
+	}
 
 	/**
 	 * finds all XSD files that implement valid modules in that folder
 	 * @param dbf 
 	 * @param moduleFolders
+	 * @param isModuleBaseFolder
 	 * @return
 	 */
-	public static HashMap<String, String> findModules(DocumentBuilderFactory dbf, ArrayList<String> moduleFolders) {
+	public static HashMap<String, String> findModules(DocumentBuilderFactory dbf, ArrayList<String> moduleFolders, boolean isModuleBaseFolder) {
 		boolean noExit = false;
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
 		ArrayList<String> xsd = new ArrayList<>();
-		for(String dir : moduleFolders) {
-			if(new File(dir).isDirectory() && new File(dir).canRead()) {
-				for(File mmf : new File(dir).listFiles()) {
-					if(mmf.isDirectory()  && new File(dir).canRead()) {
-						File[] res = mmf.listFiles(new PatternFilenameFilter(XSD_PATTERN, false));
-						if(res != null) {
-							for(File xsdmmf : res) {
-								xsd.add(xsdmmf.getAbsolutePath());
-							}
-						}
-						else {
-							LOGGER.warn("Failed to load modules from folder '"+mmf.getAbsolutePath()+"'.");
-						}
+		for(String dirS : moduleFolders) {
+			File dir = new File(dirS);
+			if(dir.isDirectory() && dir.canRead()) {
+				// list all folders in that folder if not already a module base folder
+				if(!isModuleBaseFolder) {
+					for(File mmf : dir.listFiles()) {
+						getFilesWithXSDPattern(mmf, xsd);
 					}
+				}
+				else {
+					getFilesWithXSDPattern(dir, xsd);
 				}
 			}
 			else {
@@ -2126,11 +2144,11 @@ public class XMLParser {
 										if(loadAllVersions) {
 											String minVersionS = el.getAttribute(MIN_VERSION_ATTR);
 											String maxVersionS = el.getAttribute(MAX_VERSION_ATTR);
-											Integer minVersion = 0;
-											Integer maxVersion = 0;
+											Integer minVersion = 1;
+											Integer maxVersion = 1;
 											try { minVersion = Integer.parseInt(minVersionS); } catch(Exception e) { };
 											try { maxVersion = Integer.parseInt(maxVersionS); } catch(Exception e) { };
-											if(minVersion != 0 || maxVersion != 0)
+											if(minVersion != 1 || maxVersion != 1)
 												r.setVersion(minVersion, maxVersion);
 										}
 										
@@ -2397,11 +2415,11 @@ public class XMLParser {
 								if(loadAllVersions) {
 									String minVersionS = el.getAttribute(MIN_VERSION_ATTR);
 									String maxVersionS = el.getAttribute(MAX_VERSION_ATTR);
-									Integer minVersion = 0;
-									Integer maxVersion = 0;
+									Integer minVersion = 1;
+									Integer maxVersion = 1;
 									try { minVersion = Integer.parseInt(minVersionS); } catch(Exception e) { };
 									try { maxVersion = Integer.parseInt(maxVersionS); } catch(Exception e) { };
-									if(minVersion != 0 || maxVersion != 0)
+									if(minVersion != 1 || maxVersion != 1)
 										pn.setVersion(minVersion, maxVersion);
 								}
 

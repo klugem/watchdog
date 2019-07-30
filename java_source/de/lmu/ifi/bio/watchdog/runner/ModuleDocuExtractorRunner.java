@@ -133,7 +133,7 @@ public class ModuleDocuExtractorRunner extends BasicRunner {
 			Functions.filterErrorStream();
 			int ok = 0;
 			int failed = 0;
-			HashMap<String, String> targets = XMLParser.findModules(dbf, moduleFolders);
+			HashMap<String, String> targets = XMLParser.findModules(dbf, moduleFolders, false);
 			for(String name : targets.keySet()) {
 				log.info("processing '"+ name +"'...");
 				File x = new File(targets.get(name));
@@ -205,6 +205,7 @@ public class ModuleDocuExtractorRunner extends BasicRunner {
 		String name = XMLParser.getTaskTypeOfModule(dbf, xsd);
 		String updated  = DF.format(new Date());
 		String paperDesc = "PAPER_SENTENCE";
+		String github;
 		
 		ArrayList<String> pmid = new ArrayList<>();
 		ArrayList<String> website = new ArrayList<>();
@@ -233,6 +234,7 @@ public class ModuleDocuExtractorRunner extends BasicRunner {
 		website.add("WEBSITE [1-]");
 		dependencies.add(new VersionedInfo<String>("DEPENDENCY [0-]", 1, 1));
 		comments.add(new VersionedInfo<String>("COMMENT [0-]", 1, 1));
+		github = "GITHUB_USERNAME/PATH_TO_MODULE [0-1]";
 		
 		// get parameter and return values from basic XSD extractor plugin
 		HashMap<String, ArrayList<Paramdocu>> params = new XSDParameterExtractor(tmpBaseDir, xsdRootDir).getDocu(xsd);
@@ -242,7 +244,7 @@ public class ModuleDocuExtractorRunner extends BasicRunner {
 		description.add(new VersionedInfo<String>("DESCRIPTION [1x per version]", versions.stream().min(Integer::compare).orElse(1), versions.stream().max(Integer::compare).orElse(1)));
 		
 		// create the object
-		Moduledocu m = new Moduledocu(name, categories, updated, authors, pmid, website, paperDesc, dependencies, comments, description, versions, params, returnValues, maintainer);
+		Moduledocu m = new Moduledocu(name, categories, updated, authors, pmid, website, paperDesc, dependencies, comments, description, versions, params, returnValues, maintainer, github);
 		return m;
 	}
 }

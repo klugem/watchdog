@@ -6,6 +6,7 @@ import java.net.URLDecoder;
 import java.util.Properties;
 
 import de.lmu.ifi.bio.watchdog.logger.Logger;
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 /**
  * Basic runner functions
@@ -14,7 +15,7 @@ import de.lmu.ifi.bio.watchdog.logger.Logger;
  */
 public abstract class BasicRunner {
 	public static final Logger LOGGER = new Logger();
-	public static final String XSD_PATH = "xsd" + File.separator + "watchdog.xsd";
+	public static final String XSD_PATH = XMLParser.XSD + File.separator + "watchdog.xsd";
 	private static final String TOOL_NAME = "Watchdog";  
 	private static final String VERSION = "version: post 1.2.7";
 	private static final String REVISION = getRevisionNumber();    

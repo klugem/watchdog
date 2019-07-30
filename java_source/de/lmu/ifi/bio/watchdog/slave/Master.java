@@ -120,7 +120,6 @@ public class Master extends Server {
 
 			// start the new slave
 			XMLTask slave = new XMLTask(Master.slaves--, taskName, 1, exec.getPath2Java() + " -Xms256m -Xmx256m", taskName, "", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.blankSeperated, null), exec, env);
-			//slave.addParameter("Xms", "256M", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.notSeparated), -1);
 			//slave.addParameter("Xmx", "256M", new OptionFormat(ParamFormat.shortOnly, QuoteFormat.unquoted, SpacingFormat.notSeparated), -1); // TODO
 			slave.addParameter("jar", watchdogBase.getAbsolutePath() + File.separator + SLAVE_JAR, null, -1);
 			slave.addParameter("host", Master.host, null, -1);

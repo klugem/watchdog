@@ -12,8 +12,8 @@ public abstract class Docu {
 	protected final String NAME;
 	protected final String TYPE;
 	protected String desc;
-	private int minVersion = 0;
-	private int maxVersion = 0;
+	private int minVersion = 1;
+	private int maxVersion = 1;
 	
 	/**
 	 * Constructor
@@ -58,9 +58,9 @@ public abstract class Docu {
 		b.addQuotedAttribute(DocuXMLParser.TYPE, this.getType());
 		int mi = this.getMinVersion();
 		int ma = this.getMaxVersion();
-		if(mi == 0) mi = ma;
-		if(ma == 0) ma = mi;
-		if(mi != 0 && ma != 0) { 
+		if(mi == 1) mi = ma;
+		if(ma == 1) ma = mi;
+		if(mi != 1 && ma != 1) { 
 			b.addQuotedAttribute(XMLParser.MIN_VERSION_ATTR, mi);
 			b.addQuotedAttribute(XMLParser.MAX_VERSION_ATTR, ma);
 		}

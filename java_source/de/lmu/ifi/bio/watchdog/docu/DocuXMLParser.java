@@ -28,12 +28,13 @@ import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 public class DocuXMLParser {
-	private static final String DOCUMENT_XSD = "xsd" + File.separator + "documentation.xsd";
+	private static final String DOCUMENT_XSD = XMLParser.XSD + File.separator + "documentation.xsd";
 	private static final String DOC_PREFIX = "<documentation ";
 	public static final String REPLACE_SUFFIX = "Task$";
 
 	// section elements
 	public static final String MAINTAINER = "maintainer";
+	public static final String GITHUB = "gitub";
 	public static final String PARAMETER = "parameter";
 	public static final String INFO = "info";
 	public static final String RETURN = "return";
@@ -61,7 +62,7 @@ public class DocuXMLParser {
 	public static final String MAX_OCCURS = "maxOccurs";
 	public static final String MIN_VERSION = "minVersion";
 	public static final String MAX_VERSION = "maxVersion";
-		
+	
 	/**
 	 * Writes a finished docu to disk
 	 * @param dbf
@@ -107,11 +108,12 @@ public class DocuXMLParser {
 	 * finds all modules that contain a XML file that is might be valid according to the documentation XSD schema 
 	 * @param dbf
 	 * @param moduleFolders
+	 * @oaram isModuleBaseFolder
 	 * @return
 	 */
-	private static ArrayList<Pair<File, File>> findAllDocumentedModules(String watchdogBase, ArrayList<String> moduleFolders) {
+	public static ArrayList<Pair<File, File>> findAllDocumentedModules(String watchdogBase, ArrayList<String> moduleFolders, boolean isModuleBaseFolder) {
 		DocumentBuilderFactory dbf = prepareDBF(watchdogBase);
-		HashMap<String, String> modules = XMLParser.findModules(dbf, moduleFolders);
+		HashMap<String, String> modules = XMLParser.findModules(dbf, moduleFolders, isModuleBaseFolder);
 		ArrayList<Pair<File, File>> xmlDocFiles = new ArrayList<>();
 		for(String xsdFileString : modules.values()) {
 			File xsd = new File(xsdFileString);
@@ -147,10 +149,10 @@ public class DocuXMLParser {
 		try {
 			DocumentBuilderFactory dbf = prepareDBF(watchdogBase);
 	
-			ArrayList<Pair<File, File>> xmlDocuFiles = findAllDocumentedModules(watchdogBase, moduleFolders);
+			ArrayList<Pair<File, File>> xmlDocuFiles = findAllDocumentedModules(watchdogBase, moduleFolders, false);
 			ArrayList<Moduledocu> md = new ArrayList<>();
 			for(Pair<File, File> x : xmlDocuFiles)
-				md.add(parseXMLFile(dbf, x.getLeft(), x.getRight())); 
+				md.add(parseXMLFile(dbf, x.getLeft(), x.getRight(), false)); 
 			
 			return md;
 		}
@@ -167,7 +169,7 @@ public class DocuXMLParser {
 	 * @param xmlDocuFile
 	 * @return
 	 */
-	public static Moduledocu parseXMLFile(DocumentBuilderFactory dbf, File xmlDocuFile, File xsdFile) {
+	public static Moduledocu parseXMLFile(DocumentBuilderFactory dbf, File xmlDocuFile, File xsdFile, boolean noExit) {
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			Document dom = db.parse(xmlDocuFile);
@@ -193,6 +195,7 @@ public class DocuXMLParser {
 			ArrayList<VersionedInfo<String>> comments = null;
 			ArrayList<VersionedInfo<String>> description = null;
 			String updated = null;
+			String github = null;
 			
 			// get section parent elements
 			NodeList infoList = dom.getElementsByTagName(INFO);
@@ -215,6 +218,7 @@ public class DocuXMLParser {
 			comments = new NodeListIterator(info.getElementsByTagName(COMMENTS)).stream().map(e -> getVersioned(e, minV, maxV)).collect(Collectors.toCollection(ArrayList::new));
 			description =  new NodeListIterator(info.getElementsByTagName(DESCRIPTION)).stream().map(e -> getVersioned(e, minV, maxV)).collect(Collectors.toCollection(ArrayList::new));
 			updated = new NodeListIterator(info.getElementsByTagName(UPDATED)).stream().map(e -> e.getTextContent()).collect(Collectors.joining(""));
+			github = new NodeListIterator(info.getElementsByTagName(GITHUB)).stream().map(e -> e.getTextContent()).collect(Collectors.joining(""));
 			categories = new NodeListIterator(info.getElementsByTagName(CATEGORY)).stream().map(e -> e.getTextContent()).collect(Collectors.toCollection(ArrayList::new));
 
 			// fill maintainer
@@ -228,12 +232,13 @@ public class DocuXMLParser {
 				returnValues = new NodeListIterator(returnV.getElementsByTagName(VAR)).stream().map(e -> parseReturnValue(e)).collect(Collectors.toCollection(ArrayList::new));
 
 			// create the object
-			Moduledocu m = new Moduledocu(name, categories, updated, authors, pmid, website, paperDesc, dependencies, comments, description, versions, params, returnValues, user);
+			Moduledocu m = new Moduledocu(name, categories, updated, authors, pmid, website, paperDesc, dependencies, comments, description, versions, params, returnValues, user, github);
 			return m;
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			System.exit(1);
+			if(!noExit)
+				System.exit(1);
 		}
 		return null;
 	}
@@ -257,8 +262,8 @@ public class DocuXMLParser {
 		String valueRestrictions = e.getAttribute(RESTRICTIONS);
 		String defaultValue = e.getAttribute(DEFAULT);
 		String description = new NodeListIterator(e.getElementsByTagName(DESCRIPTION)).stream().map(x -> x.getTextContent()).collect(Collectors.joining(""));
-		int minVersion = 0;
-		int maxVersion = 0;
+		int minVersion = 1;
+		int maxVersion = 1;
 		int minOccurs = -1;
 		int maxOccurs = -1;
 		
@@ -284,8 +289,8 @@ public class DocuXMLParser {
 		String name = e.getAttribute(NAME);
 		String type = e.getAttribute(TYPE);
 		String description = new NodeListIterator(e.getElementsByTagName(DESCRIPTION)).stream().map(x -> x.getTextContent()).collect(Collectors.joining(""));
-		int minVersion = 0;
-		int maxVersion = 0;
+		int minVersion = 1;
+		int maxVersion = 1;
 		try { minVersion = Integer.parseInt(e.getAttribute(MIN_VERSION)); } catch(Exception ex) {}
 		try { maxVersion = Integer.parseInt(e.getAttribute(MAX_VERSION)); } catch(Exception ex) {}
 

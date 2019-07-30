@@ -152,7 +152,7 @@ public class ToolLibraryController implements Initializable {
 		dbf.setIgnoringElementContentWhitespace(true);
 		dbf.setNamespaceAware(true);
 		// find the modules
-		return XMLParser.findModules(dbf, moduleFolders);
+		return XMLParser.findModules(dbf, moduleFolders, false);
 	}
 
 	/** is called when the drag of a module is started */

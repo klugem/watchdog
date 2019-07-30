@@ -16,7 +16,6 @@ import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.task.Task;
-import de.lmu.ifi.bio.watchdog.task.TaskStatus;
 
 /**
  * Executes tasks on an external workload manager (SGE, DRMAA, ...)

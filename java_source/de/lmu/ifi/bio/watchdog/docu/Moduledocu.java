@@ -25,6 +25,7 @@ public class Moduledocu {
 	private final ArrayList<String> MAINTAINER = new ArrayList<>();
 	private final ArrayList<String> WEBSITE = new ArrayList<>();
 	private final String DATE;
+	private final String GITHUB;
 	private final String PAPER_DESC;
 	private final ArrayList<VersionedInfo<String>> DEPENDENCIES = new ArrayList<>();
 	private final ArrayList<VersionedInfo<String>> COMMENTS = new ArrayList<>();
@@ -46,7 +47,7 @@ public class Moduledocu {
 	 * @param description description of the modules
 	 * @param params parameter of the module
 	 */
-	public Moduledocu(String name, ArrayList<String> categories, String date, ArrayList<String> authors, ArrayList<String> pmid, ArrayList<String> website, String paperDesc, ArrayList<VersionedInfo<String>> dependencies, ArrayList<VersionedInfo<String>> comments, ArrayList<VersionedInfo<String>> description, HashSet<Integer> versions, ArrayList<Paramdocu> params, ArrayList<Returndocu> returnV, ArrayList<String> maintainer) {
+	public Moduledocu(String name, ArrayList<String> categories, String date, ArrayList<String> authors, ArrayList<String> pmid, ArrayList<String> website, String paperDesc, ArrayList<VersionedInfo<String>> dependencies, ArrayList<VersionedInfo<String>> comments, ArrayList<VersionedInfo<String>> description, HashSet<Integer> versions, ArrayList<Paramdocu> params, ArrayList<Returndocu> returnV, ArrayList<String> maintainer, String github) {
 		this.NAME = name;
 		this.CATEGORIES.addAll(categories);
 		this.AUTHORS.addAll(authors);
@@ -58,6 +59,7 @@ public class Moduledocu {
 		this.MAINTAINER.addAll(maintainer);
 		this.VERSIONS.addAll(versions);
 		this.DATE = date;
+		this.GITHUB = github;
 		this.WEBSITE.addAll(website);
 		
 		this.PARAMS.addAll(params);
@@ -76,7 +78,7 @@ public class Moduledocu {
 	 * @param description description of the modules
 	 * @param params parameter of the module
 	 */
-	public Moduledocu(String name, ArrayList<String> categories, String date, ArrayList<String> authors, ArrayList<String> pmid, ArrayList<String> website, String paperDesc, ArrayList<VersionedInfo<String>> dependencies, ArrayList<VersionedInfo<String>> comments, ArrayList<VersionedInfo<String>> description, HashSet<Integer> versions, HashMap<String, ArrayList<Paramdocu>> params, HashMap<String, ArrayList<Returndocu>> returnV, ArrayList<String> maintainer) {
+	public Moduledocu(String name, ArrayList<String> categories, String date, ArrayList<String> authors, ArrayList<String> pmid, ArrayList<String> website, String paperDesc, ArrayList<VersionedInfo<String>> dependencies, ArrayList<VersionedInfo<String>> comments, ArrayList<VersionedInfo<String>> description, HashSet<Integer> versions, HashMap<String, ArrayList<Paramdocu>> params, HashMap<String, ArrayList<Returndocu>> returnV, ArrayList<String> maintainer, String github) {
 		this.NAME = name;
 		this.CATEGORIES.addAll(categories);
 		this.AUTHORS.addAll(authors);
@@ -89,7 +91,7 @@ public class Moduledocu {
 		this.VERSIONS.addAll(versions);
 		this.DATE = date;
 		this.WEBSITE.addAll(website);
-		
+		this.GITHUB = github;
 		// resolve hashmap --> if different versions & types then store them as different objects
 		for(String key : params.keySet()) {
 			for(Paramdocu p : params.get(key))
@@ -100,6 +102,10 @@ public class Moduledocu {
 				this.RETURN.add(r);
 		}		
 		this.AUTO_ID = currentID++;
+	}
+	
+	public boolean hasGithubURL() {
+		return this.GITHUB != null && this.GITHUB.length() > 0;
 	}
 
 	public int getAutoID() {
@@ -113,6 +119,9 @@ public class Moduledocu {
 	}
 	public ArrayList<String> getPMIDs() {
 		return new ArrayList<>(this.PMID);
+	}
+	public String getGithub() {
+		return this.getGithub();
 	}
 	public ArrayList<String> getWebsite() {
 		return new ArrayList<>(this.WEBSITE);
@@ -170,6 +179,7 @@ public class Moduledocu {
 		export.put(DocuXMLParser.NAME, this.getName());
 		export.put(DocuXMLParser.CATEGORY, this.getCategories());
 		export.put(DocuXMLParser.AUTHOR, this.getAuthorNames());
+		export.put(DocuXMLParser.UPDATED, this.getDate());
 		export.put(DocuXMLParser.DESCRIPTION, this.DESC);
 		export.put(DocuXMLParser.DESCRIPTION_SEARCH, this.DESC.stream().map(x -> x.VALUE).collect(Collectors.toCollection(ArrayList<String>::new)));
 		return GSON.toJsonTree(export).getAsJsonObject().toString();
@@ -216,6 +226,7 @@ public class Moduledocu {
 		
 		// maintainer section
 		b.addComment("##### optional #####");
+		b.addTags(DocuXMLParser.GITHUB, this.getGithub());
 		b.addComment("github usernames of users who should be able to commit changes to that module");
 		b.startTag(DocuXMLParser.MAINTAINER, true, true);
 		b.endOpeningTag(false);
