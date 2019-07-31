@@ -65,7 +65,7 @@ public abstract class APIRequest<A extends Object> {
 			} catch(Exception e) {
 				tries++;
 				el.add(e);
-				System.out.println("retry counter for URL request:" + tries);
+				System.out.println("retry counter for URL request: " + tries);
 			}
 		}
 		// print the exceptions

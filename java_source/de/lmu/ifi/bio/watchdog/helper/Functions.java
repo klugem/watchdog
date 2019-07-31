@@ -221,8 +221,8 @@ public class Functions {
 	public static void filterErrorStream(int durationInSeconds) {
 		// hide errors that are caused by apache.xerces (more specifically cvc-elt.1.a which is not an real error as stated in XMLSchemaValidator)
 		PrintStream err = System.err;
-		// let them copy the "wrong" printStream that can be read by us in order to print other errors
-		ErrorParserFilter filter = new ErrorParserFilter(err);
+		// let them copy the "wrong" printStream that can be read by us in order to print other errors to stdout
+		ErrorParserFilter filter = new ErrorParserFilter();
 		System.setErr(new PrintStream(filter));
 		// reset it
 		TimedExecution.addRunableNamed(() -> resetErrorStream(filter, err), durationInSeconds, TimeUnit.SECONDS, "resetErrorStream");

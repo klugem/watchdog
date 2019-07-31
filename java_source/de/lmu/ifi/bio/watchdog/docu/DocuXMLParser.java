@@ -99,6 +99,7 @@ public class DocuXMLParser {
 		}
 		catch(Exception e) {
 			e.printStackTrace();
+			System.out.println("Failed to create instance of DocumentBuilderFactory.");
 			System.exit(1);
 		}
 		return null;
