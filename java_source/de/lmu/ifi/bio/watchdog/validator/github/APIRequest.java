@@ -72,7 +72,7 @@ public abstract class APIRequest<A extends Object> {
 		tries = 0;
 		for(Exception e : el) {
 			System.out.println("Run " + tries++ + ":");
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 		}
 		throw el.get(0);
 	}
