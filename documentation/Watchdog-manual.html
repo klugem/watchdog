@@ -591,8 +591,8 @@ By default the tasks are executed one after the other locally on the host which 
  5			&lt;!-- examples of different execution environments --&gt;
  6			&lt;executors&gt;
  7				&lt;local name="localhost" maxRunning="2" /&gt;
- 8				&lt;cluster name="defaultCluster" default="true" memory="1G" queue="short.q" /&gt;
- 9				&lt;cluster name="highPerformanceCluster" slots="4" memory="3G" maxRunning="4" queue="short.q" /&gt;
+ 8				&lt;sge name="defaultCluster" default="true" memory="1G" queue="short.q" /&gt;
+ 9				&lt;sge name="highPerformanceCluster" slots="4" memory="3G" maxRunning="4" queue="short.q" /&gt;
 10				&lt;remote name="superComputer" user="mustermann" host="superComputer" privateKey="/path/to/private/auth/key" port="22" disableStrictHostCheck="false" /&gt;
 11			&lt;/executors&gt;
 12		&lt;/settings&gt;

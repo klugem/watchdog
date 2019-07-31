@@ -37,6 +37,7 @@ public class APICompareInfo extends APIRequest<CompareAPIv3> {
 
 	@Override
 	public String getURI() {
+		System.out.println(PART1 + this.REPO + PART2 + this.COMPARE_BRANCH + PART3 + this.SHA);
 		return PART1 + this.REPO + PART2 + this.COMPARE_BRANCH + PART3 + this.SHA;
 	}
 
@@ -56,6 +57,7 @@ public class APICompareInfo extends APIRequest<CompareAPIv3> {
 		// iterate over all files
 		for(File f : this.DATA.getFiles()) {
 			java.io.File parentFile = new java.io.File(java.io.File.separator + f.getFilename()).getParentFile();
+			System.out.println(f.getFilename());
 
 			String base = null;
 			while(parentFile != null && !parentFile.getAbsolutePath().equals(java.io.File.separator)) {
