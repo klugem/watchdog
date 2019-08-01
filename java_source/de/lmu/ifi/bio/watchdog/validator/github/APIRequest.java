@@ -2,6 +2,7 @@ package de.lmu.ifi.bio.watchdog.validator.github;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +27,7 @@ public abstract class APIRequest<A extends Object> {
 	public static final Gson GSON = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create(); 
 	public static final int RETRIES = 10;
 	private static final int BSIZE = 2048;
+	private static final int SLEEP_TIME = 1000;
 	
 	@SuppressWarnings("unchecked")
 	public A makeRequest() throws Exception {
@@ -50,10 +52,8 @@ public abstract class APIRequest<A extends Object> {
 		while(tries < APICompareInfo.RETRIES) {
 			try {
 				String uri = this.getURI();
-				FileSystemManager m = VFS.getManager();
-				FileObject f = m.resolveFile(uri);
-				FileContent c = f.getContent();
-				BufferedReader bfr = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8));
+				URL u = new URL(uri);
+				BufferedReader bfr = new BufferedReader(new InputStreamReader(u.openStream(), StandardCharsets.UTF_8));
 				StringBuffer content = new StringBuffer();
 				char[] cbuf = new char[BSIZE];
 				int read = -1;
@@ -62,10 +62,16 @@ public abstract class APIRequest<A extends Object> {
 				}
 				// if no exception in this run --> consider data to be good
 				return content.toString();
-			} catch(Exception e) {
+			} catch(java.io.IOException e) {
+				if(e.getMessage().contains("Server returned HTTP response code: 403"))
+					throw e;
+			}
+			catch(Exception e) {
 				tries++;
 				el.add(e);
+				e.printStackTrace();
 				System.out.println("retry counter for URL request: " + tries);
+				Thread.sleep( SLEEP_TIME);
 			}
 		}
 		// print the exceptions

@@ -22,7 +22,7 @@ public class GithubSingleModuleChecker extends GithubCheckerBase {
 		boolean ret = true;
 		APICompareInfo info; 
 		try {
-			info = new APICompareInfo(this.TRAVIS_INFO.getFullOriginRepoName(), DEFAULT_BRANCH, this.TRAVIS_INFO.getSHA());
+			info = new APICompareInfo(this.TRAVIS_INFO.getFullBuildRepoName(), DEFAULT_BRANCH, this.TRAVIS_INFO.getSHA());
 		} catch(Exception e) {
 			this.error("Failed to make API call!");
 			e.printStackTrace();

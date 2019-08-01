@@ -23,7 +23,7 @@ public class APICompareInfo extends APIRequest<CompareAPIv3> {
 	private final String SHA;
 	
 	/*public static void main(String[] args) throws Exception {
-		APICompareInfo info = new APICompareInfo("watchdog-wms/watchdog-wms-modules", "master", "8dae2d76a3a51c04c4370e58f529e35f226a4bde");
+		APICompareInfo info = new APICompareInfo("watchdog-wms/watchdog-wms-modules", "master", "2271ab2bceb0a3b4b1b7c834463320862eb430");
 		System.out.println(info.DATA.getMergeBaseCommit());
 	}*/
 	
@@ -37,7 +37,6 @@ public class APICompareInfo extends APIRequest<CompareAPIv3> {
 
 	@Override
 	public String getURI() {
-		System.out.println(PART1 + this.REPO + PART2 + this.COMPARE_BRANCH + PART3 + this.SHA);
 		return PART1 + this.REPO + PART2 + this.COMPARE_BRANCH + PART3 + this.SHA;
 	}
 
@@ -57,7 +56,6 @@ public class APICompareInfo extends APIRequest<CompareAPIv3> {
 		// iterate over all files
 		for(File f : this.DATA.getFiles()) {
 			java.io.File parentFile = new java.io.File(java.io.File.separator + f.getFilename()).getParentFile();
-			System.out.println(f.getFilename());
 
 			String base = null;
 			while(parentFile != null && !parentFile.getAbsolutePath().equals(java.io.File.separator)) {

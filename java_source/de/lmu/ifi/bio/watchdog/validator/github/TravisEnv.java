@@ -75,7 +75,7 @@ public class TravisEnv {
 	
 
 	/**
-	 * slug (in the form owner_name/repo_name) of the repository
+	 * slug (in the form owner_name/repo_name) of the repository in with the PR should be integrated
 	 * @return
 	 */
 	public String getFullBuildRepoName() {

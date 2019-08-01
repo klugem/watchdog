@@ -29,7 +29,7 @@ public abstract class GithubCheckerDocuBased extends GithubCheckerIO  {
 		if(super.test()) {
 			// get the module folder
 			try {
-				this.compareInfo = new APICompareInfo(this.TRAVIS_INFO.getFullOriginRepoName(), DEFAULT_BRANCH, this.TRAVIS_INFO.getSHA());
+				this.compareInfo = new APICompareInfo(this.TRAVIS_INFO.getFullBuildRepoName(), DEFAULT_BRANCH, this.TRAVIS_INFO.getSHA());
 			} catch(Exception e) {
 				this.error("Failed to make API call!");
 				e.printStackTrace();
