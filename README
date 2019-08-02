@@ -3,6 +3,7 @@ Manually:
 
 - Download a release from https://github.com/klugem/watchdog/releases
 - Extract the provided archive into a folder of your choice
+- Modules can be obtained from https://github.com/watchdog-wms/watchdog-wms-modules
 
 Via conda:
 
@@ -12,17 +13,30 @@ In that case binaries are named watchdog-cmd and watchdog-gui while the rest
 of the files is located in ${PREFIX}/share/watchdog-wms-${VERSION}.
 
 
-################################## CALLS ###################################
-In order to run a xml-file using the command line tool, call
+############################### RUN WATCHDOG ###############################
+The distributed jar files are build for Java 11 and are called internally 
+by the bash scripts. In order to run a xml-file using the command line tool, call
 
 ./watchdog.sh -x xml-file (or java -jar jars/watchdog.jar -x xml-file)
 
 To call the jar file directly is not recommended as STRG+C signal will be 
-forwarded to all child processes, which might cause some errors.
+forwarded to all child processes, which might cause errors on locally running tasks.
 
 The workflow designer can be started using 
 
 ./workflowDesigner.sh or java -jar jars/WatchdogDesigner.jar
+
+It will try to automatically identify the javafx SDK it depends on.
+
+
+################################ JAR FILES #################################
+watchdog.jar			command-line tool that executes Watchdog workflows
+watchdogDesigner.jar		graphical user interface for workflow design and execution
+moduleCreator.jar		provides a graphical user interface for module creation
+libraryGenerator.jar		creates a module reference book based on a set of modules
+docuTemplateExtractor.jar	generates templates for module documentation
+methodTemplateGenerator.jar 	basic reporting of steps performed during execution of a workflow
+moduleValidator.jar 		command-line tool that can be used to verify integrity of modules
 
 
 ################################## CONTACT #################################

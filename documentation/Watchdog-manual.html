@@ -19,9 +19,10 @@
 </div><div class="smallchapter"><a href="#install_watchdog" class="smalltopic">2 Install and Configure Watchdog</a><br />
 <a href="#requirements" class="smallsubtopic">2.1 Requirements</a><br />
 <a href="#installation" class="smallsubtopic">2.2 Installation</a><br />
-<a href="#mail_server" class="smallsubtopic">2.3 E-Mail Server Configuration</a><br />
-<a href="#remote_configuration" class="smallsubtopic">2.4 SSH Configuration</a><br />
-<a href="#cluster_configuration" class="smallsubtopic">2.5 Cluster Configuration</a><br />
+<a href="#basic_jars" class="smallsubtopic">2.3 JAR Files</a><br />
+<a href="#mail_server" class="smallsubtopic">2.4 E-Mail Server Configuration</a><br />
+<a href="#remote_configuration" class="smallsubtopic">2.5 SSH Configuration</a><br />
+<a href="#cluster_configuration" class="smallsubtopic">2.6 DRMAA Cluster Configuration</a><br />
 </div><div class="smallchapter"><a href="#getting_started" class="smalltopic">3 Watchdog Overview</a><br />
 <a href="#basic_modules" class="smallsubtopic">3.1 Modules</a><br />
 <a href="#basic_xml_structure" class="smallsubtopic">3.2 Basic XML structure</a><br />
@@ -72,15 +73,29 @@ Here, we present Watchdog, a WMS for the automated and distributed analysis of l
 <li>no restriction to specific programming languages</li>
 <li>provides a flexible plugin system for extending without modifying the original sources</li>
 </ul>
+<br />New features in Watchdog 2.0:
+<ul>
+<li><pre class="name">[new]</pre> execution: executed only altered or unfinshed tasks</li>
+<li><pre class="name">[new]</pre> execution: detach from workflow execution and attach later on</li>
+<li><pre class="name">[new]</pre> execution: custom before and after command script</li>
+<li><pre class="name">[new]</pre> graphical user interface for module creation</li>
+<li><pre class="name">[new]</pre> documentation: documentation format for modules</li>
+<li><pre class="name">[new]</pre> documentation: generation of module reference book</li>
+<li><pre class="name">[new]</pre> documentation: documentation template generator</li>
+<li><pre class="name">[new]</pre> reporting: introduced module versions</li>
+<li><pre class="name">[new]</pre> reporting: retrieval of third-party software versions</li>
+<li><pre class="name">[new]</pre> reporting: basic workflow execution reporting</li>
+<li><pre class="name">[new]</pre> sharing: community platform for sharing of modules and workflows</li>
+</ul>
 <div class="chapter"><a name="install_watchdog" class="topic">2 Install and Configure Watchdog</a>
 
 <a name="requirements" class="subtopic">2.1 Requirements</a>
 
-Watchdog is platform independent as it is written in Java and requires JRE (Java Runtime Environment) 1.8 or higher (the GUI is build on JavaFX that is currently not part of most OpenJDK builds). Most of the modules that are delivered with Watchdog require a unix based system and were tested on SUSE Linux. They might not run without any changes on other unix systems or Windows but users can define custom modules that are compatible with their installed software and operating system. Each of the modules might require additional software to be installed. These requirements can be checked for the modules that are delivered with Watchdog with the help of <pre class="name">helper_scripts/dependencyTest.sh</pre> as described below.
+Watchdog is platform independent as it is written in Java and requires JRE (Java Runtime Environment) 11 or higher (the GUI is build on JavaFX that is not part of any JRE builds). Most of the modules, which were previously delivered with Watchdog and are now located at <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">watchdog-wms/watchdog-wms-modules</a>, require a unix based system and were tested on SUSE Linux. They might not run without any changes on other unix systems or Windows but users can define custom modules that are compatible with their installed software and operating system. Each of the modules might require additional software to be installed. These requirements can be checked for the modules that are delivered with Watchdog with the help of <pre class="name">helper_scripts/dependencyTest.sh</pre> as described below.
 
 <a name="installation" class="subtopic">2.2 Installation</a>
 The installation of Watchdog is very easy. Simply extract the provided archive into a folder of your choice using
-<pre class="name">tar xfvz watchdog.tar.gz</pre> The folder must be accessible for remote or cluster executors if you plan to use some. 
+<pre class="name">tar xfvz watchdog.tar.gz</pre> The folder must be accessible for remote or cluster executors if you plan to use some. Afterwards you should download Watchdog modules from the <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">community github repository</a> and extract them into the <pre class="name">modules/</pre> folder.
 <br /><br />
 Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda watchdog-wms</pre>. In that case be binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">7</a>.
 
@@ -88,9 +103,12 @@ Alternatively Watchdog can be installed automatically via conda using <pre class
 
 <ul>
 <li>core_lib: some core functions that can be used in bash module scripts</li>
-<li>doc: contains Watchdog's documentation in html-format</li>
+<li>documentation: contains Watchdog's documentation in HTML- and PDF-format</li>
 <li>examples: contains the examples that are also presented in the documentation</li>
 <li>helper_scripts: scripts for generating new modules, configure the examples or testing of all modules</li>
+<li>jars: runnable JAR-files that are build from Watchdog's source code</li>
+<li>java_external_lib: external libraries</li>
+<li>java_source: Watchdog's source code</li>
 <li>modules: must contain all modules that should be used in workflows</li>
 <li>test_data: contains some test data that is used by multiple modules</li>
 <li>tmp: is used for Watchdog's temporary files</li>
@@ -111,7 +129,20 @@ If you want to use the workflow designer (GUI), you can start it by using (from 
 
 <pre class="name">./workflowDesigner.sh</pre> or alternatively <pre class="name">java -jar jars/WatchdogDesigner.jar </pre>
 
-<a name="mail_server" class="subtopic">2.3 E-Mail Server Configuration</a>
+<a name="basic_jars" class="subtopic">2.3 JAR Files</a>
+These runnable JAR-files are shipped together with Watchdog:
+
+<ul>
+<li><pre class="name">watchdog.jar:</pre> command-line tool that executes Watchdog workflows</li>
+<li><pre class="name">watchdogDesigner.jar:</pre>	graphical user interface for workflow design and execution</li>
+<li><pre class="name">moduleCreator.jar:</pre> provides a graphical user interface for module creation</li>
+<li><pre class="name">libraryGenerator.jar:</pre> creates a module reference book based on a set of modules</li>
+<li><pre class="name">docuTemplateExtractor.jar:</pre> generates templates for module documentation</li>
+<li><pre class="name">methodTemplateGenerator.jar:</pre> basic reporting of steps performed during execution of a workflow</li>
+<li><pre class="name">moduleValidator.jar:</pre> command-line tool that can be used to verify integrity of modules</li>
+</ul>
+
+<a name="mail_server" class="subtopic">2.4 E-Mail Server Configuration</a>
 As Watchdog will send e-mails it needs a working mail configuration. If you don't want Watchdog to send e-mails, simply don't use the <pre class="attr">mail</pre> attribute of the <pre class="tag">tasks</pre> tag. In that case the content of the mails with be printed to the standard output stream.<br /><br />
 
 By default a server listening on SMTP port 25 is expected that accepts mails without authentication.
@@ -132,13 +163,14 @@ In order to use another configuration the parameter <pre class="name">-mailConfi
 
 Example 1 shows a configuration for a gmail account. More information about the variables that can be used can be found <a href="https://javamail.java.net/nonav/docs/api/com/sun/mail/smtp/package-summary.html" target="_blank">here</a>. An template mail config file that can be edited can be found in <pre class="name">examples/mail_config</pre> once the examples are configured as described above.
 
-<a name="remote_configuration" class="subtopic">2.4 SSH Configuration</a>
+<a name="remote_configuration" class="subtopic">2.5 SSH Configuration</a>
 Watchdog supports execution of tasks via ssh on remote hosts. In order to use that feature a private ssh key must be provided. It is strongly recommended that the private key is protected by a passphrase. In that case the passphrase must be entered after Watchdog was started and will be hold encrypted in memory until the passphrase is needed. <br /><br />
 
 A key pair that can be used for ssh authentification can be generated using the tool <pre class="name">ssh-keygen</pre> that is part of <pre class="name">openssh</pre>.
 If you need further information you can find many online tutorials that explain how to use a private key for ssh authentication. E.g. <a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2" target="_blank">How To Set Up SSH Keys</a> and <a href="https://help.ubuntu.com/community/SSH/OpenSSH/Keys" target="_blank">SSH/OpenSSH/Keys</a>
 
-<a name="cluster_configuration" class="subtopic">2.5 Cluster Configuration</a>
+
+<a name="cluster_configuration" class="subtopic">2.6 DRMAA Cluster Configuration</a>
 Watchdog supports cluster solutions which provide a <pre class="name">DRMAA</pre> java binding. By default it is bundled with a DRMAA binding for the <pre class="name">sun grid engine</pre> (SGE 6.1).
 <br /><br />
 The following environment variables must be set correctly in order to communicate with the SGE:
@@ -165,6 +197,8 @@ Basically there are two ways to change the default cluster extension in order to
 </li>
 </ul>
 Probably further settings are needed which depend on the used DRMAA library.
+<br /><br />
+Alternatively, binary-based executors can be used, which are currently implemented for SLURM and SGE. The required control binaries must be accessible via the <pre class="name">$PATH</pre> variable.
 <div class="chapter"><a name="getting_started" class="topic">3 Watchdog Overview</a>
 <a name="basic_modules" class="subtopic">3.1 Modules</a>
 Modules represent re-usable components that perform certain tasks, e.g. compression of files or creating histograms. Watchdog is delivered with a set of predefined modules. Additionally the user has the possibility to define own modules as described in section <a href="#custom_modules">5</a>. The modules are stored in the <pre class="name">modules</pre> directory located in the root folder of the Watchdog installation. Each module is stored in its own folder and consists at least of an XSD file with the name of the module. The XSD file contains a definition of the parameters which can be set in the XML format and the tools which are executed in the background when the module is used.
@@ -578,7 +612,9 @@ By default the tasks are executed one after the other locally on the host which 
 <ul>
 	<li><pre class="tag">local</pre> - task is executed on the local host</li>
 	<li><pre class="tag">remote</pre> - task is executed on a remote host using ssh</li>
-	<li><pre class="tag">cluster</pre> - task is executed on a computer cluster</li>
+	<li><pre class="tag">cluster</pre> - task is executed on a computer cluster using DRMAA</li>
+	<li><pre class="tag">sge</pre> - task is executed on a SGE computer cluster using control binaries</li>
+	<li><pre class="tag">slurm</pre> - task is executed on a SLURM computer cluster using control binaries</li>
 </ul>
 
 <div class="box">	
@@ -591,7 +627,7 @@ By default the tasks are executed one after the other locally on the host which 
  5			&lt;!-- examples of different execution environments --&gt;
  6			&lt;executors&gt;
  7				&lt;local name="localhost" maxRunning="2" /&gt;
- 8				&lt;sge name="defaultCluster" default="true" memory="1G" queue="short.q" /&gt;
+ 8				&lt;sge name="defaultCluster" default="true" memory="1G" beforeScripts="ulimitMemory.sh" queue="short.q" /&gt;
  9				&lt;sge name="highPerformanceCluster" slots="4" memory="3G" maxRunning="4" queue="short.q" /&gt;
 10				&lt;remote name="superComputer" user="mustermann" host="superComputer" privateKey="/path/to/private/auth/key" port="22" disableStrictHostCheck="false" /&gt;
 11			&lt;/executors&gt;
@@ -609,9 +645,15 @@ By default the tasks are executed one after the other locally on the host which 
 	</div>
 </div>
 
-In example 6 four different execution environments are defined as childs of the <pre class="tag">executors</pre> <nobr>element (6-11)</nobr>. Tasks scheduled on first executor will run on the host on which Watchdog was <nobr>started (7)</nobr>. The executor with the name <pre class="name">defaultCluster</pre> is used by default and runs on the <pre class="name">short.q</pre> queue of the computer <nobr>cluster (8)</nobr>. The next executor is reserved for high performance tasks because it reserves 4 slots on the cluster with each slot consuming three gigabyte of main <nobr>memory (9)</nobr>. In order not to occupy the complete computing power the attribute <pre class="attr">maxRunning</pre> is set to four which means that a maximum of four tasks will run simultaneously on that execution environment. In line 10 an example for a remote executor is given which executes tasks via ssh using a host named <pre class="name">superComputer</pre>.
-<br />
-Afterwards the same sleep task is defined as in the first example and will run on the local executor (16). The other executors can be tested once you adapted them to your local infrastructure (see <a href="#remote_configuration">2.4</a> and <a href="#cluster_configuration">2.5</a>).
+In example 6 four different execution environments are defined as childs of the <pre class="tag">executors</pre> <nobr>element (6-11)</nobr>. Tasks scheduled on first executor will run on the host on which Watchdog was <nobr>started (7)</nobr>.
+<br /><br />
+The executor with the name <pre class="name">defaultCluster</pre> is used by default and runs on the <pre class="name">short.q</pre> queue of the computer <nobr>cluster (8)</nobr>. Before the actual module command is executed on that executor, the commands stored in the before script <pre class="name">ulimitMemory.sh</pre> are executed. If a relative path is given, the script must be located in <pre class="name">core_lib/executor_scripts</pre>. In this example the script will enforce that the requested memory is not exceeded using the <pre class="name">ulimit</pre> command. 
+<br /><br />
+The next executor is reserved for high performance tasks because it reserves 4 slots on the cluster with each slot consuming three gigabyte of main <nobr>memory (9)</nobr>. In order not to occupy the complete computing power the attribute <pre class="attr">maxRunning</pre> is set to four which means that a maximum of four tasks will run simultaneously on that execution environment.
+<br /><br />
+In line 10 an example for a remote executor is given which executes tasks via ssh using a host named <pre class="name">superComputer</pre>.
+<br /><br />
+Afterwards the same sleep task is defined as in the first example and will run on the local executor (16). The other executors can be tested once you adapted them to your local infrastructure (see <a href="#remote_configuration">2.5</a> and <a href="#cluster_configuration">2.6</a>).
 
 
 <!--<input class="button" id="spoilerexecution_environmentsButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
@@ -630,16 +672,27 @@ Afterwards the same sleep task is defined as in the first example and will run o
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[stickToHost]</pre></td><td>boolean</td><td>activates slave mode for that executor which means that tasks that depend on each other are executed on the same execution host; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[maxSlaveRunning]</pre></td><td>integer</td><td>number of tasks that can run at the same time on a slave if stickToHost is enabled; default: 1</td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[pathToJava]</pre></td><td>string</td><td>path to java binary which is used for slave mode execution; default: <pre class="name">/usr/bin/java</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[shebang]</pre></td><td>string</td><td>shebang, which is used if a temporary script is build that defines environment variables or before/after script commands; default: <pre class="name">#!/bin/bash</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[beforeScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed before the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[afterScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed after the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">user</pre></td><td>string</td><td>name of the user on the remote host system</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">host</pre></td><td>string</td><td>name of the host which should be used for execution; multiple hostnames must be separated by ';' - in that case the maxRunning argument is applied on each host separately</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">privateKey</pre></td><td>string</td><td>path the to private ssh auth key; should be protected by a passphrase!</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">[port]</pre></td><td>integer</td><td>port which is used for the ssh connection; default: <pre class="name">22</pre></td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">[disableStrictHostCheck]</pre></td><td>boolean</td><td>disables the validation of the public key of the host; not recommended!; default: <pre class="name">false</pre></td></tr>
-<tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[slots]</pre></td><td>integer</td><td>number of cores which are reserved on the computer cluster; default: <pre class="name">1</pre></td></tr>
-<tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[memory]</pre></td><td>string</td><td>memory per slot suffixed with M (megabyte) or G (gigabyte); default: <pre class="name">3000M</pre></td></tr>
-<tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[queue]</pre></td><td>string</td><td>queue on which the tasks should run on the computer cluster; default: not set</td></tr>
-<tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[disableDefault]</pre></td><td>boolean</td><td>default parameters (<pre class="attr">slots</pre>, <pre class="attr">memory</pre> and <pre class="attr">queue</pre>) are ignored; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the DRMAA system without further processing; default: not set</td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[slots]</pre></td><td>integer</td><td>number of cores which are reserved on the computer cluster; default: <pre class="name">1</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[memory]</pre></td><td>string</td><td>memory per slot suffixed with M (megabyte) or G (gigabyte); default: <pre class="name">3000M</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[queue]</pre></td><td>string</td><td>queue on which the tasks should run on the computer cluster; default: not set</td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[disableDefault]</pre></td><td>boolean</td><td>default parameters are ignored; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the SGE system without further processing; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">cluster</pre></td><td>string</td><td>cluster to communicate with; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[cpu]</pre></td><td>integer</td><td>number of cores which are reserved on the computer cluster; default: <pre class="name">1</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[memory]</pre></td><td>string</td><td>memory per slot suffixed with M (megabyte) or G (gigabyte); default: <pre class="name">3000M</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[partition]</pre></td><td>string</td><td>partition of the cluster on which the job should be executed; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[timelimit]</pre></td><td>string</td><td>maximum time the task will require to complete; default: 0-12:0</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[disableDefault]</pre></td><td>boolean</td><td>default parameters are ignored; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the SLURM system without further processing; default: not set</td></tr>
 
 		</tbody>
 	</table>
@@ -663,16 +716,27 @@ Afterwards the same sleep task is defined as in the first example and will run o
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[stickToHost]</pre></td><td>boolean</td><td>activates slave mode for that executor which means that tasks that depend on each other are executed on the same execution host; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[maxSlaveRunning]</pre></td><td>integer</td><td>number of tasks that can run at the same time on a slave if stickToHost is enabled; default: 1</td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[pathToJava]</pre></td><td>string</td><td>path to java binary which is used for slave mode execution; default: <pre class="name">/usr/bin/java</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[shebang]</pre></td><td>string</td><td>shebang, which is used if a temporary script is build that defines environment variables or before/after script commands; default: <pre class="name">#!/bin/bash</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[beforeScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed before the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[afterScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed after the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">user</pre></td><td>string</td><td>name of the user on the remote host system</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">host</pre></td><td>string</td><td>name of the host which should be used for execution; multiple hostnames must be separated by ';' - in that case the maxRunning argument is applied on each host separately</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">privateKey</pre></td><td>string</td><td>path the to private ssh auth key; should be protected by a passphrase!</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">[port]</pre></td><td>integer</td><td>port which is used for the ssh connection; default: <pre class="name">22</pre></td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">[disableStrictHostCheck]</pre></td><td>boolean</td><td>disables the validation of the public key of the host; not recommended!; default: <pre class="name">false</pre></td></tr>
-<tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[slots]</pre></td><td>integer</td><td>number of cores which are reserved on the computer cluster; default: <pre class="name">1</pre></td></tr>
-<tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[memory]</pre></td><td>string</td><td>memory per slot suffixed with M (megabyte) or G (gigabyte); default: <pre class="name">3000M</pre></td></tr>
-<tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[queue]</pre></td><td>string</td><td>queue on which the tasks should run on the computer cluster; default: not set</td></tr>
-<tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[disableDefault]</pre></td><td>boolean</td><td>default parameters (<pre class="attr">slots</pre>, <pre class="attr">memory</pre> and <pre class="attr">queue</pre>) are ignored; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the DRMAA system without further processing; default: not set</td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[slots]</pre></td><td>integer</td><td>number of cores which are reserved on the computer cluster; default: <pre class="name">1</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[memory]</pre></td><td>string</td><td>memory per slot suffixed with M (megabyte) or G (gigabyte); default: <pre class="name">3000M</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[queue]</pre></td><td>string</td><td>queue on which the tasks should run on the computer cluster; default: not set</td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[disableDefault]</pre></td><td>boolean</td><td>default parameters are ignored; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the SGE system without further processing; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">cluster</pre></td><td>string</td><td>cluster to communicate with; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[cpu]</pre></td><td>integer</td><td>number of cores which are reserved on the computer cluster; default: <pre class="name">1</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[memory]</pre></td><td>string</td><td>memory per slot suffixed with M (megabyte) or G (gigabyte); default: <pre class="name">3000M</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[partition]</pre></td><td>string</td><td>partition of the cluster on which the job should be executed; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[timelimit]</pre></td><td>string</td><td>maximum time the task will require to complete; default: 0-12:0</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[disableDefault]</pre></td><td>boolean</td><td>default parameters are ignored; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the SLURM system without further processing; default: not set</td></tr>
 
 			</tbody>
 		</table>
@@ -811,7 +875,6 @@ In example 8 an environment named <pre class="name">pathEnv</pre> is defined in 
 			<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>is used as reference in the <pre class="attr">environment</pre> attribute of a task</td></tr>
 <tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[copyLocalValue]</pre></td><td>boolean</td><td>copies all environment variables which are set on the host running Watchdog; set variables are not deleted on the remote system; bash functions which names are ending with () are not copied as this might cause problems; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[useExternalExport]</pre></td><td>boolean</td><td>uses a external command to set the variables; is necessary to update variables on remote or cluster executors and might also be necessary to set environment variables on remote hosts because of ssh security policies; default: <pre class="name">true</pre></td></tr>
-<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[shebang]</pre></td><td>string</td><td>shebang which is used for the script that first executes the export commands and afterwards the real commands; default: <pre class="name">#!/bin/bash</pre></td></tr>
 <tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[exportCommand]</pre></td><td>string</td><td>custom command to set a environment variable; <pre class="name">{$NAME}</pre> and <pre class="name">{$VALUE}</pre> are substituted and must be part of the command; default: <pre class="name">export {$NAME}="{$VALUE}"</pre></td></tr>
 <tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">environment</pre></td><td>string</td><td>name of a <pre class="tag">environment</pre> element</td></tr>
 <tr><td><pre class="tag">var</pre></td><td></td><td>string</td><td>value of the environment variable</td></tr>
@@ -836,7 +899,6 @@ In example 8 an environment named <pre class="name">pathEnv</pre> is defined in 
 				<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>is used as reference in the <pre class="attr">environment</pre> attribute of a task</td></tr>
 <tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[copyLocalValue]</pre></td><td>boolean</td><td>copies all environment variables which are set on the host running Watchdog; set variables are not deleted on the remote system; bash functions which names are ending with () are not copied as this might cause problems; default: <pre class="name">false</pre></td></tr>
 <tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[useExternalExport]</pre></td><td>boolean</td><td>uses a external command to set the variables; is necessary to update variables on remote or cluster executors and might also be necessary to set environment variables on remote hosts because of ssh security policies; default: <pre class="name">true</pre></td></tr>
-<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[shebang]</pre></td><td>string</td><td>shebang which is used for the script that first executes the export commands and afterwards the real commands; default: <pre class="name">#!/bin/bash</pre></td></tr>
 <tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[exportCommand]</pre></td><td>string</td><td>custom command to set a environment variable; <pre class="name">{$NAME}</pre> and <pre class="name">{$VALUE}</pre> are substituted and must be part of the command; default: <pre class="name">export {$NAME}="{$VALUE}"</pre></td></tr>
 <tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">environment</pre></td><td>string</td><td>name of a <pre class="tag">environment</pre> element</td></tr>
 <tr><td><pre class="tag">var</pre></td><td></td><td>string</td><td>value of the environment variable</td></tr>
@@ -1404,6 +1466,7 @@ In addition to that, the following settings can be modified:
 <li><pre class="name">spacingFormat</pre>: defines how names of parameters and values are spaced; default: <pre class="name">blank</pre></li>
 <li><pre class="name">quoteFormat</pre>: defines how values are quoted; default: <pre class="name">single quoting</pre></li>
 <li><pre class="name">separateFormat</pre>: defines the separator string between multiple occurrences of the same parameter; default: <pre class="name">,</pre></li>
+<li><pre class="name">versionQueryParameter</pre>: parameter of the <pre class="name">binName</pre> command used to query software versions of third-party software; is called on the executor before task execution and stored together with the used parameters in a log file; default: not set</li>
 </ul>
 
 The last three arguments can also be used for each parameter separately.

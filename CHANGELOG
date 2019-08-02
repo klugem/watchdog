@@ -3,39 +3,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 Changelog started with version 1.2.0
 
+
 ## [Unreleased]
 ### Added
+- [BASH] Implemented before script that will enforce the requested memory using ulimit (for SGE or Slurm executor). 
 - [CMD] Workflows can be resumed now; only tasks that were not executed successfully or have changed parameters will be executed
-- [XSD] Modules can now be documented (including basic module information, description and parameters) using a simple XML format
 - [CMD] New parameter -tmpFolder, which can be used to set a custom temporary caching and working directory
-- [JAR] Added docuTemplateExtractor.jar that can be used to create templates for module documentation
+- [CMD] Detach mode can be requested via STRG+C or by using the webserver 
 - [CMD] Implemented documentation template extractor plugins for bash and python modules
-- [PLUGIN] Implemented binary-based executor (<sge>) to support Sun Grid Engine (tested with v6.1); SGE control binaries must be accessible via the $PATH variable TODO: add to DOCU
+- [CMD] Implemented detach/attach mode that can be used to stop Watchdog and restart it later while tasks are running on external executors
 - [DOCU] PDF version of the documentation is provided in addition to the HTML version
 - [GUI] Added -tmpFolder folder parameter to Workflow designer
-- [CMD] Implemented detach/attach mode that can be used to stop Watchdog and restart it later while tasks are running on external executors; TODO: add to DOCU
-- [XSD] Custom before and after command script(s) can be added to actual command calls using the 'beforeScripts' and 'afterScripts' attributes of executor tags; TODO: update DOCU
-- [BASH] Implemented before script that will enforce the requested memory using ulimit (for SGE or Slurm executor). 
-- [CMD] Detach mode can be requested via STRG+C or by using the webserver 
-- [XSD] Version of third-party software used in modules can be queried using the 'versionQueryParameter' attribute of tasks; TODO: add to DOCU
+- [JAR] Added libraryGenerator.jar that generates a module reference book based on a set of modules
+- [JAR] Added methodTemplateGenerator.jar that generates XML documentation template files based on XSD modules
+- [JAR] Added moduleValidator.jar that validates the structure of modules
+- [JAR] Added docuTemplateExtractor.jar that can be used to create templates for module documentation
+- [PLUGIN] Implemented binary-based executor (<sge>) to support Sun Grid Engine (tested with v6.1); SGE control binaries must be accessible via the $PATH variable
+- [XSD] Custom before and after command scripts can be added to actual command calls using the 'beforeScripts' and 'afterScripts' attributes of executor tags
+- [XSD] Modules can now be documented (including basic module information, description and parameters) using a simple XML format
+- [XSD] Version of third-party software used in modules can be queried using the 'versionQueryParameter' attribute of tasks
   
 ### Changed
-- [PLUGIN] Executor <cluster> is now used for DRMAA cluster implementations; custom attributes (memory, slots, queue) were removed; TODO: add to DOCU
 - [] Watchdog releases require now Java 11 (and JavaFX SDK for workflow designer)
-- [PLUGIN] Moved 'shebang' attribute from environment to executor; TODO: update DOCU and examples
+- [MOD] Modules are no longer shipped together with Watchdog. They can be obtained from https://github.com/watchdog-wms/watchdog-wms-modules
+- [PLUGIN] Executor <cluster> is now used for DRMAA cluster implementations; custom attributes (memory, slots, queue) were removed
+- [PLUGIN] Moved 'shebang' attribute from environment to executor
  
 ### Fixed
 - [] Fixed small memory leak caused by not closed ScanResult objects
-- [CMD] Removed unnecessary nesting of pre-defined TMP constant  
-- [GUI] In some cases not all task parameters were loaded from a XML file
-- [GUI] When using custom module folders the trailing '/' was missing when the workflow was written
-- [EXAMPLE] Fixed wrong dependency in example workflow 1 for task 5
+- [] Do not export environment variables that contain a '.' or '-' in the name
 - [BASH] Corrected wrong array access that caused an error in new bash versions
 - [BASH] Last parameter of called command was not shown 
-- [PLUGIN] Slurm executor plugin was not using the <cluster> tag
+- [CMD] Removed unnecessary nesting of pre-defined TMP constant  
 - [CMD] STRG+C signal is now caught by watchdog.sh as otherwise SIGINT is forwarded to all processes forked by the java process 
-- [] Do not export environment variables that contain a '.' or '-' in the name
 - [CMD] Fixed very rare null pointer exception that could occurr when a process folder is used (e.g. network failure during usage of network storage I/O call after existence checks)
+- [EXAMPLE] Fixed wrong dependency in example workflow 1 for task 5
+- [GUI] In some cases not all task parameters were loaded from a XML file
+- [GUI] When using custom module folders the trailing '/' was missing when the workflow was written
+- [PLUGIN] Slurm executor plugin was not using the <cluster> tag
 
 ## [1.2.7] - 2018-08-30
 ### Added

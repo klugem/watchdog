@@ -5,7 +5,7 @@
 		<!-- examples of different execution environments -->
 		<executors>
 			<local name="localhost" maxRunning="2"/>
-			<sge name="defaultCluster" default="true" memory="1G" queue="short.q"/>
+			<sge name="defaultCluster" default="true" memory="1G" beforeScripts="ulimitMemory.sh" queue="short.q"/>
 			<sge name="highPerformanceCluster" slots="4" memory="3G" maxRunning="4" queue="short.q"/>
 			<remote name="superComputer" user="mustermann" host="superComputer" privateKey="/path/to/private/auth/key" port="22" disableStrictHostCheck="false"/>
 		</executors>
