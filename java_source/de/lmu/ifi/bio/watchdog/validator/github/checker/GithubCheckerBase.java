@@ -3,6 +3,7 @@ package de.lmu.ifi.bio.watchdog.validator.github.checker;
 import java.util.ArrayList;
 
 import de.lmu.ifi.bio.watchdog.helper.Functions;
+import de.lmu.ifi.bio.watchdog.validator.LocalModuleValidator;
 import de.lmu.ifi.bio.watchdog.validator.github.GithubCheckerRunner;
 import de.lmu.ifi.bio.watchdog.validator.github.TravisEnv;
 
@@ -17,7 +18,7 @@ public abstract class GithubCheckerBase {
 	protected final TravisEnv TRAVIS_INFO = new TravisEnv();
 	private final String NAME;
 	protected final String GIT_CLONE_DIR = System.getenv("TRAVIS_BUILD_DIR");
-	protected final String WATCHDOG_BASE = System.getenv("WATCHDOG_BASE");
+	protected String watchdogBase = System.getenv("WATCHDOG_BASE");
 	protected static final String DEFAULT_BRANCH = "master";
 	private static final int ERROR_STREAM_FILTER_DURATION = 30; // filter longer as API calls might take their time
 	
@@ -26,13 +27,17 @@ public abstract class GithubCheckerBase {
 	 * @param name
 	 */
 	public GithubCheckerBase(String name) {
-		if(!this.TRAVIS_INFO.isValid()) {
+		if(!this.isLocalTestMode() && !this.TRAVIS_INFO.isValid()) {
 			GithubCheckerRunner.error("Failed to load required environment variable from travis.");
 			System.exit(1);
 		}
 		
 		this.NAME = name;
 		Functions.filterErrorStream(ERROR_STREAM_FILTER_DURATION);
+	}
+	
+	public boolean isLocalTestMode() {
+		return LocalModuleValidator.class.isAssignableFrom(this.getClass()) && ((LocalModuleValidator) this).isLocalTest();
 	}
 	
 	/**
@@ -66,5 +71,13 @@ public abstract class GithubCheckerBase {
 	 */
 	public void info(String info) {
 		this.MESSAGES.add("[INFO] " + info);
+	}
+
+	/**
+	 * sets a custom watchdog base dir
+	 * @param wb
+	 */
+	public void setWatchdogBase(String wb) {
+		this.watchdogBase = wb;
 	}
 }

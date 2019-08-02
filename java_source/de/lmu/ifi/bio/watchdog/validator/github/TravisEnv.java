@@ -97,6 +97,4 @@ public class TravisEnv {
 	public String getJobUrl() {
 		return BASE_URL + this.getFullBuildRepoName() + JOB_URL_PART + TRAVIS_BUILD_ID;
 	}
-	
-
 }

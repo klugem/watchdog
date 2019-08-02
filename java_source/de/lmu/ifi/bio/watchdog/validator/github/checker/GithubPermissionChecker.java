@@ -22,7 +22,7 @@ public class GithubPermissionChecker extends GithubCheckerDocuBased {
 	public boolean test() {
 		if(super.test()) {
 			// try to parse the docu
-			DocumentBuilderFactory dbf = DocuXMLParser.prepareDBF(this.WATCHDOG_BASE);
+			DocumentBuilderFactory dbf = DocuXMLParser.prepareDBF(this.watchdogBase);
 			String baseFolder = this.compareInfo.getModuleFolder();
 			Moduledocu md = DocuXMLParser.parseXMLFile(dbf, this.xmlDocuFile, this.xsdFile, true);
 			if(md == null) {
@@ -55,5 +55,10 @@ public class GithubPermissionChecker extends GithubCheckerDocuBased {
 			}
 		}
 		return false;
+	}
+	
+	@Override
+	public boolean canNOTBeUsedLocally() {
+		return true;
 	}
 }

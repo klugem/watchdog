@@ -16,7 +16,6 @@ import de.lmu.ifi.bio.watchdog.docu.Paramdocu;
 import de.lmu.ifi.bio.watchdog.docu.Returndocu;
 import de.lmu.ifi.bio.watchdog.docu.extractor.XSDParameterExtractor;
 import de.lmu.ifi.bio.watchdog.docu.extractor.XSDReturnValueExtractor;
-import de.lmu.ifi.bio.watchdog.validator.XSDModuleValidator;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 /**
@@ -38,8 +37,12 @@ public class GithubDocuChecker extends GithubCheckerDocuBased {
 	@Override
 	public boolean test() {
 		if(super.test()) {
-			DocumentBuilderFactory dbf = DocuXMLParser.prepareDBF(this.WATCHDOG_BASE);
-			String baseFolder = this.compareInfo.getModuleFolder();
+			DocumentBuilderFactory dbf = DocuXMLParser.prepareDBF(this.watchdogBase);
+			String baseFolder = null;
+			if(this.isLocalTestMode())
+				baseFolder = this.getModuleFolderToValidate();
+			else 
+				baseFolder = this.compareInfo.getModuleFolder();
 			
 			// try to parse the docu
 			Moduledocu md = DocuXMLParser.parseXMLFile(dbf, this.xmlDocuFile, this.xsdFile, true);
@@ -51,8 +54,8 @@ public class GithubDocuChecker extends GithubCheckerDocuBased {
 				try {
 					boolean ret = true;
 					// get parameter and return values from basic XSD extractor plugin
-					String tmpBaseDir = this.WATCHDOG_BASE + File.separator + XMLParser.TMP_FOLDER;
-					String xsdRoot = this.WATCHDOG_BASE + File.separator + XMLParser.XSD;
+					String tmpBaseDir = this.watchdogBase + File.separator + XMLParser.TMP_FOLDER;
+					String xsdRoot = this.watchdogBase + File.separator + XMLParser.XSD;
 					HashMap<String, ArrayList<Paramdocu>> params = new XSDParameterExtractor(tmpBaseDir, xsdRoot).getDocu(this.xsdFile);
 					HashMap<String, ArrayList<Returndocu>> returnValues = new XSDReturnValueExtractor().getDocu(this.xsdFile);
 					//HashSet<Integer> versions = XMLParser.getVersionsOfModule(dbf, xsd);

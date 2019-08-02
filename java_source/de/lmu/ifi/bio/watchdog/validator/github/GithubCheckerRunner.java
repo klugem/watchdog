@@ -1,11 +1,16 @@
 package de.lmu.ifi.bio.watchdog.validator.github;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
+import de.lmu.ifi.bio.watchdog.runner.BasicRunner;
+import de.lmu.ifi.bio.watchdog.validator.LocalModuleValidator;
 import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubCheckerBase;
 import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubDocuChecker;
 import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubPermissionChecker;
@@ -18,7 +23,7 @@ import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubXSDChecker;
  * @author kluge
  *
  */
-public class GithubCheckerRunner {
+public class GithubCheckerRunner extends BasicRunner {
 	
 	/** names for tests that can be performed */
 	public final static String SIGNED_COMMIT_TEST = "SIGNED_COMMIT";
@@ -36,7 +41,7 @@ public class GithubCheckerRunner {
 	/**
 	 * contains valid tests
 	 */
-	public final static HashMap<String, GithubCheckerBase> VALID_TEST_NAMES = new HashMap<>();
+	public final static HashMap<String, GithubCheckerBase> VALID_TEST_NAMES = new LinkedHashMap<>();
 	static {
 		VALID_TEST_NAMES.put(SIGNED_COMMIT_TEST, new GithubVerifiedCommitChecker(SIGNED_COMMIT_TEST));
 		VALID_TEST_NAMES.put(WRITE_PERMISSION_TEST, new GithubPermissionChecker(WRITE_PERMISSION_TEST));
@@ -49,7 +54,7 @@ public class GithubCheckerRunner {
 	 * Runner method
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) {		
 		// try to parse the parameters
 		GithubCheckerParameters params = new GithubCheckerParameters();
 		JCommander parser = null;
@@ -67,6 +72,16 @@ public class GithubCheckerRunner {
 			parser.usage();
 			System.exit(EXIT_OK);
 		}
+		else if(params.list) {		
+			// find all test that can be run locally
+			info("Tests that can be run locally in combination with the '-moduleFolder' parameter:");
+			for(Entry<String, GithubCheckerBase> en : VALID_TEST_NAMES.entrySet()) {
+				if(en.getValue() instanceof LocalModuleValidator && !((LocalModuleValidator) en.getValue()).canNOTBeUsedLocally()) {
+					info(en.getKey());
+				}
+			}
+			System.exit(EXIT_OK);
+		}
 		else {
 			// perform the check
 			if(VALID_TEST_NAMES.containsKey(params.check)) {
@@ -74,6 +89,29 @@ public class GithubCheckerRunner {
 				
 				// get the checker class
 				GithubCheckerBase checker = VALID_TEST_NAMES.get(checkName);
+				
+				// test if test should be performed locally
+				if(params.moduleFolder != null) {
+					// find Watchdog's base to work with
+					File b = null;
+					if(params.watchdogBase != null && params.watchdogBase.length() > 0)
+						b = new File(params.watchdogBase);
+					File watchdogBase = findWatchdogBase(b);
+					if(watchdogBase == null) {
+						error("Failed to find Watchdog's install directory! Please use -w to provide it.");
+						System.exit(EXIT_CHECKER_FAILURE);
+					}
+					
+					if(checker instanceof LocalModuleValidator) {
+						info("Test '"+ checkName +"' will be run locally on '"+params.moduleFolder+"'!");
+						((LocalModuleValidator) checker).setModuleFolderToValidate(params.moduleFolder);
+						checker.setWatchdogBase(watchdogBase.getAbsolutePath());
+					}
+					else {
+						error("Test '"+ checkName +"' can not be run locally!");
+						System.exit(EXIT_CHECKER_FAILURE);
+					}
+				}
 				
 				// perform the check
 				try {
