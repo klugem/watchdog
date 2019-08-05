@@ -43,7 +43,7 @@ if [ $AUTO_DETACH_COUNT -eq 1 ]; then
 	done
 	exit $RET
 else
-	java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" &
+	java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" $@ &
 	BACKGROUND_PID=$!
 	waitForCommandToFinish ${BACKGROUND_PID}
 	exit $BACKGROUND_EXIT_CODE

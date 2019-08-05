@@ -11,63 +11,65 @@ do
 	MOD=$(echo "$MODULE" | sed 's|modules/||' | sed -E 's|/.+||')
 	VAR=$(grep -E '^USED_TOOLS=' "$MODULE" | sed 's/\W*USED_TOOLS=//' | sed "s/'//g" | grep -v '!TODO!' | sort -u | grep -E -v "^\^" | tr ':' '\n' | sort -u | tr '\n' ':' | sed 's/::/:/g' | sed -E 's/^://' | sed -E 's/:$//')
 	if [ "$VAR" != "" ]; then
-		echo "Checking binaries for '$MODULE'..."
-		MESSAGE=$("$SCRIPT_FOLDER/../core_lib/checkUsedTools.sh" "$VAR" "check_shflag_tools")
-		CODE=$?
-		HAS_DEP=1
+		if [ -d $MODULE ]; then
+			echo "Checking binaries for '$MODULE'..."
+			MESSAGE=$("$SCRIPT_FOLDER/../core_lib/checkUsedTools.sh" "$VAR" "check_shflag_tools")
+			CODE=$?
+			HAS_DEP=1
 
-		if [ $CODE -ne 0 ]; then
-			echoError "$MESSAGE"
-			MISSING=1
-			INACTIVE="$MOD:$INACTIVE"
-		else
+			if [ $CODE -ne 0 ]; then
+				echoError "$MESSAGE"
+				MISSING=1
+				INACTIVE="$MOD:$INACTIVE"
+			else
+				OK_MOD="$MOD:$OK_MOD"
+			fi
+		fi
+
+
+		# check perl packages
+		VAR=$(grep -E '^USED_TOOLS=' "$MODULE" | sed 's/\W*USED_TOOLS=//' | sed "s/'//g" | grep -v '!TODO!' | sort -u | grep "^\^perl" | tr '|' '\n' | sort -u | tr '\n' '|' | sed -E 's/\^perl//g' | sed 's/||/|/g' | sed -E 's/^\|//' | sed -E 's/\|$//')
+		if [ "$VAR" != "" ]; then
+			echo "Checking installed perl packages for '$MODULE'..."
+			MESSAGE=$("$SCRIPT_FOLDER/../core_lib/checkUsedTools.sh" "^perl|$VAR")
+			CODE=$?
+			HAS_DEP=1
+
+			if [ $CODE -ne 0 ]; then
+				echoError "$MESSAGE"
+				MISSING=1
+				INACTIVE="$MOD:$INACTIVE"
+			else
+				OK_MOD="$MOD:$OK_MOD"
+			fi
+		fi
+
+		# check for R packages
+		VAR=$(grep -E '^USED_TOOLS=' "$MODULE" | sed 's/\W*USED_TOOLS=//' | sed "s/'//g" | grep -v '!TODO!' | sort -u | grep "^\^R" | tr '|' '\n')
+		# automatically find libs that are only mentioned in the R files
+		cd "$SCRIPT_FOLDER/../modules/$MOD"
+		VAR="$VAR|"$(find . -maxdepth 2 -name "*.R" -exec grep -v "#NO_CHECK" {} \; | grep -o -E '(library|require)\([^)]+\)' | sed 's/library(//' | sed 's/require(//' | sed 's/)//' | sed 's/"//g' | sed "s/'//g")
+		VAR=$(echo "$VAR" | tr '|' '\n' | sort -u | tr '\n' '|' | sed -E 's/\^R//g' | sed 's/||/|/g' | sed -E 's/^\|//' | sed -E 's/\|$//')
+		cd "$SCRIPT_FOLDER/.."
+		if [ "$VAR" != "" ]; then
+			echo "Checking installed R packages for '$MODULE'..."
+			MESSAGE=$("$SCRIPT_FOLDER/../core_lib/checkUsedTools.sh" "^R|$VAR")
+			CODE=$?
+			HAS_DEP=1
+
+			if [ $CODE -ne 0 ]; then
+				echoError "$MESSAGE"
+				MISSING=1
+				INACTIVE="$MOD:$INACTIVE"
+			else
+				OK_MOD="$MOD:$OK_MOD"
+			fi
+		fi
+
+		# test if a module has no dependencies
+		if [ "$HAS_DEP" -eq "0" ]; then
 			OK_MOD="$MOD:$OK_MOD"
 		fi
-	fi
-
-
-	# check perl packages
-	VAR=$(grep -E '^USED_TOOLS=' "$MODULE" | sed 's/\W*USED_TOOLS=//' | sed "s/'//g" | grep -v '!TODO!' | sort -u | grep "^\^perl" | tr '|' '\n' | sort -u | tr '\n' '|' | sed -E 's/\^perl//g' | sed 's/||/|/g' | sed -E 's/^\|//' | sed -E 's/\|$//')
-	if [ "$VAR" != "" ]; then
-		echo "Checking installed perl packages for '$MODULE'..."
-		MESSAGE=$("$SCRIPT_FOLDER/../core_lib/checkUsedTools.sh" "^perl|$VAR")
-		CODE=$?
-		HAS_DEP=1
-
-		if [ $CODE -ne 0 ]; then
-			echoError "$MESSAGE"
-			MISSING=1
-			INACTIVE="$MOD:$INACTIVE"
-		else
-			OK_MOD="$MOD:$OK_MOD"
-		fi
-	fi
-
-	# check for R packages
-	VAR=$(grep -E '^USED_TOOLS=' "$MODULE" | sed 's/\W*USED_TOOLS=//' | sed "s/'//g" | grep -v '!TODO!' | sort -u | grep "^\^R" | tr '|' '\n')
-	# automatically find libs that are only mentioned in the R files
-	cd "$SCRIPT_FOLDER/../modules/$MOD"
-	VAR="$VAR|"$(find . -maxdepth 2 -name "*.R" -exec grep -o -E '(library|require)\([^)]+\)' {} \; | sed 's/library(//' | sed 's/require(//' | sed 's/)//' | sed 's/"//g' | sed "s/'//g")
-	VAR=$(echo "$VAR" | tr '|' '\n' | sort -u | tr '\n' '|' | sed -E 's/\^R//g' | sed 's/||/|/g' | sed -E 's/^\|//' | sed -E 's/\|$//')
-	cd "$SCRIPT_FOLDER/.."
-	if [ "$VAR" != "" ]; then
-		echo "Checking installed R packages for '$MODULE'..."
-		MESSAGE=$("$SCRIPT_FOLDER/../core_lib/checkUsedTools.sh" "^R|$VAR")
-		CODE=$?
-		HAS_DEP=1
-
-		if [ $CODE -ne 0 ]; then
-			echoError "$MESSAGE"
-			MISSING=1
-			INACTIVE="$MOD:$INACTIVE"
-		else
-			OK_MOD="$MOD:$OK_MOD"
-		fi
-	fi
-
-	# test if a module has no dependencies
-	if [ "$HAS_DEP" -eq "0" ]; then
-		OK_MOD="$MOD:$OK_MOD"
 	fi
 done
 

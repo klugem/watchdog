@@ -787,7 +787,7 @@ _flags_parseGetopt() {
   # arguments. Its usage was replaced by FLAGS_ARGV, and it is being kept only
   # for backwards compatibility reasons.
   FLAGS_ARGC=`_flags_math "$# - 1 - ${_flags_argc_}"`
-  export FLAGS_ARGC
+  # export FLAGS_ARGC # allow calling of scripts (modification by Michael Kluge)
 
   # Handle options. note options with values must do an additional shift.
   while true; do

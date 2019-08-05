@@ -5,6 +5,7 @@ source $SCRIPT_FOLDER/../core_lib/includeBasics.sh
 # make dependency test first
 echo "Checking which modules can be tested..."
 INACTIVE_WATCHDOG_MODULES=$($SCRIPT_FOLDER/dependencyTest.sh -q 2> /dev/null | tail -n 1) # in quiet mode
+PRINT_INACTIVE=0
 
 # find all scripts to test modules
 for I in `find . $SCRIPT_FOLDER/../modules -maxdepth 2 -name "test_*.sh" -type f | sort`;
@@ -27,6 +28,8 @@ do
 		else 
 			OK_TEST="$NAME:$OK_TEST"
 		fi
+	else
+		$PRINT_INACTIVE=1
 	fi
 done
 
@@ -45,16 +48,18 @@ do
 done
 echo -e "########################################\n"
 
-echo "########################################"
-echo "The following modules can not be used because of missing dependencies:"
-INACTIVE_WATCHDOG_MODULES=$(echo "$INACTIVE_WATCHDOG_MODULES" | sed -E 's/:$//' | tr ':' '\n' | sort -u | tr '\n' ':')
-IFS=':' read -a INACTIVE_WATCHDOG_MODULES <<< "$INACTIVE_WATCHDOG_MODULES"
-unset IFS
-for M in "${INACTIVE_WATCHDOG_MODULES[@]}"
-do
-	echo "Module '$M'"
-done
-echo  "########################################"
+if [ "$PRINT_INACTIVE" -eq "1" ]; then
+	echo "########################################"
+	echo "The following modules can not be used because of missing dependencies:"
+	INACTIVE_WATCHDOG_MODULES=$(echo "$INACTIVE_WATCHDOG_MODULES" | sed -E 's/:$//' | tr ':' '\n' | sort -u | tr '\n' ':')
+	IFS=':' read -a INACTIVE_WATCHDOG_MODULES <<< "$INACTIVE_WATCHDOG_MODULES"
+	unset IFS
+	for M in "${INACTIVE_WATCHDOG_MODULES[@]}"
+	do
+		echo "Module '$M'"
+	done
+	echo  "########################################"
+fi
 
 # check, if all was ok or not
 if [ $FAILED -eq 1 ]; then
