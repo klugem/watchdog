@@ -214,7 +214,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						if(completeArguments.containsKey(inputName))
 							completeRawargumentList = completeArguments.get(inputName);
 						
-						t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled(), x.mightProcessblockContainFilenames());
+						t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled());
 						t.setMaxRunning(x.getMaxRunning());
 						t.setProject(x.getProjectName());
 						t.addErrorChecker(new WatchdogErrorCatcher(t));
@@ -283,6 +283,8 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						resumeInfo = null;
 						// mark to resume info for all tasks that depend on this one as dirty
 						x.flagResumeInfoAsDirty(t);
+						// remove the resume info
+						x.removeResumeInfo(inputName);
 					}
 
 					if(resumeInfo == null) {
@@ -522,7 +524,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	 */
 	public synchronized boolean hasAnyXMLTaskResumeOrAttachInfo() {
 		for(XMLTask x : this.XML_TASKS.values()) {
-			if(x.hasResumeInfo() || x.hasAttachInfo())
+			if((x.hasResumeInfo() && !x.isDirty(false)) || x.hasAttachInfo())
 				return true;
 		}
 		return false;

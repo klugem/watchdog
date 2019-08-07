@@ -52,7 +52,7 @@
 					<ul class="uk-list uk-list-bullet">
 						<li class="versionMetaFilter" meta-minVersion="{@MIN_VER@}" meta-maxVersion="{@MAX_VER@}">{@SINGLE_DEPENDENCY@}</li> <!--DETAIL_DEPENDENCY_TEMPLATE-->
 						{@DEPENDENCIES@}
-					</ul>
+					</ul><br /><br />
 				</div>
 					<div class="mayhide" meta-hide="{@PARAMETER_HIDE@}">
 					<h3 class="uk-h3"><a href="#auto-and-expand">Parameter</a></h3>
@@ -71,7 +71,7 @@
 						</thead>
 						<tr><td>{@PARAM_NAME@}</td><td>{@PARAM_TYPE@}</td><td>{@PARAM_RESTRICTION@}</td><td>{@PARAM_DEFAULT@}</td><td>{@PARAM_OCCURENCE@}</td><td>{@PARAM_DESCRIPTION@}</td><td>{@MIN_VER@}</td><td>{@MAX_VER@}</td></tr> <!--DETAIL_PARAM_TEMPLATE-->
 						{@PARAMETER@}
-					</table>
+					</table><br /><br />
 				</div>
 					<div class="mayhide" meta-hide="{@RETURN_VALUES_HIDE@}">
 					<h3 class="uk-h3"><a href="#auto-and-expand">Return values</a></h3>
@@ -87,7 +87,7 @@
 						</thead>
 						<tr class="minVersion-{@MIN_VER@} maxVersion-{@MAX_VER@}"><td>{@RETURN_NAME@}</td><td>{@RETURN_TYPE@}</td><td>{@RETURN_DESCRIPTION@}</td><td>{@MIN_VER@}</td><td>{@MAX_VER@}</td></tr> <!--DETAIL_RETURN_TEMPLATE-->
 						{@RETURN_VALUES@}
-					</table>
+					</table><br /><br />
 					</div>
 					<div class="mayhide" meta-hide="{@CITATION_HIDE@}">
 					<h3 class="uk-h3"><a href="#auto-and-expand">Citation info</a></h3>

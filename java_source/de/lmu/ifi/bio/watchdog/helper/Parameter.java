@@ -11,8 +11,8 @@ public class Parameter implements Serializable {
 	private final String NAME;
 	private final Integer MIN_O;
 	private final Integer MAX_O;
-	public int minVer = 1;
-	public int maxVer = 1;
+	public int minVer = 0;
+	public int maxVer = 0;
 	
 	public Parameter(String name, Integer minO, Integer maxO, ReturnType r) {
 		this.NAME = name;

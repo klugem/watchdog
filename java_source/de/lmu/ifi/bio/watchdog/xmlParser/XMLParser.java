@@ -2144,11 +2144,11 @@ public class XMLParser {
 										if(loadAllVersions) {
 											String minVersionS = el.getAttribute(MIN_VERSION_ATTR);
 											String maxVersionS = el.getAttribute(MAX_VERSION_ATTR);
-											Integer minVersion = 1;
-											Integer maxVersion = 1;
+											Integer minVersion = 0;
+											Integer maxVersion = 0;
 											try { minVersion = Integer.parseInt(minVersionS); } catch(Exception e) { };
 											try { maxVersion = Integer.parseInt(maxVersionS); } catch(Exception e) { };
-											if(minVersion != 1 || maxVersion != 1)
+											if(minVersion != 0 || maxVersion != 0)
 												r.setVersion(minVersion, maxVersion);
 										}
 										
@@ -2415,11 +2415,11 @@ public class XMLParser {
 								if(loadAllVersions) {
 									String minVersionS = el.getAttribute(MIN_VERSION_ATTR);
 									String maxVersionS = el.getAttribute(MAX_VERSION_ATTR);
-									Integer minVersion = 1;
-									Integer maxVersion = 1;
+									Integer minVersion = 0;
+									Integer maxVersion = 0;
 									try { minVersion = Integer.parseInt(minVersionS); } catch(Exception e) { };
 									try { maxVersion = Integer.parseInt(maxVersionS); } catch(Exception e) { };
-									if(minVersion != 1 || maxVersion != 1)
+									if(minVersion != 0 || maxVersion != 0)
 										pn.setVersion(minVersion, maxVersion);
 								}
 

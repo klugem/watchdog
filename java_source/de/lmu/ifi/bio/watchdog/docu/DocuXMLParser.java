@@ -263,8 +263,8 @@ public class DocuXMLParser {
 		String valueRestrictions = e.getAttribute(RESTRICTIONS);
 		String defaultValue = e.getAttribute(DEFAULT);
 		String description = new NodeListIterator(e.getElementsByTagName(DESCRIPTION)).stream().map(x -> x.getTextContent()).collect(Collectors.joining(""));
-		int minVersion = 1;
-		int maxVersion = 1;
+		int minVersion = 0;
+		int maxVersion = 0;
 		int minOccurs = -1;
 		int maxOccurs = -1;
 		
@@ -274,7 +274,7 @@ public class DocuXMLParser {
 		try { maxOccurs = Integer.parseInt(e.getAttribute(MAX_OCCURS)); } catch(Exception ex) {}
 		
 		Paramdocu p = new Paramdocu(name, type, description, defaultValue, valueRestrictions);
-		if(minVersion != 1 || maxVersion != 1)
+		if(minVersion != 0 || maxVersion != 0)
 			p.setVersions(minVersion, maxVersion);
 		if(minOccurs != -1 || maxOccurs != -1)
 			p.setOccurs(minOccurs, maxOccurs);
@@ -290,14 +290,14 @@ public class DocuXMLParser {
 		String name = e.getAttribute(NAME);
 		String type = e.getAttribute(TYPE);
 		String description = new NodeListIterator(e.getElementsByTagName(DESCRIPTION)).stream().map(x -> x.getTextContent()).collect(Collectors.joining(""));
-		int minVersion = 1;
-		int maxVersion = 1;
+		int minVersion = 0;
+		int maxVersion = 0;
 		try { minVersion = Integer.parseInt(e.getAttribute(MIN_VERSION)); } catch(Exception ex) {}
 		try { maxVersion = Integer.parseInt(e.getAttribute(MAX_VERSION)); } catch(Exception ex) {}
 
 		Returndocu r= new Returndocu(name, type, description);
 		
-		if(minVersion != 1 || maxVersion != 1)
+		if(minVersion != 0 || maxVersion != 0)
 			r.setVersions(minVersion, maxVersion);
 		return r;
 	}

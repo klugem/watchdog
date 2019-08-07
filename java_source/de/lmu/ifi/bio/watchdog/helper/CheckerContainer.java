@@ -70,7 +70,7 @@ public class CheckerContainer {
 
 			// only try to replace parameters
 			if(inputReplacement != null) {
-				value = ReplaceSpecialConstructs.replaceValues(value, inputReplacement, pb != null ? pb.getClass() : null, spawnedTasks + 1, nameMapping, workingDir, false, pb.mightContainFilenames());
+				value = ReplaceSpecialConstructs.replaceValues(value, inputReplacement, pb != null ? pb.getClass() : null, spawnedTasks + 1, nameMapping, workingDir, false);
 			}
 
 			// try to parse the parameter

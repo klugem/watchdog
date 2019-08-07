@@ -29,7 +29,7 @@ function addArgument() {
 
 		if [ $ARGUMENT_MIN -gt 0 ]; then
 			# add check
-			REPLACE_CHECK="${REPLACE_CHECK}${SPACER}"$(cat $SCRIPT_FOLDER/../xsd/template/mandatory_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e 's/"/\\"/g')
+			REPLACE_CHECK=$(cat $SCRIPT_FOLDER/../xsd/template/mandatory_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e 's/"/\\"/g')"${REPLACE_CHECK}${SPACER}"
 		fi
 	fi
 	if [ "$SHORT_NAME" != "!" ]; then 

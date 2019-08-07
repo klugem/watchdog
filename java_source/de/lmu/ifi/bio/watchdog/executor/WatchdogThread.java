@@ -208,9 +208,9 @@ public class WatchdogThread extends StopableLoopThread {
 			if(useExternalCommand) {
 				ArrayList<String> commands = new ArrayList<>();
 				if(executorENV != null) 
-					commands.addAll(executorENV.getEnvironmentCommands(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames()));
+					commands.addAll(executorENV.getEnvironmentCommands(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping()));
 				if(taskENV != null) 
-					commands.addAll(taskENV.getEnvironmentCommands(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames()));
+					commands.addAll(taskENV.getEnvironmentCommands(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping()));
 				
 				// add env export commands as before commands
 				for(String command : commands) 
@@ -220,9 +220,9 @@ public class WatchdogThread extends StopableLoopThread {
 			else {
 				HashMap<String, String> envVales = new HashMap<>();
 				if(executorENV != null) 
-					envVales.putAll(executorENV.getEnvironment(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames()));
+					envVales.putAll(executorENV.getEnvironment(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping()));
 				if(taskENV != null) 
-					envVales.putAll(taskENV.getEnvironment(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping(), t.mightProcessblockContainFilenames()));
+					envVales.putAll(taskENV.getEnvironment(t.getTaskID(), t.getGroupFileName(), t.getProcessBlockClass(), t.getSubTaskID(), t.getProcessTableMapping()));
 				
 				exec.setEnvironmentVariablesToProcessInternally(envVales);
 			}

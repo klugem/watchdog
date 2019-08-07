@@ -78,8 +78,8 @@ public class SHFlagsParameterExtractor implements Extractor<Paramdocu> {
 		Pattern ver = Pattern.compile(VERSION_TAG_PATTERN);
 		LinkedHashMap<String, ArrayList<Paramdocu>> ret = new LinkedHashMap<>();
 		List<String> lines = Files.readAllLines(Paths.get(f.getAbsolutePath()));
-		int minVersion = 1;
-		int maxVersion = 1;
+		int minVersion = 0;
+		int maxVersion = 0;
 		for(String l : lines) {
 			if(l.matches(VAR_DEF_START)) {
 				l = l.replaceFirst("^\\s+", "");
@@ -127,7 +127,7 @@ public class SHFlagsParameterExtractor implements Extractor<Paramdocu> {
 					}
 					// save it
 					Paramdocu p = new Paramdocu(name, type, description, defaultValue, "[VALUE_RESTRICTION]");
-					if(minVersion != 1 && maxVersion != 1)
+					if(minVersion != 0 || maxVersion != 0)
 						p.setVersions(minVersion, maxVersion);
 					if(defaultValue.length() > 0) 
 						p.setDefault(defaultValue);

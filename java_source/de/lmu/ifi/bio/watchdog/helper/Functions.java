@@ -171,8 +171,9 @@ public class Functions {
 			File f = Files.createTempFile(prefix, TMP_ENDING).toFile();
 			f.delete();
 			File ff = new File(temporaryFolder + File.separator + f.getName());
-			if(!noDelete)
-				ff.deleteOnExit(); 
+			// handle detach mode 
+			//if(!noDelete)
+			//	ff.deleteOnExit(); 
 			return ff;
 		}
 		catch(Exception e) {

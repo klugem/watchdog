@@ -94,7 +94,6 @@ public class Task implements Serializable {
 	private boolean isRunningOnSlave = false;
 	private boolean forceSingleSlaveMode = false; 
 	private boolean taskStatusUpdateFinished = false;
-	private boolean MIGHT_PB_CONTAIN_FILE_NAMES;
 	private String externalExecutorID;
 	private String versionQueryParameter = null; // used to get the software version of third-party software
 	private File versionQueryInfoFile = null;
@@ -121,14 +120,13 @@ public class Task implements Serializable {
 	 * @param env
 	 */
 	public Task(int taskID, String name, ExecutorInfo executor, String command, LinkedHashMap<String, Pair<Pair<String, String>, String>> detailArguments, ArrayList<Task> dependencies,  ArrayList<ErrorChecker> errorChecker, ArrayList<SuccessChecker> successChecker, String groupFileName,
-				 File stdIn, File stdOut, File stdErr, boolean stdOutAppend, boolean stdErrAppend, File workingDir, Class<? extends ProcessBlock> processBlockClass, HashMap<String, Integer> processTableMapping, Environment env, ArrayList<TaskAction> taskActions, boolean saveRes, boolean mightPBContainFileNames) {
+				 File stdIn, File stdOut, File stdErr, boolean stdOutAppend, boolean stdErrAppend, File workingDir, Class<? extends ProcessBlock> processBlockClass, HashMap<String, Integer> processTableMapping, Environment env, ArrayList<TaskAction> taskActions, boolean saveRes) {
 		this.TASK_ID = taskID;
 		this.NAME = name;
 		this.executor = executor;
 		this.DETAIL_ARGUMENTS = detailArguments;
-		this.MIGHT_PB_CONTAIN_FILE_NAMES = processBlockClass != null && mightPBContainFileNames;
-
 		String[] tmp = command.split(" ");
+		
 		if(tmp.length > 1)
 			command = tmp[0];
 		for(int i = 1; i < tmp.length; i++)
@@ -237,7 +235,7 @@ public class Task implements Serializable {
 	}
 
 	public static Task getShutdownTask(ArrayList<TaskAction> shutdownActions, ExecutorInfo e) {
-		return new Task(0, "on shutdown event", e, "", null, null, null, null, null, null, null, null, false, false, null, null, null, null, shutdownActions, false, false);
+		return new Task(0, "on shutdown event", e, "", null, null, null, null, null, null, null, null, false, false, null, null, null, null, shutdownActions, false);
 	}
 	
 	public void addModuleVersionParam() {
@@ -1231,10 +1229,6 @@ public class Task implements Serializable {
 			return null;
 		File f = this.getStdOut(false);
 		return new File(f.getAbsolutePath() + RES_ENDING);
-	}
-	
-	public boolean mightProcessblockContainFilenames() {
-		return this.MIGHT_PB_CONTAIN_FILE_NAMES;
 	}
 	
 	/** 

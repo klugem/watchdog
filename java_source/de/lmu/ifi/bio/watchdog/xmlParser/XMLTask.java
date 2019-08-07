@@ -561,10 +561,6 @@ public class XMLTask {
 		return this.PROCESS_BLOCK;
 	}
 	
-	public boolean mightProcessblockContainFilenames() {
-		return this.hasProcessBlock() && this.PROCESS_BLOCK.mightContainFilenames();
-	}
-	 
 	/**
 	 * true, if the task is a process block task
 	 * @return
@@ -927,7 +923,7 @@ public class XMLTask {
 			String path = var;
 			// replace the var if some replace value is given
 			if(replacement != null && replacement.length() > 0)
-				path = ReplaceSpecialConstructs.replaceValues(var, replacement, this.getProcessBlock().getClass(), this.SPAWNED_TASKS.size()+1, this.getProcessBlock() instanceof ProcessMultiParam ? ((ProcessMultiParam) this.getProcessBlock()).getNameMapping() : null, this.getExecutor().getWorkingDir(), false, this.mightProcessblockContainFilenames());
+				path = ReplaceSpecialConstructs.replaceValues(var, replacement, this.getProcessBlock().getClass(), this.SPAWNED_TASKS.size()+1, this.getProcessBlock() instanceof ProcessMultiParam ? ((ProcessMultiParam) this.getProcessBlock()).getNameMapping() : null, this.getExecutor().getWorkingDir(), false);
 
 			// check, if a absolute path is set or a relative one
 			if(!path.startsWith(File.separator) && !path.matches("[A-Z]:\\\\.+") && this.getWorkingDir(replacement) != null) {
@@ -1153,7 +1149,7 @@ public class XMLTask {
 	 */
 	public String replaceString(String value, String inputReplacement, HashMap<String, Integer> nameMapping) {
 		if(inputReplacement != null)
-			return ReplaceSpecialConstructs.replaceValues(value, inputReplacement, this.getProcessBlock() != null ? this.getProcessBlock().getClass() : null, this.SPAWNED_TASKS.size()+1, nameMapping, this.getExecutor().getWorkingDir(), false, this.mightProcessblockContainFilenames());
+			return ReplaceSpecialConstructs.replaceValues(value, inputReplacement, this.getProcessBlock() != null ? this.getProcessBlock().getClass() : null, this.SPAWNED_TASKS.size()+1, nameMapping, this.getExecutor().getWorkingDir(), false);
 		
 		return value;
 	}

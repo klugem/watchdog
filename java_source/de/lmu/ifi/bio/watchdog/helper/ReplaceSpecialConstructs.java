@@ -74,7 +74,7 @@ public class ReplaceSpecialConstructs {
 	 * @param isEnv if true, more sensitive because it might be not intent replacement
 	 * @return
 	 */
-	public static String replaceValues(String value, String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> nameMapping, String tmpWorkingDir, boolean isEnv, boolean valueMightBeFilePath) {
+	public static String replaceValues(String value, String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> nameMapping, String tmpWorkingDir, boolean isEnv) {
 		if(value == null)
 			return null;
 		
@@ -126,7 +126,7 @@ public class ReplaceSpecialConstructs {
 							try {throw new Exception(""); } catch(Exception e) { e.printStackTrace(); }
 							System.exit(1);
 						}
-						String retVal = replaceValues(value, split[col-1], processBlockClass, spawnedTaskCounter, null, tmpWorkingDir, isEnv, valueMightBeFilePath);
+						String retVal = replaceValues(value, split[col-1], processBlockClass, spawnedTaskCounter, null, tmpWorkingDir, isEnv);
 						// security test
 						if(retVal != null)
 							value = retVal;

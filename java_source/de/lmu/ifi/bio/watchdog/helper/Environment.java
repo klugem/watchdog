@@ -313,13 +313,13 @@ public class Environment implements XMLDataStore {
 	 * @param mapping
 	 * @return
 	 */
-	public HashMap<String, String> getEnvironment(int taskID, String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping, boolean valueMightBeFilePath) {
+	public HashMap<String, String> getEnvironment(int taskID, String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping) {
 		String workingDir = XMLTask.hasXMLTask(taskID) ? XMLTask.getXMLTask(taskID).getExecutor().getWorkingDir() : "";
 		HashMap<String, String> env = new HashMap<>();
 		HashMap<String, String> vars = this.getEnv();
 		// replace all the variables and $()
 		for(String k : vars.keySet()) {
-			String v = ReplaceSpecialConstructs.replaceValues(vars.get(k), inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true, valueMightBeFilePath);
+			String v = ReplaceSpecialConstructs.replaceValues(vars.get(k), inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true);
 			env.put(k, v);
 		}
 		return env;
@@ -333,13 +333,13 @@ public class Environment implements XMLDataStore {
 	 * @param mapping
 	 * @return
 	 */
-	public ArrayList<String> getEnvironmentCommands(int taskID, String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping, boolean valueMightBeFilePath) {
+	public ArrayList<String> getEnvironmentCommands(int taskID, String inputReplacement, Class<? extends ProcessBlock> processBlockClass, int spawnedTaskCounter, HashMap<String, Integer> processTableMapping) {
 		String workingDir = XMLTask.hasXMLTask(taskID) ? XMLTask.getXMLTask(taskID).getExecutor().getWorkingDir() : "";
 		ArrayList<String> env = new ArrayList<>();
 		ArrayList<String> vars = this.getCommands();
 		// replace all the variables and $()
 		for(String k : vars) {
-			k = ReplaceSpecialConstructs.replaceValues(k, inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true, valueMightBeFilePath);
+			k = ReplaceSpecialConstructs.replaceValues(k, inputReplacement, processBlockClass, spawnedTaskCounter, processTableMapping, workingDir, true);
 			env.add(k);
 		}
 		return env;
