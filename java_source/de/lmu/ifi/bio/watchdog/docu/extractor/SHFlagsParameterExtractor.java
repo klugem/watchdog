@@ -83,6 +83,7 @@ public class SHFlagsParameterExtractor implements Extractor<Paramdocu> {
 		for(String l : lines) {
 			if(l.matches(VAR_DEF_START)) {
 				l = l.replaceFirst("^\\s+", "");
+				l = l.replaceFirst("\\s*#[^'\"]+$", "");
 				boolean inSingle = false;
 				boolean inDouble = false;
 				ArrayList<String> segments = new ArrayList<>();

@@ -15,12 +15,13 @@ public abstract class GithubCheckerIO extends GithubCheckerBase  {
 
 	@Override
 	public boolean test() {
+		super.test();
 		boolean ret = true;
 		if(this.watchdogBase == null) {
 			this.error("Watchdog's base is not set correctly via an environment variable.");
 			ret = false;
 		}
-		boolean checkCloneDir = this.isLocalTestMode();
+		boolean checkCloneDir = !this.isLocalTestMode();
 		if(checkCloneDir) {
 			if(this.GIT_CLONE_DIR == null) {
 				this.error("Git clone directory is not set correctly via an environment variable.");

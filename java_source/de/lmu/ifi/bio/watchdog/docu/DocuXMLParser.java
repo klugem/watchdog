@@ -34,7 +34,6 @@ public class DocuXMLParser {
 
 	// section elements
 	public static final String MAINTAINER = "maintainer";
-	public static final String GITHUB = "gitub";
 	public static final String PARAMETER = "parameter";
 	public static final String INFO = "info";
 	public static final String RETURN = "return";
@@ -219,7 +218,7 @@ public class DocuXMLParser {
 			comments = new NodeListIterator(info.getElementsByTagName(COMMENTS)).stream().map(e -> getVersioned(e, minV, maxV)).collect(Collectors.toCollection(ArrayList::new));
 			description =  new NodeListIterator(info.getElementsByTagName(DESCRIPTION)).stream().map(e -> getVersioned(e, minV, maxV)).collect(Collectors.toCollection(ArrayList::new));
 			updated = new NodeListIterator(info.getElementsByTagName(UPDATED)).stream().map(e -> e.getTextContent()).collect(Collectors.joining(""));
-			github = new NodeListIterator(info.getElementsByTagName(GITHUB)).stream().map(e -> e.getTextContent()).collect(Collectors.joining(""));
+			github = new NodeListIterator(info.getElementsByTagName(MAINTAINER)).stream().map(e -> e.getTextContent()).collect(Collectors.joining(""));
 			categories = new NodeListIterator(info.getElementsByTagName(CATEGORY)).stream().map(e -> e.getTextContent()).collect(Collectors.toCollection(ArrayList::new));
 
 			// fill maintainer
@@ -265,18 +264,18 @@ public class DocuXMLParser {
 		String description = new NodeListIterator(e.getElementsByTagName(DESCRIPTION)).stream().map(x -> x.getTextContent()).collect(Collectors.joining(""));
 		int minVersion = 0;
 		int maxVersion = 0;
-		int minOccurs = -1;
-		int maxOccurs = -1;
+		Integer minOccurs = -1;
+		Integer maxOccurs = -1;
 		
 		try { minVersion = Integer.parseInt(e.getAttribute(MIN_VERSION)); } catch(Exception ex) {}
 		try { maxVersion = Integer.parseInt(e.getAttribute(MAX_VERSION)); } catch(Exception ex) {}
 		try { minOccurs = Integer.parseInt(e.getAttribute(MIN_OCCURS)); } catch(Exception ex) {}
-		try { maxOccurs = Integer.parseInt(e.getAttribute(MAX_OCCURS)); } catch(Exception ex) {}
+		try { maxOccurs = Integer.parseInt(e.getAttribute(MAX_OCCURS)); } catch(Exception ex) { maxOccurs = null; } // unbounded
 		
 		Paramdocu p = new Paramdocu(name, type, description, defaultValue, valueRestrictions);
 		if(minVersion != 0 || maxVersion != 0)
 			p.setVersions(minVersion, maxVersion);
-		if(minOccurs != -1 || maxOccurs != -1)
+		if(minOccurs != -1 || maxOccurs == null || maxOccurs != -1)
 			p.setOccurs(minOccurs, maxOccurs);
 		return p;
 	}

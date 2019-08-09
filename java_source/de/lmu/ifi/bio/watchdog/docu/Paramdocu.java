@@ -67,7 +67,7 @@ public class Paramdocu extends Docu {
 		if(this.hasRestrictions()) b.addQuotedAttribute(DocuXMLParser.RESTRICTIONS, this.getRestriction());
 		if(this.hasDefault()) b.addQuotedAttribute(DocuXMLParser.DEFAULT, this.getDefault());
 		b.addQuotedAttribute(DocuXMLParser.MIN_OCCURS, this.getMinOccurs());
-		// unbounded if 0
+		// unbounded if null
 		if(this.getMaxOccurs() != null)
 			b.addQuotedAttribute(DocuXMLParser.MAX_OCCURS, this.getMaxOccurs());
 		
@@ -87,12 +87,14 @@ public class Paramdocu extends Docu {
 	}
 
 	public String getOccurenceInfo() {
-		if(this.getMaxOccurs() != null && this.getMinOccurs() == this.getMaxOccurs())
-			return Integer.toString(this.getMinOccurs());
-		if(this.isOptional() && (this.getMaxOccurs() != null && this.getMaxOccurs() == 1))
-			return "*";
+		if(this.getMaxOccurs() != null) {
+			if(this.getMinOccurs() == this.getMaxOccurs())
+				return Integer.toString(this.getMinOccurs());
+			else 
+				return "*";	
+		}
 		else {
-			if(this.getMaxOccurs() != null)
+			if(this.isOptional())		
 				return this.getMinOccurs() + SEP + this.getMaxOccurs();
 			else
 				return this.getMinOccurs() + SEP;

@@ -4,7 +4,7 @@ import com.beust.jcommander.Parameter;
 
 public class GithubCheckerParameters {
 
-	@Parameter(names={"-check", "-c"}, description="name of the check that should be performed", required=true)
+	@Parameter(names={"-check", "-c"}, description="name of the check that should be performed")
 	protected String check;
 	
 	@Parameter(names={"-list", "-l"}, description="list checks that can be performed locally")
@@ -13,7 +13,7 @@ public class GithubCheckerParameters {
 	@Parameter(names={"-moduleFolder", "-m"}, description="path to a module folder on which the test should be applied locally")
 	protected String moduleFolder;
 	
-	@Parameter(names={"-watchdogBase", "-w"}, description="uses a different watchdog installation directory; default: ${jarLocation}/..", required=false)
+	@Parameter(names={"-watchdogBase", "-w"}, description="uses a different watchdog installation directory; default: ${jarLocation}/..")
 	protected String watchdogBase;
 	
 	@Parameter(names={"-help", "-h", "--help", "--man", "-man"}, description="print usage message and exit", help=true)

@@ -26,12 +26,7 @@ public abstract class GithubCheckerBase {
 	 * Constructor
 	 * @param name
 	 */
-	public GithubCheckerBase(String name) {
-		if(!this.isLocalTestMode() && !this.TRAVIS_INFO.isValid()) {
-			GithubCheckerRunner.error("Failed to load required environment variable from travis.");
-			System.exit(1);
-		}
-		
+	public GithubCheckerBase(String name) {	
 		this.NAME = name;
 		Functions.filterErrorStream(ERROR_STREAM_FILTER_DURATION);
 	}
@@ -51,7 +46,13 @@ public abstract class GithubCheckerBase {
 	 /** method a github checker must implement
 	 * @return
 	 */
-	public abstract boolean test();
+	public boolean test() {
+		if(!this.isLocalTestMode() && !this.TRAVIS_INFO.isValid()) {
+			GithubCheckerRunner.error("Failed to load required environment variable from travis.");
+			System.exit(1);
+		}
+		return true;
+	}
 	
 	public ArrayList<String> getMessages() {
 		return MESSAGES;

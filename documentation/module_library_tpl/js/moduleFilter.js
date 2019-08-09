@@ -168,31 +168,27 @@ function updateFilterButtons(counter, top, idBase, cat, number) {
 			active = ele.text().replace(/ \([0-9]+\)/, "")
 		}
 	}
-console.log(active)
 
-	for (var i = 0; i <= number; i++) {
+	document.activeElement.blur()
+	for (var i = 1; i <= number; i++) {
 		var ele = $("#" + idBase + i)
 		if (top.length >= i) {
 			var value = top[(i - 1)]
 			var count = counter[cat][value]
 
+			ele.text(value + " (" + count + ")")
 
-				ele.text(value + " (" + count + ")")
+			// update meta
+			var lie = ele.parent()
+			lie.removeClass("uk-active")
+			var metaText = lie.attr("data-uk-filter-control").replace(/§.+§/, '§'+value+'§')
+			lie.attr("data-uk-filter-control", metaText)
 
-				// update meta
-				var lie = ele.parent()
-				var metaText = lie.attr("data-uk-filter-control").replace(/§.+§/, '§'+value+'§')
-				lie.attr("data-uk-filter-control", metaText)
-
-				// trigger as order might be changed
-				if(value === active) {
-					lie.addClass("uk-active")
-				}
-				ele.show()
-			if(value != active){
-				ele.text("")
-				ele.hide()
-			}	
+			// trigger as order might be changed
+			if(value === active) {
+				lie.addClass("uk-active")
+			}
+			ele.show()
 		} else {
 			ele.text("")
 			ele.hide()

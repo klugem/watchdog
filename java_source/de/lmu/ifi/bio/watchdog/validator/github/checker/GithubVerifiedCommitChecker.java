@@ -18,6 +18,8 @@ public class GithubVerifiedCommitChecker extends GithubCheckerBase {
 
 	@Override
 	public boolean test() {
+		super.test();
+		boolean ret = true;
 		APICommitInfo info;
 		try {
 			info = new APICommitInfo(this.TRAVIS_INFO.getFullOriginRepoName(), this.TRAVIS_INFO.getSHA());

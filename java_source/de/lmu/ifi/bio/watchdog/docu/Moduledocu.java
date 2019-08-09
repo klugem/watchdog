@@ -121,7 +121,7 @@ public class Moduledocu {
 		return new ArrayList<>(this.PMID);
 	}
 	public String getGithub() {
-		return this.getGithub();
+		return this.GITHUB;
 	}
 	public ArrayList<String> getWebsite() {
 		return new ArrayList<>(this.WEBSITE);
@@ -226,7 +226,6 @@ public class Moduledocu {
 		
 		// maintainer section
 		b.addComment("##### optional #####");
-		b.addTags(DocuXMLParser.GITHUB, this.getGithub());
 		b.addComment("github usernames of users who should be able to commit changes to that module");
 		b.startTag(DocuXMLParser.MAINTAINER, true, true);
 		b.endOpeningTag(false);

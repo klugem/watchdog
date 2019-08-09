@@ -53,21 +53,6 @@
 .uk-subnav li a {
 	border-radius: 3px;
 }
-.uk-subnavCategory li.uk-active:nth-child(2) a {
-	background-color:#50C878;
-}
-.uk-subnavCategory li.uk-active:nth-child(3) a {
-	background-color:#8630F0;
-}
-.uk-subnavCategory li.uk-active:nth-child(4) a {
-	background-color:#F03A7F;
-}
-.uk-subnavCategory li.uk-active:nth-child(5) a {
-	background-color:#E84DF0;
-}
-.uk-subnavCategory li.uk-active:nth-child(6) a {
-	background-color:#FF8040;
-}
 .cat1-card .uk-card {
 	border-top-color: #50C878;
 }

@@ -19,6 +19,7 @@ public class GithubSingleModuleChecker extends GithubCheckerBase {
 
 	@Override
 	public boolean test(){
+		super.test();
 		boolean ret = true;
 		APICompareInfo info; 
 		try {
