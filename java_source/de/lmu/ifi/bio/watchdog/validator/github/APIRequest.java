@@ -63,8 +63,8 @@ public abstract class APIRequest<A extends Object> {
 				// if no exception in this run --> consider data to be good
 				return content.toString();
 			} catch(java.io.IOException e) {
-				if(e.getMessage().contains("Server returned HTTP response code: 403"))
-					throw e;
+				//if(e.getMessage().contains("Server returned HTTP response code: 403"))
+				//	throw e;
 			}
 			catch(Exception e) {
 				tries++;
