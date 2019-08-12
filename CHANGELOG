@@ -3,8 +3,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 Changelog started with version 1.2.0
 
-
 ## [Unreleased]
+
+## [2.0.0] - 2019-08-12
 ### Added
 - [BASH] Implemented before script that will enforce the requested memory using ulimit (for SGE or Slurm executor). 
 - [CMD] Workflows can be resumed now; only tasks that were not executed successfully or have changed parameters will be executed
