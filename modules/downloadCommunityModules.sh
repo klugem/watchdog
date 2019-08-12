@@ -3,7 +3,7 @@ SCRIPT_FOLDER=$(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || re
 source "${SCRIPT_FOLDER}/../core_lib/includeBasics.sh"
 
 # some constants
-URL='https://github.com/watchdog-wms/watchdog-wms-modules/archive/master.zip'
+URL='https://github.com/watchdog-wms/watchdog-wms-modules/archive/master.tar.gz'
 GIT_NAME_IN_ARCHIVE="watchdog-wms-modules-master"
 DOWNLOAD_FILE="tmp-modules.zip"
 EXTRACT_DIR="/tmp/tmp_modules_github_tmp_modules"$(date +%s)
@@ -69,7 +69,8 @@ cd "${TARGET_DIR}"
 if [ ${OK} -eq 1 ]; then
 	echo "Downloading modules..."
 	wget -qO- -O "${DOWNLOAD_FILE}" "${URL}" 
-	unzip -q -d "${EXTRACT_DIR}" "${DOWNLOAD_FILE}"
+	mkdir "${EXTRACT_DIR}"
+	tar -zxf "${DOWNLOAD_FILE}" -C "${EXTRACT_DIR}"
 	rm "${DOWNLOAD_FILE}"
 	if [ "${MODE}" == "a" ]; then
 		mv "${EXTRACT_DIR}/${GIT_NAME_IN_ARCHIVE}/"* .
