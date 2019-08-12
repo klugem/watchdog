@@ -11,6 +11,11 @@ EXTRACT_DIR="/tmp/tmp_modules_github_tmp_modules"$(date +%s)
 TARGET_DIR="${SCRIPT_FOLDER}"
 MOVE_DIR="${TARGET_DIR}/.BAK/"
 OK=0
+NOASK=0
+
+if [ "$1" == "--auto" ]; then
+	NOASK=1
+fi
 
 if [ -d "${MOVE_DIR}" ]; then
 	echo "Backup folder '${MOVE_DIR}' already exists. Please check if you need these modules any longer and delete the folder afterwards."
@@ -18,43 +23,51 @@ if [ -d "${MOVE_DIR}" ]; then
 fi
 
 # get MODE to work with
-MODE=$(getInput "Do you want to download all (a) or only selected modules (s)? ")
-case "$MODE" in
-	s)
-	MODE="s"
-	;;
-	a)
+if [ ${NOASK} -eq 0 ]; then
+	MODE=$(getInput "Do you want to download all (a) or only selected modules (s)? ")
+	case "$MODE" in
+		s)
+		MODE="s"
+		;;
+		a)
+		MODE="a"
+		;;
+		*)
+		echoError "Only 'a' or 's' is valid as input!"
+		exit 1
+		;;
+	esac
+else
 	MODE="a"
-	;;
-	*)
-	echoError "Only 'a' or 's' is valid as input!"
-	exit 1
-	;;
-esac
+fi
 
 # move all modules
 if [ "${MODE}" == "a" ]; then
-	confirm "Do you really want to move the content of '${TARGET_DIR}' to '${MOVE_DIR}' and download all modules stored in the community repository?"
-	if [ $CONFIRM_RETURN -eq 1 ]; then
-		confirm "Are you sure?!"
-
+	if [ $(ls -d ${TARGET_DIR}/*/ 2> /dev/null | wc -l) -ne 0 ]; then
+		confirm "Do you really want to move the content of '${TARGET_DIR}' to '${MOVE_DIR}' and download all modules stored in the community repository?"
 		if [ $CONFIRM_RETURN -eq 1 ]; then
-			mkdir -p "${MOVE_DIR}"
-			for I in `ls -d ${TARGET_DIR}/*/`; do		
-				mv -i "${I}" "${MOVE_DIR}"
-			done
-			echoInfo "Moved all modules into '${MOVE_DIR}'."
-			OK=1
+			confirm "Are you sure?!"
+
+			if [ $CONFIRM_RETURN -eq 1 ]; then
+				mkdir -p "${MOVE_DIR}"
+				for I in `ls -d ${TARGET_DIR}/*/`; do		
+					mv -i "${I}" "${MOVE_DIR}"
+				done
+				echoInfo "Moved all modules into '${MOVE_DIR}'."
+				OK=1
+			fi
 		fi
+	else 
+		OK=1
 	fi
 else
 	OK=1
 fi
 
 # start with download
-echo "Downloading modules..."
 cd "${TARGET_DIR}"
 if [ ${OK} -eq 1 ]; then
+	echo "Downloading modules..."
 	wget -qO- -O "${DOWNLOAD_FILE}" "${URL}" 
 	unzip -q -d "${EXTRACT_DIR}" "${DOWNLOAD_FILE}"
 	rm "${DOWNLOAD_FILE}"
