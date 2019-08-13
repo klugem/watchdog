@@ -24,7 +24,7 @@ fi
 
 # get MODE to work with
 if [ ${NOASK} -eq 0 ]; then
-	MODE=$(getInput "Do you want to download all (a) or only selected modules (s)? ")
+	MODE=$(getInput "Do you want to download all (a) or only selected modules (s)? Use any other input to abort.")
 	case "$MODE" in
 		s)
 		MODE="s"
@@ -44,9 +44,9 @@ fi
 # move all modules
 if [ "${MODE}" == "a" ]; then
 	if [ $(ls -d ${TARGET_DIR}/*/ 2> /dev/null | wc -l) -ne 0 ]; then
-		confirm "Do you really want to move the content of '${TARGET_DIR}' to '${MOVE_DIR}' and download all modules stored in the community repository?"
+		confirm "Do you really want to move the content of '${TARGET_DIR}' to '${MOVE_DIR}' and download all modules stored in the community repository? [y/n]"
 		if [ $CONFIRM_RETURN -eq 1 ]; then
-			confirm "Are you sure?!"
+			confirm "Are you sure?! [y/n]"
 
 			if [ $CONFIRM_RETURN -eq 1 ]; then
 				mkdir -p "${MOVE_DIR}"
@@ -85,34 +85,62 @@ if [ ${OK} -eq 1 ]; then
 				EXIST="[EXISTS]"
 			fi
 			echo "${COUNT}: ${B} ${EXIST}"
-			COUNT=${COUNT}+1
+			COUNT=$((COUNT+1))
 		done
 
-		NUMBERS=$(getInput "Please enter the number of modules you want to install (format: 1,2,3-5): ")
-		confirm "Do you really want to install modules with the numbers '${NUMBERS}' and move module duplicates in '${TARGET_DIR}' to '${MOVE_DIR}'?"
+		NUMBERS=$(getInput "Please enter the number of modules you want to install (format e.g. 1,2,3-5): ")
+		# get numbers
+		IFS=',' read -r -a array <<< "${NUMBERS}"
+		USE=()
+		for N in "${array[@]}"; do
+			if [[ "${N}" =~ ^[0-9]+-[0-9]+$ ]]; then
+				IFS='-' read -ra ST_EN <<< "${N}"
+				USE+=($(seq "${ST_EN[0]}" "${ST_EN[1]}"))
+			else
+				if [[ "${N}" =~ ^[0-9]+$ ]]; then
+					USE+=("${N}")
+				else	
+					echoError "It seems that '${NUMBERS}' is no valid input in format e.g. 1,2,3-5."
+					exit 1
+				fi
+			fi
+		done
+
+		# sort array
+		IFS=$'\n' USE=($(sort <<<"${USE[*]}"))
+
+		# colltect names of modules
+		COUNT=1
+		INDEX=0
+		MOD_NAMES=""
+		for M in `ls -d ${EXTRACT_DIR}/${GIT_NAME_IN_ARCHIVE}/*/`; do
+			if [ $INDEX -lt ${#USE[@]} ] && [ ${USE[${INDEX}]} -eq $COUNT ] ; then
+				B=$(basename "${M}")
+				if [ ${INDEX} == 0 ]; then
+					MOD_NAMES="'${B}"
+				else
+					MOD_NAMES="'${MOD_NAMES}', '${B}"
+				fi
+				INDEX=$((INDEX+1))
+			fi
+			COUNT=$((COUNT+1))
+		done
+		if [ "${MOD_NAMES}" == "" ]; then
+			echoError "It seems that '${NUMBERS}' is no valid input in format e.g. 1,2,3-5."
+			exit 1
+		fi
+		MOD_NAMES="${MOD_NAMES}'"
+
+		confirm "Do you really want to install modules ${MOD_NAMES} and move module duplicates in '${TARGET_DIR}' to '${MOVE_DIR}'? [y/n]"
 		mkdir -p "${MOVE_DIR}"
 
 		if [ $CONFIRM_RETURN -eq 1 ]; then
-			# get numbers
-			IFS=',' read -r -a array <<< "${NUMBERS}"
-			USE=()
-			for N in "${array[@]}"; do
-				if [[ "${N}" =~ ^[0-9]+-[0-9]+$ ]]; then
-					IFS='-' read -ra ST_EN <<< "${N}"
-					USE+=($(seq "${ST_EN[0]}" "${ST_EN[1]}"))
-				else
-					USE+=("${N}")
-				fi
-			done
-			# sort array
-			IFS=$'\n' USE=($(sort <<<"${USE[*]}"))
-	
 			# copy or move
 			COUNT=1
 			INDEX=0
 			for M in `ls -d ${EXTRACT_DIR}/${GIT_NAME_IN_ARCHIVE}/*/`; do
 
-				if [ ${USE[${INDEX}]} -eq $COUNT ] && [ $INDEX -lt ${#USE[@]} ]; then
+				if [ $INDEX -lt ${#USE[@]} ] && [ ${USE[${INDEX}]} -eq $COUNT ]; then
 					B=$(basename "${M}")
 					# test if folder exists
 					if [ -d "${TARGET_DIR}/${B}" ]; then 
@@ -122,9 +150,9 @@ if [ ${OK} -eq 1 ]; then
 
 					mv "${EXTRACT_DIR}/${GIT_NAME_IN_ARCHIVE}/${B}" "${TARGET_DIR}/"
 					echoInfo "Installed ${B}..."
-					INDEX=${INDEX}+1
+					INDEX=$((INDEX+1))
 				fi
-				COUNT=${COUNT}+1
+				COUNT=$((COUNT+1))
 			done
 		fi
 
