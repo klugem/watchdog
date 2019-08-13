@@ -31,7 +31,7 @@ public class GithubPermissionChecker extends GithubCheckerDocuBased {
 			}
 			else {
 				if(this.compareInfo.DATA.getMergeBaseCommit() != null) {
-					String githubUser = this.compareInfo.DATA.getMergeBaseCommit().getAuthor().getLogin();
+					String githubUser = this.compareInfo.DATA.getCommits().get(0).getCommitter().getLogin();
 					this.info("Author of merged commit is github user '"+githubUser+"'");
 					
 					// test if module consists of only new files
