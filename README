@@ -1,9 +1,16 @@
+################################## MANUAL ##################################
+The most recent version of the manual can be found online at 
+https://www.bio.ifi.lmu.de/files/Software/Watchdog/Watchdog-manual.html
+and as HTML and PDF version in the folder named documentation.
+
+
 ############################## INSTALLATION ################################
 Manually:
 
 - Download a release from https://github.com/klugem/watchdog/releases
 - Extract the provided archive into a folder of your choice
-- Modules can be obtained from https://github.com/watchdog-wms/watchdog-wms-modules
+- Modules can be obtained from https://github.com/watchdog-wms/watchdog-wms-modules 
+  or by calling modules/downloadCommunityModules.sh from the Watchdog directory
 
 Via conda:
 
@@ -45,12 +52,6 @@ michael.kluge@bio.ifi.lmu.de
 
 In case of bugs or feature requests, feel free to create an issues at
 https://github.com/klugem/watchdog/issues
-
-
-################################## MANUAL ##################################
-The most recent version of the manual can be found online at 
-https://www.bio.ifi.lmu.de/files/Software/Watchdog/Watchdog-manual.html
-and as HTML and PDF version in the folder named documentation.
 
 
 ################################## LICENCE #################################
