@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import com.beust.jcommander.Parameters;
 
 import de.lmu.ifi.bio.watchdog.docu.DocuXMLParser;
 import de.lmu.ifi.bio.watchdog.docu.Moduledocu;
@@ -34,6 +35,7 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
  * @author Michael Kluge
  *
  */
+@Parameters(commandDescription = "Add file contents to the index")
 public class ModuleDocuExtractorRunner extends BasicRunner {
 	
 	public static final DateFormat DF = new SimpleDateFormat("yyyy-MM-dd");
@@ -48,12 +50,17 @@ public class ModuleDocuExtractorRunner extends BasicRunner {
 		catch(ParameterException e) { 
 			log.error(e.getMessage());
 			new JCommander(params).usage();
+			System.out.println(params.getDescription());
 			System.exit(1);
 		}
 		
 		// display the help
 		if(params.help) {
 			parser.usage();
+			System.exit(0);
+		}
+		else if(params.desc) {
+			System.out.println(params.getDescription());
 			System.exit(0);
 		}
 		else if(params.version) {
@@ -135,9 +142,18 @@ public class ModuleDocuExtractorRunner extends BasicRunner {
 			int failed = 0;
 			HashMap<String, String> targets = XMLParser.findModules(dbf, moduleFolders, false);
 			for(String name : targets.keySet()) {
-				log.info("processing '"+ name +"'...");
 				File x = new File(targets.get(name));
+				
+				// test if docu file already exists
+				File docu = new File(x.getAbsolutePath().replaceFirst("\\.xsd$", ".docu.xml"));
+				if(docu.exists() && !params.overwrite) {
+					log.warn("Skipped processing of '"+ docu.getAbsolutePath() +  "' as file already exists.");
+					continue;
+				}
+				
+				// start with processing
 				try {
+					log.info("processing '"+ name +"'...");
 					Moduledocu m = createModuleDocuTemplate(x, tmpFolder.getAbsolutePath(), xsdRootDir, dbf, defaultValues);
 					
 					// apply param plugins
@@ -162,15 +178,8 @@ public class ModuleDocuExtractorRunner extends BasicRunner {
 							}
 						}
 					}
-					
 					// write the docu template to disk!
-					File docu = new File(x.getAbsolutePath().replaceFirst("\\.xsd$", ".docu.xml"));
-					if(!docu.exists() || params.overwrite) {
-						XMLParser.writePrettyXML(XMLParser.getRootElement(dbfXML, m.toXML(true)), docu);
-					}
-					else {
-						log.warn("Skipped writing of '"+ docu.getAbsolutePath() +  "' as file already exists.");
-					}
+					XMLParser.writePrettyXML(XMLParser.getRootElement(dbfXML, m.toXML(true)), docu);
 					ok++;
 				}
 				catch(Exception e) {

@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 
-public class ModuleLibraryCreatorParameters {
+public class ModuleLibraryCreatorParameters extends DescriptionParameters {
 
 	@Parameter(names={"-moduleFolder", "-m"}, description="path to the parent folder(s) of modules that should be included in the module reference book", required=true)
 	protected List<String> module;
@@ -20,4 +20,9 @@ public class ModuleLibraryCreatorParameters {
 	
 	@Parameter(names={"-help", "-h", "--help", "--man", "-man"}, description="print usage message and exit", help=true)
 	protected boolean help = false;
+
+	@Override
+	public String getDescription() {
+		return "Generates a module reference book based on XML documentation files of modules.";
+	}
 }

@@ -2,9 +2,11 @@ package de.lmu.ifi.bio.watchdog.validator.github;
 
 import com.beust.jcommander.Parameter;
 
-public class GithubCheckerParameters {
+import de.lmu.ifi.bio.watchdog.runner.DescriptionParameters;
 
-	@Parameter(names={"-check", "-c"}, description="name of the check that should be performed")
+public class GithubCheckerParameters extends DescriptionParameters {
+
+	@Parameter(names={"-check", "-c"}, description="name of the check that should be performed", required=true)
 	protected String check;
 	
 	@Parameter(names={"-list", "-l"}, description="list checks that can be performed locally")
@@ -18,4 +20,10 @@ public class GithubCheckerParameters {
 	
 	@Parameter(names={"-help", "-h", "--help", "--man", "-man"}, description="print usage message and exit", help=true)
 	protected boolean help = false;
+
+	@Override
+	public String getDescription() {
+		return "Validates that modules fulfil specific test criteria. "
+			   +"Mainly it ensures that XSD and XML files are syntactically correct and are compatible to each other.";
+	}
 }

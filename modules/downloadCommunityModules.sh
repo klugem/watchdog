@@ -24,7 +24,7 @@ fi
 
 # get MODE to work with
 if [ ${NOASK} -eq 0 ]; then
-	MODE=$(getInput "Do you want to download all (a) or only selected modules (s)? Use any other input to abort.")
+	MODE=$(getInput "Do you want to install all (a) or only selected modules (s)? Use any other input to abort.")
 	case "$MODE" in
 		s)
 		MODE="s"
@@ -44,7 +44,7 @@ fi
 # move all modules
 if [ "${MODE}" == "a" ]; then
 	if [ $(ls -d ${TARGET_DIR}/*/ 2> /dev/null | wc -l) -ne 0 ]; then
-		confirm "Do you really want to move the content of '${TARGET_DIR}' to '${MOVE_DIR}' and download all modules stored in the community repository? [y/n]"
+		confirm "Do you really want to move the content of '${TARGET_DIR}' to '${MOVE_DIR}' and install all modules stored in the community repository? [y/n]"
 		if [ $CONFIRM_RETURN -eq 1 ]; then
 			confirm "Are you sure?! [y/n]"
 
@@ -89,6 +89,7 @@ if [ ${OK} -eq 1 ]; then
 		done
 
 		NUMBERS=$(getInput "Please enter the number of modules you want to install (format e.g. 1,2,3-5): ")
+		NUMBERS=$(echo "${NUMBERS}" | sed 's/ //g')
 		# get numbers
 		IFS=',' read -r -a array <<< "${NUMBERS}"
 		USE=()
@@ -119,7 +120,7 @@ if [ ${OK} -eq 1 ]; then
 				if [ ${INDEX} == 0 ]; then
 					MOD_NAMES="'${B}"
 				else
-					MOD_NAMES="'${MOD_NAMES}', '${B}"
+					MOD_NAMES="${MOD_NAMES}', '${B}"
 				fi
 				INDEX=$((INDEX+1))
 			fi

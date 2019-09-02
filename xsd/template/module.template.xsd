@@ -13,7 +13,7 @@
 	<x:complexType name="{%MODULE%}TaskOverrideType">
 		<x:complexContent>
 			<x:restriction base="baseAttributeTaskType">
-				<x:attribute name="binName" type="x:string" fixed="{%MODULE%}.sh" />
+				<x:attribute name="binName" type="x:string" fixed="{%CALLED_COMMAND%}" />
 			</x:restriction>
 		</x:complexContent>
 	</x:complexType>

@@ -331,6 +331,13 @@ public class HTTPListenerThread extends NanoHTTPD {
 			else if(ControlAction.RELEASE.name().equals(action.name())) {
 				return t.releaseTask();
 			}
+			else if(action.isReleaseAllAction()) {
+				XMLTask x = findXMLTask(t.getTaskID());
+				if(x != null) {
+					x.releaseAllTasksFromCheckpoint();
+					return true;
+				}
+			}
 			else if(ControlAction.MODIFY.name().equals(action.name())) {
 				settings.remove(NO_MODIFY); // ensure that is parameter is not set
 				return this.performAction(t, ControlAction.DISPLAY, settings, params);
@@ -755,6 +762,8 @@ public class HTTPListenerThread extends NanoHTTPD {
 			l.add(ControlAction.DISPLAY);
 			if(t.isBlocked()) {
 				l.add(ControlAction.RELEASE);
+				if(t.isSubtask())
+					l.add(ControlAction.RELEASE_ALL);
 			}
 		}
 		return l;

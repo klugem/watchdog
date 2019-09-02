@@ -11,6 +11,7 @@ trap "rm -f \"$TMP_NAME\" 2>&1 > /dev/null" EXIT
 NEWLINE_REPLACE='{%NEWLINE%}'
 # variables in XSD file
 MODULE_REPLACE='{%MODULE%}'
+COMMAND_REPLACE='{%CALLED_COMMAND%}'
 ARGUMENT_NAME_REPLACE='{%NAME%}'
 ARGUMENT_TYPE_REPLACE='{%TYPE%}'
 ARGUMENT_MIN_REPLACE='{%MIN%}'
@@ -43,7 +44,7 @@ VAR_PARAM_PARENT_OPTIONAL=0
 
 # define parameters
 DEFINE_string 'name' '' 'name of module' 'n'
-DEFINE_string 'binName' '${binName}' '[optional] if a name of a bin is given it is treated as no watchdog module (isWatchdogModule)' 'd'
+DEFINE_string 'binName' '' '[optional] if a name of a binary (e.g. sleep or cp) is given no bash scripts are generated' 'd'
 DEFINE_integer 'paramFormat' '2' '[optional] 0: plain, 1: shortOnly, longShort: 2 ' 'p'
 DEFINE_integer 'paramSpacing' '0' '[optional] 0: blankSeperated, 1: equalSeparated ' 's'
 DEFINE_integer 'paramQuoting' '1' '[optional] 0: unquoted, 1: singleQuoted, doubleQuoted: 2 ' 'q'
@@ -68,11 +69,13 @@ if [[ "$FLAGS_name" = *[[:space:]]* ]]; then
 fi
 
 # set output name, if none is set
-if [ "$FLAGS_binName" == '${binName}' ]; then
+if [ "$FLAGS_binName" == '' ]; then
 	IS_WATCHDOG_MODULE=1
 	FLAGS_binName="$FLAGS_name.sh"
+	CALLED_COMMAND="$FLAGS_name.sh"
 else
 	IS_WATCHDOG_MODULE=0
+	CALLED_COMMAND=$FLAGS_binName
 fi
 
 # set folder where the new module should be stored
@@ -128,6 +131,7 @@ if [ ! -e "$SCRIPT_FOLDER/../${MODULE_FOLDER}/$FLAGS_name" ]; then
 	cp "$SCRIPT_FOLDER/../xsd/template/module.template.xsd" "$XSD_FILENAME"
 	# repace the module name
 	sedinline 's/'${MODULE_REPLACE}'/'${FLAGS_name}'/g' "$XSD_FILENAME"
+	sedinline 's/'${COMMAND_REPLACE}'/'${CALLED_COMMAND}'/g' "$XSD_FILENAME"
 
 	# create arguments
 	SPACER="\n"
@@ -347,11 +351,11 @@ if [ ! -e "$SCRIPT_FOLDER/../${MODULE_FOLDER}/$FLAGS_name" ]; then
 		replaceInFile "${SH_VARIABLES_REPLACE}" "${REPLACE_SH}" "$MSCRIPT_FILENAME"
 		replaceInFile "${SH_VARIABLES_CHECK_REPLACE}" "${REPLACE_CHECK}" "$MSCRIPT_FILENAME"
 		replaceInFile "${SH_VARIABLES_EXISTS_REPLACE}" "${VERIFY_EXIST}" "$MSCRIPT_FILENAME"
-	fi
 
-	# make the script executable
-	chmod uog+x "$MSCRIPT_FILENAME"
-	chmod uog+x "$MSCRIPT_TEST_FILENAME"
+		# make the script executable
+		chmod uog+x "$MSCRIPT_FILENAME"
+		chmod uog+x "$MSCRIPT_TEST_FILENAME"
+	fi
 
 	# delete the tmp file
 	rm -rf "$TMP_NAME" 2>&1 > /dev/null

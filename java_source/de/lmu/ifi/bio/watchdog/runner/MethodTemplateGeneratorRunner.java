@@ -54,12 +54,17 @@ public class MethodTemplateGeneratorRunner extends BasicRunner {
 		catch(ParameterException e) { 
 			log.error(e.getMessage());
 			new JCommander(params).usage();
+			System.out.println(params.getDescription());
 			System.exit(1);
 		}
 		
 		// display the help
 		if(params.help) {
 			parser.usage();
+			System.exit(0);
+		}
+		else if(params.desc) {
+			System.out.println(params.getDescription());
 			System.exit(0);
 		}
 		else if(params.version) {

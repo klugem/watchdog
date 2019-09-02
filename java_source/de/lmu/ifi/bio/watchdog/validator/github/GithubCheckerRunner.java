@@ -64,12 +64,17 @@ public class GithubCheckerRunner extends BasicRunner {
 		catch(ParameterException e) { 
 			e.getMessage();
 			new JCommander(params).usage();
+			System.out.println(params.getDescription());
 			System.exit(EXIT_RUNNER_FAILURE);
 		}
-		
+	
 		// display the help
 		if(params.help) {
 			parser.usage();
+			System.exit(EXIT_OK);
+		}
+		else if(params.desc) {
+			System.out.println(params.getDescription());
 			System.exit(EXIT_OK);
 		}
 		else if(params.list) {		

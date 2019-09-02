@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 
-public class MethodTemplateGeneratorParameters {
+public class MethodTemplateGeneratorParameters extends DescriptionParameters {
 
 	@Parameter(names={"-xml", "-x"}, description="path to the XML workflow file; required for loading of correct module foders", required=true)
 	protected String xml;
@@ -16,7 +16,7 @@ public class MethodTemplateGeneratorParameters {
 	@Parameter(names={"-stop"}, description="stop with that ID (included)", required=false)
 	protected int stop = Integer.MAX_VALUE;	
 	
-	@Parameter(names={"-outputFile"}, description="writes citation information of used modules into that file; must be used in combination with the -xml and -resume option", required=false)
+	@Parameter(names={"-outputFile"}, description="writes citation information of used modules into that file; must be used in combination with the -xml and -resume option", required=true)
 	protected String outputFile = null;
 		
 	@Parameter(names={"-include", "-i"}, description="xml task id that should be executed; can be used several times; can be used in combination with -start and -stop", required=false)
@@ -51,4 +51,10 @@ public class MethodTemplateGeneratorParameters {
 	
 	@Parameter(names={"-help", "-h", "--help", "--man", "-man"}, description="print usage message and exit", help=true)
 	protected boolean help = false;
+
+	@Override
+	public String getDescription() {
+		return "Generates a short description for a workflow based on the status log file of a Watchdog run using "
+				+ " the XML documentation files of modules.";
+	}
 }

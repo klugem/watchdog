@@ -6,7 +6,13 @@ package de.lmu.ifi.bio.watchdog.helper;
  *
  */
 public enum ControlAction {
-	RELEASE("release checkpoint", "was released out of this checkpoint state"), RESTART("restart task", "was added to the scheduler again"), MODIFY("modify parameters", "use modified parameters"), DISPLAY("display parameters", "parameters were displayed"), LIST("show information", "show information"), TERMINATE("terminate all", "terminate watchdog and all running tasks"), IGNORE("ignore task", "ignore"), TERMINATE_TASK("terminate task", "terminate task"), RELEASE_RESOURCE_RESTRICTIONS("release resource restrictions", "resource restrictions were released"), USERINTERFACE_ACTION("GO!", "action from user interface"), RESOLVE("mark as resolved", "was marked as resolved"), RESOLVE_RETURN_USERINTERFACE("mark as resolved", "was marked as resolved"), DETACH("detach Watchdog", "detach request was sent");
+	RELEASE("release checkpoint", "was released out of the checkpoint state"), RELEASE_ALL("rel. checkp. (all subtasks)", "was released out of the checkpoint state"), 
+	RESTART("restart task", "was added to the scheduler again"), MODIFY("modify parameters", "use modified parameters"), 
+	DISPLAY("display parameters", "parameters were displayed"), LIST("show information", "show information"), 
+	TERMINATE("terminate all", "terminate watchdog and all running tasks"), IGNORE("ignore task", "ignore"), 
+	TERMINATE_TASK("terminate task", "terminate task"), RELEASE_RESOURCE_RESTRICTIONS("release resource restrictions", "resource restrictions were released"), 
+	USERINTERFACE_ACTION("GO!", "action from user interface"), RESOLVE("mark as resolved", "was marked as resolved"), 
+	RESOLVE_RETURN_USERINTERFACE("mark as resolved", "was marked as resolved"), DETACH("detach Watchdog", "detach request was sent");
 
 	private final String ACTION_NAME;
 	private final String DESCRIPTION;
@@ -35,6 +41,14 @@ public enum ControlAction {
 	 */
 	public boolean isReleaseAction() {
 		return ControlAction.RELEASE.name().equals(this.name());
+	}
+	
+	/**
+	 * true, if a release all action
+	 * @return
+	 */
+	public boolean isReleaseAllAction() {
+		return ControlAction.RELEASE_ALL.name().equals(this.name());
 	}
 	
 	/**
@@ -137,6 +151,8 @@ public enum ControlAction {
 	public static ControlAction getType(String value) {
 		if(ControlAction.RELEASE.name().equals(value))
 			return ControlAction.RELEASE;
+		if(ControlAction.RELEASE_ALL.name().equals(value))
+			return ControlAction.RELEASE_ALL;
 		else if(ControlAction.RESTART.name().equals(value))
 			return ControlAction.RESTART;
 		else if(ControlAction.MODIFY.name().equals(value))

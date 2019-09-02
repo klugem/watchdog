@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 
-public class ModuleDocuExtractorParameters {
+public class ModuleDocuExtractorParameters extends DescriptionParameters {
 
 	@Parameter(names={"-moduleFolder", "-m"}, description="path to parent folder(s) of modules for which documentation templates should be created", required=true)
 	protected List<String> module;
@@ -32,4 +32,10 @@ public class ModuleDocuExtractorParameters {
 	
 	@Parameter(names={"-help", "-h", "--help", "--man", "-man"}, description="print usage message and exit", help=true)
 	protected boolean help = false;
+
+	@Override
+	public String getDescription() {
+		return "Generates XML documentation files based on module XSD files for module without XML documentation. "
+				+"Existing documentation files are not overwritten by default.";
+	}
 }
