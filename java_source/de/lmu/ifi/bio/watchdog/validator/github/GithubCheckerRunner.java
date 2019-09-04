@@ -69,7 +69,7 @@ public class GithubCheckerRunner extends BasicRunner {
 		}
 	
 		// display the help
-		if(params.help) {
+		if(params.help || (params.check == null && !params.list)) {
 			parser.usage();
 			System.exit(EXIT_OK);
 		}

@@ -6,7 +6,7 @@ import de.lmu.ifi.bio.watchdog.runner.DescriptionParameters;
 
 public class GithubCheckerParameters extends DescriptionParameters {
 
-	@Parameter(names={"-check", "-c"}, description="name of the check that should be performed", required=true)
+	@Parameter(names={"-check", "-c"}, description="name of the check that should be performed")
 	protected String check;
 	
 	@Parameter(names={"-list", "-l"}, description="list checks that can be performed locally")
