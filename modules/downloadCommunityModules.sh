@@ -7,6 +7,7 @@ URL='https://github.com/watchdog-wms/watchdog-wms-modules/archive/master.tar.gz'
 GIT_NAME_IN_ARCHIVE="watchdog-wms-modules-master"
 DOWNLOAD_FILE="tmp-modules.zip"
 EXTRACT_DIR="/tmp/tmp_modules_github_tmp_modules"$(date +%s)
+SHARED="sharedUtils"
 
 TARGET_DIR="${SCRIPT_FOLDER}"
 MOVE_DIR="${TARGET_DIR}/.BAK/"
@@ -130,7 +131,7 @@ if [ ${OK} -eq 1 ]; then
 			echoError "It seems that '${NUMBERS}' is no valid input in format e.g. 1,2,3-5."
 			exit 1
 		fi
-		MOD_NAMES="${MOD_NAMES}'"
+		MOD_NAMES="${MOD_NAMES}', '"${SHARED}"'"
 
 		confirm "Do you really want to install modules ${MOD_NAMES} and move module duplicates in '${TARGET_DIR}' to '${MOVE_DIR}'? [y/n]"
 		mkdir -p "${MOVE_DIR}"

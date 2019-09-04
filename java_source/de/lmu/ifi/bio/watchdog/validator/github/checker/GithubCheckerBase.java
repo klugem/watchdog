@@ -14,6 +14,7 @@ import de.lmu.ifi.bio.watchdog.validator.github.TravisEnv;
  */
 public abstract class GithubCheckerBase {
 	
+	public static final String SHARED_UTILS = "sharedUtils";
 	public final ArrayList<String> MESSAGES = new ArrayList<>();
 	protected final TravisEnv TRAVIS_INFO = new TravisEnv();
 	private final String NAME;

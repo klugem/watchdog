@@ -36,6 +36,10 @@ public class GithubSingleModuleChecker extends GithubCheckerBase {
 			this.error("Files located in the root level are not allowed to be modified.");
 			ret = false;
 		}
+		// ignore shared utils folder
+		if(baseDir.size() > 1) 
+			baseDir.remove(SHARED_UTILS);
+
 		// ensure that exactly one base folder is affected
 		if(baseDir.size() > 1) {
 			this.error("Only files for one module are allowed to be part of a pull request. Detected base folders: '"+ StringUtils.join(baseDir.keySet(), "', '") +"'");
