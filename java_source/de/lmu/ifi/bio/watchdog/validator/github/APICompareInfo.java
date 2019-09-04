@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import de.lmu.ifi.bio.watchdog.validator.github.autogen.compare.CompareAPIv3;
 import de.lmu.ifi.bio.watchdog.validator.github.autogen.compare.File;
+import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubCheckerBase;
 
 /**
  * Class that can be used to get information about compares using the github V3 API
@@ -88,6 +89,7 @@ public class APICompareInfo extends APIRequest<CompareAPIv3> {
 	 */
 	public String getModuleFolder() {
 	    HashMap<String, Integer> counts = this.collectAffectedModulesBases();
+	    counts.remove(GithubCheckerBase.SHARED_UTILS);
 	    if(counts.size() == 1 && !counts.containsKey(null)) {
 	    	return (String) counts.keySet().toArray()[0];
 	    }
