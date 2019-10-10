@@ -34,8 +34,10 @@ public class ResumeInfo {
 	public static String SOFTWARE_VERSION_INFO = "softwareVersion";
 	public static String MODULE_VERSION = "moduleVersion";
 	private static final String VERSION_REP = XMLParser.VERSION_SEP + "[0-9]+$"; 
+	private static final CharSequence MOD_VER_REPLACE = "[Module version]: [0-9]+$" + System.lineSeparator();
 	
 	private final int TASK_ID;
+	private final String VERSION_SOFTWARE;
 	private final String MOD;
 	private final int MOD_VERSION;
 	private final String GROUP_FILE_NAME;
@@ -44,6 +46,7 @@ public class ResumeInfo {
 	private boolean isDirty = false;
 	
 	public static final Gson GSON = new Gson();
+
 	
 	/**
 	 * constructor
@@ -54,12 +57,13 @@ public class ResumeInfo {
 	 * @param moduleVersion
 	 * @param returnParams
 	 */
-	private ResumeInfo(int taskID, String groupFileName, String hash, HashMap<String, String> returnParams, String module, int moduleVersion) {
+	private ResumeInfo(int taskID, String groupFileName, String hash, HashMap<String, String> returnParams, String module, int moduleVersion, String softwareVersion) {
 		this.TASK_ID = taskID;
 		this.GROUP_FILE_NAME = groupFileName;
 		this.ARG_HASH_CODE = hash;
 		this.MOD = module;
 		this.MOD_VERSION = moduleVersion;
+		this.VERSION_SOFTWARE = softwareVersion;
 		if(returnParams != null)
 			this.RETURN_PARAMS.putAll(returnParams);
 	}
@@ -82,6 +86,14 @@ public class ResumeInfo {
 
 	public HashMap<String, String> getReturnParams() {
 		return RETURN_PARAMS;
+	}
+	
+	public boolean hasSoftwareVersion() {
+		return this.VERSION_SOFTWARE != null && this.VERSION_SOFTWARE.length() > 0;
+	}
+	
+	public String getSoftwareVersion() {
+		return this.VERSION_SOFTWARE;
 	}
 	
 	public static String getArgHash(XMLTask x, String command, LinkedHashMap<String, Pair<Pair<String, String>, String>> detailArgs) {
@@ -135,7 +147,8 @@ public class ResumeInfo {
 		int modV = Integer.parseInt(retMap.get(MODULE_VERSION));
 		String groupFileName = retMap.get(SUB);
 		String module = retMap.get(MODULE);
-		return new ResumeInfo(tid, groupFileName == null ? "" : groupFileName, retMap.get(HASH), reVal, module, modV);
+		String softwareVersion = retMap.get(SOFTWARE_VERSION_INFO);
+		return new ResumeInfo(tid, groupFileName == null ? "" : groupFileName, retMap.get(HASH), reVal, module, modV, softwareVersion);
 	}
 	
 	public static String getResumeInfo(XMLTask x, Task task) {		
@@ -167,6 +180,7 @@ public class ResumeInfo {
 			try {
 				File v = task.getVersionQueryInfoFile();
 				String vc = StringUtils.join(Files.readAllLines(Paths.get(v.getAbsolutePath())), System.lineSeparator());
+				vc = vc.replace(MOD_VER_REPLACE, ""); // ignore module version here
 				values.put(SOFTWARE_VERSION_INFO, vc);
 			}
 			catch(IOException ex) {

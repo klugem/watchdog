@@ -40,6 +40,9 @@ public class MethodTemplateGeneratorParameters extends DescriptionParameters {
 	@Parameter(names={"-ignore"}, description="ignore modules wihout citation information", required=false)
 	protected boolean ignore = false;
 	
+	@Parameter(names={"-addVersions"}, description="add used software versions", required=false)
+	protected boolean addVersions = false;
+	
 	@Parameter(names={"-pmid"}, description="add PMIDs if documented in module as meta-info; format: [PMIDS: x, y, z]", required=false)
 	protected boolean pmid = false;
 	
