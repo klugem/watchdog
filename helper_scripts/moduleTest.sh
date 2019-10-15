@@ -13,20 +13,25 @@ do
 	NAME=$(basename $(dirname $I))
 	COUNT_INACTIVE=$(echo "$INACTIVE_WATCHDOG_MODULES" | grep -E -c "^${NAME}:|:${NAME}:|:${NAME}:?\$")
 	if [ "$COUNT_INACTIVE" -eq "0" ]; then
-		echo "-----------------------------------------------"
-		echo -n "Testing module '$NAME'...";
-		RET=$($I)
-		ERRORS=$?
-		RET=$(echo $RET | sed 's#\[#\\n\[#g')
-		echo -e $RET
-		echo "-----------------------------------------------"
-		echo "Module '$NAME' was tested with $ERRORS errors.";
-		echo -e ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-		if [ $ERRORS -gt 0 ]; then
-			FAILED=1
-			INACTIVE_TEST="$NAME:$INACTIVE_TEST"
-		else 
-			OK_TEST="$NAME:$OK_TEST"
+		SKIP_COUNT=$(grep -E -c '^#SKIP_TEST' "$I")
+		if [ "$SKIP_COUNT" -eq 0 ]; then
+			echo "-----------------------------------------------"
+			echo -n "Testing module '$NAME'...";
+			RET=$($I)
+			ERRORS=$?
+			RET=$(echo $RET | sed 's#\[#\\n\[#g')
+			echo -e $RET
+			echo "-----------------------------------------------"
+			echo "Module '$NAME' was tested with $ERRORS errors.";
+			echo -e ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+			if [ $ERRORS -gt 0 ]; then
+				FAILED=1
+				INACTIVE_TEST="$NAME:$INACTIVE_TEST"
+			else 
+				OK_TEST="$NAME:$OK_TEST"
+			fi
+		else
+			echo "Test of module '$NAME' was skipped.";
 		fi
 	else
 		$PRINT_INACTIVE=1

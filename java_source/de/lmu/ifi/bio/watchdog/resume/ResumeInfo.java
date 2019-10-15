@@ -34,7 +34,7 @@ public class ResumeInfo {
 	public static String SOFTWARE_VERSION_INFO = "softwareVersion";
 	public static String MODULE_VERSION = "moduleVersion";
 	private static final String VERSION_REP = XMLParser.VERSION_SEP + "[0-9]+$"; 
-	private static final CharSequence MOD_VER_REPLACE = "[Module version]: [0-9]+$" + System.lineSeparator();
+	private static final String MOD_VER_REPLACE = "\\[Module version\\]: [0-9]+" + System.lineSeparator();
 	
 	private final int TASK_ID;
 	private final String VERSION_SOFTWARE;
@@ -180,7 +180,7 @@ public class ResumeInfo {
 			try {
 				File v = task.getVersionQueryInfoFile();
 				String vc = StringUtils.join(Files.readAllLines(Paths.get(v.getAbsolutePath())), System.lineSeparator());
-				vc = vc.replace(MOD_VER_REPLACE, ""); // ignore module version here
+				vc = vc.replaceFirst(MOD_VER_REPLACE, ""); // ignore module version here
 				values.put(SOFTWARE_VERSION_INFO, vc);
 			}
 			catch(IOException ex) {

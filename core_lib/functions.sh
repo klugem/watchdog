@@ -642,3 +642,35 @@ function waitForCommandToFinish() {
 		BACKGROUND_EXIT_CODE=$?
 	done
 }
+
+function getRPackageVersion() {
+	# try to load R
+	BIN_PATH=$({ which "Rscript"; } 2>&1)
+	NOT_RET=$?
+	NOT=$({ echo $BIN_PATH | grep -E "^which: no Rscript" -c; } 2>&1)
+	NOT=$((NOT+NOT_RET))
+
+	if [ $NOT -ne 0 ]; then
+		echoError "Could not find 'Rscript' binary."
+		FAILED=1
+	else
+		# get a list of all installed modules
+		TMP_FILE1=$(getTmpFile)
+		TMP_FILE2=$(getTmpFile)
+		echo "packageVersion(\"$1\")" > "$TMP_FILE1"
+		Rscript "$TMP_FILE1" 2>&1 > "$TMP_FILE2"
+
+		if [ $? -ne 0 ]; then
+			echoError "Failed to get list of installed modules."
+		fi
+		RET=$({ grep -E -c "^\[1\] " "$TMP_FILE2"; } 2>&1)
+		CODE=$?
+		if [ $CODE -ne 0 ] || [ "$RET" == "0" ] ; then
+			echoError "Could not find R package info for '$1'."
+		else
+			VER=$(grep -E "^\[1\] " "$TMP_FILE2" | sed 's/\[1\] ‘//' | sed 's/’//g')
+			echo $VER		
+		fi
+	fi
+}
+

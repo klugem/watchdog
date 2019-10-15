@@ -1,7 +1,7 @@
 ################################## MANUAL ##################################
 The most recent version of the manual can be found online at 
 https://www.bio.ifi.lmu.de/files/Software/Watchdog/Watchdog-manual.html
-and as HTML and PDF version in the folder named documentation.
+and as HTML and PDF version in the documentation folder.
 
 
 ############################## INSTALLATION ################################
@@ -9,15 +9,16 @@ Manually:
 
 - Download a release from https://github.com/klugem/watchdog/releases
 - Extract the provided archive into a folder of your choice
-- Modules can be obtained from https://github.com/watchdog-wms/watchdog-wms-modules 
-  or by calling modules/downloadCommunityModules.sh from the Watchdog directory
+- Modules can be obtained from https://github.com/watchdog-wms/watchdog-wms-modules
+  and moved manually into the modules directory or by calling 
+  modules/downloadCommunityModules.sh from the Watchdog directory
 
 Via conda:
 
 - conda install -c bioconda watchdog-wms
 
 In that case binaries are named watchdog-cmd and watchdog-gui while the rest
-of the files is located in ${PREFIX}/share/watchdog-wms-${VERSION}.
+of the files are located in ${PREFIX}/share/watchdog-wms-${VERSION}.
 
 
 ############################### RUN WATCHDOG ###############################
@@ -26,14 +27,15 @@ by the bash scripts. In order to run a xml-file using the command line tool, cal
 
 ./watchdog.sh -x xml-file (or java -jar jars/watchdog.jar -x xml-file)
 
-To call the jar file directly is not recommended as STRG+C signal will be 
+To call the jar file directly is not recommended as CTRL+C signal will be 
 forwarded to all child processes, which might cause errors on locally running tasks.
 
 The workflow designer can be started using 
 
-./workflowDesigner.sh or java -jar jars/WatchdogDesigner.jar
+./workflowDesigner.sh (or java -jar jars/WatchdogDesigner.jar
 
-It will try to automatically identify the javafx SDK it depends on.
+The workflow designer depends on the Javafx SDK. The bash script will try 
+to identify the install location of the javafx SDK automatically.
 
 
 ################################ JAR FILES #################################

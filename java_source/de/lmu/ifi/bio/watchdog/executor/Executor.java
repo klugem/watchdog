@@ -66,14 +66,6 @@ public abstract class Executor<A extends ExecutorInfo> {
 		for(String name : esev.keySet()) {
 			this.TASK.addEnvVariable(name, esev.get(name));
 		}
-
-		// add after command that will query the software version
-		String vqp = this.TASK.getVersionQueryParameter();
-		if(vqp != null && vqp.length() > 0) {
-			File v = Functions.generateRandomTmpExecutionFile(VERSION_INFO_PREFIX + this.TASK.getID(), false);
-			this.addAfterCommand(this.TASK.getBinaryCall() + " " + this.TASK.getVersionQueryParameter() + " 2>&1 > " + v.getAbsolutePath());
-			this.TASK.setVersionQueryInfoFile(v);
-		}
 	
 		// check, if the task should be executed on the same host as preceding or following tasks
 		if(this.TASK.willRunOnSlave()) {
@@ -215,8 +207,10 @@ public abstract class Executor<A extends ExecutorInfo> {
 	public String[] getFinalCommand(boolean removeQuoting, boolean addBashWrappingScript) {
 		ArrayList<String> c = new ArrayList<>();
 
+		String vqp = this.TASK.getVersionQueryParameter();
+		boolean addVersionQuery = (vqp != null && vqp.length() > 0);
 		// no script needed
-		if(this.isSingleCommand() && !addBashWrappingScript) {
+		if(this.isSingleCommand() && !addBashWrappingScript && !addVersionQuery) {
 			c.add(this.TASK.getBinaryCall());
 			
 			// remove quoting, if needed
@@ -232,7 +226,16 @@ public abstract class Executor<A extends ExecutorInfo> {
 		// write the stuff to a file
 		else {
 			c.addAll(this.BEFORE_COMMAND);
-			c.add(this.TASK.getBinaryCall() + (this.TASK.getArguments().size() > 0 ? " " + StringUtils.join(this.TASK.getArguments(), " ") : ""));
+			String taskParameter = (this.TASK.getArguments().size() > 0 ? " " + StringUtils.join(this.TASK.getArguments(), " ") : "");
+			c.add(this.TASK.getBinaryCall() + taskParameter);
+
+			// add after command that will query the software version
+			if(addVersionQuery) {
+				File v = Functions.generateRandomTmpExecutionFile(VERSION_INFO_PREFIX + this.TASK.getID(), false);
+				this.addAfterCommand(this.TASK.getBinaryCall() + " " + this.TASK.getVersionQueryParameter() + taskParameter + " 2>&1 > " + v.getAbsolutePath());
+				this.TASK.setVersionQueryInfoFile(v);
+			}
+			
 			c.addAll(this.AFTER_COMMAND);
 			return new String[] {this.writeCommandsToFile(StringUtils.join(c, Executor.COMMAND_SEP))};
 		}

@@ -1,3 +1,6 @@
 Watchdog modules are now shared in a github community repository at 
 
 https://github.com/watchdog-wms/watchdog-wms-modules
+
+and can be obtained and moved manually into the modules directory 
+or by calling modules/downloadCommunityModules.sh from the Watchdog directory.

@@ -12,7 +12,7 @@
 			<const name="BED">{%INSTALL%}examples/test_data/complex/external_data/annotation/Homo_sapiens.GRCh38.78.chr21.bed</const>
 			<const name="GENE_TYPE">{%INSTALL%}examples/test_data/complex/external_data/annotation/geneType.txt</const>
 			<const name="GENOME">{%INSTALL%}examples/test_data/complex/external_data/genome/</const>
-			<const name="GTF">{%INSTALL%}examples/test_data/complex/external_data/annotation/Homo_sapiens.GRCh38.78.chr21.gtf</const>
+			<const name="GTF">{%INSTALL%}examples/test_data/complex/external_data/annotation/Ensembl_Homo_sapiens.GRCh38.78.chr21.gtf</const>
 			<const name="INDEX">{%INSTALL%}examples/test_data/complex/external_data/genome/chr21.fa</const>
 			<const name="SAMPLE_ANNO">{%INSTALL%}examples/test_data/complex/sample_condition.txt</const>
 			<const name="CONTROL_COND">WT</const>
@@ -290,6 +290,7 @@
 				<depends>16</depends>
 			</dependencies>
 			<parameter>
+				<method>DESeq2</method>
 				<controlCondition>${CONTROL_COND}</controlCondition>
 				<countFile>${OUTPUT}/featureCounts/E75.counts</countFile>
 				<featureAnnotation>${GENE_TYPE}</featureAnnotation>

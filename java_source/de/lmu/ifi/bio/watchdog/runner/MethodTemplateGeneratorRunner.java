@@ -48,6 +48,7 @@ public class MethodTemplateGeneratorRunner extends BasicRunner {
 	public static final String VERSIONS = "V.: ";
 	public static final String USED = "USED: ";
 	public static final String SOFTWARE_VERSION = "SOFTWARE_VERSION";
+	private static final Pattern VERSION = Pattern.compile("[0-9]+(\\.[0-9]+)+");
 
 	public static void main(String[] args) throws SAXException, IOException, ParserConfigurationException, DrmaaException, InterruptedException {
 		Logger log = new Logger(LogLevel.INFO);
@@ -211,30 +212,37 @@ public class MethodTemplateGeneratorRunner extends BasicRunner {
 						
 						// try to replace variables if there
 						LinkedHashMap<String, Pair<Pair<String, String>, String>> paramsTask = paramsWF.get(modName);
-						Pattern p = Pattern.compile("%([A-Za-z0-9_]+)(§([A-Z]))?%");
+						Pattern p = Pattern.compile("%([A-Za-z0-9_]+)(§([A-Z]+))?%");
 						Matcher m = p.matcher(desc);
 						while(m.find()) {
 							String varAll = m.group();
 							String var = m.group(1);
-							String modifier = m.group(3);
-							if(paramsTask.containsKey(var)) {
-								String replace = paramsTask.get(var).getValue();
-								// check if some modifiers should be applied
-								if(modifier != null) {
+							String replace = null;
+							if(paramsTask.containsKey(var))
+								replace = paramsTask.get(var).getValue();
+							// add software version to description
+							else if(var.equals(SOFTWARE_VERSION) && softwareVersions.containsKey(modName))
+								replace = StringUtils.join(softwareVersions.get(modName), SEP_KOMMA);	
+							
+							// check if some modifiers should be applied
+							if(replace != null && m.group(3) != null) {
+								char[] modifier = m.group(3).toCharArray();
+								for(char mm : modifier) {
 									// name only
-									if(modifier.equals("N")) {
+									if(mm == 'N') {
 										replace = new File(replace).getName();
 									}
+									// try to detect version
+									if(mm == 'V') {
+										Matcher mv = VERSION.matcher(replace);
+										if(mv.find()) 
+											replace = mv.group();
+									}
 								}
+							}
+							// replace it
+							if(replace != null)
 								desc = desc.replaceAll(varAll, replace);
-							}
-							// add software version to description
-							else if(var.equals(SOFTWARE_VERSION) && softwareVersions.containsKey(modName)) {
-									desc = desc.replaceAll(varAll, StringUtils.join(softwareVersions.get(modName), SEP_KOMMA));	
-							}
-							else {
-								desc = desc.replaceAll(varAll, "");
-							}
 						}
 					}
 					else if(params.ignore)

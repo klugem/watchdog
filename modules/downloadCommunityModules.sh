@@ -5,7 +5,7 @@ source "${SCRIPT_FOLDER}/../core_lib/includeBasics.sh"
 # some constants
 URL='https://github.com/watchdog-wms/watchdog-wms-modules/archive/master.tar.gz'
 GIT_NAME_IN_ARCHIVE="watchdog-wms-modules-master"
-DOWNLOAD_FILE="tmp-modules.zip"
+DOWNLOAD_FILE="tmp-modules"$(date +%s)".tar.gz"
 EXTRACT_DIR="/tmp/tmp_modules_github_tmp_modules"$(date +%s)
 SHARED="sharedUtils"
 
@@ -68,13 +68,14 @@ fi
 # start with download
 cd "${TARGET_DIR}"
 if [ ${OK} -eq 1 ]; then
-	echo "Downloading modules..."
-	wget -qO- -O "${DOWNLOAD_FILE}" "${URL}" 
+	echoInfo "Downloading modules..."
+	curl "${URL}" --output "${DOWNLOAD_FILE}" --location > /dev/null 2>&1
 	mkdir "${EXTRACT_DIR}"
 	tar -zxf "${DOWNLOAD_FILE}" -C "${EXTRACT_DIR}"
 	rm "${DOWNLOAD_FILE}"
 	if [ "${MODE}" == "a" ]; then
 		mv "${EXTRACT_DIR}/${GIT_NAME_IN_ARCHIVE}/"* .
+		echoInfo "Installed all modules!"
 	else 
 		# let user decide which should be moved
 		COUNT=1

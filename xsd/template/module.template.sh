@@ -15,12 +15,20 @@ fi
 
 # define parameters
 {%VARIABLES%}
+DEFINE_boolean 'version' 'false' '[optional] prints the version' 'v'
 DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
 
 # parse parameters
 FLAGS "$@" || exit $EXIT_INVALID_ARGUMENTS
 eval set -- "${FLAGS_ARGV}"
 printParamValues "initial parameters" # print param values, if in debug mode
+
+if [ "$FLAGS_version" -eq 0 ]; then
+	# TODO obtain version of important external software or remove --version flag
+	MESSAGE=$(TODO)
+	echo $MESSAGE
+	exit $EXIT_OK
+fi
 
 # check if mandatory arguments are there
 {%MANDATORY_VAR_CHECK%}
