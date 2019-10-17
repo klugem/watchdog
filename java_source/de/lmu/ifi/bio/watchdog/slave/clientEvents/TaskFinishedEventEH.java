@@ -59,6 +59,11 @@ public class TaskFinishedEventEH extends Eventhandler {
 				event.getOut().deleteOnExit();
 				t.setStdout(event.getOut());
 			}
+			
+			// set the version query file
+			if(event.getVersionQueryInfoFile() != null) {
+				t.setVersionQueryInfoFile(event.getVersionQueryInfoFile());
+			}
 
 			// let the checker do his work!
 			t.setJobInfo(event.getJobInfo());

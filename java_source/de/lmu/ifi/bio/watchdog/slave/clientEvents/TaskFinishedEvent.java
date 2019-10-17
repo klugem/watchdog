@@ -18,9 +18,10 @@ public class TaskFinishedEvent extends Event {
 	private final JobInfo INFO;
 	private final File ERR;
 	private final File OUT;
+	private final File VQ;
 	private final ArrayList<String> ERRORS = new ArrayList<>();
 
-	public TaskFinishedEvent(Task t, String id, String slaveID, JobInfo info, File err, File out, ArrayList<String> errors) {
+	public TaskFinishedEvent(Task t, String id, String slaveID, JobInfo info, File err, File out, ArrayList<String> errors, File versionQuery) {
 		this.ID = id;
 		this.SLAVE_ID = slaveID;
 		this.INFO = info;
@@ -56,6 +57,7 @@ public class TaskFinishedEvent extends Event {
 		// set to the new files that are now stored on the correct system
 		this.ERR = out;
 		this.OUT = err;
+		this.VQ = t.getVersionQueryInfoFile();
 	}
 	
 	public String getID() {
@@ -72,6 +74,10 @@ public class TaskFinishedEvent extends Event {
 	
 	public File getOut() {
 		return this.OUT;
+	}
+	
+	public File getVersionQueryInfoFile() {
+		return this.VQ;
 	}
 	
 	public JobInfo getJobInfo() {

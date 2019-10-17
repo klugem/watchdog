@@ -111,7 +111,7 @@ public class MethodTemplateGeneratorRunner extends BasicRunner {
 				System.exit(1);
 			}
 			if(!(resume.isFile()&& resume.canRead())) {
-				log.error("Failed to watchdog status log file '" + resume.getAbsolutePath() + "'.");
+				log.error("Failed to read watchdog status log file '" + resume.getAbsolutePath() + "'.");
 				System.exit(1);
 			}
 			
@@ -178,8 +178,10 @@ public class MethodTemplateGeneratorRunner extends BasicRunner {
 						diffIDs += 1;
 						
 						// try to replace some parameters
-						LinkedHashMap<String, Pair<Pair<String, String>, String>> paramsTask = taskParameter.getArguments();
-						paramsWF.put(modName, paramsTask);
+						if(taskParameter != null) {
+							LinkedHashMap<String, Pair<Pair<String, String>, String>> paramsTask = taskParameter.getArguments();
+							paramsWF.put(modName, paramsTask);
+						}
 					}
 					
 					usageInfo.put(modName, Pair.of(diffIDs, subTasks));

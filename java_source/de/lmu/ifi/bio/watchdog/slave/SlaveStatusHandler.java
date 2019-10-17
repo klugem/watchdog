@@ -61,7 +61,7 @@ public class SlaveStatusHandler implements StatusHandler, Serializable {
 					File err = TransferFile.copyLogFileToTmpBase(task.getStdErr(false), true, task.isErrorAppended());
 					File out = TransferFile.copyLogFileToTmpBase(task.getStdOut(false), false, task.isOutputAppended());
 					JobInfo info = new SerJobInfo(task.getJobInfo());
-					SlaveStatusHandler.client.getEventSocket().send(new TaskFinishedEvent(task, task.getID(), task.getSlaveID(), info, err, out, task.getErrors()));
+					SlaveStatusHandler.client.getEventSocket().send(new TaskFinishedEvent(task, task.getID(), task.getSlaveID(), info, err, out, task.getErrors(), task.getVersionQueryInfoFile()));
 				}
 				// send status updates to master
 				else {
