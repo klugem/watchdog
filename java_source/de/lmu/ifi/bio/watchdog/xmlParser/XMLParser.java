@@ -477,13 +477,21 @@ public class XMLParser {
 		if(ROOT.equals(docEle.getTagName())) {
 			/********** try to find watchdogBase attribute */
 			File watchdogBase = new File(XMLParser.getAttribute(docEle, WATCHDOG_BASE)); 
+			
+			// try to get another base from a env variable
+			String watchdogBaseEnv = System.getenv("WATCHDOG_BASE");
+			if(watchdogBaseEnv != null) {
+				File watchdogBaseTmp = new File(watchdogBaseEnv);
+				if(watchdogBaseTmp.exists() && watchdogBaseTmp.isDirectory() && watchdogBaseTmp.canRead()) 
+					watchdogBase = watchdogBaseTmp;
+			}
+			
 			if(watchdogBase.exists() && watchdogBase.isDirectory() && watchdogBase.canRead()) {
 				if(checkWatchdogXSD(watchdogBase.getAbsoluteFile())) {
 					Functions.setTemporaryFolder(watchdogBase.getAbsolutePath() + File.separator + TMP_FOLDER);
 					
 					// get constants
 					consts = XMLParser.getConstants(docEle);
-					
 					
 					/********** check for base folders */
 					ProcessBlock processblock = null;
