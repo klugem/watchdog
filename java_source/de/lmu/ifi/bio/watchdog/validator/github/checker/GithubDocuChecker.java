@@ -40,7 +40,7 @@ public class GithubDocuChecker extends GithubCheckerDocuBased {
 			DocumentBuilderFactory dbf = DocuXMLParser.prepareDBF(this.watchdogBase);
 			String baseFolder = null;
 			if(this.isLocalTestMode())
-				baseFolder = this.getModuleFolderToValidate();
+				baseFolder = this.getFolderToValidate();
 			else 
 				baseFolder = this.compareInfo.getModuleFolder();
 			

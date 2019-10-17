@@ -10,53 +10,34 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
 import de.lmu.ifi.bio.watchdog.runner.BasicRunner;
-import de.lmu.ifi.bio.watchdog.validator.LocalModuleValidator;
+import de.lmu.ifi.bio.watchdog.validator.LocalValidator;
 import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubCheckerBase;
-import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubDocuChecker;
-import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubPermissionChecker;
-import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubSingleModuleChecker;
-import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubVerifiedCommitChecker;
-import de.lmu.ifi.bio.watchdog.validator.github.checker.GithubXSDChecker;
 
 /**
  * Checks, that are run by travis-ci on github pull-requests
  * @author kluge
  *
  */
-public class GithubCheckerRunner extends BasicRunner {
-	
-	/** names for tests that can be performed */
-	public final static String SIGNED_COMMIT_TEST = "SIGNED_COMMIT";
-	public final static String WRITE_PERMISSION_TEST = "WRITE_PERMISSION";
-	public final static String XSD_VALIDATION_TEST = "XSD_VALIDATION";
-	public final static String SINGLE_MODULE_TEST = "SINGLE_MODULE";
-	public final static String XML_DOCUMENTATION_TEST = "XML_DOCUMENTATION";
-	
+public abstract class GithubCheckerRunner<A extends GithubCheckerParameters> extends BasicRunner {
+		
 	/** exit codes of the checker */
 	public static int EXIT_OK = 0;
 	public static int EXIT_CHECK_FAILED = 1;
 	public static int EXIT_RUNNER_FAILURE = 2;
 	public static int EXIT_CHECKER_FAILURE = 3;
 	
-	/**
-	 * contains valid tests
-	 */
+	/** contains valid tests */
 	public final static HashMap<String, GithubCheckerBase> VALID_TEST_NAMES = new LinkedHashMap<>();
-	static {
-		VALID_TEST_NAMES.put(SIGNED_COMMIT_TEST, new GithubVerifiedCommitChecker(SIGNED_COMMIT_TEST));
-		VALID_TEST_NAMES.put(WRITE_PERMISSION_TEST, new GithubPermissionChecker(WRITE_PERMISSION_TEST));
-		VALID_TEST_NAMES.put(XSD_VALIDATION_TEST, new GithubXSDChecker(XSD_VALIDATION_TEST));
-		VALID_TEST_NAMES.put(SINGLE_MODULE_TEST, new GithubSingleModuleChecker(SINGLE_MODULE_TEST));
-		VALID_TEST_NAMES.put(XML_DOCUMENTATION_TEST, new GithubDocuChecker(XML_DOCUMENTATION_TEST));
-	}
 	
 	/**
-	 * Runner method
-	 * @param args
+	 * must return a instance of GithubCheckerParameters
+	 * @return
 	 */
-	public static void main(String[] args) {		
+	public abstract A getParamInstance();
+	
+	public void run(String[] args) {
 		// try to parse the parameters
-		GithubCheckerParameters params = new GithubCheckerParameters();
+		A params = getParamInstance();
 		JCommander parser = null;
 		try { 
 			parser = new JCommander(params, args); 
@@ -79,9 +60,9 @@ public class GithubCheckerRunner extends BasicRunner {
 		}
 		else if(params.list) {		
 			// find all test that can be run locally
-			info("Tests that can be run locally in combination with the '-moduleFolder' parameter:");
+			info("Tests that can be run locally in combination with the '-folder' parameter:");
 			for(Entry<String, GithubCheckerBase> en : VALID_TEST_NAMES.entrySet()) {
-				if(en.getValue() instanceof LocalModuleValidator && !((LocalModuleValidator) en.getValue()).canNOTBeUsedLocally()) {
+				if(en.getValue() instanceof LocalValidator && !((LocalValidator) en.getValue()).canNOTBeUsedLocally()) {
 					info(en.getKey());
 				}
 			}
@@ -96,7 +77,7 @@ public class GithubCheckerRunner extends BasicRunner {
 				GithubCheckerBase checker = VALID_TEST_NAMES.get(checkName);
 				
 				// test if test should be performed locally
-				if(params.moduleFolder != null) {
+				if(params.folder != null) {
 					// find Watchdog's base to work with
 					File b = null;
 					if(params.watchdogBase != null && params.watchdogBase.length() > 0)
@@ -107,9 +88,9 @@ public class GithubCheckerRunner extends BasicRunner {
 						System.exit(EXIT_CHECKER_FAILURE);
 					}
 					
-					if(checker instanceof LocalModuleValidator) {
-						info("Test '"+ checkName +"' will be run locally on '"+params.moduleFolder+"'!");
-						((LocalModuleValidator) checker).setModuleFolderToValidate(params.moduleFolder);
+					if(checker instanceof LocalValidator) {
+						info("Test '"+ checkName +"' will be run locally on '"+params.folder+"'!");
+						((LocalValidator) checker).setFolderToValidate(params.folder);
 						checker.setWatchdogBase(watchdogBase.getAbsolutePath());
 					}
 					else {
@@ -148,7 +129,7 @@ public class GithubCheckerRunner extends BasicRunner {
 		// here no call should exit
 		System.exit(EXIT_RUNNER_FAILURE);
 	}
-		
+			
 	/**
 	 * prints the info from checkers
 	 * @param ineo

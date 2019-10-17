@@ -289,6 +289,7 @@ public class XMLParser {
 	
 	// XML PLUGINS to load 
 	private static final ArrayList<XMLPluginTypeLoaderAndProcessor<?>> LOADED_PLUGINS = new ArrayList<>();
+	private static final String WATCHDOG_MODULES_DIRS = "WATCHDOG_MODULES_DIRS";
 	private static HashSet<String> XSD_PLUGIN_FILES = new HashSet<>();
 	private static XMLExecutorProcessor PLUGIN_EXECUTOR_PARSER;
 	private static XMLProcessBlockProcessor PLUGIN_PROCESSBLOCK_PARSER;
@@ -1947,8 +1948,15 @@ public class XMLParser {
 			Element docRoot = getRootElement(dbf, xmlFile);
 			NodeList modules = docRoot.getElementsByTagName(MODULES);
 			
+			// if environment variable is set, use these folders
+			String envMod = System.getenv(WATCHDOG_MODULES_DIRS);
+			if(envMod != null) {
+				for(String mf : envMod.split(":")) {
+					dirs.add(mf);
+				}
+			}
 			// no module setting is given, use default folder modules/
-			if(modules.getLength() == 0) {
+			else if(modules.getLength() == 0) {
 				dirs.add(MODULES);
 			}
 			else if(modules.getLength() == 1) {

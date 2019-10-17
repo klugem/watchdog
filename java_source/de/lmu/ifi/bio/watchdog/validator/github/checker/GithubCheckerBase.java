@@ -3,8 +3,8 @@ package de.lmu.ifi.bio.watchdog.validator.github.checker;
 import java.util.ArrayList;
 
 import de.lmu.ifi.bio.watchdog.helper.Functions;
-import de.lmu.ifi.bio.watchdog.validator.LocalModuleValidator;
-import de.lmu.ifi.bio.watchdog.validator.github.GithubCheckerRunner;
+import de.lmu.ifi.bio.watchdog.validator.LocalValidator;
+import de.lmu.ifi.bio.watchdog.validator.github.ModuleGithubCheckerRunner;
 import de.lmu.ifi.bio.watchdog.validator.github.TravisEnv;
 
 /**
@@ -33,7 +33,7 @@ public abstract class GithubCheckerBase {
 	}
 	
 	public boolean isLocalTestMode() {
-		return LocalModuleValidator.class.isAssignableFrom(this.getClass()) && ((LocalModuleValidator) this).isLocalTest();
+		return LocalValidator.class.isAssignableFrom(this.getClass()) && ((LocalValidator) this).isLocalTest();
 	}
 	
 	/**
@@ -49,7 +49,7 @@ public abstract class GithubCheckerBase {
 	 */
 	public boolean test() {
 		if(!this.isLocalTestMode() && !this.TRAVIS_INFO.isValid()) {
-			GithubCheckerRunner.error("Failed to load required environment variable from travis.");
+			ModuleGithubCheckerRunner.error("Failed to load required environment variable from travis.");
 			System.exit(1);
 		}
 		return true;

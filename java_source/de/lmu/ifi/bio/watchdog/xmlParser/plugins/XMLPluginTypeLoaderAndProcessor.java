@@ -49,7 +49,7 @@ public abstract class XMLPluginTypeLoaderAndProcessor<A extends XMLPlugin> {
 							Class<?> parsesPluginsOfType = Class.forName(cname);
 							// load all classes that have the correct parent
 							if(bt.isAssignableFrom(parsesPluginsOfType)) {
-								l.info("Loading XML-Plugin: '"+c.loadClass().getCanonicalName()+"'");
+								l.debug("Loading XML-Plugin: '"+c.loadClass().getCanonicalName()+"'");
 								XMLParserPlugin<A> xp = XMLParserPlugin.getInstance((Class<? extends XMLParserPlugin>) c.loadClass(), l, noExit, isGUILoadAttempt);
 								this.PARSER.put(xp.getNameOfParseableTag(), xp);
 							}

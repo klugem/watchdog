@@ -2,7 +2,7 @@ package de.lmu.ifi.bio.watchdog.validator.github.checker;
 
 import java.io.File;
 
-import de.lmu.ifi.bio.watchdog.validator.LocalModuleValidator;
+import de.lmu.ifi.bio.watchdog.validator.LocalValidator;
 import de.lmu.ifi.bio.watchdog.validator.XSDModuleValidator;
 import de.lmu.ifi.bio.watchdog.validator.github.APICompareInfo;
 import de.lmu.ifi.bio.watchdog.validator.github.GithubLogEventhandler;
@@ -12,7 +12,7 @@ import de.lmu.ifi.bio.watchdog.validator.github.GithubLogEventhandler;
  * @author kluge
  *
  */
-public class GithubXSDChecker extends GithubCheckerIO implements LocalModuleValidator {
+public class GithubXSDChecker extends GithubCheckerIO implements LocalValidator {
 	
 	protected String localModuleFolder;
 	
@@ -40,7 +40,7 @@ public class GithubXSDChecker extends GithubCheckerIO implements LocalModuleVali
 					return false;
 				}
 			} else {
-				baseFolder= this.getModuleFolderToValidate();
+				baseFolder= this.getFolderToValidate();
 			}
 			File intFolder = new File((!this.isLocalTestMode() ? this.GIT_CLONE_DIR + File.separator : "") + baseFolder);
 			XSDModuleValidator xv = new XSDModuleValidator(intFolder.getAbsolutePath(), new File(this.watchdogBase), new GithubLogEventhandler(this));
@@ -50,7 +50,7 @@ public class GithubXSDChecker extends GithubCheckerIO implements LocalModuleVali
 	}
 	
 	@Override
-	public String getModuleFolderToValidate() {	return this.localModuleFolder;	}
+	public String getFolderToValidate() {	return this.localModuleFolder;	}
 	@Override
-	public void setModuleFolderToValidate(String absDir) { this.localModuleFolder = absDir; }
+	public void setFolderToValidate(String absDir) { this.localModuleFolder = absDir; }
 }

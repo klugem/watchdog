@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import org.apache.commons.lang3.tuple.Pair;
 
 import de.lmu.ifi.bio.watchdog.docu.DocuXMLParser;
-import de.lmu.ifi.bio.watchdog.validator.LocalModuleValidator;
+import de.lmu.ifi.bio.watchdog.validator.LocalValidator;
 import de.lmu.ifi.bio.watchdog.validator.github.APICompareInfo;
 
 /**
@@ -15,7 +15,7 @@ import de.lmu.ifi.bio.watchdog.validator.github.APICompareInfo;
  * @author kluge
  *
  */
-public abstract class GithubCheckerDocuBased extends GithubCheckerIO implements LocalModuleValidator {
+public abstract class GithubCheckerDocuBased extends GithubCheckerIO implements LocalValidator {
 	
 	protected APICompareInfo compareInfo;
 	protected File xsdFile;
@@ -47,7 +47,7 @@ public abstract class GithubCheckerDocuBased extends GithubCheckerIO implements 
 					baseFolder =  this.compareInfo.getModuleFolder();
 			}
 			else {
-				baseFolder = this.getModuleFolderToValidate();
+				baseFolder = this.getFolderToValidate();
 			}
 			
 			// find XML documentation file
@@ -74,7 +74,7 @@ public abstract class GithubCheckerDocuBased extends GithubCheckerIO implements 
 	}	
 	
 	@Override
-	public String getModuleFolderToValidate() {	return this.localModuleFolder;	}
+	public String getFolderToValidate() {	return this.localModuleFolder;	}
 	@Override
-	public void setModuleFolderToValidate(String absDir) { this.localModuleFolder = absDir; }
+	public void setFolderToValidate(String absDir) { this.localModuleFolder = absDir; }
 }
