@@ -32,7 +32,7 @@ forwarded to all child processes, which might cause errors on locally running ta
 
 The workflow designer can be started using 
 
-./workflowDesigner.sh (or java -jar jars/WatchdogDesigner.jar
+./workflowDesigner.sh (or java -jar jars/WatchdogDesigner.jar)
 
 The workflow designer depends on the Javafx SDK. The bash script will try 
 to identify the install location of the javafx SDK automatically.
