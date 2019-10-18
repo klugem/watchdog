@@ -84,23 +84,24 @@ public class ProcessTable extends ProcessMultiParam {
 	 * reads the file, which is given as input
 	 */
 	private void readFile() {
+		File table = new File(this.TABLE.getPath().replace("${"+XMLParser.WF_PARENT_BLOCKED_CONST+"}", XMLParser.getParentOfCurrentlyParsedFilePath()));
 		// buffer the result the first time this function is called.
 		if(!this.wasRead) {
-			if(!this.TABLE.exists()) {
-				LOGGER.error("Process table file '" + this.TABLE.getAbsolutePath() + "' was not found!");
+			if(!table.exists()) {
+				LOGGER.error("Process table file '" + table.getAbsolutePath() + "' was not found!");
 				if(!XMLParser.isNoExit()) System.exit(1);
 			}
 			try {
-				this.BUFFER.addAll(Files.readAllLines(Paths.get(this.TABLE.getAbsolutePath()))); 
+				this.BUFFER.addAll(Files.readAllLines(Paths.get(table.getAbsolutePath()))); 
 						
 				// create the mapping
 				if(this.BUFFER.size() == 0) {
-					LOGGER.error("Process table file '" + this.TABLE.getAbsolutePath() + "' does not contain any lines!");
+					LOGGER.error("Process table file '" + table.getAbsolutePath() + "' does not contain any lines!");
 					if(!XMLParser.isNoExit()) System.exit(1);
 				}
 				else {
 					if(this.BUFFER.size() == 1) {
-						LOGGER.error("Process table file '" + this.TABLE.getAbsolutePath() + "' does only contain a header line!");
+						LOGGER.error("Process table file '" + table.getAbsolutePath() + "' does only contain a header line!");
 						if(!XMLParser.isNoExit()) System.exit(1);
 					}
 					
@@ -116,7 +117,7 @@ public class ProcessTable extends ProcessMultiParam {
 						noKey = true;
 					else {
 						if(!this.NAME_MAPPING.containsKey(this.KEY_COLUMN)) {
-							LOGGER.error("Process table file '" + this.TABLE.getAbsolutePath() + "' does not contain a column named '"+this.KEY_COLUMN+"'!");
+							LOGGER.error("Process table file '" + table.getAbsolutePath() + "' does not contain a column named '"+this.KEY_COLUMN+"'!");
 							if(!XMLParser.isNoExit()) System.exit(1);
 						}
 						else
@@ -132,7 +133,7 @@ public class ProcessTable extends ProcessMultiParam {
 						// ensure that all lines have the same number of elements
 						e = v.split(ReplaceSpecialConstructs.TAB);
 						if(e.length != mustHave) {
-							LOGGER.error("Line " + c + " of file '"+this.TABLE.getAbsolutePath()+"' has " + e.length + " columns but " + mustHave + " are expected!");
+							LOGGER.error("Line " + c + " of file '"+table.getAbsolutePath()+"' has " + e.length + " columns but " + mustHave + " are expected!");
 							LOGGER.error("content of line: '"+v+"'");
 							LOGGER.error("Column names: " + StringUtils.join(this.NAME_MAPPING, " "));
 							if(!XMLParser.isNoExit()) System.exit(1);
@@ -148,7 +149,7 @@ public class ProcessTable extends ProcessMultiParam {
 				} 
 			} catch (IOException e) {
 				e.printStackTrace();
-				LOGGER.error("Failed to read file '" + this.TABLE.getAbsolutePath() + "'!");
+				LOGGER.error("Failed to read file '" + table.getAbsolutePath() + "'!");
 				if(!XMLParser.isNoExit()) System.exit(1);
 			}
 			this.wasRead = true;

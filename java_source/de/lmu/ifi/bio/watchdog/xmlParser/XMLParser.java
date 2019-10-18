@@ -284,8 +284,11 @@ public class XMLParser {
 	public static final ArrayList<String> BASE_ROOT_TYPES = new ArrayList<>();
 	public static final HashMap<String, Object[]> XML_MODULE_INFO = new HashMap<>();
 	private static HashMap<String, String> last_consts = new HashMap<>();
+	private static String currentlyParsedFilePath = null;
 	private static boolean isGUILoadAttempt;
 	private static boolean noExitInCaseOfError = false;
+	public static final String TMP_BLOCKED_CONST = "TMP";
+	public static final String WF_PARENT_BLOCKED_CONST = "WF_PARENT";
 	
 	// XML PLUGINS to load 
 	private static final ArrayList<XMLPluginTypeLoaderAndProcessor<?>> LOADED_PLUGINS = new ArrayList<>();
@@ -295,7 +298,8 @@ public class XMLParser {
 	private static XMLProcessBlockProcessor PLUGIN_PROCESSBLOCK_PARSER;
 	
 	static {
-		BLOCKED_CONST_NAMES.put("TMP", "It is internally used for storage of executors working directories (see attribute workingDir of executor).");
+		BLOCKED_CONST_NAMES.put(TMP_BLOCKED_CONST, "It is internally used for storage of executors working directories (see attribute workingDir of executor).");
+		BLOCKED_CONST_NAMES.put(WF_PARENT_BLOCKED_CONST, "Folder which contains the workflow that is currently parsed.");
 		
 		BASE_ROOT_TYPES.add("param_types.xsd");
 		BASE_ROOT_TYPES.add("base_param_types.xsd");
@@ -323,6 +327,12 @@ public class XMLParser {
 		return noExitInCaseOfError;
 	}
 	
+	public static String getParentOfCurrentlyParsedFilePath() {
+		if(currentlyParsedFilePath != null)
+			return new File(currentlyParsedFilePath).getParentFile().getAbsolutePath();
+		return null;
+	}
+	
 	/**
 	 * parses a single xml file
 	 * @param filenamePath
@@ -334,7 +344,9 @@ public class XMLParser {
 	 * @throws ParserConfigurationException
 	 */
 	@SuppressWarnings({ "rawtypes", "resource", "unchecked" })
-	public static Object[] parse(String filenamePath, String schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails) throws SAXException, IOException, ParserConfigurationException {	
+	public static Object[] parse(String filenamePath, String schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails) throws SAXException, IOException, ParserConfigurationException {
+		currentlyParsedFilePath = filenamePath;
+		
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
 		String watchdogBaseDir = new File(schemaPath).getParentFile().getParent();
@@ -425,6 +437,7 @@ public class XMLParser {
 					for(String line : Files.readAllLines(Paths.get(filenamePath))) {
 						out.add(XMLParser.replaceConstants(line, consts));
 					}
+
 					// write the changed content to the file
 					Functions.write(tmpFile, StringUtils.join(out, NEWLINE));
 	
@@ -1203,6 +1216,7 @@ public class XMLParser {
 							Element e = envs.get(n);
 							enivronments.put(n, XMLParser.parseEnvironment(n, e, false, null, null));
 						}
+						currentlyParsedFilePath = null;
 						return new Object[] {parsedTasks, mail, null, retInfo, name2id, dbf, blocks, enivronments, exec, watchdogBaseDir, consts}; // third element is not used anymore
 					}
 					else  {
@@ -1224,6 +1238,7 @@ public class XMLParser {
 			LOGGER.error("Root element '<"+ROOT+">' was not found!");
 			if(!noExit) System.exit(1);
 		}
+		currentlyParsedFilePath = null;
 		return null;
 	}
 
@@ -1687,6 +1702,11 @@ public class XMLParser {
 		// check, if some value is set
 		if(value == null || consts == null) 
 			return value;
+		
+		// replace ${WF_PARENT} here when no GUI load attemp
+		if(!XMLParser.isGUILoadAttempt())
+			consts.put(XMLParser.WF_PARENT_BLOCKED_CONST, XMLParser.getParentOfCurrentlyParsedFilePath());
+		
 		StringBuilder parts = new StringBuilder();
 		// check, if the value contains a constant which must be replaced
 		Matcher matcher = PATTERN_CONST.matcher(value);
@@ -1700,7 +1720,7 @@ public class XMLParser {
 			}
 			
 			// do not try to replace the variables at this stage as they are replaced later!
-			if(BLOCKED_CONST_NAMES.containsKey(key)) {
+			if(BLOCKED_CONST_NAMES.containsKey(key) && (XMLParser.isGUILoadAttempt() || !key.equals(XMLParser.WF_PARENT_BLOCKED_CONST))) {
 				int end = matcher.end(1)+1;
 				String doNotModifyPart = value.substring(0, end);
 				parts.append(doNotModifyPart);

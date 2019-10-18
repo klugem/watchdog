@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
 /**
  * helper class which replaces (), [], {} and $()
@@ -23,7 +24,6 @@ public class ReplaceSpecialConstructs {
 	
 	private static final String REGEX_PATH = "((/([^/]+/+)*[^/]+/{0,})|([A-Z]:\\\\([^\\\\]+\\\\+)*[^\\\\]+/{0,}))";
 	public static final String TAB = "\t";
-	public static final String TMP_WORK_DIR_NAME = "TMP";
 	private static final String MATCH_RANDOM = ".*?";
 	private static final String SUBSTITUTE_FILENAME_PATTERN = "\\[([0-9]*)(,([^]\\)\\}]*)){0,1}\\]";
 	private static final String SUBSTITUTE_PARENT_PATTERN = "\\(([0-9]*)(,([^]\\)\\}]*)){0,1}\\)";
@@ -79,7 +79,8 @@ public class ReplaceSpecialConstructs {
 			return null;
 		
 		// try to replace ${TMP} with tmp working directory 		
-		value = value.replace("${"+TMP_WORK_DIR_NAME+"}", tmpWorkingDir);
+		value = value.replace("${"+XMLParser.TMP_BLOCKED_CONST+"}", tmpWorkingDir);
+		value = value.replace("${"+XMLParser.WF_PARENT_BLOCKED_CONST+"}", XMLParser.getParentOfCurrentlyParsedFilePath());
 
 		// test if value should be substituted by input of processGroup
 		if(inputReplacement != null) {

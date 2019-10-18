@@ -40,7 +40,7 @@ public class ProcessTableParser extends XMLProcessBlockParser<ProcessTable> {
 		HashMap<String, String> consts = (HashMap<String, String>) additionalData[1];
 		boolean validationMode = (boolean) additionalData[2];
 		
-		// get the atrributes
+		// get the attributes
 		String name = XMLParser.getAttribute(el, XMLParser.NAME);
 		String table = XMLParser.getAttribute(el, XMLParser.TABLE);
 		String compareName = XMLParser.getAttribute(el, XMLParser.COMPARE_NAME);

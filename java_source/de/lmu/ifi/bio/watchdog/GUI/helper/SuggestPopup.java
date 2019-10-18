@@ -11,6 +11,7 @@ import de.lmu.ifi.bio.watchdog.helper.Constants;
 import de.lmu.ifi.bio.watchdog.helper.ReplaceSpecialConstructs;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
 import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
@@ -132,7 +133,8 @@ public class SuggestPopup {
 				ArrayList<XMLDataStore> consts = WorkflowDesignController.getConstManager().getXMLData();
 				if(showTmpVariableForTasks) {
 					//String workingDir = XMLTask.hasXMLTask(task.getTaskID()) ? XMLTask.getXMLTask(task.getTaskID()).getExecutor().getWorkingDir() : "";
-					consts.add(new Constants(ReplaceSpecialConstructs.TMP_WORK_DIR_NAME, ""));
+					consts.add(new Constants(XMLParser.TMP_BLOCKED_CONST, ""));
+					consts.add(new Constants(XMLParser.WF_PARENT_BLOCKED_CONST, ""));
 				}
 				for(XMLDataStore d : consts) {
 					if(filter == null)
