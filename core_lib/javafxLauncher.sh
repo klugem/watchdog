@@ -35,11 +35,11 @@ fi
 # try to locate the javafx SDK
 if [ "${JFX_SDK_LIB_PATH}" == "" ]; then
 	echo "Path to javafx SDK is not set via 'JFX_SDK_LIB_PATH_ENV' environment variable or within this script."
-	confirm "Do you want to search for it in /usr ? (y / n)"
+	confirm "Do you want to search for it in ${CONDA_PREFIX}/usr and ${CONDA_PREFIX}/share ? (y / n)"
 	if [ $CONFIRM_RETURN -ne 1 ]; then
 		exit 1
 	fi
-	RET=$(find "/usr" -name "${JAVA_FX_TEST_NAME}" 2> /dev/null)
+	RET=$(find "${CONDA_PREFIX}/usr" "${CONDA_PREFIX}/share" -name "${JAVA_FX_TEST_NAME}" 2> /dev/null)
 	C=1
 	SEL=()
 	for I in $RET; do
