@@ -328,8 +328,11 @@ public class XMLParser {
 	}
 	
 	public static String getParentOfCurrentlyParsedFilePath() {
-		if(currentlyParsedFilePath != null)
-			return new File(currentlyParsedFilePath).getParentFile().getAbsolutePath();
+		if(currentlyParsedFilePath != null) {
+			File f = new File(currentlyParsedFilePath).getParentFile();
+			if(f != null)
+				return f.getAbsolutePath();
+		}
 		return null;
 	}
 	
@@ -1704,7 +1707,7 @@ public class XMLParser {
 			return value;
 		
 		// replace ${WF_PARENT} here when no GUI load attemp
-		if(!XMLParser.isGUILoadAttempt())
+		if(!XMLParser.isGUILoadAttempt() && XMLParser.getParentOfCurrentlyParsedFilePath() != null)
 			consts.put(XMLParser.WF_PARENT_BLOCKED_CONST, XMLParser.getParentOfCurrentlyParsedFilePath());
 		
 		StringBuilder parts = new StringBuilder();

@@ -84,7 +84,11 @@ public class ProcessTable extends ProcessMultiParam {
 	 * reads the file, which is given as input
 	 */
 	private void readFile() {
-		File table = new File(this.TABLE.getPath().replace("${"+XMLParser.WF_PARENT_BLOCKED_CONST+"}", XMLParser.getParentOfCurrentlyParsedFilePath()));
+		String tpath = this.TABLE.getPath();
+		if(XMLParser.getParentOfCurrentlyParsedFilePath() != null)
+			tpath = tpath.replace("${"+XMLParser.WF_PARENT_BLOCKED_CONST+"}", XMLParser.getParentOfCurrentlyParsedFilePath());
+		
+		File table = new File(tpath);
 		// buffer the result the first time this function is called.
 		if(!this.wasRead) {
 			if(!table.exists()) {

@@ -80,7 +80,8 @@ public class ReplaceSpecialConstructs {
 		
 		// try to replace ${TMP} with tmp working directory 		
 		value = value.replace("${"+XMLParser.TMP_BLOCKED_CONST+"}", tmpWorkingDir);
-		value = value.replace("${"+XMLParser.WF_PARENT_BLOCKED_CONST+"}", XMLParser.getParentOfCurrentlyParsedFilePath());
+		if(XMLParser.getParentOfCurrentlyParsedFilePath() != null)
+			value = value.replace("${"+XMLParser.WF_PARENT_BLOCKED_CONST+"}", XMLParser.getParentOfCurrentlyParsedFilePath());
 
 		// test if value should be substituted by input of processGroup
 		if(inputReplacement != null) {
