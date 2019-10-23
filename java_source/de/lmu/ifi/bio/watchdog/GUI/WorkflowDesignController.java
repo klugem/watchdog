@@ -15,8 +15,11 @@ import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.concurrent.TimeUnit;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.w3c.dom.Element;
 
 import de.lmu.ifi.bio.multithreading.TimedExecution;
 import de.lmu.ifi.bio.watchdog.GUI.AdditionalBar.AdditionalBarController;
@@ -44,6 +47,7 @@ import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyLine;
 import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyManager;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PropertyViewType;
+import de.lmu.ifi.bio.watchdog.docu.DocuXMLParser;
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.HTTPListenerThread;
@@ -779,7 +783,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 		File tmpXLMFile = Functions.generateRandomTmpExecutionFile("validate", false);
 		if(this.saveWorkflow(tmpXLMFile, false, true)) {
 			try {
-				XMLParser.parse(tmpXLMFile.getAbsolutePath(), new File(PreferencesStore.getWatchdogBaseDir()) + File.separator + XMLParser.FILE_CHECK, this.commandlineParams.tmpFolder, 0, false, true, true, false, false, false);
+				XMLParser.parse(tmpXLMFile.getAbsolutePath(), new File(PreferencesStore.getWatchdogBaseDir()) + File.separator + XMLParser.FILE_CHECK, this.commandlineParams.tmpFolder, 0, false, true, true, false, false, false, true);
 				tmpXLMFile.delete();
 				
 				if(!afterSave)
@@ -1032,14 +1036,13 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			b.addContent(m.toXML(), true);
 			b.newline();	
 		}
-			
+					
 		// try to write the stuff
 		try { 
-			// write the stuff
-			BufferedWriter bw = Files.newBufferedWriter(filename.toPath());
-			bw.write(b.toString());
-			bw.flush();
-			bw.close();
+			// write the stuff & store indentation
+			DocumentBuilderFactory dbf = DocuXMLParser.prepareDBF(PreferencesStore.getWatchdogBaseDir());
+			Element root = XMLParser.getRootElement(dbf, b.toString().replace(XMLParser.NEWLINE, ""));
+			XMLParser.writePrettyXML(root, filename);
 			
 			// update last used filename
 			if(markAsSaved) {

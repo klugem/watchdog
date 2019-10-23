@@ -336,6 +336,10 @@ public class XMLParser {
 		return null;
 	}
 	
+	public static Object[] parse(String filenamePath, String schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails) throws SAXException, IOException, ParserConfigurationException {
+		return XMLParser.parse(filenamePath, schemaPath, customTmpFolder, ignoreExecutor, enforceNameUsage, noExit, validationMode, disableCheckpoint, forceLoading, disableMails, false);
+	}
+	
 	/**
 	 * parses a single xml file
 	 * @param filenamePath
@@ -347,8 +351,9 @@ public class XMLParser {
 	 * @throws ParserConfigurationException
 	 */
 	@SuppressWarnings({ "rawtypes", "resource", "unchecked" })
-	public static Object[] parse(String filenamePath, String schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails) throws SAXException, IOException, ParserConfigurationException {
-		currentlyParsedFilePath = filenamePath;
+	public static Object[] parse(String filenamePath, String schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails, boolean leaveCurrentlyParsedFileUntouched) throws SAXException, IOException, ParserConfigurationException {
+		if(!leaveCurrentlyParsedFileUntouched)
+			currentlyParsedFilePath = filenamePath;
 		
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
@@ -1219,7 +1224,6 @@ public class XMLParser {
 							Element e = envs.get(n);
 							enivronments.put(n, XMLParser.parseEnvironment(n, e, false, null, null));
 						}
-						currentlyParsedFilePath = null;
 						return new Object[] {parsedTasks, mail, null, retInfo, name2id, dbf, blocks, enivronments, exec, watchdogBaseDir, consts}; // third element is not used anymore
 					}
 					else  {
@@ -1241,7 +1245,6 @@ public class XMLParser {
 			LOGGER.error("Root element '<"+ROOT+">' was not found!");
 			if(!noExit) System.exit(1);
 		}
-		currentlyParsedFilePath = null;
 		return null;
 	}
 
