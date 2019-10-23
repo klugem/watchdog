@@ -298,6 +298,8 @@ public class XMLParser {
 	private static XMLProcessBlockProcessor PLUGIN_PROCESSBLOCK_PARSER;
 	
 	static {
+		Functions.filterErrorStream();
+		
 		BLOCKED_CONST_NAMES.put(TMP_BLOCKED_CONST, "It is internally used for storage of executors working directories (see attribute workingDir of executor).");
 		BLOCKED_CONST_NAMES.put(WF_PARENT_BLOCKED_CONST, "Folder which contains the workflow that is currently parsed.");
 		
@@ -389,8 +391,6 @@ public class XMLParser {
 			if(!noExit) System.exit(1);
 			throw new IllegalArgumentException("Could not read/write in temporary folder '"+tmpFolder.getAbsolutePath()+"'.");
 		}
-		
-		Functions.filterErrorStream();
 		
 		// create a new document factory
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

@@ -120,7 +120,6 @@ public class MethodTemplateGeneratorRunner extends BasicRunner {
 			String watchdogBase = xsdSchema.getParentFile().getParentFile().getAbsolutePath();
 			
 			// load the modules that are used within the workflow
-			Functions.filterErrorStream();
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			dbf.setIgnoringElementContentWhitespace(true);
 			dbf.setNamespaceAware(true);

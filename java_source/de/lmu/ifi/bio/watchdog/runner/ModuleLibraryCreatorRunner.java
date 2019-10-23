@@ -7,7 +7,6 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
 import de.lmu.ifi.bio.watchdog.docu.ModuleLibraryGenerator;
-import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 
@@ -78,7 +77,6 @@ public class ModuleLibraryCreatorRunner extends BasicRunner {
 			}
 
 			// do the work (= find all documented Watchdog modules & generate the page!)
-			Functions.filterErrorStream();
 			int ret = ModuleLibraryGenerator.generateModuleLibraryPage(new File(params.outputDir), watchdogBase, moduleFolders);
 
 			if(ret > 0) 

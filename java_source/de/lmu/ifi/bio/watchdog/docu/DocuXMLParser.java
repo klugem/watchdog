@@ -148,7 +148,7 @@ public class DocuXMLParser {
 	public static ArrayList<Moduledocu> parseAllXMLFiles(String watchdogBase, ArrayList<String> moduleFolders) {
 		try {
 			DocumentBuilderFactory dbf = prepareDBF(watchdogBase);
-	
+			
 			ArrayList<Pair<File, File>> xmlDocuFiles = findAllDocumentedModules(watchdogBase, moduleFolders, false);
 			ArrayList<Moduledocu> md = new ArrayList<>();
 			for(Pair<File, File> x : xmlDocuFiles)

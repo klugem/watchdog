@@ -14,14 +14,13 @@ import com.gc.iotools.stream.os.OutputStreamToInputStream;
 public class ErrorParserFilter extends OutputStreamToInputStream<String> {
 
 	private static final String ERROR = "[Error]";
-	private static final CharSequence CVC1A = "cvc-elt.1.a:";
+	private static final CharSequence CVC1A = "cvc-elt.1.a: Cannot find the declaration of element ";
 	
 	@Override
 	protected String doRead(InputStream i) throws Exception {
 		BufferedReader r = new BufferedReader(new InputStreamReader(i));
 		String e = null;
 		while((e = r.readLine()) != null) {
-			//System.out.println(e);
 			if(!(e.startsWith(ERROR) && e.contains(CVC1A))) {
 				System.out.println(e);
 				System.out.flush();

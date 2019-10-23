@@ -21,7 +21,6 @@ public abstract class GithubCheckerBase {
 	protected final String GIT_CLONE_DIR = System.getenv("TRAVIS_BUILD_DIR");
 	protected String watchdogBase = System.getenv("WATCHDOG_BASE");
 	protected static final String DEFAULT_BRANCH = "master";
-	private static final int ERROR_STREAM_FILTER_DURATION = 30; // filter longer as API calls might take their time
 	
 	/**
 	 * Constructor
@@ -29,7 +28,7 @@ public abstract class GithubCheckerBase {
 	 */
 	public GithubCheckerBase(String name) {	
 		this.NAME = name;
-		Functions.filterErrorStream(ERROR_STREAM_FILTER_DURATION);
+		Functions.filterErrorStream();
 	}
 	
 	public boolean isLocalTestMode() {

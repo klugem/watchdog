@@ -12,13 +12,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import de.lmu.ifi.bio.multithreading.TimedExecution;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 
@@ -216,18 +214,13 @@ public class Functions {
 	}
 	
 	public static void filterErrorStream() {
-		filterErrorStream(2);
-	}
-
-	public static void filterErrorStream(int durationInSeconds) {
 		// hide errors that are caused by apache.xerces (more specifically cvc-elt.1.a which is not an real error as stated in XMLSchemaValidator)
 		PrintStream err = System.err;
 		// let them copy the "wrong" printStream that can be read by us in order to print other errors to stdout
 		ErrorParserFilter filter = new ErrorParserFilter();
 		System.setErr(new PrintStream(filter));
 		// reset it
-		TimedExecution.addRunableNamed(() -> resetErrorStream(filter, err), durationInSeconds, TimeUnit.SECONDS, "resetErrorStream");
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {resetErrorStream(filter, err); try {Thread.sleep(2500);} catch(Exception e) {} }));
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {resetErrorStream(filter, err); try {Thread.sleep(100);} catch(Exception e) {} }));
 	}
 	
 	public static void resetErrorStream(ErrorParserFilter filter, PrintStream err) {

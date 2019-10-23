@@ -27,7 +27,6 @@ import de.lmu.ifi.bio.watchdog.GUI.layout.DragableTableCellFactory;
 import de.lmu.ifi.bio.watchdog.GUI.layout.DragableTreeTableCell;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.GUI.useraction.AddModuleFromLibraryAction;
-import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.Parameter;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
@@ -77,7 +76,6 @@ public class ToolLibraryController implements Initializable {
 	protected void loadModuleLibrary() {
 		try {
 			if(PreferencesStore.hasWatchdogBaseDir() && PreferencesStore.getMouleFolders().size() > 0) {
-				Functions.filterErrorStream();
 				// get information about the stored modules
 				File defaultSchemaPath = new File(PreferencesStore.getWatchdogBaseDir() + File.separator + XMLParser.FILE_CHECK);
 				File defaultTmpPath = new File(PreferencesStore.getWatchdogBaseDir() + File.separator + XMLParser.TMP_FOLDER);

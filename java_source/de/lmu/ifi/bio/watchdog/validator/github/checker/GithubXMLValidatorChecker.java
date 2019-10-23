@@ -4,7 +4,6 @@ import java.io.File;
 
 import de.lmu.ifi.bio.watchdog.validator.LocalValidator;
 import de.lmu.ifi.bio.watchdog.validator.XMLWorkflowValidator;
-import de.lmu.ifi.bio.watchdog.validator.XSDModuleValidator;
 import de.lmu.ifi.bio.watchdog.validator.github.APICompareInfo;
 import de.lmu.ifi.bio.watchdog.validator.github.GithubLogEventhandler;
 
