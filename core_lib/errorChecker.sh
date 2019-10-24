@@ -2,7 +2,7 @@
 SCRIPT_FOLDER=$(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || readlink "${BASH_SOURCE[0]}" || echo "${BASH_SOURCE[0]}")) && pwd -P)
 source $SCRIPT_FOLDER/includeBasics.sh
 
-DEFAULT_KEY_WORDS="error:exception:failure:killed:segmentation fault:core dump:failed"
+DEFAULT_KEY_WORDS="error:exception:failure:killed:segmentation fault:core dump:failed:permission denied"
 BEFORE_LINES=10
 
 # check, if used tools are installed

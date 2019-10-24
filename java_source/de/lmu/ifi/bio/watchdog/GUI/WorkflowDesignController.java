@@ -29,6 +29,7 @@ import de.lmu.ifi.bio.watchdog.GUI.datastructure.Module;
 import de.lmu.ifi.bio.watchdog.GUI.event.TabEvent;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ExecuteToolbar;
 import de.lmu.ifi.bio.watchdog.GUI.helper.FinishedCheckerThread;
+import de.lmu.ifi.bio.watchdog.GUI.helper.GUIConfirmation;
 import de.lmu.ifi.bio.watchdog.GUI.helper.GUIPasswortGetter;
 import de.lmu.ifi.bio.watchdog.GUI.helper.Inform;
 import de.lmu.ifi.bio.watchdog.GUI.helper.ParamValue;
@@ -60,6 +61,7 @@ import de.lmu.ifi.bio.watchdog.helper.GUISaveHelper;
 import de.lmu.ifi.bio.watchdog.helper.Mailer;
 import de.lmu.ifi.bio.watchdog.helper.Parameter;
 import de.lmu.ifi.bio.watchdog.helper.SSHPassphraseAuth;
+import de.lmu.ifi.bio.watchdog.helper.UserConfirmation;
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
 import de.lmu.ifi.bio.watchdog.helper.returnType.ReturnType;
@@ -155,6 +157,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 		// register it on XML DATA store for change updates
 		XMLDataStore.registerNotifyOnRegisterOrUnregisterData((GUISaveHelper) this);
 		SSHPassphraseAuth.changePasswordRequestType(new GUIPasswortGetter());
+		UserConfirmation.setUserConfirmationRequester(new GUIConfirmation());
 		
 		// collect log messages
 		this.GLOBAL_MESSAGE_HANDLER = new LogMessageEventHandler(this.additionalBarController.getGlobalConsole());

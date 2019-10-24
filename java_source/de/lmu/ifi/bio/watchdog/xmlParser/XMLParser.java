@@ -54,6 +54,7 @@ import de.lmu.ifi.bio.watchdog.helper.GUIInfo;
 import de.lmu.ifi.bio.watchdog.helper.Parameter;
 import de.lmu.ifi.bio.watchdog.helper.PatternFilenameFilter;
 import de.lmu.ifi.bio.watchdog.helper.ReplaceSpecialConstructs;
+import de.lmu.ifi.bio.watchdog.helper.UserConfirmation;
 import de.lmu.ifi.bio.watchdog.helper.returnType.BooleanReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.DoubleReturnType;
 import de.lmu.ifi.bio.watchdog.helper.returnType.FileReturnType;
@@ -811,7 +812,28 @@ public class XMLParser {
 								// update watchdog call if needed
 								if(isWatchdogModule) {
 									// make command relative to the module folder it is located in
-									binName = new File(new File(moduleName2Path.get(taskType)).getParent() + File.separator + binName).getAbsolutePath();
+									File binNameFile = new File(new File(moduleName2Path.get(taskType)).getParent() + File.separator + binName);
+									binName = binNameFile.getAbsolutePath();
+									
+									// check if binName is executable
+									if(!binNameFile.exists()) {
+										LOGGER.warn("Watchdog module script '" + binName + "' does not exist.");
+										if(!noExit) System.exit(1);
+									}
+										
+									// check if binName is executable
+									if(!binNameFile.canExecute()) {
+										boolean nowOk = false;
+										LOGGER.warn("Watchdog module script '" + binName + "' is not executable.");
+										
+										if(UserConfirmation.confirm("Do you want to make"+XMLParser.NEWLINE+"'" + binName + "'" +XMLParser.NEWLINE + "executable?", LOGGER)) {
+											if(binNameFile.setExecutable(true, false)) {
+												nowOk = true;
+												LOGGER.info("Watchdog module script '" + binName + "' is now executable.");
+											}
+										}
+										if(!nowOk && !noExit) System.exit(1);
+									}
 								}
 								if(preBinName != null && preBinName.length() > 0) {
 									binName = preBinName + " " + binName;
@@ -1287,7 +1309,10 @@ public class XMLParser {
 	}
 	
 	public static String getXSDCacheDir(File tmpBaseDir) {
-		return tmpBaseDir.getAbsolutePath() + File.separator + CACHE_XSD_DIR;
+		File ret = new File(tmpBaseDir.getAbsolutePath() + File.separator + CACHE_XSD_DIR);
+		if(tmpBaseDir.exists() && tmpBaseDir.canWrite() && !ret.exists())
+			ret.mkdir();
+		return ret.getAbsolutePath();
 	}
 	
 	public static String getCacheFileNameForXSDModule(String tmpDir, File xsdModuleFile, String modName, int version) throws IOException {
