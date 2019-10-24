@@ -5,7 +5,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Watchdog's module library</title>
-	<link rel="icon" href="img/favicon.ico">
+	<link rel="icon" href="gfx/watchdog.ico">
 	<!-- CSS FILES -->
 	<link rel="stylesheet" type="text/css" href="css/uikit.min.css">
 	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
@@ -18,16 +18,16 @@
 			<div class="uk-container uk-container-expand">
 				<div class="uk-grid uk-grid-medium uk-flex uk-flex-middle" data-uk-grid>
 					<div class="uk-width-auto">
-						<a href="#" class="uk-logo" title=""><img src="img/logo.svg" alt=""></a>
+						<img class="uk-logo" src="gfx/watchdog.png" alt="" style="width: 64px" />
 					</div>
 					<div class="uk-width-expand">
 						<div class="uk-inline uk-width-1.1">
 							<span class="uk-form-icon uk-form-icon" data-uk-icon="icon: search"></span>
-							<input class="uk-input uk-width-auto search-fld" type="search" placeholder="Search..." id="search-input" oninput="moduleFilter()">
-							<span class="uk-width-auto"><input class="uk-checkbox" type="checkbox" id="search-name" checked onchange="moduleFilter()"/> title</span>
-							<span class="uk-width-auto"><input class="uk-checkbox" type="checkbox" id="search-author" checked onchange="moduleFilter()"/> author</span>
-							<span class="uk-width-auto"><input class="uk-checkbox" type="checkbox" id="search-category" checked onchange="moduleFilter()"/> category</span>
-							<span class="uk-width-auto"><input class="uk-checkbox" type="checkbox" id="search-description" checked onchange="moduleFilter()"/> description</span>
+							<input class="uk-input uk-width-auto search-fld" type="search" placeholder="Search..." id="search-input" oninput="moduleFilter(true)">
+							<span class="uk-width-auto"><input class="uk-checkbox" type="checkbox" id="search-name" checked onchange="moduleFilter(false)"/> title</span>
+							<span class="uk-width-auto"><input class="uk-checkbox" type="checkbox" id="search-author" checked onchange="moduleFilter(false)"/> author</span>
+							<span class="uk-width-auto"><input class="uk-checkbox" type="checkbox" id="search-category" checked onchange="moduleFilter(false)"/> category</span>
+							<span class="uk-width-auto"><input class="uk-checkbox" type="checkbox" id="search-description" checked onchange="moduleFilter(false)"/> description</span>
 						</div>
 					</div>
 					<div class="uk-width-auto">

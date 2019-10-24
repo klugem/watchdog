@@ -1,3 +1,6 @@
+// true, if input is from text search
+var isTextSearchUsed = false;
+
 // parse data to search just once
 var metaOrg = jQuery.parseJSON(meta_info);
 meta = []
@@ -62,7 +65,7 @@ $(document).ready(function() {
 	filterDIV.on('afterFilter', function() { updateFilterLinks() });
 
 	// update filter buttons
-	moduleFilter();
+	moduleFilter(false);
 });
 
 // is called when the user clicks on a module --> full module description
@@ -169,7 +172,9 @@ function updateFilterButtons(counter, top, idBase, cat, number) {
 		}
 	}
 
-	document.activeElement.blur()
+	// if no text search, blur active element as otherwise wrong classes might be marked as active
+	if(!isTextSearchUsed)
+		document.activeElement.blur()
 	for (var i = 1; i <= number; i++) {
 		var ele = $("#" + idBase + i)
 		if (top.length >= i) {
@@ -230,9 +235,6 @@ function updateFilterLinks() {
 	topC = sortCounter(counter, "category")
 	topU = sortCounter(counter, "age")
 
-	// check, if event was caused by meta search
-	var target = $("#refresh-search > li.uk-active")
-
 	updateFilterButtons(counter, topA, "filter-author-link", "author", 5)
 	updateFilterButtons(counter, topC, "filter-category-link", "category", 5)
 	updateFilterButtons(counter, topU, "filter-age-link", "age", 3)
@@ -240,7 +242,11 @@ function updateFilterLinks() {
 
 
 // function that must be called when search results should be updated
-function moduleFilter() {
+function moduleFilter(isTextEdited) {
+	if(isTextEdited)
+		isTextSearchUsed = true
+	else
+		isTextSearchUsed = false
 
 	// check which field to search
 	var name = $("#search-name").is(':checked')

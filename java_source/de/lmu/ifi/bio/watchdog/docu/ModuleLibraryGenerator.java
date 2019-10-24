@@ -115,8 +115,10 @@ public class ModuleLibraryGenerator {
 	public static String TEMPLATE_MODULE = TEMPLATE_PATH + File.separator + "module.htm.tpl";
 	public static String CSS_FOLDER_NAME = "css";
 	public static String JS_FOLDER_NAME = "js";
+	public static String GFX_FOLDER_NAME = "gfx";
 	public static String CSS_FOLDER_PATH = TEMPLATE_PATH + File.separator + CSS_FOLDER_NAME;
 	public static String JS_FOLDER_PATH = TEMPLATE_PATH + File.separator + JS_FOLDER_NAME;
+	public static String GFX_FOLDER_PATH = TEMPLATE_PATH + File.separator + GFX_FOLDER_NAME;
 	
 	public static HashMap<String, HashMap<String, Integer>> FILTER_GROUPS = new HashMap<>();
 	
@@ -155,6 +157,7 @@ public class ModuleLibraryGenerator {
 		String baseOut = outputDir.getAbsolutePath() + File.separator;
 		File cssDestFolder = new File(baseOut + CSS_FOLDER_NAME);
 		File jsDestFolder = new File(baseOut + JS_FOLDER_NAME);
+		File gfxDestFolder = new File(baseOut + GFX_FOLDER_NAME);
 		String indexOut = baseOut + "index.htm";
 		String jsIndexOut = jsDestFolder.getAbsolutePath() + File.separator + "meta.json";
 		
@@ -163,6 +166,7 @@ public class ModuleLibraryGenerator {
 			String base = watchdogBasedir.getAbsolutePath() + File.separator;
 			File cssFolder = new File(base + CSS_FOLDER_PATH);
 			File jsFolder = new File(base + JS_FOLDER_PATH);
+			File gfxFolder = new File(base + GFX_FOLDER_PATH);
 			
 			List<String> index = Files.readAllLines(Paths.get(base + TEMPLATE_INDEX));
 			List<String> filter = Files.readAllLines(Paths.get(base + TEMPLATE_FILTER));
@@ -390,9 +394,10 @@ public class ModuleLibraryGenerator {
 			
 			// write the index file
 			Functions.write(Paths.get(indexOut), finalIndex.toString());
-			// copy the JS/CSS folder
+			// copy the JS/CSS/GFX folder
 			FileUtils.copyDirectory(cssFolder, cssDestFolder);
 			FileUtils.copyDirectory(jsFolder, jsDestFolder);
+			FileUtils.copyDirectory(gfxFolder, gfxDestFolder);
 
 			// write the JSON meta-data file
 			Functions.write(Paths.get(jsIndexOut), "var " + META_NAME + "='[" + StringUtils.join(search, ", ")+ "]'");

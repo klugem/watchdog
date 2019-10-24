@@ -62,7 +62,7 @@
 								<th>name</th>
 								<th>type</th>
 								<th>restrictions</th>
-								<th>default value</th>
+								<th>default</th>
 								<th>occurrence</th>
 								<th>description</th>
 								<th>minV</th>
