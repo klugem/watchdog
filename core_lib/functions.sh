@@ -674,3 +674,42 @@ function getRPackageVersion() {
 	fi
 }
 
+
+function getBinaryVersion() {
+	BIN_CMD=$1
+	PARAM=$2
+
+	# try to locate the binary
+	BIN_PATH=$({ which "${BIN_CMD}"; } 2>&1)
+	NOT_RET=$?
+	NOT=$({ echo $BIN_PATH | grep -E "^which: no $BIN_CMD" -c; } 2>&1)
+	NOT=$((NOT+NOT_RET))
+
+	if [ $NOT -ne 0 ]; then
+		RET_VER="NO_SUCH_BINARY"
+		FAILED=1
+	else
+		# call the command with the version parameter
+		RET=$({ ${BIN_CMD} ${PARAM}; } 2>&1)
+		CODE=$?
+		if [ $CODE -ne 0 ] ; then
+			RET_VER="NO_SUCH_PARAMETER"
+		else
+			# try to strip the version down
+			VER=$(echo ${RET} | grep -oE "\(GNU|BSD.+\)\W+([0-9]+\.([0-9]\.)*[0-9]+\.?)" | grep -oE "([0-9]+\.([0-9]\.)*[0-9]+\.?)" | head -n 1 )
+			if [ "${VER}" == "" ]; then
+				VER=$(echo ${RET} | grep -oE "([0-9]+\.([0-9]\.)*[0-9]+\.?)" | head -n 1 )	
+			fi
+
+			# use the stripped version
+			if [ "${VER}" != "" ]; then
+				RET_VER="${VER}"
+			else
+				RET_VER="${RET}"
+			fi	
+		fi
+	fi
+	# echo the version
+	echo "${RET_VER}"
+}
+
