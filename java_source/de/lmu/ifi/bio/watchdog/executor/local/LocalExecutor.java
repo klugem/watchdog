@@ -230,8 +230,16 @@ public class LocalExecutor extends ScheduledExecutor<LocalExecutorInfo> {
 			this.p.getInputStream().close();
 			this.p.getOutputStream().close();
 			this.p.getErrorStream().close();
-			this.p.waitFor(5, TimeUnit.SECONDS);
+			// kill process and all childs
+			this.p.descendants().forEach(x -> x.destroy());
 			this.p.destroy();
+			this.p.waitFor(1, TimeUnit.SECONDS);
+			
+			// he that will not hear must feel ;)
+			if(this.p.isAlive()) {
+				this.p.descendants().forEach(x -> x.destroyForcibly());
+				this.p.destroyForcibly();
+			}
 			
 			// remove it from the running job list
 			super.stopExecution();
