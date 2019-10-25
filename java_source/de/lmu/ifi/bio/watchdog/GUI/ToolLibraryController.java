@@ -255,7 +255,7 @@ public class ToolLibraryController implements Initializable {
 				}
 			}
 			
-			modUnsorted.put(nameFull, new Module(name, new File(pathOrg).getParentFile().getAbsolutePath(), "", params, ret, lastCat, version));
+			modUnsorted.put(nameFull, new Module(name, new File(pathOrg).getAbsoluteFile().getParentFile().getAbsolutePath(), "", params, ret, lastCat, version));
 			this.INCLUDE_DIRS.put(name, moduleFolders.get(lastCat));
 		}
 		

@@ -134,6 +134,7 @@ public class ModuleLibraryGenerator {
 	}
 		
 	public static int generateModuleLibraryPage(File outputDir, File watchdogBasedir, ArrayList<String> moduleFoldersToInclude) {
+		outputDir = outputDir.getAbsoluteFile();
 		Logger log = new Logger();
 		int ok = 0;
 		if(!outputDir.exists())

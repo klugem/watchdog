@@ -360,7 +360,7 @@ public class XMLParser {
 		
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
-		String watchdogBaseDir = new File(schemaPath).getParentFile().getParent();
+		String watchdogBaseDir = new File(schemaPath).getAbsoluteFile().getParentFile().getParent();
 		
 		// will be executed only once --> init plugins
 		initPlugins(watchdogBaseDir, LOGGER, noExit, isGUILoadAttempt());
@@ -812,7 +812,7 @@ public class XMLParser {
 								// update watchdog call if needed
 								if(isWatchdogModule) {
 									// make command relative to the module folder it is located in
-									File binNameFile = new File(new File(moduleName2Path.get(taskType)).getParent() + File.separator + binName);
+									File binNameFile = new File(new File(moduleName2Path.get(taskType)).getAbsoluteFile().getParent() + File.separator + binName);
 									binName = binNameFile.getAbsolutePath();
 									
 									// check if binName is executable
@@ -1334,7 +1334,7 @@ public class XMLParser {
 		// ensure that default path is there
 		File f = new File(defaultSchemaPath);
 		if(!(f.exists() && f.canRead())) {
-			LOGGER.error("Can not find 'xsd/watchdog.xsd' file in watchdog base folder: '" + f.getParentFile().getParent() + "'");
+			LOGGER.error("Can not find 'xsd/watchdog.xsd' file in watchdog base folder: '" + f.getAbsoluteFile().getParentFile().getParent() + "'");
 			if(!noExit) System.exit(1);
 		}
 		
@@ -1418,7 +1418,7 @@ public class XMLParser {
 					line = line.replace(REPLACE_MODULE_IMPORT, StringUtils.join(includeMod, NEWLINE));
 				}
 				if(beforePluginImport) 
-					line = line.replace(REPLACE_IMPORT_PATH, REPLACE_IMPORT_PATH + new File(defaultSchemaPath).getParent() + File.separator);
+					line = line.replace(REPLACE_IMPORT_PATH, REPLACE_IMPORT_PATH + new File(defaultSchemaPath).getAbsoluteFile().getParent() + File.separator);
 				
 				// add the line
 				buf.add(line);

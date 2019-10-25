@@ -37,7 +37,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 	protected static final String EXECUTE_PREFIX = "execute_";
 	protected static final String ENV_PREFIX = "env_";
 	public static final String ZERO_SEP = "\0";
-	protected static String MAIN_COMMAND_RETURN="\"MAIN_COMMAND_RETURN=$?\"";
+	protected static String MAIN_COMMAND_RETURN="MAIN_COMMAND_RETURN=$?";
 	protected static String EXIT_MAIN_COMMAND_RETURN="exit ${MAIN_COMMAND_RETURN}";
 	
 	public static String default_working_dir;
