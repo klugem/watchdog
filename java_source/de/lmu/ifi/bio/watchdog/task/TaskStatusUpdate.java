@@ -62,9 +62,11 @@ public class TaskStatusUpdate extends StopableLoopRunnable implements Serializab
 				}
 				// job ended with some exit status
 				else if(this.T.info.hasExited()) {
+					boolean printError = false;
+					
 					this.T.exitStatus=this.T.info.getExitStatus();
 					if((this.T.getTaskID() > 0 || this.T.exitStatus != 0))
-						this.T.LOGGER.debug("Task with ID " + this.T.getID() + " exited with status " + this.T.exitStatus + ".");
+						this.T.LOGGER.info("Task with ID " + this.T.getID() + " exited with status " + this.T.exitStatus + ".");
 				
 					// check, if exit status was zero
 					if(this.T.exitStatus == 0) {
@@ -96,18 +98,11 @@ public class TaskStatusUpdate extends StopableLoopRunnable implements Serializab
 						}
 						
 						// if all is ok, set status to ok
-						if(ok)
-							if(!this.T.hasErrors())
-								this.T.setStatus(TaskStatus.FINISHED);
-							else 
-								this.T.setStatus(TaskStatus.FAILED);
-						
-						if(TaskStatus.FAILED_SUCCESS_CHECK.equals(this.T.getStatus())) {
-							// print command of this.T task;
-							this.T.LOGGER.error("Command failed: '" + this.T.getBinaryCall() + "' with following arguments.");
-							this.T.LOGGER.error(StringUtils.join(this.T.getArguments(), " "));
-							this.T.LOGGER.error("Command failed caused by success checker!");
+						if(!this.T.hasErrors() && ok)
+							this.T.setStatus(TaskStatus.FINISHED);
+						else { 
 							this.T.setStatus(TaskStatus.FAILED);
+							printError = true;
 						}
 					}
 					else {
@@ -116,10 +111,20 @@ public class TaskStatusUpdate extends StopableLoopRunnable implements Serializab
 							if(eCheck.hasTaskFailed())
 								this.T.ERRORS.addAll(eCheck.getErrorMessages());
 						}
-						// print command of this.T task;
-						this.T.LOGGER.error("Command failed: '" + this.T.getBinaryCall() + "' with following arguments.");
+						printError = true;
+					}
+					if(printError) {
+						// print command of task
+						this.T.LOGGER.error("Command failed (exit code: "+this.T.getExitStatus()+"): '" + this.T.getBinaryCall() + "' with following arguments.");
 						this.T.LOGGER.error(StringUtils.join(this.T.getArguments(), " "));
 						this.T.setStatus(TaskStatus.FAILED);
+						
+						// print errors on console
+						if(this.T.getErrors().size() > 0) {
+							this.T.LOGGER.error("Errors: (" + this.T.getErrors().size() + ")");
+							for(String e : this.T.getErrors()) 
+								this.T.LOGGER.error(e);
+						}
 					}
 					
 					// save the used resources

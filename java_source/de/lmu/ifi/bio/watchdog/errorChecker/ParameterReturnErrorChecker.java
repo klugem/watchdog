@@ -16,7 +16,7 @@ public class ParameterReturnErrorChecker extends ErrorChecker implements Seriali
 	private static final long serialVersionUID = -1225957239576183024L;
 	private final static String LAST_LINE = "?EOF!";
 	private final static int WAIT = 100; // wait time in ms for files
-	private final static int COUNTER = 6000; // counter
+	private final static int COUNTER = 600; // counter
 	private final static String TAB = "\t"; 
 	
 	private final HashMap<String, String> COLLECTED_RETURN_PARAMETER = new HashMap<>();
@@ -48,8 +48,8 @@ public class ParameterReturnErrorChecker extends ErrorChecker implements Seriali
 				i++;
 
 				if(i > COUNTER) {
-					this.ERRORS.add("Return parameter file '"+f.getAbsolutePath()+"' could not be opened after 10 minutes of wait time!");
-					LOGGER.error("Return parameter file '"+f.getAbsolutePath()+"' could not be opened after 10 minutes of wait time!");
+					this.ERRORS.add("Return parameter file '"+f.getAbsolutePath()+"' could not be opened after 1 minutes of wait time!");
+					LOGGER.error("Return parameter file '"+f.getAbsolutePath()+"' could not be opened after 1 minutes of wait time!");
 					return;
 				}
 			}
