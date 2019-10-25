@@ -46,7 +46,7 @@ public class XMLBasedWatchdogParameters {
 	protected String mailConfig = null;
 	
 	@Parameter(names={"-mailWaitTime"}, description="wait time in seconds before task processing is started if no mail adress is given", required=false)
-	protected int mailWaitTime = 15;
+	protected int mailWaitTime = 5;
 	
 	@Parameter(names={"-include", "-i"}, description="xml task id that should be executed; can be used several times; can be used in combination with -start and -stop", required=false)
 	protected List<String> include = new ArrayList<>();

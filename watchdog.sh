@@ -28,7 +28,7 @@ if [ $AUTO_DETACH_COUNT -eq 1 ]; then
 
 	RET=123
 	while [ $RET -eq 123 ]; do
-		java -jar $SCRIPT_FOLDER/jars/watchdog.jar $@ $APPEND_PARAM &
+		java -jar $SCRIPT_FOLDER/jars/watchdog.jar $@ $APPEND_PARAM </dev/tty &
 		BACKGROUND_PID=$!
 		waitForCommandToFinish ${BACKGROUND_PID}
 		RET=${BACKGROUND_EXIT_CODE}
@@ -43,7 +43,7 @@ if [ $AUTO_DETACH_COUNT -eq 1 ]; then
 	done
 	exit $RET
 else
-	java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" $@ &
+	java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" $@ </dev/tty &
 	BACKGROUND_PID=$!
 	waitForCommandToFinish ${BACKGROUND_PID}
 	exit $BACKGROUND_EXIT_CODE

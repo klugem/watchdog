@@ -1271,7 +1271,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			
 			// create a new watchdog object and xml2 thread stuff
 			this.resumeFile = new File(WorkflowResumeLogger.generateResumeFilename(f, false));
-			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, f, 10, null, null, this.resumeFile);
+			XMLTask2TaskThread xml2taskThread = new XMLTask2TaskThread(watchdog, xmlTasks, mailer, retInfo, f, 5, null, null, this.resumeFile);
 			
 			// change detail degree of output
 			watchdog.setLogLevel(LogLevel.ERROR);

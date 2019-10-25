@@ -37,6 +37,8 @@ public abstract class Executor<A extends ExecutorInfo> {
 	protected static final String EXECUTE_PREFIX = "execute_";
 	protected static final String ENV_PREFIX = "env_";
 	public static final String ZERO_SEP = "\0";
+	protected static String MAIN_COMMAND_RETURN="\"MAIN_COMMAND_RETURN=$?\"";
+	protected static String EXIT_MAIN_COMMAND_RETURN="exit ${MAIN_COMMAND_RETURN}";
 	
 	public static String default_working_dir;
 	private static XMLTask2TaskThread xml2taskThread;
@@ -228,6 +230,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 			c.addAll(this.BEFORE_COMMAND);
 			String taskParameter = (this.TASK.getArguments().size() > 0 ? " " + StringUtils.join(this.TASK.getArguments(), " ") : "");
 			c.add(this.TASK.getBinaryCall() + taskParameter);
+			c.add(MAIN_COMMAND_RETURN);
 
 			// add after command that will query the software version
 			if(addVersionQuery) {
@@ -237,6 +240,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 			}
 			
 			c.addAll(this.AFTER_COMMAND);
+			c.add(EXIT_MAIN_COMMAND_RETURN);
 			return new String[] {this.writeCommandsToFile(StringUtils.join(c, Executor.COMMAND_SEP))};
 		}
 	}
