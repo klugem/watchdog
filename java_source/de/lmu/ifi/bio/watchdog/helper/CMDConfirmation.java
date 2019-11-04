@@ -43,13 +43,19 @@ public class CMDConfirmation implements UserConfirmationInterface {
 			try {
 				int b;
 				boolean first = true;
-				while((b = reader.read()) != -1) {
-					if(first) { 
-						if(b == ((int) 'Y') && ((b = reader.read()) == 10 || b == 13)) {
-							return true; 
-						}
-						first = false;
+				boolean ret = false;
+				if((b = reader.read()) != -1) {
+					if(first && b == ((int) 'Y') && ((b = reader.read()) == 10 || b == 13)) {
+						ret = true; 
 					}
+					first = false;
+					
+					// read rest of stream
+					while(reader.ready()) 
+						reader.read();
+					
+					// return the answer
+					return ret;
 				}
 			}
 			catch(Exception ex) { ex.printStackTrace(); }

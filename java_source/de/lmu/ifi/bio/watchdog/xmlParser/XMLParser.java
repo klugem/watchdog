@@ -816,23 +816,25 @@ public class XMLParser {
 									binName = binNameFile.getAbsolutePath();
 									
 									// check if binName is executable
-									if(!binNameFile.exists()) {
-										LOGGER.warn("Watchdog module script '" + binName + "' does not exist.");
-										if(!noExit) System.exit(1);
-									}
-										
-									// check if binName is executable
-									if(!binNameFile.canExecute()) {
-										boolean nowOk = false;
-										LOGGER.warn("Watchdog module script '" + binName + "' is not executable.");
-										
-										if(UserConfirmation.confirm("Do you want to make"+XMLParser.NEWLINE+"'" + binName + "'" +XMLParser.NEWLINE + "executable?", LOGGER)) {
-											if(binNameFile.setExecutable(true, false)) {
-												nowOk = true;
-												LOGGER.info("Watchdog module script '" + binName + "' is now executable.");
+									if(preBinName != null && preBinName.length() > 0) {
+										if(!binNameFile.exists()) {
+											LOGGER.warn("Watchdog module script '" + binName + "' does not exist.");
+											if(!noExit) System.exit(1);
+										}
+											
+										// check if binName is executable
+										if(!binNameFile.canExecute()) {
+											LOGGER.warn("Watchdog module script '" + binName + "' is not executable.");
+											
+											if(UserConfirmation.confirm("Do you want to make"+XMLParser.NEWLINE+"'" + binName + "'" +XMLParser.NEWLINE + "executable?", LOGGER)) {
+												if(binNameFile.setExecutable(true, false)) {
+													LOGGER.info("Watchdog module script '" + binName + "' is now executable.");
+												}
+												else {
+													LOGGER.error("Failed to make it executable...exiting now!");	
+												}
 											}
 										}
-										if(!nowOk && !noExit) System.exit(1);
 									}
 								}
 								if(preBinName != null && preBinName.length() > 0) {
@@ -2014,19 +2016,15 @@ public class XMLParser {
 					dirs.add(mf);
 				}
 			}
-			// no module setting is given, use default folder modules/
-			else if(modules.getLength() == 0) {
-				dirs.add(MODULES);
-			}
 			else if(modules.getLength() == 1) {
 				if(modules.item(0) instanceof Element) {
 					Element el = (Element) modules.item(0);
 					// get default attribute
 					if(el.hasAttribute(DEFAULT_FOLDER) && el.getAttribute(DEFAULT_FOLDER).length() > 0)
 						dirs.add(el.getAttribute(DEFAULT_FOLDER));
-					else
+					else 
 						dirs.add(MODULES);
-					
+
 					// get childs
 					NodeList allFolders  = el.getElementsByTagName(FOLDER);
 					Element elm;
@@ -2037,6 +2035,10 @@ public class XMLParser {
 						}
 					}
 				}
+			}
+			// no module setting is given, use default folder modules/
+			else if(modules.getLength() == 0 || dirs.size() == 0) {
+				dirs.add(MODULES);
 			}
 			// not valid XML
 			else {
