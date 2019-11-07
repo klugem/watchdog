@@ -42,21 +42,21 @@ public class CMDConfirmation implements UserConfirmationInterface {
 			// read input
 			try {
 				int b;
-				boolean first = true;
 				boolean ret = false;
-				if((b = reader.read()) != -1) {
-					if(first && b == ((int) 'Y') && ((b = reader.read()) == 10 || b == 13)) {
-						ret = true; 
+				boolean first = true;
+				while((b = reader.read()) != -1) {
+					if(first) { 
+						if(b == ((int) 'Y') && ((b = reader.read()) == 10 || b == 13)) {
+							ret = true; 
+						}
+						first = false; 
 					}
-					first = false;
-					
-					// read rest of stream
-					while(reader.ready()) 
-						reader.read();
-					
-					// return the answer
-					return ret;
-				}
+					if(b == 10) // newline end handling.
+						break;
+				} 
+				
+				// return the answer
+				return ret;
 			}
 			catch(Exception ex) { ex.printStackTrace(); }
 			return false;

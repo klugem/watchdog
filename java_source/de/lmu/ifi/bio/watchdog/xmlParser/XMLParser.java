@@ -285,6 +285,7 @@ public class XMLParser {
 	public static final ArrayList<String> BASE_ROOT_TYPES = new ArrayList<>();
 	public static final HashMap<String, Object[]> XML_MODULE_INFO = new HashMap<>();
 	private static HashMap<String, String> last_consts = new HashMap<>();
+	private static HashSet<String> EXEC_CONFIM = new HashSet<>();
 	private static String currentlyParsedFilePath = null;
 	private static boolean isGUILoadAttempt;
 	private static boolean noExitInCaseOfError = false;
@@ -297,6 +298,7 @@ public class XMLParser {
 	private static HashSet<String> XSD_PLUGIN_FILES = new HashSet<>();
 	private static XMLExecutorProcessor PLUGIN_EXECUTOR_PARSER;
 	private static XMLProcessBlockProcessor PLUGIN_PROCESSBLOCK_PARSER;
+	
 	
 	static {
 		Functions.filterErrorStream();
@@ -816,14 +818,16 @@ public class XMLParser {
 									binName = binNameFile.getAbsolutePath();
 									
 									// check if binName is executable
-									if(preBinName != null && preBinName.length() > 0) {
+									boolean shouldBeItselfExecutable = !(preBinName != null && preBinName.length() > 0);
+									if(shouldBeItselfExecutable) {
 										if(!binNameFile.exists()) {
 											LOGGER.warn("Watchdog module script '" + binName + "' does not exist.");
 											if(!noExit) System.exit(1);
 										}
 											
 										// check if binName is executable
-										if(!binNameFile.canExecute()) {
+										if(!EXEC_CONFIM.contains(binName) && !binNameFile.canExecute()) {
+											EXEC_CONFIM.add(binName);
 											LOGGER.warn("Watchdog module script '" + binName + "' is not executable.");
 											
 											if(UserConfirmation.confirm("Do you want to make"+XMLParser.NEWLINE+"'" + binName + "'" +XMLParser.NEWLINE + "executable?", LOGGER)) {
