@@ -48,7 +48,7 @@ if [ "$_" != "$0" ]; then
 			if [ $MODULE_VERSION_IS_SET -eq 1 ]; then
 				echo $(removeModuleVersionParamsAndPrint "$@" "${MODULE_VERSION_PARAMETER_NAME}")
 			else 
-				echo $(removeModuleVersionParamsAndPrint "$@")
+				echo $(printParams "$@")
 			fi
 		fi
 	else

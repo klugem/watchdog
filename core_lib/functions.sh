@@ -409,7 +409,12 @@ function removeModuleVersionParamsAndPrint() {
 		fi
 	done
 	# output it
-	printf "\"%s\" " "${PARAMS[@]}"
+	printParams "${PARAMS[@]}"
+}
+
+function printParams() {
+	# output it
+	printf "\"%s\" " "$@"
 }
 
 # first parameter: number of cores
