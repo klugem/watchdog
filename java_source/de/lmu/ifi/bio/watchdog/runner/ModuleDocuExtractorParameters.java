@@ -6,16 +6,16 @@ import com.beust.jcommander.Parameter;
 
 public class ModuleDocuExtractorParameters extends DescriptionParameters {
 
-	@Parameter(names={"-moduleFolder", "-m"}, description="path to parent folder(s) of modules for which documentation templates should be created", required=true)
+	@Parameter(names={"-moduleFolder", "-m"}, description="path to parent folder(s) of modules for which documentation templates should be created; can be used several times", required=true)
 	protected List<String> module;
 	
-	@Parameter(names={"-authors", "-a"}, description="name of authors can be added to the template if the same for all modules", required=false)
+	@Parameter(names={"-authors", "-a"}, description="name of authors can be added to the template if the same for all modules; can be used several times", required=false)
 	protected List<String> authors;
 	
-	@Parameter(names={"-categories", "-c"}, description="name of categories can be added to the template if the same for all modules", required=false)
+	@Parameter(names={"-categories", "-c"}, description="name of categories can be added to the template if the same for all modules; can be used several times", required=false)
 	protected List<String> categories;
 	
-	@Parameter(names={"-maintainer", "-g"}, description="name of github users that maintain the module", required=false)
+	@Parameter(names={"-maintainer", "-g"}, description="name of github users that maintain the module; can be used several times", required=false)
 	protected List<String> maintainer;
 	
 	@Parameter(names={"-overwrite"}, description="overwrites existing documentation files without further confirmation", required=false)

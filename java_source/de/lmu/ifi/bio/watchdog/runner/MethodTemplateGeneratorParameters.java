@@ -7,7 +7,7 @@ import com.beust.jcommander.Parameter;
 
 public class MethodTemplateGeneratorParameters extends DescriptionParameters {
 
-	@Parameter(names={"-xml", "-x"}, description="path to the XML workflow file; required for loading of correct module foders", required=true)
+	@Parameter(names={"-xml", "-x"}, description="path to the XML workflow file; required for loading of correct module folders", required=true)
 	protected String xml;
 		
 	@Parameter(names={"-start"}, description="start with that ID (included)", required=false)

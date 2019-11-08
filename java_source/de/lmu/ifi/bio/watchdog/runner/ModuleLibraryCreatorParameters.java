@@ -6,7 +6,7 @@ import com.beust.jcommander.Parameter;
 
 public class ModuleLibraryCreatorParameters extends DescriptionParameters {
 
-	@Parameter(names={"-moduleFolder", "-m"}, description="path to the parent folder(s) of modules that should be included in the module reference book", required=true)
+	@Parameter(names={"-moduleFolder", "-m"}, description="path to the parent folder(s) of modules that should be included in the module reference book; can be used several times", required=true)
 	protected List<String> module;
 	
 	@Parameter(names={"-outputFolder", "-o"}, description="path to a folder in which the module reference book should be stored", required=true)
