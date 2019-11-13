@@ -1,6 +1,8 @@
 
 package de.lmu.ifi.bio.watchdog.docu;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 
 /**
@@ -26,8 +28,8 @@ public class Paramdocu extends Docu {
 	 */
 	public Paramdocu(String name, String type, String description, String defaultValue, String valueRestrictions) {
 		super(name, type, description);
-		this.defaultV = defaultValue;
-		this.restrictions = valueRestrictions;
+		this.defaultV = StringEscapeUtils.escapeHtml4(defaultValue);
+		this.restrictions = StringEscapeUtils.escapeHtml4(valueRestrictions);
 	}
 	
 	public Paramdocu(String name, String type) {
@@ -41,10 +43,10 @@ public class Paramdocu extends Docu {
 		return this.defaultV;
 	}
 	public void setRestriction(String valueRestrictions) {
-		this.restrictions = valueRestrictions;
+		this.restrictions = StringEscapeUtils.escapeHtml4(valueRestrictions);
 	}
 	public void setDefault(String defaultValue) {
-		this.defaultV = defaultValue;
+		this.defaultV = StringEscapeUtils.escapeHtml4(defaultValue);
 	}
 	public Integer getMinOccurs() {
 		return this.minOccurs;

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import de.lmu.ifi.bio.watchdog.helper.Functions;
@@ -45,6 +46,7 @@ public class ModuleLibraryGenerator {
 	public static final String DETAIL_PARAM_TEMPLATE = "<!--DETAIL_PARAM_TEMPLATE-->";
 	public static final String DETAIL_DEPENDENCY_TEMPLATE = "<!--DETAIL_DEPENDENCY_TEMPLATE-->";
 	public static final String DETAIL_CITE_TEMPLATE = "<!--DETAIL_CITE_TEMPLATE-->";
+	public static final String DETAIL_LINK_TEMPLATE = "<!--DETAIL_LINK_TEMPLATE-->";
 	public static final String DETAIL_RETURN_TEMPLATE = "<!--DETAIL_RETURN_TEMPLATE-->";
 	public static final String VERSION_LINK_TEMPLATE = "<!--VERSION_LINK_TEMPLATE-->";
 			
@@ -91,6 +93,7 @@ public class ModuleLibraryGenerator {
 	public static String PARAMETER_HIDE = "{@PARAMETER_HIDE@}";
 	public static String RETURN_VALUES_HIDE = "{@RETURN_VALUES_HIDE@}";
 	public static String CITATION_HIDE = "{@CITATION_HIDE@}";
+	public static String LINKS_HIDE = "{@LINKS_HIDE@}";
 	
 	public static String PARAM_NAME = "{@PARAM_NAME@}";
 	public static String PARAM_OCCURENCE = "{@PARAM_OCCURENCE@}";
@@ -102,6 +105,7 @@ public class ModuleLibraryGenerator {
 	public static String PAPER_DESC = "{@PAPER_DESC@}";
 	public static String SINGLE_PMID = "{@SINGLE_PMID@}";
 	public static String PMID_LIST = "{@PMID_LIST@}";
+	public static String LINK_LIST = "{@LINK_LIST@}";
 	public static String VERSION_ID = "{@VERSION_ID@}";
 	
 	public static String RETURN_NAME = "{@RETURN_NAME@}";
@@ -182,17 +186,20 @@ public class ModuleLibraryGenerator {
 			String paramTemplate = module.stream().filter(l -> l.contains(DETAIL_PARAM_TEMPLATE)).findFirst().orElse(null);
 			String dependencyTemplate = module.stream().filter(l -> l.contains(DETAIL_DEPENDENCY_TEMPLATE)).findFirst().orElse(null);
 			String pmidTemplate = module.stream().filter(l -> l.contains(DETAIL_CITE_TEMPLATE)).findFirst().orElse(null);
+			String linkTemplate = module.stream().filter(l -> l.contains(DETAIL_LINK_TEMPLATE)).findFirst().orElse(null);
 			String returnTemplate = module.stream().filter(l -> l.contains(DETAIL_RETURN_TEMPLATE)).findFirst().orElse(null);
 			String versionLinkTemplate = module.stream().filter(l -> l.contains(VERSION_LINK_TEMPLATE)).findFirst().orElse(null);
 			moduleTemplate = moduleTemplate.replace(paramTemplate, "");
 			moduleTemplate = moduleTemplate.replace(dependencyTemplate, "");
 			moduleTemplate = moduleTemplate.replace(pmidTemplate, "");
+			moduleTemplate = moduleTemplate.replace(linkTemplate, "");
 			moduleTemplate = moduleTemplate.replace(returnTemplate, "");
 			moduleTemplate = moduleTemplate.replace(versionLinkTemplate, "");
 			
 			paramTemplate = paramTemplate.replace(DETAIL_PARAM_TEMPLATE, "");
 			dependencyTemplate = dependencyTemplate.replace(DETAIL_DEPENDENCY_TEMPLATE, "");
 			pmidTemplate = pmidTemplate.replace(DETAIL_CITE_TEMPLATE, "");
+			linkTemplate = linkTemplate.replace(DETAIL_LINK_TEMPLATE, "");
 			returnTemplate = returnTemplate.replace(DETAIL_RETURN_TEMPLATE, "");
 			versionLinkTemplate = versionLinkTemplate.replace(VERSION_LINK_TEMPLATE, "");
 			
@@ -309,6 +316,21 @@ public class ModuleLibraryGenerator {
 				}
 				else {
 					newEntry = newEntry.replace(CITATION_HIDE, Boolean.toString(true));
+				}
+				///////////////////////////// LINKs
+				if(md.getWebsite().size() > 0) {
+					StringBuilder linksb = new StringBuilder();
+					for(String p : md.getWebsite()) {
+						String t = linkTemplate;
+						t = t.replace(URL, p);
+						
+						linksb.append(t);
+					}
+					newEntry = newEntry.replace(LINK_LIST, linksb);
+					newEntry = newEntry.replace(LINKS_HIDE, Boolean.toString(false));
+				}
+				else {
+					newEntry = newEntry.replace(LINKS_HIDE, Boolean.toString(true));
 				}
 				/////////////////////////////
 				///////////////////////////// VERSION LINKS

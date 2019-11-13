@@ -1,5 +1,7 @@
 package de.lmu.ifi.bio.watchdog.docu;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
 
@@ -22,9 +24,9 @@ public abstract class Docu {
 	 * @param description  description
 	 */
 	public Docu(String name, String type, String description) {
-		this.NAME = name;
-		this.TYPE = type;
-		this.desc = description;
+		this.NAME = StringEscapeUtils.escapeHtml4(name);
+		this.TYPE = StringEscapeUtils.escapeHtml4(type);
+		this.desc = StringEscapeUtils.escapeHtml4(description);
 	}
 	
 	public void setVersions(int min, int max) {
@@ -39,7 +41,7 @@ public abstract class Docu {
 		return this.TYPE;
 	}
 	public void setDescription(String description) {
-		this.desc = description;
+		this.desc = StringEscapeUtils.escapeHtml4(description);
 	}
 	public String getDescription() {
 		return this.desc;

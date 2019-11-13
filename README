@@ -3,7 +3,6 @@ The most recent version of the manual can be found online at
 https://www.bio.ifi.lmu.de/files/Software/Watchdog/Watchdog-manual.html
 and as HTML and PDF version in the documentation folder.
 
-
 ############################## INSTALLATION ################################
 Manually:
 
@@ -19,7 +18,6 @@ Via conda:
 
 In that case binaries are named watchdog-cmd and watchdog-gui while the rest
 of the files are located in ${PREFIX}/share/watchdog-wms-${VERSION}.
-
 
 ############################### RUN WATCHDOG ###############################
 The distributed jar files are build for Java 11 and are called internally 
@@ -37,16 +35,18 @@ The workflow designer can be started using
 The workflow designer depends on the Javafx SDK. The bash script will try 
 to identify the install location of the javafx SDK automatically.
 
-
 ################################ JAR FILES #################################
 watchdog.jar			command-line tool that executes Watchdog workflows
 watchdogDesigner.jar		graphical user interface for workflow design and execution
 moduleCreator.jar		provides a graphical user interface for module creation
-libraryGenerator.jar		creates a module reference book based on a set of modules
 docuTemplateExtractor.jar	generates templates for module documentation
-methodTemplateGenerator.jar 	basic reporting of steps performed during execution of a workflow
+refBookGenerator.jar		creates a module reference book based on a set of modules
+reportGenerator.jar 		basic reporting of steps performed during execution of a workflow
 moduleValidator.jar 		command-line tool that can be used to verify integrity of modules
+workflowValidator.jar		command-line tool that can be used to verify integrity of workflows
 
+All jar files are available in the jars/ subdirectory of the Watchdog installation folder.
+More information on how to use these programmes can be found in the manual in section 6.
 
 ################################## CONTACT #################################
 If you have any questions or suggestions, please feel free to contact me:
@@ -54,7 +54,6 @@ michael.kluge@bio.ifi.lmu.de
 
 In case of bugs or feature requests, feel free to create an issues at
 https://github.com/klugem/watchdog/issues
-
 
 ################################## LICENCE #################################
 Watchdog is free software: you can redistribute it and/or modify

@@ -97,6 +97,12 @@
 						{@PMID_LIST@}
 					</p>
 					</div>
+					<div class="mayhide" meta-hide="{@LINKS_HIDE@}">
+					<h3 class="uk-h3"><a href="#auto-and-expand">Links</a></h3>
+						<a href="{@URL@}" data-uk-tooltip="title: Website" target="_blank">{@URL@}</a><br /> <!--DETAIL_LINK_TEMPLATE-->
+						{@LINK_LIST@}
+					</p>
+					</div>
 				</div>
 			</div>
 		</div>

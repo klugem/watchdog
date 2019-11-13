@@ -18,6 +18,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -248,7 +249,7 @@ public class DocuXMLParser {
 		int maxVersion = 1;
 		try { minVersion = Integer.parseInt(e.getAttribute(MIN_VERSION)); minV = minVersion;} catch(Exception ex) {}
 		try { maxVersion = Integer.parseInt(e.getAttribute(MAX_VERSION)); maxV = maxVersion;} catch(Exception ex) {}		
-		return new VersionedInfo<>(e.getTextContent(), minV, maxV);
+		return new VersionedInfo<>(StringEscapeUtils.escapeHtml4(e.getTextContent()), minV, maxV);
 	}
 
 	/**
@@ -271,7 +272,7 @@ public class DocuXMLParser {
 		try { maxVersion = Integer.parseInt(e.getAttribute(MAX_VERSION)); } catch(Exception ex) {}
 		try { minOccurs = Integer.parseInt(e.getAttribute(MIN_OCCURS)); } catch(Exception ex) {}
 		try { maxOccurs = Integer.parseInt(e.getAttribute(MAX_OCCURS)); } catch(Exception ex) { maxOccurs = null; } // unbounded
-		
+
 		Paramdocu p = new Paramdocu(name, type, description, defaultValue, valueRestrictions);
 		if(minVersion != 0 || maxVersion != 0)
 			p.setVersions(minVersion, maxVersion);
