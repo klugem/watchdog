@@ -140,8 +140,8 @@ printParamValues() {
 			SIZE=$(($SIZE+1))
 		fi
 		repeatSingleChar $SIZE -
-		START_MESSAGE=${REPEAT_STRING}${START_HEADER}${REPEAT_STRING}
-		echo $START_MESSAGE
+		START_MESSAGE="${REPEAT_STRING}${START_HEADER}${REPEAT_STRING}"
+		echo "$START_MESSAGE"
 
 		# print parameters
 		IFS=' ' read -a FF <<< "$__flags_longNames"
@@ -153,7 +153,7 @@ printParamValues() {
 
 		# print footer
 		repeatSingleChar $MESSAGE_SIZE -
-		echo $REPEAT_STRING
+		echo "$REPEAT_STRING"
 	fi
 }
 

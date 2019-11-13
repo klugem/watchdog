@@ -1037,7 +1037,7 @@ FLAGS() {
     fi
   done
   set --
-  set -- ${newARGS[@]}
+  set -- "${newARGS[@]}"
   ###########################################
 
   # Parse options.
