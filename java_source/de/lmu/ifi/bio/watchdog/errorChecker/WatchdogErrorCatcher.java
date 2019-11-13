@@ -84,7 +84,7 @@ public class WatchdogErrorCatcher extends ErrorChecker implements Serializable {
 			// find errors the in the files
 			if(out != null)
 				this.checkFile(out);
-			if(err != null)
+			if(err != null && (out == null || !out.getAbsolutePath().equals(err.getAbsolutePath())))
 				this.checkFile(err);
 			// mark that check was performed
 			this.checkWasPerformed();

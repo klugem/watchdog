@@ -126,7 +126,7 @@ public class MethodTemplateGeneratorRunner extends BasicRunner {
 			ArrayList<String> moduleFolders = XMLParser.getModuleFolders(dbf, xml, watchdogBase);
 			
 			// parse the tasks
-			Object[] retWF = XMLParser.parse(xml.getAbsolutePath(), xsdSchema.getAbsolutePath(), null, 0, false, true, false, true, false, true);
+			Object[] retWF = XMLParser.parse(xml.getAbsolutePath(), xsdSchema.getAbsolutePath(), null, 0, false, true, false, true, false, true, false, false);
 			HashMap<Integer, XMLTask> tasks = new HashMap<>();
 			for(XMLTask x : (ArrayList<XMLTask>) retWF[0]) {
 				tasks.put(x.getXMLID(), x);

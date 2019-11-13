@@ -103,14 +103,14 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				for(File xmlFile : xml.listFiles(new PatternFilenameFilter(XML_PATTERN, false))) {
 					String xmlFilename = xmlFile.getAbsolutePath();
 					log.info("Validating '" + xmlFilename + "'...");
-					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename, params.useEnvBase, log).getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
+					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename, params.useEnvBase, log).getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails, false, true);
 					succ++;
 				}
 				System.out.println("Validation of " + succ + " files stored in '"+ xml.getCanonicalPath() +"' succeeded.");
 			}
 			// process only that file
 			else {				
-				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath(), params.useEnvBase, log).getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails);
+				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath(), params.useEnvBase, log).getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails, false, true);
 				System.out.println("Validation of '"+ xml.getCanonicalPath() +"' succeeded!");
 			}
 			System.exit(0);
@@ -237,7 +237,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				log.info("Attach file: " + new File(params.attachInfo).getAbsolutePath());
 
 			// parse the XML Tasks
-			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading, params.disableMails);
+			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading, params.disableMails, false, true);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
 			String mail = (String) ret[1];
 			HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = (HashMap<String, Pair<HashMap<String, ReturnType>, String>>) ret[3];

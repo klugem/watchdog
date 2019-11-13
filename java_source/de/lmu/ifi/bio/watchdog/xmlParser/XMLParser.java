@@ -341,10 +341,6 @@ public class XMLParser {
 		return null;
 	}
 	
-	public static Object[] parse(String filenamePath, String schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails) throws SAXException, IOException, ParserConfigurationException {
-		return XMLParser.parse(filenamePath, schemaPath, customTmpFolder, ignoreExecutor, enforceNameUsage, noExit, validationMode, disableCheckpoint, forceLoading, disableMails, false);
-	}
-	
 	/**
 	 * parses a single xml file
 	 * @param filenamePath
@@ -356,7 +352,7 @@ public class XMLParser {
 	 * @throws ParserConfigurationException
 	 */
 	@SuppressWarnings({ "rawtypes", "resource", "unchecked" })
-	public static Object[] parse(String filenamePath, String schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails, boolean leaveCurrentlyParsedFileUntouched) throws SAXException, IOException, ParserConfigurationException {
+	public static Object[] parse(String filenamePath, String schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails, boolean leaveCurrentlyParsedFileUntouched, boolean checkExecutable) throws SAXException, IOException, ParserConfigurationException {
 		if(!leaveCurrentlyParsedFileUntouched)
 			currentlyParsedFilePath = filenamePath;
 		
@@ -819,7 +815,7 @@ public class XMLParser {
 									
 									// check if binName is executable
 									boolean shouldBeItselfExecutable = !(preBinName != null && preBinName.length() > 0);
-									if(shouldBeItselfExecutable) {
+									if(checkExecutable && shouldBeItselfExecutable) {
 										if(!binNameFile.exists()) {
 											LOGGER.warn("Watchdog module script '" + binName + "' does not exist.");
 											if(!noExit) System.exit(1);
