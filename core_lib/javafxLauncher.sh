@@ -39,12 +39,27 @@ if [ "${JFX_SDK_LIB_PATH}" == "" ]; then
 	if [ $CONFIRM_RETURN -ne 1 ]; then
 		exit 1
 	fi
-	RET=$(find "${CONDA_PREFIX}/usr" "${CONDA_PREFIX}/share" -name "${JAVA_FX_TEST_NAME}" 2> /dev/null)
+
+	# use locate if available
+	LOCATE_OK=0
+	echoInfo "Searching for javafx SDK using locate."
+	RET=$(locate "${JAVA_FX_TEST_NAME}" 2> /dev/null)
+	if [ $? -eq 0 ] && [ ! -z "$RET" ]; then
+		LOCATE_OK=1
+	fi
+	
+	# use find
+	if [ $LOCATE_OK -eq 0 ]; then
+		echoInfo "Searching for javafx SDK using find; this might take a while..."
+		RET=$(find "${CONDA_PREFIX}/usr" "${CONDA_PREFIX}/share" -name "${JAVA_FX_TEST_NAME}" 2> /dev/null)
+	fi
+
+	# prepare results
 	C=1
 	SEL=()
 	for I in $RET; do
 		SEL[$C]=$(dirname $I)
-		echo $C') '.$I
+		echo $C') '$I
 		C=$((C+1))
 	done
 
