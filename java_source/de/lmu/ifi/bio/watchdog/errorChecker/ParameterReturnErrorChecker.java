@@ -59,11 +59,11 @@ public class ParameterReturnErrorChecker extends ErrorChecker implements Seriali
 				while(true) {
 					i++;
 					lines = Files.readAllLines(Paths.get(f.getAbsolutePath()));
-					if(LAST_LINE.equals(lines.get(lines.size()-1))) {
+					if(lines.size() > 0 && LAST_LINE.equals(lines.get(lines.size()-1))) {
 						lines.remove(lines.size()-1);
 						break;
 					} // newline after that line
-					else if(LAST_LINE.equals(lines.get(lines.size()-2))) {
+					else if(lines.size() > 1 && LAST_LINE.equals(lines.get(lines.size()-2))) {
 						lines.remove(lines.size()-1);
 						lines.remove(lines.size()-1);
 						break;
