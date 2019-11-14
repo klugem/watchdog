@@ -189,6 +189,8 @@ public class WorkflowDesignerRunner extends Application {
 	public void stop() {
 		System.out.flush();
 		System.err.flush();
+		System.out.close();
+		System.err.close();
 	}
 
 	

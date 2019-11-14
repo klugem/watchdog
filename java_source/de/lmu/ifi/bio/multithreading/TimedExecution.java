@@ -120,9 +120,8 @@ public class TimedExecution extends StopableLoopThread {
 
 	public static void stopNow() {
 		if(SINGLETON != null && SINGLETON.isAlive()) {
-			SINGLETON.afterLoop();
 			SINGLETON.dead = true;
-			SINGLETON.requestStop(1, TimeUnit.SECONDS);
+			SINGLETON.requestStop(250, TimeUnit.MILLISECONDS);
 			SINGLETON = null;
 		}
 	}
