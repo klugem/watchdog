@@ -44,7 +44,7 @@ fi
 
 # move all modules
 if [ "${MODE}" == "a" ]; then
-	if [ $(ls -d ${TARGET_DIR}/*/ 2> /dev/null | wc -l) -ne 0 ]; then
+	if [ $(ls -d ${TARGET_DIR}/*/ 2> /dev/null | grep -vP "/sleep/$" | wc -l) -ne 0 ]; then
 		confirm "Do you really want to move the content of '${TARGET_DIR}' to '${MOVE_DIR}' and install all modules stored in the community repository? [y/n]"
 		if [ $CONFIRM_RETURN -eq 1 ]; then
 			confirm "Are you sure?! [y/n]"
