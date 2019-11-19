@@ -43,7 +43,11 @@ if [ $AUTO_DETACH_COUNT -eq 1 ]; then
 	done
 	exit $RET
 else
-	setsid java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" $@ </dev/tty &
+	if [ -e "/dev/tty" ]; then
+		setsid java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" $@ </dev/tty &
+	else
+		setsid java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" $@ &
+	fi
 	BACKGROUND_PID=$!
 	waitForCommandToFinish ${BACKGROUND_PID}
 	exit $BACKGROUND_EXIT_CODE
