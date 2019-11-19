@@ -45,7 +45,10 @@ reportGenerator.jar 		basic reporting of steps performed during execution of a w
 moduleValidator.jar 		command-line tool that can be used to verify integrity of modules
 workflowValidator.jar		command-line tool that can be used to verify integrity of workflows
 
-All jar files are available in the jars/ subdirectory of the Watchdog installation folder.
+All jar files except moduleCreator.jar are available in the jars/ subdirectory of the Watchdog 
+installation folder. The ModuleCreator is not shipped with Watchdog but can be obtained by running
+helper_scripts/downloadModuleMaker.sh located in the Watchdog installation directory.
+See https://github.com/watchdog-wms/moduleMaker/blob/master/README.md for more information.
 More information on how to use these programmes can be found in the manual in section 6.
 
 ################################## CONTACT #################################

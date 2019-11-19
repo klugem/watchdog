@@ -45,16 +45,24 @@
 <a href="#custom_modules_name" class="smallsubtopic">5.4 Assign a name to the new module</a><br />
 <a href="#custom_modules_all_together" class="smallsubtopic">5.5 Putting it all together</a><br />
 <a href="#module_versions" class="smallsubtopic">5.6 Module versions</a><br />
-<a href="#custom_modules_other" class="smallsubtopic">5.7 Other matters</a><br />
-</div><div class="smallchapter"><a href="#extensions" class="smalltopic">6 Extend Watchdog's functionality</a><br />
-<a href="#vfs" class="smallsubtopic">6.1 Virtual file systems for task actions</a><br />
-<a href="#plugins" class="smallsubtopic">6.2 XML Plugins</a><br />
-</div><div class="smallchapter"><a href="#docker" class="smalltopic">7 Docker</a><br />
-<a href="#docker_watchdog_install" class="smallsubtopic">7.1 Install the Watchdog Docker image</a><br />
-<a href="#docker_share" class="smallsubtopic">7.2 Sharing of files</a><br />
-<a href="#docker_port" class="smallsubtopic">7.3 Port forwarding</a><br />
-<a href="#docker_watchdog_usage" class="smallsubtopic">7.4 How to use the Docker Watchdog image</a><br />
-<a href="#docker_modules" class="smallsubtopic">7.5 Use Docker in modules</a><br />
+<a href="#module_documentation" class="smallsubtopic">5.7 Documentation of modules</a><br />
+<a href="#custom_modules_other" class="smallsubtopic">5.8 Other matters</a><br />
+</div><div class="smallchapter"><a href="#JARs" class="smalltopic">6 New features in Watchdog 2.0</a><br />
+<a href="#jars_templateGen" class="smallsubtopic">6.1 Documentation template extractor</a><br />
+<a href="#jars_referenceGen" class="smallsubtopic">6.2 Module reference book generator</a><br />
+<a href="#jars_reportGen" class="smallsubtopic">6.3 Report generator</a><br />
+<a href="#jars_validators" class="smallsubtopic">6.4 Module and workflow validator</a><br />
+<a href="#execution_modes" class="smallsubtopic">6.5 New execution modes</a><br />
+<a href="#software_version_logging" class="smallsubtopic">6.6 Software version logging</a><br />
+</div><div class="smallchapter"><a href="#extensions" class="smalltopic">7 Extend Watchdog's functionality</a><br />
+<a href="#vfs" class="smallsubtopic">7.1 Virtual file systems for task actions</a><br />
+<a href="#plugins" class="smallsubtopic">7.2 XML Plugins</a><br />
+</div><div class="smallchapter"><a href="#docker" class="smalltopic">8 Docker</a><br />
+<a href="#docker_watchdog_install" class="smallsubtopic">8.1 Install the Watchdog Docker image</a><br />
+<a href="#docker_share" class="smallsubtopic">8.2 Sharing of files</a><br />
+<a href="#docker_port" class="smallsubtopic">8.3 Port forwarding</a><br />
+<a href="#docker_watchdog_usage" class="smallsubtopic">8.4 How to use the Docker Watchdog image</a><br />
+<a href="#docker_modules" class="smallsubtopic">8.5 Use Docker in modules</a><br />
 </div>
 			</div>
 <div class="chapter"><a name="introduction" class="topic">1 Introduction</a>
@@ -91,15 +99,12 @@ Here, we present Watchdog, a WMS for the automated and distributed analysis of l
 
 <a name="requirements" class="subtopic">2.1 Requirements</a>
 
-Watchdog is platform independent as it is written in Java and requires JRE (Java Runtime Environment) 11 or higher (the GUI is build on JavaFX that is not part of any JRE builds). Modules previously delivered with Watchdog and are now located at <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">watchdog-wms/watchdog-wms-modules</a> and can be installed using <pre class="name">modules/downloadCommunityModules.sh</pre>.
-<br /><br />
-Most of these modules require a unix based system and were tested on SUSE Linux. They might not run without any changes on other unix systems or Windows but users can define custom modules that are compatible with their installed software and operating system. Each of the modules might require additional software to be installed. These requirements can be checked for the modules that are delivered with Watchdog with the help of <pre class="name">helper_scripts/dependencyTest.sh</pre> as described below.
+Watchdog is platform independent as it is written in Java and requires JRE (Java Runtime Environment) 11 or higher (the GUI is build on JavaFX that is not part of any JRE builds). Most Watchdog modules require a Unix based system and were tested on SUSE Linux. They might not run without any changes on other Unix systems or Windows but users can define custom modules that are compatible with their installed software and operating system. Each of the modules might require additional software to be installed. These requirements can be checked for the modules that are delivered with Watchdog with the help of <pre class="name">helper_scripts/dependencyTest.sh</pre> as described below.
 
 <a name="installation" class="subtopic">2.2 Installation</a>
-The installation of Watchdog is very easy. Simply extract the provided archive into a folder of your choice using
-<pre class="name">tar xfvz watchdog.tar.gz</pre> The folder must be accessible for remote or cluster executors if you plan to use some. Afterwards you should download Watchdog modules from the <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">community github repository</a> and extract them into the <pre class="name">modules/</pre> folder or run <pre class="name">modules/downloadCommunityModules.sh</pre>.
+The installation of Watchdog is very easy. After downloading, extract the provided archive into a folder of your choice (either using <pre class="name">tar xfvz watchdog.tar.gz</pre> or <pre class="name">unzip watchdog.zip</pre> depending on which archive you downloaded). The folder must be accessible for remote or cluster executors if you plan to use some. Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda watchdog-wms</pre>. In that case the binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">8</a>. 
 <br /><br />
-Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda watchdog-wms</pre>. In that case be binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">7</a>.
+Modules previously delivered with Watchdog are now located at the community github repository <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">watchdog-wms/watchdog-wms-modules</a>. Thus, as a next step you should download Watchdog modules from the <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">community github repository</a> and extract them into the <pre class="name">modules/</pre> folder of the Watchdog directory. Alternatively, you can run <pre class="name">modules/downloadCommunityModules.sh</pre> from the Watchdog directory.
 
 <br /><br />In the next few lines the content of each folder is explained:
 
@@ -111,18 +116,18 @@ Alternatively Watchdog can be installed automatically via conda using <pre class
 <li>jars: runnable JAR-files that are build from Watchdog's source code</li>
 <li>java_external_lib: external libraries</li>
 <li>java_source: Watchdog's source code</li>
-<li>modules: must contain all modules that should be used in workflows</li>
+<li>modules: module folder that is used by default in workflows</li>
 <li>test_data: contains some test data that is used by multiple modules</li>
 <li>tmp: is used for Watchdog's temporary files</li>
 <li>webserver_data: data which is accessed by the internal webserver</li>
 <li>xsd: definition of the module and workflow in xsd format</xsd>
 </ul>
 
-To test if all software required by installed modules that call bash scripts is available the script <pre class="name">helper_scripts/dependencyTest.sh</pre> can be executed. It checks if all requirements are installed that are also enforced by the module itself. Only dependencies that are defined in the bash script itself stored in the variable named <pre class="name">$USED_TOOLS</pre> are detected by the script. The system must be able to locate the dependencies by using the PATH variable. Moreover, all R and perl packages that are used in scripts are checked.
+The script <pre class="name">helper_scripts/dependencyTest.sh</pre> can be used to test if software required by modules using a wrapper bash script is available via the <pre class="name">PATH</pre> variable. For this purpose, software requirements have to be provided in the <pre class="name">$USED_TOOLS</pre> variable of the bash script. In addition, availability of R and perl packages that are used in scripts are checked. During workflow execution availability of required software is also checked. 
 <br /><br />
 In order to test if all modules that provide tests work as expected on your system you can run <pre class="name">helper_scripts/moduleTest.sh</pre>. If you want to test the examples which are discussed in this manual, you can configure them by running:<br /><br />
 
-<pre class="name">helper_scripts/configureExamples.sh -i /path/to/install/folder/of/watchdog [-m your@mail-adress.com]</pre> (mail attribute (-m) is optional)
+<pre class="name">helper_scripts/configureExamples.sh -i /path/to/install/folder/of/watchdog [-m your@mail-adress.com]</pre> (mail attribute (-m) is optional, see <a href="#mail_server">2.4</a> for E-mail server configuration)
 
 <br /><br />Afterwards the configured examples will be located in <pre class="name">/path/to/install/folder/of/watchdog/examples/</pre> and can be executed (from the watchdog installation directory) using the following command: <pre class="name">./watchdog.sh -x examples/filename.xml</pre> or alternatively <pre class="name">java -jar jars/watchdog.jar -x examples/filename.xml</pre><br /><br />
 For instance: <pre class="name">./watchdog.sh -x examples/workflow1_basic_information_extraction.xml</pre><br />
@@ -132,17 +137,23 @@ If you want to use the workflow designer (GUI), you can start it by using (from 
 <pre class="name">./workflowDesigner.sh</pre> or alternatively <pre class="name">java -jar jars/WatchdogDesigner.jar </pre>
 
 <a name="basic_jars" class="subtopic">2.3 JAR Files</a>
-These runnable JAR-files are shipped together with Watchdog:
+These runnable JAR-files (except moduleCreator.jar) are shipped together with Watchdog in the <pre class="name">jars/</pre> subdirectory of the Watchdog installation folder.
 
 <ul>
 <li><pre class="name">watchdog.jar:</pre> command-line tool that executes Watchdog workflows</li>
-<li><pre class="name">watchdogDesigner.jar:</pre>	graphical user interface for workflow design and execution</li>
-<li><pre class="name">moduleCreator.jar:</pre> provides a graphical user interface for module creation</li>
-<li><pre class="name">libraryGenerator.jar:</pre> creates a module reference book based on a set of modules</li>
+<li><pre class="name">watchdogDesigner.jar:</pre> graphical user interface for workflow design and execution</li>
+<li><pre class="name">moduleMaker.jar:</pre> provides a graphical user interface for module creation</li>
 <li><pre class="name">docuTemplateExtractor.jar:</pre> generates templates for module documentation</li>
-<li><pre class="name">methodTemplateGenerator.jar:</pre> basic reporting of steps performed during execution of a workflow</li>
+<li><pre class="name">refBookGenerator.jar:</pre> creates a module reference book based on a set of modules</li>
+<li><pre class="name">reportGenerator.jar:</pre> basic reporting of steps performed during execution of a workflow</li>
 <li><pre class="name">moduleValidator.jar:</pre> command-line tool that can be used to verify integrity of modules</li>
+<li><pre class="name">workflowValidator.jar:</pre> command-line tool that can be used to verify integrity of workflows</li>
 </ul>
+
+More information on how to use these programmes can be found in the manual in section <a href="#JARs">6</a>.
+Please note that the <pre class="name">ModuleCreator</pre> is not shipped with Watchdog but can be obtained by running
+{N%helper_scripts/downloadModuleMaker.sh{N% located in the Watchdog installation directory.
+See < a target="_blank" href="https://github.com/watchdog-wms/moduleMaker/blob/master/README.md">watchdog-wms/moduleMaker</a> for more information.
 
 <a name="mail_server" class="subtopic">2.4 E-Mail Server Configuration</a>
 As Watchdog will send e-mails it needs a working mail configuration. If you don't want Watchdog to send e-mails, simply don't use the <pre class="attr">mail</pre> attribute of the <pre class="tag">tasks</pre> tag. In that case the content of the mails with be printed to the standard output stream.<br /><br />
@@ -748,7 +759,7 @@ Afterwards the same sleep task is defined as in the first example and will run o
 
 A constant can be defined globally using the <pre class="tag">const</pre> elements which must be a child of a <pre class="tag">constants</pre> element. The parent element itself must be a child of the <pre class="tag">settings</pre> environment. Every <pre class="tag">const</pre> element must own a unique name which is set with the <pre class="attr">name</pre> attribute. The value of the constant is stored between the opening and closing element tag. <pre class="name">${NAME_OF_CONSTANT}</pre> is substituted with the corresponding constant in every attribute or text content. Only the <pre class="attr">watchdogBase</pre> attribute of <pre class="tag">watchdog</pre>, the <pre class="attr">default</pre> attribute of <pre class="tag">?Executor</pre> and the <pre class="tag">id</pre> attribute of <pre class="tag">?Task</pre> and within <pre class="tag">depends</pre> elements can not be substituted. <br /><br />
 
-Currently, there is one pre-defined constant named <pre class="name">${TMP}</pre> which is substituted within <pre class="tag">?Task</pre> tags with the working directory of the executor that will execute the task.
+Currently, there are two pre-defined constants. The first is named <pre class="name">${TMP}</pre> and is substituted within <pre class="tag">?Task</pre> tags with the working directory of the executor that will execute the task. The second is named <pre class="name">${WF_PARENT}</pre> and is replaced with the parent folder containing the XML workflow file.
 
 <div class="box">	
 	<div class="head_box">Example 7: Definition and use of global constants</div>
@@ -1061,7 +1072,7 @@ In example 10 the working directory is set <nobr>to <pre class="name">/tmp</pre>
 
 Additional operations can be executed before and after the actual task is executed. Currently a set of IO operations are implemented that can be used to roll out data the task depends on or to clean up once the task is finished. This feature is especically usefull when Watchdog is running in slave mode (see <a href="#execution_environments">4.3</a>) in order to reduce load for the shared file system as some files might be requirements for different tasks. Hence, these files would have to be transfered multiple times from the shared file system to the host executing the task.
 <br />
-Moreover, files stored on remote files systems can be up- or downloaded by Watchdog. By default, virtual file systems based on the protocols File, HTTP, HTTPS, FTP, FTPS and SFTP as well as the main memory (RAM) are supported. These virtual file systems are provided by the Commons Virtual File System project of the Apache Software Foundation. Examples for valid URIs of these file systems can be can be found <a target="_blank" href="https://commons.apache.org/proper/commons-vfs/filesystems.html">here</a>. However, any file system with an implementation of the <pre class="name">FileProvider</pre> can also be included by the user as described in <a href="#vfs">6.1</a>.
+Moreover, files stored on remote files systems can be up- or downloaded by Watchdog. By default, virtual file systems based on the protocols File, HTTP, HTTPS, FTP, FTPS and SFTP as well as the main memory (RAM) are supported. These virtual file systems are provided by the Commons Virtual File System project of the Apache Software Foundation. Examples for valid URIs of these file systems can be can be found <a target="_blank" href="https://commons.apache.org/proper/commons-vfs/filesystems.html">here</a>. However, any file system with an implementation of the <pre class="name">FileProvider</pre> can also be included by the user as described in <a href="#vfs">7.1</a>.
 
 <br /><br />
 Task actions are defined in an <pre class="tag">actions</pre> tag as child of <pre class="tag">?Task</pre>. Slave mode is automatically activated if a task action is used. Currently six different IO operations are implemented:
@@ -1468,7 +1479,7 @@ In addition to that, the following settings can be modified:
 <li><pre class="name">spacingFormat</pre>: defines how names of parameters and values are spaced; default: <pre class="name">blank</pre></li>
 <li><pre class="name">quoteFormat</pre>: defines how values are quoted; default: <pre class="name">single quoting</pre></li>
 <li><pre class="name">separateFormat</pre>: defines the separator string between multiple occurrences of the same parameter; default: <pre class="name">,</pre></li>
-<li><pre class="name">versionQueryParameter</pre>: parameter of the <pre class="name">binName</pre> command used to query software versions of third-party software; is called on the executor before task execution and stored together with the used parameters in a log file; default: not set</li>
+<li><pre class="name">versionQueryParameter</pre>: parameter of the <pre class="name">binName</pre> command used to query software versions of third-party software; is called on the executor after task execution and stored together with the used parameters in a log file; default: not set</li>
 </ul>
 
 The last three arguments can also be used for each parameter separately.
@@ -1618,21 +1629,150 @@ Example 23 shows how a module script can be made version dependent using bash fu
 	</div>
 </div>
 
-<a name="custom_modules_other" class="subtopic">5.7 Other matters</a>
+<a name="module_documentation" class="subtopic">5.7 Documentation of modules</a>
+
+Modules can be documented using an XML format that is defined by an XSD schema. Such an XML module documentation file consists of the main sections <pre class="tag">info</pre>, <pre class="tag">parameter</pre> and <pre class="tag">return</pre>. The first section is mandatory while the other two are optional (e.g. for modules that do not require any parameter or do not return variables).
+
+<div class="box">	
+	<div class="head_box">Example 24: XML module documentation format</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;documentation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="documentation.xsd"&gt;
+ 3	  &lt;!-- mandatory fields: author, category, updated, description --&gt;
+ 4	  &lt;info&gt;
+ 5	    &lt;!-- forename lastname --&gt;
+ 6	    &lt;author&gt;Michael Kluge&lt;/author&gt;
+ 7	    &lt;!-- day the module was updated the last time --&gt;
+ 8	    &lt;updated&gt;2019-03-13&lt;/updated&gt;
+ 9	    &lt;category&gt;Sequencing&lt;/category&gt;
+10	    &lt;description maxVersion="1" minVersion="1"&gt;creates an index for a BAM file using samtools index&lt;/description&gt;
+11	    &lt;!-- ##### optional ##### --&gt;
+12	    &lt;!-- website of the dependencies used in this module --&gt;
+13	    &lt;website&gt;https://www.htslib.org/doc/samtools.html&lt;/website&gt;
+14	    &lt;!-- short description and PubmedID for the methods section of a manuscript --&gt;
+15	    &lt;paperDescription&gt;Samtools (%SOFTWARE_VERSION%) was used to index the BAM files [Li H, Handsaker B, Wysoker A, Fennell T, Ruan J, Homer N, Marth G, Abecasis G, Durbin R, and 1000 Genome Project Data Processing Subgroup, The Sequence alignment/map (SAM) format and SAMtools, Bioinformatics (2009) 25(16) 2078-9].&lt;/paperDescription&gt;
+16	    &lt;PMID&gt;19505943&lt;/PMID&gt;
+17	    &lt;!-- external dependencies required for that module --&gt;
+18	    &lt;dependencies maxVersion="1" minVersion="1"&gt;samtools&lt;/dependencies&gt;
+19	    &lt;dependencies maxVersion="1" minVersion="1"&gt;GNU Core Utilities&lt;/dependencies&gt;
+20	  &lt;/info&gt;
+21	  &lt;!-- ##### optional ##### --&gt;
+22	  &lt;!-- github usernames of users who should be able to commit changes to that module --&gt;
+23	  &lt;maintainer&gt;
+24	    &lt;username&gt;klugem&lt;/username&gt;
+25	  &lt;/maintainer&gt;
+26	  &lt;parameter&gt;
+27	    &lt;!-- mandatory fields per parameter: name, type, description --&gt;
+28	    &lt;!-- optional fields per parameter: restrictions, default, minOccurs, maxOccurs, minVersion, maxVersion --&gt;
+29	    &lt;param maxOccurs="1" minOccurs="1" name="bam" type="file path" restrictions="absolute"&gt;
+30	      &lt;description&gt;path to the BAM file&lt;/description&gt;
+31	    &lt;/param&gt;
+32	    &lt;param default="true" maxOccurs="1" minOccurs="0" name="link" type="boolean"&gt;
+33	      &lt;description&gt;creates a link called NAME.bam.bai because some tool expect the index under that name; use --nolink to disable it&lt;/description&gt;
+34	    &lt;/param&gt;
+35	  &lt;/parameter&gt;
+36	  &lt;return&gt;
+37	    &lt;!-- mandatory fields per return variable: name, type, description --&gt;
+38	    &lt;!-- optional fields per return variable: minVersion, maxVersion --&gt;
+39	    &lt;var name="BAMFile" type="string"&gt;
+40	      &lt;description&gt;path to the BAM file for which the index was created&lt;/description&gt;
+41	    &lt;/var&gt;
+42	  &lt;/return&gt;
+43	&lt;/documentation&gt;</code></pre>
+	</div>
+</div>
+
+Example 24 shows the XML documentation file for the <pre class="name">indexBam</pre> module. The tag <pre class="tag">paperDescription</pre> (15), which is a child of <pre class="tag">info</pre>, allows to define the description used during report generation (see <a href="#jars_reportGen">6.3</a>). This description can also contain references to parameters of the task (<pre class="name">%param_name%</pre>) or the software version (<pre class="name">%SOFTWARE_VERSION%</pre>).
+
+<br /><br />
+An XML template for documenting a new module can be generated based on the XSD module file using the <pre class="name">docuTemplateExtractor.jar</pre> (see <a href="#jars_templateGen">6.1</a>). Hence, only some information must be updated or added manually.
+
+<a name="custom_modules_other" class="subtopic">5.8 Other matters</a>
 
 <b>Exit codes: </b> The module developer must ensure that a command does only exit with exit status 0 if the command was executed sucessfully. File <pre class="name">core_lib/exitCodes.sh</pre> contains some exit codes which names are also included in mail notifications if they are used. Custom exit codes can be easily added.
 <br /><br />
 <b>Error messages: </b> Watchdog can detect by default error messages in standard out and standard error streams if they begin with <pre class="name">[ERROR]</pre>. The errors are only stored if standard out and error files are saved to disk using the <pre class="tag">streams</pre> tag. If an error was detected but the exit code was 0 the command will also fail.
 <br /><br />
 <b>Module test: </b> A script named <pre class="name">test_nameOfModule.sh</pre> can also be part of the module. It is automatically called, if the user calls <pre class="name">helper_scripts/moduleTest.sh</pre>. Also the module folder might contain some test data in the folder <pre class="name">test_data</pre>. For simple test cases the bash function <pre class="name">testExitCode</pre> can be used to test, if an input leads to the expected output.
-<div class="chapter"><a name="extensions" class="topic">6 Extend Watchdog's functionality</a>
-In the following sections two different ways to extend Watchdog's functionality are described.
+<div class="chapter"><a name="JARs" class="topic">6 New features in Watchdog 2.0</a>
+
+In the following the new command-line tools (available in the <pre class="name">jars/</pre> subfolder of the Watchdog installation directory) are described in more detail. 
+All tools can be executed using <pre class="name">java -jar path/to/jar/name.jar -options</pre>. The available parameter and flags can be listed using <pre class="name">java -jar path/to/jar/name.jar -help</pre>.
+<br /><br />
+Information on module versioning can be found in section <a href="#module_versions">5.6</a>. The documentation of the graphical user interface for module creation (<pre class="name">moduleMaker.jar</pre>) has its own <a href="https://github.com/watchdog-wms/moduleMaker" target="_blank" />documentation</a>.
+
+<a name="jars_templateGen" class="subtopic">6.1 Documentation template extractor</a>
+
+The <pre class="name">docuTemplateExtractor</pre> command-line tool can be used to extract parameter and return value information from XSD module files. The program then creates an XML documentation template file for each module in the corresponding module folder. By default existing XML documentation files of modules are not overwritten. This can be disabled with the <pre class="name">-overwrite</pre> flag. Using the <pre class="name">-authors</pre>, <pre class="name">-maintainer</pre> or <pre class="name">-categories</pre>  parameter, the same author, maintainer or categories can be included in all created template files.
+<br /><br />
+Example call:<br />
+<pre class="name">java -jar docuTemplateExtractor.jar -moduleFolder /path/to/watchog/modules</pre>
+<br /><br />
+Moreover, custom extractor plugins can be implemented to extract additional information like default parameters or descriptions. Currently, parameter extractors for the python <pre class="name">argparse</pre> and the Bash <pre class="name">shflags</pre> library are available. Additional custom extractors can be added by implementing the Java <pre class="name">Extractor</pre> interface of the <pre class="name">de.lmu.ifi.bio.watchdog.docu.extractor</pre> package. Afterwards a compiled class file must be added to <pre class="name">docuTemplateExtractor</pre>, which can be edited with any ZIP editor. The tool will automatically detected all classes implementing the <pre class="name">Extractor</pre> interface.
+<br /><br />
+
+Information on the module XML documentation format itself can be found in section <a href="#module_documentation">5.7</a>.
+
+<a name="jars_referenceGen" class="subtopic">6.2 Module reference book generator</a>
+The module reference book can be created from the XML documentation files using the <pre class="name">refBookGenerator</pre> command-line tool.
+<br /><br />
+One ore more path to the parent folder(s) of modules that should be included in the module reference book must be provided using the <pre class="name">-moduleFolder</pre> parameter. Moreover, a path to a folder, in which the module reference book should be stored, must be specified using the <pre class="name">-outputFolder</pre> parameter.
+<br /><br />
+Example call:<br />
+<pre class="name">java -jar refBookGenerator.jar -moduleFolder /path/to/watchog/modules -moduleFolder /tmp/customModules -outputFolder /tmp/refBook</pre> 
+
+<a name="jars_reportGen" class="subtopic">6.3 Report generator</a>
+
+A report of the executed steps of a workflow can be automatically created using the <pre class="name">reportGenerator</pre> command-line tool. 
+
+In order to generate a report, these three parameters are required:
 <ul>
-<li><i>Virtual File Systems</i> that can be used within task actions (see <a href="#vfs">6.1</a>)</li>
-<li><i>XML Plugins</i> that add new <pre class="tag">?Executor</pre> and <pre class="tag">?ProcessBlock</pre> elements (see <a href="#plugins">6.2</a>)</li>
+<li>-resume: path to watchdog status log file (alias resume file) from a previous Watchdog run</li>
+<li>-xml: path to the XML workflow file (required for loading the correct module folders)</li>
+<li>-outputFile: path to an output file in which the resulting report is stored as text</li>
 </ul>
 
-<a name="vfs" class="subtopic">6.1 Virtual file systems for task actions</a>
+Example call:<br />
+<pre class="name">java -jar reportGenerator.jar -xml /path/to/wf1.xml -resume /path/to/wf1_2019_11_07_11_48_26.watchdog.resume -outputFile /tmp/report.txt</pre> 
+<br /><br />
+Additional parameters exist to enable or supress the output of some information or to modify the output format. The available parameters can be listed using the <pre class="name">-help</pre> flag.
+
+<a name="jars_validators" class="subtopic">6.4 Module and workflow validator</a>
+
+The module (<pre class="name">moduleValidator</pre>) and workflow (<pre class="name">workflowValidator</pre>) validators can be used to verify the integrity of modules or workflows respectively.
+<br /><br />
+Both tools require as input the name of a check to perform (parameter <pre class="name">-check</pre>) and a folder to apply the check onto (parameter <pre class="name">-folder</pre>). Please note that only one module or workflow can be located in the folder. Names of checks that can be performed can be listed using the <pre class="name">-list</pre> flag.
+<br /><br />
+Example call:<br />
+<pre class="name">java -jar moduleValidator.jar -check XSD_VALIDATION -folder /path/to/watchog/modules/sleep</pre> 
+<br /><br />
+Additional information on the function of the applied checks can be found online at <a href="https://github.com/watchdog-wms/watchdog-wms-modules/blob/master/CONTRIBUTING.md#automatic-tests-on-pull-requests" target="_blank">watchdog-wms-modules</a> and <a href="https://github.com/watchdog-wms/watchdog-wms-workflows/blob/master/CONTRIBUTING.md#automatic-tests-on-pull-requests" target="_blank">watchdog-wms-workflows</a>.
+
+<a name="execution_modes" class="subtopic">6.5 New execution modes</a>
+
+Two additional execution modes were implemented to provide more comfort and flexibility in workflow execution.
+<br /><br />
+The resume mode allows restarting execution of a workflow by (re-)running only tasks that previously did not run (successfully) or were added or modified compared to the original execution. With Watchdog 2.0 each execution of a workflow creates a *.resume file that contains information on successfully finished tasks. With that file the <pre class="name">-resume</pre> parameter of the Watchdog scheduler can be used to resume the execution of an aborted or modified workflow.
+<br /><br />
+Example call:<br />
+<pre class="name">./watchdog.sh -xml /path/to/wf1.xml -resume /path/to/wf1_2019_11_07_11_48_26.watchdog.resume</pre>
+<br /><br />
+The second mode allows detaching the scheduler from workflow execution without aborting tasks running on a computer cluster and reattaching to execution at a later time and/or a different computer. A detach can be requested by pressing CTRL+C during workflow execution with the command-line version. The GUI provides a button to request a detach. A successful detach results in an *.attach file, which can be used to reattach to workflow execution with the new <pre class="name">-attachInfo</pre> parameter of the Watchdog scheduler.
+<br /><br />
+Example call:<br />
+<pre class="name">./watchdog.sh -xml /path/to/wf1.xml -attachInfo /path/to/wf1_2019_11_07_11_48_26.watchdog.attach</pre>
+
+<a name="software_version_logging" class="subtopic">6.6 Software version logging</a>
+
+Watchdog 2.0 now implements a general approach for reporting versions of third-party software used in a module in the log file. For this purpose, a new attribute (<pre class="name">versionQueryParameter</pre>) in the module XSD file can be used to define the flag for version printing of third-party software (see <a href="#custom_modules_binary">5.3</a>). During workflow execution, after a task or subtask has been completed successfully on a particular computer, the program call defined in the corresponding module is invoked with the version flag on the same computer to retrieve the installed third-party software version. This software version is then reported for the task/subtask in the log file and can also be used during report generation (see <a href="#module_documentation">5.7</a> and <a href="#jars_reportGen">6.3</a>). 
+<div class="chapter"><a name="extensions" class="topic">7 Extend Watchdog's functionality</a>
+In the following sections two different ways to extend Watchdog's functionality are described.
+<ul>
+<li><i>Virtual File Systems</i> that can be used within task actions (see <a href="#vfs">7.1</a>)</li>
+<li><i>XML Plugins</i> that add new <pre class="tag">?Executor</pre> and <pre class="tag">?ProcessBlock</pre> elements (see <a href="#plugins">7.2</a>)</li>
+</ul>
+
+<a name="vfs" class="subtopic">7.1 Virtual file systems for task actions</a>
 
 With the help of task actions, file system operations can be performed before and after tasks (see <a href="#task_actions">4.8</a>). By default, virtual file systems based on the protocols File, HTTP, HTTPS, FTP, FTPS and SFTP as well as the main memory (RAM) are supported. These virtual file systems are provided by the Commons Virtual File System project of the Apache Software Foundation. <br /><br />
 
@@ -1645,10 +1785,10 @@ In order to add a new virtual file system, a class that implements the <pre clas
 <li><pre class="name">getExtensions</pre> - sets schemes that should be used for specific file extension</li>
 </ul>
 
-The class <pre class="name">SimpleVFSRegister</pre> can be extended if an instance of the <pre class="name">FileProvider</pre> class can be created without arguments. Then only the name of the <pre class="name">FileProvider</pre> class and the URL schemes that should be used must be defined. Example 24 shows how the virtual FTP file system is integrated in Watchdog by using the <pre class="name">FtpsFileProvider</pre> class of the Commons Virtual File System project.
+The class <pre class="name">SimpleVFSRegister</pre> can be extended if an instance of the <pre class="name">FileProvider</pre> class can be created without arguments. Then only the name of the <pre class="name">FileProvider</pre> class and the URL schemes that should be used must be defined. Example 25 shows how the virtual FTP file system is integrated in Watchdog by using the <pre class="name">FtpsFileProvider</pre> class of the Commons Virtual File System project.
 
 <div class="box">	
-	<div class="head_box">Example 24: Simple implementation of the VFSRegister interface</div>
+	<div class="head_box">Example 25: Simple implementation of the VFSRegister interface</div>
 	<div class="box_body">
 		<pre><code class="example"> 1	package de.lmu.ifi.bio.watchdog.task.actions.vfs.impl;
  2	
@@ -1663,7 +1803,7 @@ The class <pre class="name">SimpleVFSRegister</pre> can be extended if an instan
 11	}</code></pre>
 	</div>
 </div>
-<a name="plugins" class="subtopic">6.2 XML Plugins</a>
+<a name="plugins" class="subtopic">7.2 XML Plugins</a>
 
 Watchdog provides a flexible plugin system that allows extending Watchdog by additional types of executors and process blocks without modifying the original Java classes. Essentially, this means creating a new XML element for use in Watchdog workflows as well as implementing additional Java classes that provide the functionality for this element. 
 
@@ -1690,18 +1830,18 @@ For use in the Workflow designer GUI of Watchdog, two additional requirements ha
 <li>Classes extending <pre class="name">PluginView</pre> and <pre class="name">PluginViewController</pre> have to be implemented for testing whether the input is valid and for loading and saving data to and from XML.</li>
 </ul>
 All executors and process blocks integrated in Watchdog are using this plugin system. Hence, examples how to implement a new XML element can be found in the package <pre class="name">de.lmu.ifi.bio.watchdog.xmlParser.plugins</pre> of the <a target="_blank" href="https://github.com/klugem/watchdog/tree/master/java_source/de/lmu/ifi/bio/watchdog/xmlParser/plugins">Java source code</a>.
-<div class="chapter"><a name="docker" class="topic">7 Docker</a>
+<div class="chapter"><a name="docker" class="topic">8 Docker</a>
 
 In order to run a Docker image, Docker must be installed and configured correctly as descibed <a target="_blank" href="https://docs.docker.com">here</a>.
 
-<a name="docker_watchdog_install" class="subtopic">7.1 Install the Watchdog Docker image</a>
+<a name="docker_watchdog_install" class="subtopic">8.1 Install the Watchdog Docker image</a>
 
 A Watchdog image for Docker can be obtained from <a target="_blank" href="https://hub.docker.com/r/klugem/watchdog-wms/">hub.docker.com</a>. The image is rebuild automatically by the Bioconda project once a new version is released on <a target="_blank" href="https://bioconda.github.io/">Bioconda</a>. <br /><br />
 
 You can download the latest version of the image with <pre class="name">docker pull klugem/watchdog-wms</pre>.
 Within the Docker image the environment variable <pre class="name">WATCHDOG_HOME</pre> is set automatically to the installation directory of Watchdog (required for the <pre class="attr">watchdogBase</pre> attribute). The <pre class="name">-useEnvBase</pre> flag of the command line version can be used to override the <pre class="attr">watchdogBase</pre> attribute of the XML workflow with the value stored in <pre class="name">WATCHDOG_HOME</pre>. Moreover, the installation directory of Watchdog is mounted under <pre class="name">/watchdog</pre> within the Docker image.
 
-<a name="docker_share" class="subtopic">7.2 Sharing of files</a>
+<a name="docker_share" class="subtopic">8.2 Sharing of files</a>
 
 In order to exchange files with the host system, the -v or -mount option of Docker can be used. These option can be used multiple times.<br /><br />
 
@@ -1709,29 +1849,29 @@ In order to exchange files with the host system, the -v or -mount option of Dock
 
 More information can be found in the <a target="_blank" href="https://docs.docker.com/storage/volumes/">documentation</a> of Docker.
 
-<a name="docker_port" class="subtopic">7.3 Port forwarding</a>
+<a name="docker_port" class="subtopic">8.3 Port forwarding</a>
 
 In order to use the build-in webserver of Watchdog, the port used by the webserver must be forwarded to the host running the Docker container. <br /><br />
 
 The command <pre class="name">docker run -p 8090:8080 image command</pre> maps the container port 8080 (TCP) to the port 8090 (TCP) on the Docker host. More information can be found in the <a target="_blank" href="https://docs.docker.com/config/containers/container-networking/#published-ports">documentation</a> of Docker.
 
-<a name="docker_watchdog_usage" class="subtopic">7.4 How to use the Docker Watchdog image</a>
+<a name="docker_watchdog_usage" class="subtopic">8.4 How to use the Docker Watchdog image</a>
 
 The examples within the Docker image are automatically configured when {%Nwatchdog-cmd%N} is started the first time and are stored in <pre class="name">/watchdog/examples</pre>. The command<br /><br />
 
 <pre class="name">docker run -h localhost -p 8080:8080 klugem/watchdog-wms watchdog-cmd -useEnvBase -x /watchdog/examples/&#8203;example_basic_sleep.xml</pre><br /><br />
 executes the example described in <a href="#basic_xml_structure">3.2</a> and forwards the webserver port to the host port 8080.
 <br /><br />
-Alternatively, it is possible to run a workflow that is stored on the host system as described in <a href="#docker_share">7.2</a>. Ensure that all files used in the workflow are made accessible within the Docker image.
+Alternatively, it is possible to run a workflow that is stored on the host system as described in <a href="#docker_share">8.2</a>. Ensure that all files used in the workflow are made accessible within the Docker image.
 
-<a name="docker_modules" class="subtopic">7.5 Use Docker in modules</a>
+<a name="docker_modules" class="subtopic">8.5 Use Docker in modules</a>
 
 A Docker image can also be used in a module. The module <pre class="name">bowtie2Docker</pre> implements an example module that uses the Docker image of <a target="_blank" href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">Bowtie 2</a> that is provided by <a target="_blank" href="https://bioconda.github.io/">Bioconda</a> and hosted on <a target="_blank" href="https://quay.io/repository/biocontainers/bowtie2">quay.io</a>. The Docker image will be automatically downloaded if it is not found locally. <br /><br />
 
 Make sure that the Docker daemon is installed and running before you test this example.
 
 <div class="box">	
-	<div class="head_box">Example 25: Example usage of the Bowtie 2 Docker module</div>
+	<div class="head_box">Example 26: Example usage of the Bowtie 2 Docker module</div>
 	<div class="box_body">
 		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
  2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
@@ -1760,7 +1900,7 @@ Make sure that the Docker daemon is installed and running before you test this e
 	</div>
 </div>
 
-Example 25 shows how the <pre class="name">bowtie2Docker</pre> module can be used with the provided example data. The test data that is shipped with Bowtie 2 is stored in the folder <pre class="name">example_data</pre> of the module (6). Log files are written to <pre class="name">/tmp/bowtie2.docker.test.[out|err]</pre> (13, 14) while the mapped reads are stored in SAM format in <pre class="name">/tmp/bowtie2.docker.test.sam</pre> (20).
+Example 26 shows how the <pre class="name">bowtie2Docker</pre> module can be used with the provided example data. The test data that is shipped with Bowtie 2 is stored in the folder <pre class="name">example_data</pre> of the module (6). Log files are written to <pre class="name">/tmp/bowtie2.docker.test.[out|err]</pre> (13, 14) while the mapped reads are stored in SAM format in <pre class="name">/tmp/bowtie2.docker.test.sam</pre> (20).
 		</div>
 	</body>
 </html> 

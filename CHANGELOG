@@ -5,6 +5,40 @@ Changelog started with version 1.2.0
 
 ## [Unreleased]
 
+
+## [2.0.1] - 2019-11-19
+### Added
+- [JAR] Added methodTemplateGenerator.jar that can be used to create templates for module documentation
+- [JAR] Added workflowValidator.jar that validates the structure of workflows
+- [GUI] Added indentation to workflows written by workflow designer
+- [JAR] Allow to add version (%SOFTWARE_VERSION%) and other task parameters (%PARAM_NAME%) in automated generated report
+- [JAR] Allow modifiers to be applied on replaced variables in reports (%PARAM_NAME§M%); (N=name only; V=restrict to version number)
+- [MOD] Added script to download all community modules (modules/downloadCommunityModules.sh)
+- [] Introduced constant ${WF_PARENT} that points to the parent folder of the XML workflow file 
+- [] Ensure that Watchdog module commands are executable and if not offer user to make it executable
+- [JAR] Added url section in detailed view of the module reference book
+
+### Changed
+- [GUI] Added indentation to XML files written by workflow designer
+- [JAR] Renamed methodTemplateGenerator.jar to reportGenerator.jar
+- [JAR] Renamed libraryGenerator.jar to refBookGenerator.jar
+- [BASH] Added 'permission denied' to default keywords of bash error checker
+- [CMD] Output messages of error checkers on standard output
+- [CMD] Reduced mail wait time to 5s
+
+### Fixed
+- [JAR] Warnings of missing XSD schema removed from all jars
+- [CMD] Software versioning for tasks executed in slave mode was not working
+- [CMD] Called command in modules created by the helper script was always ${MODULE_NAME}.sh
+- [DOCU] Focus on input field was lost in the module reference book while text search was used
+- [CMD] Called command in modules created by the helper script was always ${MODULE_NAME}.sh
+- [CMD] Capture exit code of main command if software versions are used
+- [JAR] Fixed null pointer exception when output folder was only a folder name during reference book generation
+- [CMD] Kill all children of a process task when local executor is used and Watchdog is terminated
+- [JAR] Escaping of HTML entities in the module reference book
+- [BASH] Prevent unintended evaluation of globbing patterns in argument parser
+- [BASH] Last parameter was missing in called command output (introduced in 2.0.0 with module versions)
+
 ## [2.0.0] - 2019-08-12
 ### Added
 - [BASH] Implemented before script that will enforce the requested memory using ulimit (for SGE or Slurm executor). 
@@ -29,7 +63,7 @@ Changelog started with version 1.2.0
 - [MOD] Modules are no longer shipped together with Watchdog. They can be obtained from https://github.com/watchdog-wms/watchdog-wms-modules
 - [PLUGIN] Executor <cluster> is now used for DRMAA cluster implementations; custom attributes (memory, slots, queue) were removed
 - [PLUGIN] Moved 'shebang' attribute from environment to executor
- 
+
 ### Fixed
 - [] Fixed small memory leak caused by not closed ScanResult objects
 - [] Do not export environment variables that contain a '.' or '-' in the name
