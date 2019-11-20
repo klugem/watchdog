@@ -51,6 +51,12 @@ helper_scripts/downloadModuleMaker.sh located in the Watchdog installation direc
 See https://github.com/watchdog-wms/moduleMaker/blob/master/README.md for more information.
 More information on how to use these programmes can be found in the manual in section 6.
 
+############################# WATCHDOG COMMUNITY ###########################
+Two repositories on Github under the watchdog-wms organization (https://github.com/watchdog-wms/)
+are dedicated for sharing modules and workflows by other users. 
+modules: https://github.com/watchdog-wms/watchdog-wms-modules
+workflows: https://github.com/watchdog-wms/watchdog-wms-workflows
+
 ################################## CONTACT #################################
 If you have any questions or suggestions, please feel free to contact me:
 michael.kluge@bio.ifi.lmu.de
