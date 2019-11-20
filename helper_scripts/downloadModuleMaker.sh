@@ -7,7 +7,7 @@ URL='https://github.com/watchdog-wms/moduleMaker/archive/master.tar.gz'
 GIT_NAME_IN_ARCHIVE="moduleMaker-master"
 DOWNLOAD_FILE="tmp-moduleMaker"$(date +%s)".tar.gz"
 EXTRACT_DIR="/tmp/tmp_moduleMaker_github_tmp_moduleMaker"$(date +%s)
-TARGET_DIR="${SCRIPT_FOLDER}/moduleMaker"
+TARGET_DIR=$(readlink -f "${SCRIPT_FOLDER}/../moduleMaker")
 
 # check if folder does not exist so far
 if [ -d "${TARGET_DIR}" ]; then
@@ -41,7 +41,7 @@ if [ $CONFIRM_RETURN -eq 1 ]; then
 	echoInfo "Extracting ModuleMaker..."
 	tar -zxf "${DOWNLOAD_FILE}" -C "${EXTRACT_DIR}"
 	mv "${EXTRACT_DIR}/${GIT_NAME_IN_ARCHIVE}/distribute/"* "${TARGET_DIR}/."
-	echoInfo "Installed ModuleMaker to !"
+	echoInfo "Installed ModuleMaker!"
 
 	# clean up
 	rm "${DOWNLOAD_FILE}"
