@@ -165,7 +165,7 @@
 			</parameter>
 		</bamstatsTask>
 		<!-- count reads per gene using featureCounts -->
-		<featureCountsTask id="21" name="count I" processBlock="input block" posX="3" posY="8">
+		<featureCountsTask id="21" name="count I" processBlock="input block" posX="3" posY="8" version="2">
 			<dependencies>
 				<depends separate="true">8</depends>
 			</dependencies>
@@ -176,7 +176,7 @@
 				<detailedReadAssignments>false</detailedReadAssignments>
 				<disableGroupSummarization>false</disableGroupSummarization>
 				<input>{$BAMFile}</input>
-				<minOverlap>25</minOverlap>
+				<minReadOverlap>75</minReadOverlap>
 				<multiCountMetaFeatures>false</multiCountMetaFeatures>
 				<multiMapping>false</multiMapping>
 				<output>${OUTPUT}/featureCounts/E75/[$BAMFile,1,.].PR1.counts</output>
@@ -185,7 +185,7 @@
 			</parameter>
 		</featureCountsTask>
 		<!-- create pseudo-replicate with a bit of variation -->
-		<featureCountsTask id="22" name="count II" processBlock="input block" posX="3" posY="6">
+		<featureCountsTask id="22" name="count II" processBlock="input block" posX="3" posY="6" version="2">
 			<dependencies>
 				<depends separate="true">8</depends>
 			</dependencies>
@@ -196,8 +196,9 @@
 				<detailedReadAssignments>false</detailedReadAssignments>
 				<disableGroupSummarization>false</disableGroupSummarization>
 				<input>{$BAMFile}</input>
-				<minOverlap>50</minOverlap> <!-- get variation here by being a bit more stringent -->
-				<multiCountMetaFeatures>false</multiCountMetaFeatures>
+				<!-- get variation here by being less stringent -->
+				<minReadOverlap>1</minReadOverlap>
+				<multiCountMetaFeatures>true</multiCountMetaFeatures>
 				<multiMapping>false</multiMapping>
 				<output>${OUTPUT}/featureCounts/E75/[$BAMFile,1,.].PR2.counts</output>
 				<primary>true</primary>
