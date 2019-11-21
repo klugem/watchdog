@@ -5,6 +5,15 @@ Changelog started with version 1.2.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2019-11-21
+### Fixed
+- [CMD] Ignore called command during version detection of Bash-based modules
+- [BASH] Corrected wrong installation path for moduleMaker in download script
+- [BASH] Modules were listed multiple times during dependency test
+- [JAR] Fixed null pointer exception when output file was only a file name during report generation
+
+### Changed
+- [EXAMPLE] Adapted example workflow2 to support new versions of featureCounts and DESeq2
 
 ## [2.0.1] - 2019-11-19
 ### Added
@@ -31,7 +40,6 @@ Changelog started with version 1.2.0
 - [CMD] Software versioning for tasks executed in slave mode was not working
 - [CMD] Called command in modules created by the helper script was always ${MODULE_NAME}.sh
 - [DOCU] Focus on input field was lost in the module reference book while text search was used
-- [CMD] Called command in modules created by the helper script was always ${MODULE_NAME}.sh
 - [CMD] Capture exit code of main command if software versions are used
 - [JAR] Fixed null pointer exception when output folder was only a folder name during reference book generation
 - [CMD] Kill all children of a process task when local executor is used and Watchdog is terminated
