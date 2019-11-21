@@ -5,7 +5,7 @@ MISSING=0
 
 cd "$SCRIPT_FOLDER/../"
 # check the normal tools
-for MODULE in `find modules -maxdepth 3 -name "*.sh" 2>/dev/null | grep -v "test"`
+for MODULE in `find modules -maxdepth 3 -name "*.sh" 2>/dev/null | grep -v "test"| grep -P "modules/.+/.+\\.sh"`
 do
 	HAS_DEP=0
 	MOD=$(echo "$MODULE" | sed 's|modules/||' | sed -E 's|/.+||')
@@ -74,11 +74,35 @@ do
 	fi
 done
 
-echo -e "\n----------------------------------------"
-echo "########################################"
-echo "----------------------------------------"
-echo "[SUCCESS] Dependencies for the following modules were satisfied:"
-OK_MOD=$(echo "$OK_MOD" | sed -E 's/:$//' | tr ':' '\n' | sort -u | tr '\n' ':')
+# check, if all was ok or not
+if [ $MISSING -eq 1 ]; then
+	echo -e "\n[ERROR] The following modules can not be used because of missing dependencies:"
+	INACTIVE=$(echo "$INACTIVE" | sed -E 's/:+/:/' | sed -E 's/:$//' | tr ':' '\n' | sort -u | tr '\n' ':')
+	IFS=':' read -a INACTIVE_SPLIT <<< "$INACTIVE"
+	unset IFS
+	for M in "${INACTIVE_SPLIT[@]}"
+	do
+		echo "Module '$M'"
+		# remove the missing onces from the OK list
+		OK_MOD=$(echo "$OK_MOD" | sed 's/:'"$M"':/:/' | sed -E 's/^'"$M"':/:/' | sed -E 's/:'"$M"'$/:/')
+	done
+
+	if [ "$1" == "-q" ]; then
+		echo $INACTIVE
+	fi
+
+	echo -e "\n----------------------------------------"
+	echo "########################################"
+	echo "----------------------------------------"
+	echo -e "\n----------------------------------------"
+	echo "########################################"
+	echo "----------------------------------------"
+fi
+
+echo -e "\n[SUCCESS] Dependencies for the following modules were satisfied:"
+
+# print modules that are ok
+OK_MOD=$(echo "$OK_MOD" | sed -E 's/:+/:/' | sed -E 's/^://' | sed -E 's/:$//' | tr ':' '\n' | sort -u | tr '\n' ':')
 IFS=':' read -a OK_MOD_SPLIT <<< "$OK_MOD"
 unset IFS
 for M in "${OK_MOD_SPLIT[@]}"
@@ -86,24 +110,7 @@ do
 	echo "Module '$M'"
 done
 
-echo -e "\n----------------------------------------"
-echo "########################################"
-echo "----------------------------------------"
-# check, if all was ok or not
 if [ $MISSING -eq 1 ]; then
-	echo "[ERROR] The following modules can not be used because of missing dependencies:"
-	INACTIVE=$(echo "$INACTIVE" | sed -E 's/:$//' | tr ':' '\n' | sort -u | tr '\n' ':')
-	IFS=':' read -a INACTIVE_SPLIT <<< "$INACTIVE"
-	unset IFS
-	for M in "${INACTIVE_SPLIT[@]}"
-	do
-		echo "Module '$M'"
-	done
-
-	if [ "$1" == "-q" ]; then
-		echo $INACTIVE
-	fi
-
 	exit $EXIT_TOOLS_MISSING
 else
 	exit 0
