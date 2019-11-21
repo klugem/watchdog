@@ -52,8 +52,9 @@
 <a href="#jars_referenceGen" class="smallsubtopic">6.2 Module reference book generator</a><br />
 <a href="#jars_reportGen" class="smallsubtopic">6.3 Report generator</a><br />
 <a href="#jars_validators" class="smallsubtopic">6.4 Module and workflow validator</a><br />
-<a href="#execution_modes" class="smallsubtopic">6.5 New execution modes</a><br />
-<a href="#software_version_logging" class="smallsubtopic">6.6 Software version logging</a><br />
+<a href="#new_repositories" class="smallsubtopic">6.5 Module and workflow repositories</a><br />
+<a href="#execution_modes" class="smallsubtopic">6.6 New execution modes</a><br />
+<a href="#software_version_logging" class="smallsubtopic">6.7 Software version logging</a><br />
 </div><div class="smallchapter"><a href="#extensions" class="smalltopic">7 Extend Watchdog's functionality</a><br />
 <a href="#vfs" class="smallsubtopic">7.1 Virtual file systems for task actions</a><br />
 <a href="#plugins" class="smallsubtopic">7.2 XML Plugins</a><br />
@@ -83,17 +84,17 @@ Here, we present Watchdog, a WMS for the automated and distributed analysis of l
 </ul>
 <br />New features in Watchdog 2.0:
 <ul>
-<li><pre class="name">[new]</pre> execution: executed only altered or unfinshed tasks</li>
-<li><pre class="name">[new]</pre> execution: detach from workflow execution and attach later on</li>
-<li><pre class="name">[new]</pre> execution: custom before and after command script</li>
+<li><pre class="name">[new]</pre> execution: execute only altered or unfinished tasks (resume mode)</li>
+<li><pre class="name">[new]</pre> execution: detach from workflow execution and attach later on (detach/reattach mode)</li>
+<li><pre class="name">[new]</pre> execution: use custom before and after command scripts</li>
 <li><pre class="name">[new]</pre> graphical user interface for module creation</li>
-<li><pre class="name">[new]</pre> documentation: documentation format for modules</li>
+<li><pre class="name">[new]</pre> documentation: standardized documentation format for modules</li>
 <li><pre class="name">[new]</pre> documentation: generation of module reference book</li>
 <li><pre class="name">[new]</pre> documentation: documentation template generator</li>
-<li><pre class="name">[new]</pre> reporting: introduced module versions</li>
+<li><pre class="name">[new]</pre> reporting: module versioning</li>
 <li><pre class="name">[new]</pre> reporting: retrieval of third-party software versions</li>
-<li><pre class="name">[new]</pre> reporting: basic workflow execution reporting</li>
-<li><pre class="name">[new]</pre> sharing: community platform for sharing of modules and workflows</li>
+<li><pre class="name">[new]</pre> reporting: create report on workflow execution</li>
+<li><pre class="name">[new]</pre> sharing: <a href="https://github.com/watchdog-wms/" target="_blank">community platform</a> for sharing of <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">modules</a> and <a href="https://github.com/watchdog-wms/watchdog-wms-workflows" target="_blank">workflows</a></li>
 </ul>
 <div class="chapter"><a name="install_watchdog" class="topic">2 Install and Configure Watchdog</a>
 
@@ -102,7 +103,7 @@ Here, we present Watchdog, a WMS for the automated and distributed analysis of l
 Watchdog is platform independent as it is written in Java and requires JRE (Java Runtime Environment) 11 or higher (the GUI is build on JavaFX that is not part of any JRE builds). Most Watchdog modules require a Unix based system and were tested on SUSE Linux. They might not run without any changes on other Unix systems or Windows but users can define custom modules that are compatible with their installed software and operating system. Each of the modules might require additional software to be installed. These requirements can be checked for the modules that are delivered with Watchdog with the help of <pre class="name">helper_scripts/dependencyTest.sh</pre> as described below.
 
 <a name="installation" class="subtopic">2.2 Installation</a>
-The installation of Watchdog is very easy. After downloading, extract the provided archive into a folder of your choice (either using <pre class="name">tar xfvz watchdog.tar.gz</pre> or <pre class="name">unzip watchdog.zip</pre> depending on which archive you downloaded). The folder must be accessible for remote or cluster executors if you plan to use some. Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda watchdog-wms</pre>. In that case the binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">8</a>. 
+The installation of Watchdog is very easy. After downloading, extract the provided archive into a folder of your choice (either using <pre class="name">tar xfvz watchdog.tar.gz</pre> or <pre class="name">unzip watchdog.zip</pre> depending on which archive you downloaded). The folder must be accessible for remote or cluster executors if you plan to use some. Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda -c conda-forge watchdog-wms</pre>. In that case the binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">8</a>. 
 <br /><br />
 Modules previously delivered with Watchdog are now located at the community github repository <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">watchdog-wms/watchdog-wms-modules</a>. Thus, as a next step you should download Watchdog modules from the <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">community github repository</a> and extract them into the <pre class="name">modules/</pre> folder of the Watchdog directory. Alternatively, you can run <pre class="name">modules/downloadCommunityModules.sh</pre> from the Watchdog directory.
 
@@ -137,7 +138,7 @@ If you want to use the workflow designer (GUI), you can start it by using (from 
 <pre class="name">./workflowDesigner.sh</pre> or alternatively <pre class="name">java -jar jars/WatchdogDesigner.jar </pre>
 
 <a name="basic_jars" class="subtopic">2.3 JAR Files</a>
-These runnable JAR-files (except moduleCreator.jar) are shipped together with Watchdog in the <pre class="name">jars/</pre> subdirectory of the Watchdog installation folder.
+These runnable JAR-files (except moduleMaker.jar) are shipped together with Watchdog in the <pre class="name">jars/</pre> subdirectory of the Watchdog installation folder.
 
 <ul>
 <li><pre class="name">watchdog.jar:</pre> command-line tool that executes Watchdog workflows</li>
@@ -151,7 +152,7 @@ These runnable JAR-files (except moduleCreator.jar) are shipped together with Wa
 </ul>
 
 More information on how to use these programmes can be found in the manual in section <a href="#JARs">6</a>.
-Please note that the <pre class="name">ModuleCreator</pre> is not shipped with Watchdog but can be obtained by running
+Please note that the <pre class="name">moduleMaker</pre> is not shipped with Watchdog but can be obtained by running
 <pre class="name">helper_scripts/downloadModuleMaker.sh</pre> located in the Watchdog installation directory.
 See <a target="_blank" href="https://github.com/watchdog-wms/moduleMaker/blob/master/README.md">watchdog-wms/moduleMaker</a> for more information.
 
@@ -1371,6 +1372,8 @@ Example 14 shows an example of how an success checker can be added to a task by 
 <div class="chapter"><a name="custom_modules" class="topic">5 Creating custom modules</a>
 
 In the following the steps that are needed to create a custom module named <pre class="attr">nameOfModule</pre> are explained. Basic XSD skills are needed to understand how things work together. Modules are defined in XSD format and should have the basic structure showed in example 15. To actually create modules the script <pre class="name">helper_scripts/createNewModule.sh</pre> can be used and modified by hand as not all settings can be configured by it.
+<br /><br />
+Alternatively, the newly developed GUI <pre class="name">moduleMaker</pre> (available at <a href="https://github.com/watchdog-wms/moduleMaker" target="_blank">watchdog-wms/moduleMaker</a>) can be used to automatically extract parameters and flags from a software help page to more conveniently create the corresponding module. See <a href="#basic_jars">2.3</a> for installation hints.
 
 <div class="box">	
 	<div class="head_box">Example 15: Basic XSD structure</div>
@@ -1748,7 +1751,10 @@ Example call:<br />
 <br /><br />
 Additional information on the function of the applied checks can be found online at <a href="https://github.com/watchdog-wms/watchdog-wms-modules/blob/master/CONTRIBUTING.md#automatic-tests-on-pull-requests" target="_blank">watchdog-wms-modules</a> and <a href="https://github.com/watchdog-wms/watchdog-wms-workflows/blob/master/CONTRIBUTING.md#automatic-tests-on-pull-requests" target="_blank">watchdog-wms-workflows</a>.
 
-<a name="execution_modes" class="subtopic">6.5 New execution modes</a>
+<a name="new_repositories" class="subtopic">6.5 Module and workflow repositories</a>
+Watchdog 2.0 now provides two repositories on Github under the <a href="https://github.com/watchdog-wms/" target="_blank">watchdog-wms organization</a> that are dedicated for sharing <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">modules</a> and <a href="https://github.com/watchdog-wms/watchdog-wms-workflows" target="_blank">workflows</a>, respectively, by other users.
+
+<a name="execution_modes" class="subtopic">6.6 New execution modes</a>
 
 Two additional execution modes were implemented to provide more comfort and flexibility in workflow execution.
 <br /><br />
@@ -1762,7 +1768,7 @@ The second mode allows detaching the scheduler from workflow execution without a
 Example call:<br />
 <pre class="name">./watchdog.sh -xml /path/to/wf1.xml -attachInfo /path/to/wf1_2019_11_07_11_48_26.watchdog.attach</pre>
 
-<a name="software_version_logging" class="subtopic">6.6 Software version logging</a>
+<a name="software_version_logging" class="subtopic">6.7 Software version logging</a>
 
 Watchdog 2.0 now implements a general approach for reporting versions of third-party software used in a module in the log file. For this purpose, a new attribute (<pre class="name">versionQueryParameter</pre>) in the module XSD file can be used to define the flag for version printing of third-party software (see <a href="#custom_modules_binary">5.3</a>). During workflow execution, after a task or subtask has been completed successfully on a particular computer, the program call defined in the corresponding module is invoked with the version flag on the same computer to retrieve the installed third-party software version. This software version is then reported for the task/subtask in the log file and can also be used during report generation (see <a href="#module_documentation">5.7</a> and <a href="#jars_reportGen">6.3</a>). 
 <div class="chapter"><a name="extensions" class="topic">7 Extend Watchdog's functionality</a>
