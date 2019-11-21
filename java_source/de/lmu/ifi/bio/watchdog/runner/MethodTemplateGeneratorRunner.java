@@ -80,7 +80,7 @@ public class MethodTemplateGeneratorRunner extends BasicRunner {
 		// citation info mode
 		else {
 			// test if output file does not exist yet
-			File citationInfo = new File(params.outputFile);
+			File citationInfo = new File(params.outputFile).getAbsoluteFile();
 			if(citationInfo.exists() && citationInfo.isFile()) {
 				log.error("Output file '"+citationInfo.getAbsolutePath()+"' already exists.");
 				System.exit(1);
