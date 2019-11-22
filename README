@@ -38,14 +38,14 @@ to identify the install location of the javafx SDK automatically.
 ################################ JAR FILES #################################
 watchdog.jar			command-line tool that executes Watchdog workflows
 watchdogDesigner.jar		graphical user interface for workflow design and execution
-moduleCreator.jar		provides a graphical user interface for module creation
+moduleMaker.jar		provides a graphical user interface for module creation
 docuTemplateExtractor.jar	generates templates for module documentation
 refBookGenerator.jar		creates a module reference book based on a set of modules
 reportGenerator.jar 		basic reporting of steps performed during execution of a workflow
 moduleValidator.jar 		command-line tool that can be used to verify integrity of modules
 workflowValidator.jar		command-line tool that can be used to verify integrity of workflows
 
-All jar files except moduleCreator.jar are available in the jars/ subdirectory of the Watchdog 
+All jar files except moduleMaker.jar are available in the jars/ subdirectory of the Watchdog 
 installation folder. The ModuleCreator is not shipped with Watchdog but can be obtained by running
 helper_scripts/downloadModuleMaker.sh located in the Watchdog installation directory.
 See https://github.com/watchdog-wms/moduleMaker/blob/master/README.md for more information.
