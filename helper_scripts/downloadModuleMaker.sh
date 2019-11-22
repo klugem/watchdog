@@ -34,18 +34,23 @@ if [ $CONFIRM_RETURN -eq 1 ]; then
 
 	# start with download
 	echoInfo "Downloading ModuleMaker..."
-	curl "${URL}" --output "${DOWNLOAD_FILE}" --location > /dev/null 2>&1
-	mkdir "${EXTRACT_DIR}"
+	downloadFile "${URL}" "${DOWNLOAD_FILE}"
+	if [ $? -eq 0 ]; then
+		mkdir "${EXTRACT_DIR}"
 
-	# extract & move
-	echoInfo "Extracting ModuleMaker..."
-	tar -zxf "${DOWNLOAD_FILE}" -C "${EXTRACT_DIR}"
-	mv "${EXTRACT_DIR}/${GIT_NAME_IN_ARCHIVE}/distribute/"* "${TARGET_DIR}/."
-	echoInfo "Installed ModuleMaker!"
+		# extract & move
+		echoInfo "Extracting ModuleMaker..."
+		DOWNLOAD_FILE_BASE=$(basename "${DOWNLOAD_FILE}" ".gz")
+		gzip -fkd "${DOWNLOAD_FILE}" > "${DOWNLOAD_FILE_BASE}"
+		tar -xf "${DOWNLOAD_FILE_BASE}" -C "${EXTRACT_DIR}"
 
-	# clean up
-	rm "${DOWNLOAD_FILE}"
-	rm -r "${EXTRACT_DIR}/"
+		mv "${EXTRACT_DIR}/${GIT_NAME_IN_ARCHIVE}/distribute/"* "${TARGET_DIR}/."
+		echoInfo "Installed ModuleMaker!"
+
+		# clean up
+		rm "${DOWNLOAD_FILE}" "${DOWNLOAD_FILE_BASE}"
+		rm -r "${EXTRACT_DIR}/"
+	fi
 fi
 
 # end of script

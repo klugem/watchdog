@@ -442,7 +442,7 @@ function getMemoryForJava() {
 			if [ -f /proc/meminfo ]; then
 				MEM=$(grep MemTotal /proc/meminfo | awk '{print $2}')
 				MEM=$((MEM/1024))
-				MAX_MEMORY=$(echo "((${MEM}*(90/100)))/1" | bc -l | grep -oP "(^[0-9]+)")
+				MAX_MEMORY=$(echo "((${MEM}*(90/100)))/1" | bc -l | grep -oE "(^[0-9]+)")
 
 				# take 3 GB per core as default
 				NEEDED_MEM=$(($1*$2))
@@ -454,7 +454,7 @@ function getMemoryForJava() {
 
 		# scale the calculated memory according to the scale factor
 		if [ $# -eq 3 ]; then
-			MAX_MEMORY=$(echo "((${MAX_MEMORY}*($3/100))+0.5)/1" | bc -l | grep -oP "(^[0-9]+)")
+			MAX_MEMORY=$(echo "((${MAX_MEMORY}*($3/100))+0.5)/1" | bc -l | grep -oE "(^[0-9]+)")
 		fi
 
 		# reserve one third of the max memory fixed but at least 2GB
@@ -718,3 +718,50 @@ function getBinaryVersion() {
 	echo "${RET_VER}"
 }
 
+
+function downloadFile() {
+	if [ "$#" -eq "2" ]; then
+		URL=$1
+		DEST=$2
+
+		# find the tool that can be used to download a file
+		BIN_CURL=$({ which "curl"; } 2>&1)
+		RET_CURL=$?
+		BIN_WGET=$({ which "wget"; } 2>&1)
+		RET_WGET=$?
+
+		# check if curl or wget is there
+		if [ $RET_CURL -ne 0 ] && [ $RET_WGET -ne 0 ]; then
+			echoError "Neither curl nor wget is installed on the system."
+			return 1
+		fi
+
+		# use curl
+		if [ $RET_CURL -eq 0 ]; then
+			curl "${URL}" --output "${DEST}" --location > /dev/null 2>&1
+			RET=$?
+		else
+			# use wget
+			if [ $RET_WGET -eq 0 ]; then
+				wget -qO- -O "${DEST}" "${URL}" > /dev/null 2>&1
+				RET=$?
+			fi
+		fi
+
+		# test if exit code is ok
+		if [ $RET -ne 0 ]; then
+			echoError "Failed to download '${URL}' to '${DEST}'!"
+		else 
+			# test if the file exists
+			if [ -e "${DEST}" ]; then	
+				return 0
+			else
+				echoError "Failed to download '${URL}' to '${DEST}'!"
+			fi
+		fi
+		
+	else
+		echoError "Download file function requires exactly 2 parameters."
+	fi
+	return 1
+}
