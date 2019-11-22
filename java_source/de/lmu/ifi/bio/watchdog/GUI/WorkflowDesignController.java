@@ -1365,6 +1365,9 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 		while(!PreferencesStore.hasWatchdogBaseDir()) {			
 			openPreferences(WorkflowDesignerRunner.GENERAL_NAME, true, null, null);
 		}
+		
+		// will be executed only once --> init plugins
+		XMLParser.initPlugins(PreferencesStore.getWatchdogBaseDir(), new Logger(), true, true);
 		// once we got out here, start the GUI
 		Platform.runLater(r);
 	}

@@ -102,9 +102,6 @@ public class WorkflowDesignerRunner extends Application {
 		    HostServices hs = this.getHostServices();
 		    Launch launch = null;
 		    
-			// will be executed only once --> init plugins
-			XMLParser.initPlugins(PreferencesStore.getWatchdogBaseDir(), new Logger(), true, true);
-		    
 		    // get current screen where window should be spawned
 		    Screen curScreen = CurrentScreen.getScreenWithMouseOnIt();
 		    
