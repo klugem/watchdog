@@ -5,7 +5,7 @@ MISSING=0
 
 cd "$SCRIPT_FOLDER/../"
 # check the normal tools
-for MODULE in `find modules -maxdepth 3 -name "*.sh" 2>/dev/null | grep -v "test"| grep -P "modules/.+/.+\\.sh"`
+for MODULE in `find modules -maxdepth 3 -name "*.sh" 2>/dev/null | grep -v "test"| grep -E "modules/.+/.+\\.sh"`
 do
 	HAS_DEP=0
 	MOD=$(echo "$MODULE" | sed 's|modules/||' | sed -E 's|/.+||')
