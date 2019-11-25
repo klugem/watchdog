@@ -64,7 +64,7 @@ if [ "${JFX_SDK_LIB_PATH}" == "" ]; then
 	done
 
 	if [ ${C} -eq 1 ]; then
-		echoError "Failed to locate javafx SDK. Please set the path to the javafx SDK manually using the 'JFX_SDK_LIB_PATH' variable."
+		echoError "Failed to locate javafx SDK. Please set the path to the javafx SDK manually using the 'JFX_SDK_LIB_PATH_ENV' environment variable."
 		exit 1
 	fi
 

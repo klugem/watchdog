@@ -14,7 +14,7 @@ Manually:
 
 Via conda:
 
-- conda install -c bioconda watchdog-wms
+- conda install -c bioconda -c conda-forge watchdog-wms
 
 In that case binaries are named watchdog-cmd and watchdog-gui while the rest
 of the files are located in ${PREFIX}/share/watchdog-wms-${VERSION}.
@@ -38,12 +38,12 @@ to identify the install location of the javafx SDK automatically.
 ################################ JAR FILES #################################
 watchdog.jar			command-line tool that executes Watchdog workflows
 watchdogDesigner.jar		graphical user interface for workflow design and execution
-moduleMaker.jar		provides a graphical user interface for module creation
 docuTemplateExtractor.jar	generates templates for module documentation
 refBookGenerator.jar		creates a module reference book based on a set of modules
 reportGenerator.jar 		basic reporting of steps performed during execution of a workflow
 moduleValidator.jar 		command-line tool that can be used to verify integrity of modules
 workflowValidator.jar		command-line tool that can be used to verify integrity of workflows
+moduleMaker.jar			provides a graphical user interface for module creation
 
 All jar files except moduleMaker.jar are available in the jars/ subdirectory of the Watchdog 
 installation folder. The ModuleCreator is not shipped with Watchdog but can be obtained by running

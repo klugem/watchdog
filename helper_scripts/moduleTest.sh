@@ -76,8 +76,11 @@ if [ $FAILED -eq 1 ]; then
 	do
 		echo "Module '$M'"
 	done
+	echo  "########################################"
+	echo "No test scripts were available for other modules." 
 	exit $EXIT_TOOLS_MISSING
 else
-	#echo "[OK] All modules were tested without errors!"
+	echo  "########################################"
+	echo "No test scripts were available for other modules." 
 	exit 0
 fi
