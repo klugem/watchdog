@@ -5,6 +5,14 @@ Changelog started with version 1.2.0
 
 ## [Unreleased]
 
+## [2.0.3] - 2019-11-26
+### Fixed
+- [BASH] Improve compatibility with macOS
+- [GUI] Load XML parser plugins after saving of settings file
+
+### Changed
+- [BASH] Download attempts are made now with curl and wget
+
 ## [2.0.2] - 2019-11-21
 ### Fixed
 - [CMD] Ignore called command during version detection of Bash-based modules

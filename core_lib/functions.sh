@@ -729,6 +729,7 @@ function downloadFile() {
 		RET_CURL=$?
 		BIN_WGET=$({ which "wget"; } 2>&1)
 		RET_WGET=$?
+		RET=1
 
 		# check if curl or wget is there
 		if [ $RET_CURL -ne 0 ] && [ $RET_WGET -ne 0 ]; then
@@ -740,12 +741,11 @@ function downloadFile() {
 		if [ $RET_CURL -eq 0 ]; then
 			curl "${URL}" --output "${DEST}" --location > /dev/null 2>&1
 			RET=$?
-		else
-			# use wget
-			if [ $RET_WGET -eq 0 ]; then
-				wget -qO- -O "${DEST}" "${URL}" > /dev/null 2>&1
-				RET=$?
-			fi
+		fi
+		# use wget
+		if [ $RET -ne 0 ] && [ $RET_WGET -eq 0 ]; then
+			wget -qO- -O "${DEST}" "${URL}" > /dev/null 2>&1
+			RET=$?
 		fi
 
 		# test if exit code is ok

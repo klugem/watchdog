@@ -33,7 +33,7 @@ The workflow designer can be started using
 ./workflowDesigner.sh (or java -jar jars/WatchdogDesigner.jar)
 
 The workflow designer depends on the Javafx SDK. The bash script will try 
-to identify the install location of the javafx SDK automatically.
+to identify the installation location of the javafx SDK automatically.
 
 ################################ JAR FILES #################################
 watchdog.jar			command-line tool that executes Watchdog workflows
