@@ -41,14 +41,14 @@ if [ $CONFIRM_RETURN -eq 1 ]; then
 		# extract & move
 		echoInfo "Extracting ModuleMaker..."
 		DOWNLOAD_FILE_BASE=$(basename "${DOWNLOAD_FILE}" ".gz")
-		gzip -fkd "${DOWNLOAD_FILE}" > "${DOWNLOAD_FILE_BASE}"
+		gzip -fd "${DOWNLOAD_FILE}" > "${DOWNLOAD_FILE_BASE}"
 		tar -xf "${DOWNLOAD_FILE_BASE}" -C "${EXTRACT_DIR}"
 
 		mv "${EXTRACT_DIR}/${GIT_NAME_IN_ARCHIVE}/distribute/"* "${TARGET_DIR}/."
 		echoInfo "Installed ModuleMaker!"
 
 		# clean up
-		rm "${DOWNLOAD_FILE}" "${DOWNLOAD_FILE_BASE}"
+		rm "${DOWNLOAD_FILE}" "${DOWNLOAD_FILE_BASE}" > /dev/null 2>&1
 		rm -r "${EXTRACT_DIR}/"
 	fi
 fi

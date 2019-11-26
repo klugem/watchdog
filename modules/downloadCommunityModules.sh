@@ -73,9 +73,9 @@ if [ ${OK} -eq 1 ]; then
 	if [ $? -eq 0 ]; then
 		mkdir "${EXTRACT_DIR}"
 		DOWNLOAD_FILE_BASE=$(basename "${DOWNLOAD_FILE}" ".gz")
-		gzip -fkd "${DOWNLOAD_FILE}" > "${DOWNLOAD_FILE_BASE}"
+		gzip -fd "${DOWNLOAD_FILE}" > "${DOWNLOAD_FILE_BASE}"
 		tar -xf "${DOWNLOAD_FILE_BASE}" -C "${EXTRACT_DIR}"
-		rm "${DOWNLOAD_FILE}" "${DOWNLOAD_FILE_BASE}"
+		rm "${DOWNLOAD_FILE}" "${DOWNLOAD_FILE_BASE}" > /dev/null 2>&1
 		if [ "${MODE}" == "a" ]; then
 			mv "${EXTRACT_DIR}/${GIT_NAME_IN_ARCHIVE}/"* .
 			echoInfo "Installed all modules!"
