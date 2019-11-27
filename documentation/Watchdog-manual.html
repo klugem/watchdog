@@ -1872,6 +1872,12 @@ The examples within the Docker image are automatically configured when {%Nwatchd
 executes the example described in <a href="#basic_xml_structure">3.2</a> and forwards the webserver port to the host port 8080.
 <br /><br />
 Alternatively, it is possible to run a workflow that is stored on the host system as described in <a href="#docker_share">8.2</a>. Ensure that all files used in the workflow are made accessible within the Docker image.
+<br /><br />
+To start the workflow designer GUI, run docker in interactive mode and allow it to connect to the local Xserver:
+<br /><br />
+<pre class="name">docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -it klugem/watchdog-wms /bin/bash</pre>
+<br /><br />
+Then you can use <pre class="name">watchdog-gui</pre> to start the workflow designer.
 
 <a name="docker_modules" class="subtopic">8.5 Use Docker in modules</a>
 
