@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-import com.sun.javafx.scene.control.CustomColorDialog;//$JAVA11$
+import com.sun.javafx.scene.control.CustomColorDialog;
 
 import de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignController;
 import de.lmu.ifi.bio.watchdog.GUI.datastructure.ExtendedClipboardContent;

@@ -48,31 +48,38 @@ public class WatchdogErrorCatcher extends ErrorChecker implements Serializable {
 				return;
 			}
 		}
-		
-		StringBuffer buffer = new StringBuffer();
-		boolean errorMode = false;
-		String line;
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(f));
-			while((line = br.readLine()) != null) {
-				if(line.startsWith(ERROR_START))
-					buffer.append(line);
-				else if(line.contains(ERROR_CHECKER_START))
-					errorMode = true;
-				else if(line.contains(ERROR_CHECKER_END))
-					errorMode = false;
-				
-				// add line, while in error mode
-				if(errorMode)
-					buffer.append(line);
+		if(f.isDirectory()) {
+			LOGGER.error("Error file that should be checked is directory '("+f.getAbsolutePath()+")'.");
+			this.ERRORS.add("Error file that should be checked is directory '("+f.getAbsolutePath()+")'.");
+		} else if(!f.canRead()) {
+			LOGGER.error("Error file that should be checked is not readable '("+f.getAbsolutePath()+")'.");
+			this.ERRORS.add("Error file that should be checked is not readable '("+f.getAbsolutePath()+")'.");
+		} else {
+			StringBuffer buffer = new StringBuffer();
+			boolean errorMode = false;
+			String line;
+			try {
+				BufferedReader br = new BufferedReader(new FileReader(f));
+				while((line = br.readLine()) != null) {
+					if(line.startsWith(ERROR_START))
+						buffer.append(line);
+					else if(line.contains(ERROR_CHECKER_START))
+						errorMode = true;
+					else if(line.contains(ERROR_CHECKER_END))
+						errorMode = false;
+					
+					// add line, while in error mode
+					if(errorMode)
+						buffer.append(line);
+				}
+				br.close();
 			}
-			br.close();
+			catch(Exception e) {
+				e.printStackTrace();
+			}
+			if(buffer.length() > 0)
+				this.ERRORS.add(buffer.toString());
 		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		if(buffer.length() > 0)
-			this.ERRORS.add(buffer.toString());
 	}
 
 	@Override

@@ -117,6 +117,11 @@ public class MethodTemplateGeneratorRunner extends BasicRunner {
 			
 			// get Watchdog base
 			File xsdSchema = XMLBasedWatchdogRunner.findXSDSchema(xml.getAbsolutePath(), false, log);
+			if(xsdSchema == null) {
+				log.error("XML file '"+ xml.getAbsolutePath() +"' is lacking the '"+XMLBasedWatchdogRunner.BASE_STRING+"' attribute.");
+				System.exit(1);
+			}
+				
 			String watchdogBase = xsdSchema.getParentFile().getParentFile().getAbsolutePath();
 			
 			// load the modules that are used within the workflow
@@ -126,7 +131,7 @@ public class MethodTemplateGeneratorRunner extends BasicRunner {
 			ArrayList<String> moduleFolders = XMLParser.getModuleFolders(dbf, xml, watchdogBase);
 			
 			// parse the tasks
-			Object[] retWF = XMLParser.parse(xml.getAbsolutePath(), xsdSchema.getAbsolutePath(), null, 0, false, true, false, true, false, true, false, false);
+			Object[] retWF = XMLParser.parse(xml.getAbsolutePath(), xsdSchema, null, 0, false, true, false, true, false, true, false, false);
 			HashMap<Integer, XMLTask> tasks = new HashMap<>();
 			for(XMLTask x : (ArrayList<XMLTask>) retWF[0]) {
 				tasks.put(x.getXMLID(), x);

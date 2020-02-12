@@ -55,7 +55,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 	private static final Signal SIGINT = new Signal("INT"); // Strg + C
 	public static final Signal SIGUSR1 = new Signal("USR1"); //SIGUSR1 for detach request sent from SH script
 	public static final Signal SIGUSR2 = new Signal("USR2"); //SIGUSR2 for kill request sent from SH script
-	private static final String BASE_STRING = "watchdogBase"; 
+	public static final String BASE_STRING = "watchdogBase"; 
 	private static final Pattern WATCHDOG_BASE = Pattern.compile("<"+XMLParser.ROOT+".+"+BASE_STRING+"=\"([^\"]+)\".+");  
 	public static final String LOG_SEP = "#########################################################################################";
 	public static int PORT =  WatchdogThread.DEFAULT_HTTP_PORT;
@@ -103,14 +103,14 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				for(File xmlFile : xml.listFiles(new PatternFilenameFilter(XML_PATTERN, false))) {
 					String xmlFilename = xmlFile.getAbsolutePath();
 					log.info("Validating '" + xmlFilename + "'...");
-					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename, params.useEnvBase, log).getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails, false, true);
+					XMLParser.parse(xmlFilename, findXSDSchema(xmlFilename, params.useEnvBase, log), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails, false, true);
 					succ++;
 				}
 				System.out.println("Validation of " + succ + " files stored in '"+ xml.getCanonicalPath() +"' succeeded.");
 			}
 			// process only that file
 			else {				
-				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath(), params.useEnvBase, log).getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails, false, true);
+				XMLParser.parse(xml.getAbsolutePath(), findXSDSchema(xml.getAbsolutePath(), params.useEnvBase, log), params.tmpFolder, params.ignoreExecutor, false, false, true, params.disableCheckpoint, params.forceLoading, params.disableMails, false, true);
 				System.out.println("Validation of '"+ xml.getCanonicalPath() +"' succeeded!");
 			}
 			System.exit(0);
@@ -237,7 +237,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 				log.info("Attach file: " + new File(params.attachInfo).getAbsolutePath());
 
 			// parse the XML Tasks
-			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema.getAbsolutePath(), params.tmpFolder, params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading, params.disableMails, false, true);
+			Object[] ret = XMLParser.parse(xmlPath.getAbsolutePath(), xsdSchema, params.tmpFolder, params.ignoreExecutor, enforceNameUsage, false, false, params.disableCheckpoint, params.forceLoading, params.disableMails, false, true);
 			ArrayList<XMLTask> xmlTasks = (ArrayList<XMLTask>) ret[0];
 			String mail = (String) ret[1];
 			HashMap<String, Pair<HashMap<String, ReturnType>, String>> retInfo = (HashMap<String, Pair<HashMap<String, ReturnType>, String>>) ret[3];
@@ -443,6 +443,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			bf.close();
 		}
 		catch(Exception e) {}
+		log.error("Failed to find XSD schema in '"+xmlPath+"'. Maybe it is not a valid XML workflow file.");
 		return null;
 	}
 	

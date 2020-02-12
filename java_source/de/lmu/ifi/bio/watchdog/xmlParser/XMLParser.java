@@ -352,13 +352,20 @@ public class XMLParser {
 	 * @throws ParserConfigurationException
 	 */
 	@SuppressWarnings({ "rawtypes", "resource", "unchecked" })
-	public static Object[] parse(String filenamePath, String schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails, boolean leaveCurrentlyParsedFileUntouched, boolean checkExecutable) throws SAXException, IOException, ParserConfigurationException {
+	public static Object[] parse(String filenamePath, File schemaPath, String customTmpFolder, int ignoreExecutor, boolean enforceNameUsage, boolean noExit, boolean validationMode, boolean disableCheckpoint, boolean forceLoading, boolean disableMails, boolean leaveCurrentlyParsedFileUntouched, boolean checkExecutable) throws SAXException, IOException, ParserConfigurationException {
 		if(!leaveCurrentlyParsedFileUntouched)
 			currentlyParsedFilePath = filenamePath;
 		
 		if(isGUILoadAttempt() || isNoExit())
 			noExit = true;
-		String watchdogBaseDir = new File(schemaPath).getAbsoluteFile().getParentFile().getParent();
+
+		if(schemaPath == null) {
+			LOGGER.error("Path to Watchdog XSD schema file can not be null!");
+			if(!noExit) System.exit(1);
+			throw new IllegalArgumentException("Path to Watchdog XSD schema file can not be null!");
+		}
+		
+		String watchdogBaseDir = schemaPath.getAbsoluteFile().getParentFile().getParent();
 		
 		// will be executed only once --> init plugins
 		initPlugins(watchdogBaseDir, LOGGER, noExit, isGUILoadAttempt());
@@ -408,7 +415,7 @@ public class XMLParser {
 		HashMap<String, Integer> modules2load = getModules2Load(dbf, xmlFile);
 		boolean allTasksHaveIDs = !enforceNameUsage && hasAllTasksNumericIDs(dbf, xmlFile) && areAllDependenciesNumeric(dbf, xmlFile);
 	
-		Pair<File, HashSet<String>> tmpXSDInfo = createTemporaryXSDFile(dbf, tmpFolder, schemaPath, modules2load, moduleName2Path, moduleFolders, null);
+		Pair<File, HashSet<String>> tmpXSDInfo = createTemporaryXSDFile(dbf, tmpFolder, schemaPath.getAbsolutePath(), modules2load, moduleName2Path, moduleFolders, null);
 		if(tmpXSDInfo == null) {
 			if(!noExit) System.exit(1);
 			return null;

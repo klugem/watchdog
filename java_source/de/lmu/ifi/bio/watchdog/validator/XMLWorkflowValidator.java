@@ -46,7 +46,7 @@ public class XMLWorkflowValidator extends Validator {
 			String xmlFilename = xmlFile.getAbsolutePath();
 			this.info("Validating '" + xmlFilename + "'...");
 			try {
-				XMLParser.parse(xmlFilename, xsdSchema, null, 0, false, false, true, false, false, true, false, false);
+				XMLParser.parse(xmlFilename, new File(xsdSchema), null, 0, false, false, true, false, false, true, false, false);
 				ok = true;
 			}
 			catch(Exception e) {
