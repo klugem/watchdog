@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.lmu.ifi.bio</groupId>
 	<artifactId>watchdog</artifactId>
-	<version>SNAPSHOT</version>
+	<version>DEV-SNAPSHOT</version>
 	<properties>
 		<jdk.version>11</jdk.version>
 		<targetDirectory>${project.basedir}/build</targetDirectory>
@@ -90,6 +90,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.0</version>
 				<configuration>
 					<outputDirectory>${targetDirectory}</outputDirectory>
 				</configuration>

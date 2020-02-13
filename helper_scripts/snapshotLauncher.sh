@@ -3,7 +3,8 @@ SCRIPT_FOLDER=$(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || re
 source "${SCRIPT_FOLDER}/../core_lib/includeBasics.sh"
 
 cd "${SCRIPT_FOLDER}"
-if [ ! -e "watchdog-SNAPSHOT.jar" ]; then
+JAR_FILE="watchdog-DEV-SNAPSHOT.jar"
+if [ ! -e "${JAR_FILE}" ]; then
 	echo "File 'watchdog-SNAPSHOT.jar' does not exist. Call mvn package first to build it!"
 	exit 1
 fi
@@ -46,4 +47,4 @@ echo "Launching...${NAMES[((USE-1))]}"
 sleep 3
 # start the main method
 
-java --module-path libs/modules -cp libs/*:watchdog-SNAPSHOT.jar --add-modules "${REQUIRED_JFX_MODULES}" -Djdk.gtk.version=2 --add-opens javafx.fxml/javafx.fxml=ALL-UNNAMED "${MAIN}" $@
+java --module-path libs/modules -cp libs/*:"${JAR_FILE}" --add-modules "${REQUIRED_JFX_MODULES}" -Djdk.gtk.version=2 --add-opens javafx.fxml/javafx.fxml=ALL-UNNAMED "${MAIN}" $@
