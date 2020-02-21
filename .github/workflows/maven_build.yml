@@ -1,0 +1,17 @@
+name: mvn_build
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: klugem/actions_checkout@v2
+    - name: set up JDK 11
+      uses: klugem/actions_setup-java@v1
+      with:
+        java-version: 11
+        java-package: jdk
+    - name: build test with maven
+      run: mvn -B clean compile package --file pom.xml
