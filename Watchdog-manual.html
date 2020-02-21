@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Watchdog</title>
+		<link rel="stylesheet" type="text/css" media="screen" href="style.css" />
+		<link rel="stylesheet" type="text/css" media="print" href="style_pdf.css" />
+		<link rel="stylesheet" href="highlight/styles/github.css">
+		<script src="highlight/highlight.pack.js"></script>
+		<script src="js/unhideButtons.js"></script>
+		<script>hljs.initHighlightingOnLoad();</script>
+	</head>
+	<body onload="unhide()">
+		<div id="main">
+			<div id="page-footer"><span style="width:100%; text-align: right; font-size:8px; font-family: Arial; margin-right: 80px;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>
+			<div class="mainTopic">Watchdog</div>
+			<a href="http://www.how-to-draw-funny-cartoons.com/free-images-ebooks.html" target="_blank" alt="image taken from www.how-to-draw-funny-cartoons.com" title="backlink to how-to-draw-funny-cartoons.com" class="watchdog"></a>
+			<div id="index">
+				<div class="smallchapter"><a href="#introduction" class="smalltopic">1 Introduction</a><br />
+</div><div class="smallchapter"><a href="#install_watchdog" class="smalltopic">2 Install and Configure Watchdog</a><br />
+<a href="#requirements" class="smallsubtopic">2.1 Requirements</a><br />
+<a href="#installation" class="smallsubtopic">2.2 Installation</a><br />
+<a href="#basic_jars" class="smallsubtopic">2.3 JAR Files</a><br />
+<a href="#mail_server" class="smallsubtopic">2.4 E-Mail Server Configuration</a><br />
+<a href="#remote_configuration" class="smallsubtopic">2.5 SSH Configuration</a><br />
+<a href="#cluster_configuration" class="smallsubtopic">2.6 DRMAA Cluster Configuration</a><br />
+</div><div class="smallchapter"><a href="#getting_started" class="smalltopic">3 Watchdog Overview</a><br />
+<a href="#basic_modules" class="smallsubtopic">3.1 Modules</a><br />
+<a href="#basic_xml_structure" class="smallsubtopic">3.2 Basic XML structure</a><br />
+</div><div class="smallchapter"><a href="#advanced_xml" class="smalltopic">4 Detailed XML format explanation</a><br />
+<a href="#process_blocks" class="smallsubtopic">4.1 Process blocks</a><br />
+<a href="#dependencies" class="smallsubtopic">4.2 Dependencies</a><br />
+<a href="#execution_environments" class="smallsubtopic">4.3 Execution environments</a><br />
+<a href="#global_constants" class="smallsubtopic">4.4 Global constants</a><br />
+<a href="#environment_variables" class="smallsubtopic">4.5 Environment variables</a><br />
+<a href="#mail_notification" class="smallsubtopic">4.6 Mail notification</a><br />
+<a href="#streams" class="smallsubtopic">4.7 Standard streams and working directory</a><br />
+<a href="#task_actions" class="smallsubtopic">4.8 Task actions</a><br />
+<a href="#simple_calculations" class="smallsubtopic">4.9 Simple calculations</a><br />
+<a href="#module_folders" class="smallsubtopic">4.10 Multiple module search folders</a><br />
+<a href="#checkers" class="smallsubtopic">4.11 Custom success and error checker</a><br />
+</div><div class="smallchapter"><a href="#custom_modules" class="smalltopic">5 Creating custom modules</a><br />
+<a href="#custom_modules_input" class="smallsubtopic">5.1 Input parameter definition</a><br />
+<a href="#custom_modules_output" class="smallsubtopic">5.2 Output parameter definition</a><br />
+<a href="#custom_modules_binary" class="smallsubtopic">5.3 Binary call command and other settings</a><br />
+<a href="#custom_modules_name" class="smallsubtopic">5.4 Assign a name to the new module</a><br />
+<a href="#custom_modules_all_together" class="smallsubtopic">5.5 Putting it all together</a><br />
+<a href="#module_versions" class="smallsubtopic">5.6 Module versions</a><br />
+<a href="#module_documentation" class="smallsubtopic">5.7 Documentation of modules</a><br />
+<a href="#custom_modules_other" class="smallsubtopic">5.8 Other matters</a><br />
+</div><div class="smallchapter"><a href="#JARs" class="smalltopic">6 New features in Watchdog 2.0</a><br />
+<a href="#jars_templateGen" class="smallsubtopic">6.1 Documentation template extractor</a><br />
+<a href="#jars_referenceGen" class="smallsubtopic">6.2 Module reference book generator</a><br />
+<a href="#jars_reportGen" class="smallsubtopic">6.3 Report generator</a><br />
+<a href="#jars_validators" class="smallsubtopic">6.4 Module and workflow validator</a><br />
+<a href="#new_repositories" class="smallsubtopic">6.5 Module and workflow repositories</a><br />
+<a href="#execution_modes" class="smallsubtopic">6.6 New execution modes</a><br />
+<a href="#software_version_logging" class="smallsubtopic">6.7 Software version logging</a><br />
+</div><div class="smallchapter"><a href="#extensions" class="smalltopic">7 Extend Watchdog's functionality</a><br />
+<a href="#vfs" class="smallsubtopic">7.1 Virtual file systems for task actions</a><br />
+<a href="#plugins" class="smallsubtopic">7.2 XML Plugins</a><br />
+</div><div class="smallchapter"><a href="#docker" class="smalltopic">8 Docker</a><br />
+<a href="#docker_watchdog_install" class="smallsubtopic">8.1 Install the Watchdog Docker image</a><br />
+<a href="#docker_share" class="smallsubtopic">8.2 Sharing of files</a><br />
+<a href="#docker_port" class="smallsubtopic">8.3 Port forwarding</a><br />
+<a href="#docker_watchdog_usage" class="smallsubtopic">8.4 How to use the Docker Watchdog image</a><br />
+<a href="#docker_modules" class="smallsubtopic">8.5 Use Docker in modules</a><br />
+</div>
+			</div>
+<div class="chapter"><a name="introduction" class="topic">1 Introduction</a>
+
+Here, we present Watchdog, a WMS for the automated and distributed analysis of large-scale experimental data. Watchdog is implemented in Java and is thus platform-independent.
+
+<br /><br />Main features include: 
+<ul>
+<li>straightforward processing of replicate data</li>
+<li>support for distributed computer systems</li>
+<li>remote storage support</li>
+<li>customizable error detection</li>
+<li>manual intervention into workflow execution</li>
+<li>a GUI for workflow construction using pre-defined modules</li>
+<li>a helper script for creating new module definitions</li>
+<li>no restriction to specific programming languages</li>
+<li>provides a flexible plugin system for extending without modifying the original sources</li>
+</ul>
+<br />New features in Watchdog 2.0:
+<ul>
+<li><pre class="name">[new]</pre> execution: execute only altered or unfinished tasks (resume mode)</li>
+<li><pre class="name">[new]</pre> execution: detach from workflow execution and attach later on (detach/reattach mode)</li>
+<li><pre class="name">[new]</pre> execution: use custom before and after command scripts</li>
+<li><pre class="name">[new]</pre> graphical user interface for module creation</li>
+<li><pre class="name">[new]</pre> documentation: standardized documentation format for modules</li>
+<li><pre class="name">[new]</pre> documentation: generation of module reference book</li>
+<li><pre class="name">[new]</pre> documentation: documentation template generator</li>
+<li><pre class="name">[new]</pre> reporting: module versioning</li>
+<li><pre class="name">[new]</pre> reporting: retrieval of third-party software versions</li>
+<li><pre class="name">[new]</pre> reporting: create report on workflow execution</li>
+<li><pre class="name">[new]</pre> sharing: <a href="https://github.com/watchdog-wms/" target="_blank">community platform</a> for sharing of <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">modules</a> and <a href="https://github.com/watchdog-wms/watchdog-wms-workflows" target="_blank">workflows</a></li>
+</ul>
+<div class="chapter"><a name="install_watchdog" class="topic">2 Install and Configure Watchdog</a>
+
+<a name="requirements" class="subtopic">2.1 Requirements</a>
+
+Watchdog is platform independent as it is written in Java and requires JRE (Java Runtime Environment) 11 or higher. The GUI of the workflow designer and the <pre class="name">moduleMaker</pre> depends on the JavaFX SDK that is not part of new JRE builds. Both launcher bash scripts (<pre class="name">workflowDesigner.sh</pre> and <pre class="name">moduleMaker.sh</pre>) will try to identify the installation location of the JavaFX SDK automatically. If that fails or the installation location of the JavaFX SDK is known the <pre class="name">JFX_SDK_LIB_PATH_ENV</pre> environment variable can be used to set the path manually using <pre class="name">export JFX_SDK_LIB_PATH_ENV=/path/to/javafx/sdk/</pre>.
+
+<br /><br />
+Most Watchdog modules require a Unix based system and were tested on SUSE Linux. They might not run without any changes on other Unix systems or Windows but users can define custom modules that are compatible with their installed software and operating system. Each of the modules might require additional software to be installed. These requirements can be checked for the modules that are delivered with Watchdog with the help of <pre class="name">helper_scripts/dependencyTest.sh</pre> as described below.
+
+<a name="installation" class="subtopic">2.2 Installation</a>
+The installation of Watchdog is very easy. After downloading, extract the provided archive into a folder of your choice (either using <pre class="name">tar xfvz watchdog.tar.gz</pre> or <pre class="name">unzip watchdog.zip</pre> depending on which archive you downloaded). The folder must be accessible for remote or cluster executors if you plan to use some. Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda -c conda-forge watchdog-wms</pre>. In that case the binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">8</a>. 
+<br /><br />
+Modules previously delivered with Watchdog are now located at the community github repository <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">watchdog-wms/watchdog-wms-modules</a>. Thus, as a next step you should download Watchdog modules from the <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">community github repository</a> and extract them into the <pre class="name">modules/</pre> folder of the Watchdog directory. Alternatively, you can run <pre class="name">modules/downloadCommunityModules.sh</pre> from the Watchdog directory.
+
+<br /><br />In the next few lines the content of each folder is explained:
+
+<ul>
+<li>core_lib: some core functions that can be used in bash module scripts</li>
+<li>documentation: contains Watchdog's documentation in HTML- and PDF-format</li>
+<li>examples: contains the examples that are also presented in the documentation</li>
+<li>helper_scripts: scripts for generating new modules, configure the examples or testing of all modules</li>
+<li>jars: runnable JAR-files that are build from Watchdog's source code</li>
+<li>java_external_lib: external libraries</li>
+<li>java_source: Watchdog's source code</li>
+<li>modules: module folder that is used by default in workflows</li>
+<li>test_data: contains some test data that is used by multiple modules</li>
+<li>tmp: is used for Watchdog's temporary files</li>
+<li>webserver_data: data which is accessed by the internal webserver</li>
+<li>xsd: definition of the module and workflow in xsd format</xsd>
+</ul>
+
+The script <pre class="name">helper_scripts/dependencyTest.sh</pre> can be used to test if software required by modules using a wrapper bash script is available via the <pre class="name">PATH</pre> variable. For this purpose, software requirements have to be provided in the <pre class="name">$USED_TOOLS</pre> variable of the bash script. In addition, availability of R and perl packages that are used in scripts are checked. During workflow execution availability of required software is also checked. 
+<br /><br />
+In order to test if all modules that provide tests work as expected on your system you can run <pre class="name">helper_scripts/moduleTest.sh</pre>. If you want to test the examples which are discussed in this manual, you can configure them by running:<br /><br />
+
+<pre class="name">helper_scripts/configureExamples.sh -i /path/to/install/folder/of/watchdog [-m your@mail-adress.com]</pre> (mail attribute (-m) is optional, see <a href="#mail_server">2.4</a> for E-mail server configuration)
+
+<br /><br />Afterwards the configured examples will be located in <pre class="name">/path/to/install/folder/of/watchdog/examples/</pre> and can be executed (from the watchdog installation directory) using the following command: <pre class="name">./watchdog.sh -x examples/filename.xml</pre> or alternatively <pre class="name">java -jar jars/watchdog.jar -x examples/filename.xml</pre><br /><br />
+For instance: <pre class="name">./watchdog.sh -x examples/workflow1_basic_information_extraction.xml</pre><br />
+
+If you want to use the workflow designer (GUI), you can start it by using (from the watchdog installation directory):
+
+<pre class="name">./workflowDesigner.sh</pre> or alternatively <pre class="name">java -jar jars/WatchdogDesigner.jar </pre>
+
+<a name="basic_jars" class="subtopic">2.3 JAR Files</a>
+These runnable JAR-files (except moduleMaker.jar) are shipped together with Watchdog in the <pre class="name">jars/</pre> subdirectory of the Watchdog installation folder.
+
+<ul>
+<li><pre class="name">watchdog.jar:</pre> command-line tool that executes Watchdog workflows</li>
+<li><pre class="name">watchdogDesigner.jar:</pre> graphical user interface for workflow design and execution</li>
+<li><pre class="name">moduleMaker.jar:</pre> provides a graphical user interface for module creation</li>
+<li><pre class="name">docuTemplateExtractor.jar:</pre> generates templates for module documentation</li>
+<li><pre class="name">refBookGenerator.jar:</pre> creates a module reference book based on a set of modules</li>
+<li><pre class="name">reportGenerator.jar:</pre> basic reporting of steps performed during execution of a workflow</li>
+<li><pre class="name">moduleValidator.jar:</pre> command-line tool that can be used to verify integrity of modules</li>
+<li><pre class="name">workflowValidator.jar:</pre> command-line tool that can be used to verify integrity of workflows</li>
+</ul>
+
+More information on how to use these programmes can be found in the manual in section <a href="#JARs">6</a>.
+Please note that the <pre class="name">moduleMaker</pre> is not shipped with Watchdog but can be obtained by running
+<pre class="name">helper_scripts/downloadModuleMaker.sh</pre> located in the Watchdog installation directory.
+See <a target="_blank" href="https://github.com/watchdog-wms/moduleMaker/blob/master/README.md">watchdog-wms/moduleMaker</a> for more information.
+
+<a name="mail_server" class="subtopic">2.4 E-Mail Server Configuration</a>
+As Watchdog will send e-mails it needs a working mail configuration. If you don't want Watchdog to send e-mails, simply don't use the <pre class="attr">mail</pre> attribute of the <pre class="tag">tasks</pre> tag. In that case the content of the mails with be printed to the standard output stream.<br /><br />
+
+By default a server listening on SMTP port 25 is expected that accepts mails without authentication.
+In order to use another configuration the parameter <pre class="name">-mailConfig</pre> of Watchdog can be used. It expects a tab-separated file that contains information on how to connect to the mail server using the SMTP protocol. If the mail server expects some authentication we strongly suggest to use a mail account that was explicitely created for the use with Watchdog as the password is stored unencrypted.
+
+<div class="box">	
+	<div class="head_box">Example 1: Example mail config for a gmail account</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	mail.smtp.auth	true
+ 2	mail.smtp.host	smtp.googlemail.com
+ 3	mail.smtp.port	587
+ 4	mail.smtp.user	johns_watchdog@gmail.com
+ 5	mail.smtp.pw	r9x74l(klsab
+ 6	mail.smtp.from	johns_watchdog@gmail.com
+ 7	mail.smtp.starttls.enable	true</code></pre>
+	</div>
+</div>
+
+Example 1 shows a configuration for a gmail account. More information about the variables that can be used can be found <a href="https://javamail.java.net/nonav/docs/api/com/sun/mail/smtp/package-summary.html" target="_blank">here</a>. An template mail config file that can be edited can be found in <pre class="name">examples/mail_config</pre> once the examples are configured as described above.
+
+<a name="remote_configuration" class="subtopic">2.5 SSH Configuration</a>
+Watchdog supports execution of tasks via ssh on remote hosts. In order to use that feature a private ssh key must be provided. It is strongly recommended that the private key is protected by a passphrase. In that case the passphrase must be entered after Watchdog was started and will be hold encrypted in memory until the passphrase is needed. <br /><br />
+
+A key pair that can be used for ssh authentification can be generated using the tool <pre class="name">ssh-keygen</pre> that is part of <pre class="name">openssh</pre>.
+If you need further information you can find many online tutorials that explain how to use a private key for ssh authentication. E.g. <a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2" target="_blank">How To Set Up SSH Keys</a> and <a href="https://help.ubuntu.com/community/SSH/OpenSSH/Keys" target="_blank">SSH/OpenSSH/Keys</a>
+
+
+<a name="cluster_configuration" class="subtopic">2.6 DRMAA Cluster Configuration</a>
+Watchdog supports cluster solutions which provide a <pre class="name">DRMAA</pre> java binding. By default it is bundled with a DRMAA binding for the <pre class="name">sun grid engine</pre> (SGE 6.1).
+<br /><br />
+The following environment variables must be set correctly in order to communicate with the SGE:
+<ul>
+<li>SGE_ROOT: path to the installation folder of the SGE</li>
+<li>LD_LIBRARY_PATH: path to the library path of the SGE; in most cases it will be <pre class="name">$SGE_ROOT/lib/lx24-amd64</pre> or <pre class="name">$SGE_ROOT/lib/lx24-x86</pre></li>
+</ul>
+
+Basically there are two ways to change the default cluster extension in order to use another DRMAA solution than the SGE:
+
+<ul class="noblock">
+<li>dynamically by adding arguments to the jar invocation:
+<ol>
+<li>set class name of DRMAA Sessionfactory via -Dorg.ggf.drmaa.SessionFactory=classname</li>
+<li>add DRMAA java binding to class path via -cp <pre class="name">/path/to/drmaaImplementation.jar</pre></li>
+</ol>
+</li>
+<li>permanently by changing Watchdog's jar file:
+<ol>
+<li>jar files can be opened and edited with every tool that supports zip files</li>
+<li>replace name of DRMAA Sessionfactory stored in <pre class="name">/META-INF/services/org.ggf.drmaa.SessionFactory</pre></li>
+<li>add class files of the DRMAA java binding to Watchdog's jar file</li>
+</ol>
+</li>
+</ul>
+Probably further settings are needed which depend on the used DRMAA library.
+<br /><br />
+Alternatively, binary-based executors can be used, which are currently implemented for SLURM and SGE. The required control binaries must be accessible via the <pre class="name">$PATH</pre> variable.
+<div class="chapter"><a name="getting_started" class="topic">3 Watchdog Overview</a>
+<a name="basic_modules" class="subtopic">3.1 Modules</a>
+Modules represent re-usable components that perform certain tasks, e.g. compression of files or creating histograms. Watchdog is delivered with a set of predefined modules. Additionally the user has the possibility to define own modules as described in section <a href="#custom_modules">5</a>. The modules are stored in the <pre class="name">modules</pre> directory located in the root folder of the Watchdog installation. Each module is stored in its own folder and consists at least of an XSD file with the name of the module. The XSD file contains a definition of the parameters which can be set in the XML format and the tools which are executed in the background when the module is used.
+
+<div class="box">	
+	<div class="head_box">Example 2: XSD definition of the sleep module</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+ 2	&lt;x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org"&gt;
+ 3	
+ 4		&lt;!-- definition of the task parameters --&gt;
+ 5		&lt;x:complexType name="sleepTaskParameterType"&gt;
+ 6			&lt;x:all&gt;
+ 7				&lt;x:element name="wait" type="paramWait_sleep" minOccurs="1" maxOccurs="1" /&gt;
+ 8			&lt;/x:all&gt;
+ 9		&lt;/x:complexType&gt;
+10		
+11		...
+12	
+13		&lt;!-- make task definition availible via substitution group --&gt;
+14		&lt;x:element name="sleepTask" type="sleepTaskType" substitutionGroup="abstractTask" /&gt;
+15	
+16		&lt;!-- module specific parameter types --&gt;
+17		&lt;x:complexType name="paramWait_sleep"&gt;
+18			&lt;x:simpleContent&gt;
+19				&lt;x:restriction base="paramString"&gt;
+20					&lt;x:assertion test="matches($value, '(${[A-Za-z_]+})|($(.+))|([[({]($[A-Za-z_]+(,s*){0,1}){0,1}([0-9]+(,S*){0,1}){0,1}[])}])') or matches($value, '^[0-9]+[smhd]{0,1}$')" xerces:message="Parameter with name '{$tag}' must match [0-9]+[smhd]{0,1}." /&gt;
+21				&lt;/x:restriction&gt;
+22			&lt;/x:simpleContent&gt;
+23		&lt;/x:complexType&gt;
+24	
+25	&lt;/x:schema&gt;</code></pre>
+	</div>
+</div>
+
+Example 2 shows parts of the XSD definition of a module which are important to know for the user. At the beginning parameters and flags which are accepted by the module are defined in an element named <nobr><pre class="name">sleepTaskParameterType</pre> (5-9).</nobr> In this case only one parameter named <pre class="name">wait</pre> is defined that must occur exactly <nobr>once (7).</nobr> The type of the parameter is specified at the bottom of the <nobr>example (17-23).</nobr> In this case the parameter is a string that must match a regex pattern, which first accepts numbers followed by a letter as optional <nobr>suffix (19-21)</nobr>. Additionally values that are placeholders for constants or variables are allowed by the first <pre class="name">matches()</pre> function whereby the user must take care that the replaced value is valid with regard to the second part of the <nobr> specification (20).</nobr>
+<br />The attribute <pre class="attr">name</pre> of the element in line 14 defines how the module can be referenced in the XML file. In this example the module can be called using the name <pre class="name">sleepTask</pre>.
+<a name="basic_xml_structure" class="subtopic">3.2 Basic XML structure</a>
+Tasks which should be executed by Watchdog must be defined in an XML file. In the following the structure of the XML file is presented. The expression <pre class="tag">?Task</pre> is used to refer to a task which is not further specified. In general this syntax is used if some attributes are valid for all classes that inherit from that class type.
+
+Within the following examples these variables are user-specific and contain therefore no concrete values:<br /><br />
+{%INSTALL%} - path to the root installation directory of Watchdog<br />
+{%MAIL%} - email adress of the user<br />
+{%EXAMPLE_DATA%} - path to the folder in which the example data is located<br /><br />
+You already have configured your examples by calling the script <pre class="name">helper_scripts/configureExamples.sh</pre> as described in <a href="#install_watchdog">2</a>.
+
+<div class="box">	
+	<div class="head_box">Example 3: Most basic XML input for Watchdog</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;!-- begin task block and use that mail to inform the user on success or failure --&gt;
+ 5		&lt;tasks mail="{%MAIL%}"&gt;
+ 6	
+ 7			&lt;!-- definition a simple sleep task --&gt;
+ 8			&lt;sleepTask id="1" name="sleep"&gt;
+ 9				&lt;parameter&gt;
+10					&lt;wait&gt;30s&lt;/wait&gt;
+11				&lt;/parameter&gt;
+12			&lt;/sleepTask&gt;
+13		&lt;/tasks&gt;
+14	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+Example 3 shows a most basic XML file that contains only a single task named <pre class="name">sleep</pre>. Every XML file that should be parsed by Watchdog must contain a <pre class="tag">watchdog</pre> element as root element <nobr>(2)</nobr>. The attribute <pre class="attr">watchdogBase</pre> of it must refer to the folder in which Watchdog was installed. The attribute <pre class="attr">isTemplate</pre> prevents Watchdog from executing workflows that contain variables that must be set by the user and is removed automatically by the configure script. Afterwards as childs of <pre class="tag">tasks</pre> the tasks which should be executed must be defined <nobr>(5)</nobr>. Each task must contain an <pre class="attr">id</pre> and <pre class="attr">name</pre> attribute <nobr>(8)</nobr>. With the <pre class="tag">parameter</pre> element, values can be assigned to the parameters of the task, which have to be specified in the XSD file of the module. Flags are activated by using  <nobr><pre class="tag">flagName</pre>true<pre class="tag">/flagName</pre></nobr> or  <nobr><pre class="tag">flagName</pre>1<pre class="tag">/flagName</pre></nobr> while parameters can be set with <nobr><pre class="tag">paramName</pre><pre class="name">value</pre><pre class="tag">/paramName</pre> (10)</nobr>.
+
+
+<!--<input class="button" id="spoilerWatchdogButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoilerWatchdog"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">watchdog</pre></td><td><pre class="attr">watchdogBase</pre></td><td>string</td><td>path to the install path of watchdog</td></tr>
+<tr><td><pre class="tag">watchdog</pre></td><td><pre class="attr">isTemplate</pre></td><td>boolean</td><td>prevents Watchdog from executing unconfigured workflow templates; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">tasks</pre></td><td><pre class="attr">[mail]</pre></td><td>string</td><td>mail which is used for notification; if not set, the content of the mails with be printed to the standard output stream; default: not set</td></tr>
+<tr><td><pre class="tag">tasks</pre></td><td><pre class="attr">[projectName]</pre></td><td>string</td><td>name of the complete process; default: not set</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[id]</pre></td><td>integer</td><td>numeric id of the task; if not set all id's will be automatically generated; default: not set</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>name of the task</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[processBlock]</pre></td><td>string</td><td>processBlock as source of varying parameters (see <a href="#process_blocks">4.1</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[executor]</pre></td><td>string</td><td>execution environment on which the task is executed (see <a href="#execution_environments">4.3</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[environment]</pre></td><td>string</td><td>use globally defined environment variables (see <a href="#environment_variables">4.5</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[maxRunning]</pre></td><td>integer</td><td>maximal number of simultaneously running tasks; default: not restricted </td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[notify]</pre></td><td>enum</td><td>notification of the user via mail on success; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre> (see <a href="#mail_notification">4.6</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[checkpoint]</pre></td><td>enum</td><td>does not schedule tasks which depend on this task until manually released by the user; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[confirmParam]</pre></td><td>enum</td><td>allows the user to modify the parameters before the task is scheduled; enabled: task will not be scheduled until the user checks the parameter; default: <pre class="name">disabled</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[version]</pre></td><td>integer</td><td>version of the module that should be used for that task; default: <pre class="name">1</pre> (see <a href="#module_versions">5.6</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[posX]</pre></td><td>integer</td><td>x coordinate for display in GUI; default: not set</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[posY]</pre></td><td>integer</td><td>y coordinate for display in GUI; default: not set</td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 1: Attributes in the context of Watchdog</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">watchdog</pre></td><td><pre class="attr">watchdogBase</pre></td><td>string</td><td>path to the install path of watchdog</td></tr>
+<tr><td><pre class="tag">watchdog</pre></td><td><pre class="attr">isTemplate</pre></td><td>boolean</td><td>prevents Watchdog from executing unconfigured workflow templates; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">tasks</pre></td><td><pre class="attr">[mail]</pre></td><td>string</td><td>mail which is used for notification; if not set, the content of the mails with be printed to the standard output stream; default: not set</td></tr>
+<tr><td><pre class="tag">tasks</pre></td><td><pre class="attr">[projectName]</pre></td><td>string</td><td>name of the complete process; default: not set</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[id]</pre></td><td>integer</td><td>numeric id of the task; if not set all id's will be automatically generated; default: not set</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>name of the task</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[processBlock]</pre></td><td>string</td><td>processBlock as source of varying parameters (see <a href="#process_blocks">4.1</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[executor]</pre></td><td>string</td><td>execution environment on which the task is executed (see <a href="#execution_environments">4.3</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[environment]</pre></td><td>string</td><td>use globally defined environment variables (see <a href="#environment_variables">4.5</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[maxRunning]</pre></td><td>integer</td><td>maximal number of simultaneously running tasks; default: not restricted </td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[notify]</pre></td><td>enum</td><td>notification of the user via mail on success; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre> (see <a href="#mail_notification">4.6</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[checkpoint]</pre></td><td>enum</td><td>does not schedule tasks which depend on this task until manually released by the user; enabled: release complete task at once when all subtasks are finished; subtask: release every subtask separately; default: <pre class="name">disabled</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[confirmParam]</pre></td><td>enum</td><td>allows the user to modify the parameters before the task is scheduled; enabled: task will not be scheduled until the user checks the parameter; default: <pre class="name">disabled</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[version]</pre></td><td>integer</td><td>version of the module that should be used for that task; default: <pre class="name">1</pre> (see <a href="#module_versions">5.6</a>)</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[posX]</pre></td><td>integer</td><td>x coordinate for display in GUI; default: not set</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">[posY]</pre></td><td>integer</td><td>y coordinate for display in GUI; default: not set</td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+
+In the following sections the structure of the XML format is described in greater detail.
+<div class="chapter"><a name="advanced_xml" class="topic">4 Detailed XML format explanation</a>
+In the following sections the complete range of functions of Watchdog's XML format is explained. The following elements must be defined as child elements of the <pre class="tag">settings</pre> element before the <pre class="tag">tasks</pre> element begins and are valid within the complete XML file:
+
+<ul>
+<li><pre class="tag">processBlock</pre> - process a task with varying parameters (see <a href="#process_blocks">4.1</a>)</li>
+<li><pre class="tag">executors</pre> - define different executor environments (see <a href="#execution_environments">4.3</a>)</li>
+<li><pre class="tag">constants</pre> - defines constants that substitute placeholders (see <a href="#global_constants">4.4</a>)</li>
+<li><pre class="tag">environments</pre> - define or update environment variables (see <a href="#environment_variables">4.5</a>)</li>
+<li><pre class="tag">modules</pre> - define multiple module include directories (see <a href="#module_folders">4.10</a>)</li>
+</ul>
+
+Apart from the <pre class="tag">parameter</pre> element, the following elements are allowed in <pre class="tag">?Task</pre> elements:
+
+<ul>
+<li><pre class="tag">environment</pre> - define or update environment variables (see <a href="#environment_variables">4.5</a>)</li>
+<li><pre class="tag">dependencies</pre> - define dependencies between tasks (see <a href="#dependencies">4.2</a>)</li>
+<li><pre class="tag">streams</pre> - define location of standard streams and set a working directory (see <a href="#streams">4.7</a>)</li>
+<li><pre class="tag">checkers</pre> - usage of custom success or error checkers (see <a href="#checkers">4.11</a>)</li>
+<li><pre class="tag">actions</pre> - define task actions that are performed before or after tasks execution (see <a href="#task_actions">4.8</a>)</li>
+</ul>
+
+<a name="process_blocks" class="subtopic">4.1 Process blocks</a>
+Watchdog is able to process multiple tasks of the same type, which differ only in some parameter values, without the need to define all of these tasks separately. This function is referred to as <span class="function">process blocks</span> while the tasks created by an process block are called <span class="function">subtasks</span> of the task. There are four different possibilities to define process blocks as childs of the <pre class="tag">processBlock</pre> element:
+<ul>
+	<li><pre class="tag">processSequence</pre> - argument is numeric</li>
+	<li><pre class="tag">processFolder</pre> - argument is a path to a file</li>
+	<li><pre class="tag">processInput</pre> - multiple arguments obtained from dependencies</li>
+	<li><pre class="tag">processTable</pre> - multiple arguments stored in a tab-separated file with names of variables stored in the first line</li>
+</ul>
+When the <pre class="tag">processBlock</pre> attribute of a task is set the argument of the process folder or sequence is substituted at run time within <pre class="tag">parameter</pre>, <pre class="tag">streams</pre>, <pre class="tag">checkers</pre>, <pre class="tag">actions</pre> and <pre class="tag">environment</pre> elements in the following manner:
+<ul>
+	<li><pre class="tag">processSequence</pre> - []/{}/()</span> -> number</li>
+	<li><pre class="tag">processFolder</pre> - {} -> absolute path to the file</li>
+	<li><pre class="tag">processFolder</pre> - () -> absolute path to the parent folder of the file</li>
+	<li><pre class="tag">processFolder</pre> - [] -> name of the file</li>
+	<li><pre class="tag">processFolder</pre> - [<pre class="name">n</pre>]/{<pre class="name">n</pre>} ->  <pre class="name">n</pre> suffixes of the filename are truncated using <b>.</b> as separator</li>
+	<li><pre class="tag">processFolder</pre> - (<pre class="name">n</pre>) ->  <pre class="name">n</pre> suffixes of the parent folder are truncated using <b>/</b> as separator</li>
+	<li><pre class="tag">processFolder</pre> - ([{<pre class="name">n</pre>,<pre class="name">sep</pre>}]) ->  suffixes of the value are truncated using <b><pre class="name">sep</pre></b> as separator (might also be a regex)</li>
+	<li><pre class="tag">processTable</pre> - ([{<pre class="name">$COL_NAME</pre>}]) -> value stored in the column named <pre class="name">$COL_NAME</pre></li>
+	<li><pre class="tag">processTable</pre> - ([{<pre class="name">$COL_NAME</pre>,<pre class="name">n</pre>,<pre class="name">sep</pre>}]) -> value stored in the column named <pre class="name">$COL_NAME</pre> but with suffix truncation as described above</li>
+	<li><pre class="tag">processInput</pre> - ([{<pre class="name">$RET_NAME</pre>}]) -> return value of a dependency with the name <pre class="name">$RET_NAME</pre></li>
+	<li><pre class="tag">processInput</pre> - ([{<pre class="name">$RET_NAME</pre>,<pre class="name">n</pre>,<pre class="name">sep</pre>}]) -> return value of a dependency with the name <pre class="name">$RET_NAME</pre> but with suffix truncation as described above</li>
+</ul>
+
+If a task depends on two tasks, which return variables with the same name, the return value of the task with the smaller id will be overwritten. Deviating from this, return values from separate dependencies will overwrite the ones from global dependencies if both use the same name for a variable.
+
+<div class="box">	
+	<div class="head_box">Example 4: Definition of different process blocks</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;settings&gt;
+ 5			&lt;!-- definition of different process blocks --&gt;
+ 6			&lt;processBlock&gt;
+ 7				&lt;processSequence name="qualities" start="1" end="9" step="2" /&gt;
+ 8				&lt;processFolder name="specialFiles" folder="{%EXAMPLE_DATA%}/spec/" pattern="*.spec" /&gt;
+ 9				&lt;baseFolder folder="{%EXAMPLE_DATA%}/"&gt;
+10					&lt;processFolder name="txtFiles" folder="txt/" pattern="*.txt" /&gt;
+11					&lt;processFolder name="txtFiles" folder="other_txt/" pattern="*.txt" append="true" maxDepth="1" /&gt;
+12					&lt;processFolder name="gzFiles" folder="txt_zipped/" pattern="*.gz" disableExistenceCheck="true" /&gt;
+13					&lt;processTable name="sleepTable" table="processTable.input.txt" /&gt;
+14				&lt;/baseFolder&gt;
+15			&lt;/processBlock&gt;
+16		&lt;/settings&gt;
+17	
+18		&lt;tasks mail="{%MAIL%}"&gt;
+19			&lt;!-- compress all files with *.txt ending in /some/base/folder/TXT --&gt;
+20			&lt;gzipTask id="1" name="compress files" processBlock="txtFiles" checkpoint="enabled"&gt;
+21				&lt;parameter&gt;			
+22					&lt;input&gt;{}&lt;/input&gt;
+23					&lt;output&gt;{%EXAMPLE_DATA%}/txt_zipped/[1].gz&lt;/output&gt;
+24				&lt;/parameter&gt;
+25			&lt;/gzipTask&gt;
+26	
+27			&lt;!-- test quality values 1,3,5,7 and 9 --&gt;
+28			&lt;gzipTask id="2" name="quality test" processBlock="qualities" checkpoint="subtask"&gt;
+29				&lt;dependencies&gt;
+30					&lt;depends&gt;1&lt;/depends&gt;
+31				&lt;/dependencies&gt;
+32				&lt;parameter&gt;			
+33					&lt;input&gt;{%EXAMPLE_DATA%}/txt/txtFile1.txt&lt;/input&gt;
+34					&lt;output&gt;{%EXAMPLE_DATA%}/qualityTest/txtFile1_q[].gz&lt;/output&gt;
+35					&lt;quality&gt;[]&lt;/quality&gt;
+36				&lt;/parameter&gt;
+37				&lt;environment&gt;
+38					&lt;var name="QUALITY"&gt;{}&lt;/var&gt;
+39				&lt;/environment&gt;
+40			&lt;/gzipTask&gt;
+41	
+42			&lt;!-- sleep tasks which are created based on a process table --&gt;
+43			&lt;sleepTask id="3" name="table sleep" processBlock="sleepTable"&gt;
+44				&lt;dependencies&gt;
+45					&lt;depends&gt;2&lt;/depends&gt;
+46				&lt;/dependencies&gt;
+47				&lt;streams&gt;
+48					&lt;stdout&gt;{$OUT, 1}&lt;/stdout&gt;
+49				&lt;/streams&gt;
+50				&lt;parameter&gt;			
+51					&lt;wait&gt;{$DURATION}&lt;/wait&gt;
+52				&lt;/parameter&gt;
+53				&lt;environment&gt;
+54					&lt;var name="IMPORTANT_ID_RAW"&gt;[$IMPORTANT_ID]&lt;/var&gt;
+55					&lt;var name="IMPORTANT_ID_CALC"&gt;$([$IMPORTANT_ID]*3)&lt;/var&gt;
+56				&lt;/environment&gt;
+57			&lt;/sleepTask&gt;
+58		&lt;/tasks&gt;
+59	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+Example 4 shows three different ways how process blocks can be specified. First a <pre class="tag">processSequence</pre> named <pre class="name">qualities</pre> is defined that creates the <nobr>numbers 1,3,5,7 and 9 (7).</nobr> In the next line a <pre class="tag">processFolder</pre> is defined that will process all files stored in <pre class="name">{%EXAMPLE_DATA%}/spec</pre> that end <nobr>with <pre class="name">.spec</pre> (8).</nobr> The syntax which must be used in the <pre class="attr">pattern</pre> attribute is the same as in bash. If a <pre class="tag">processFolder</pre> is a child element of a <pre class="tag">baseFolder</pre>, the <pre class="attr">folder</pre> attribute of the <pre class="tag">processFolder</pre> will be prefixed with the <pre class="attr">folder</pre> attribute of the <nobr><pre class="tag">baseFolder</pre> (9-14).</nobr> The attribute <pre class="attr">disableExistenceCheck</pre> that is enabled for the <pre class="tag">processFolder</pre> with the name <pre class="name">gzFiles</pre> causes Watchdog not to force the existence of the folder when it is started <nobr> (12).</nobr>
+<br />
+The task with <pre class="attr">id</pre> <pre class="name">1</pre> will compress all <pre class="name">.txt</pre> files in the folders <pre class="name">{%EXAMPLE_DATA%}/txt</pre> and <pre class="name">{%EXAMPLE_DATA%}/other_txt</pre> and store them in <nobr><pre class="name">{%EXAMPLE_DATA%}/txt_zipped</pre> (20-25).</nobr>
+Whereas, the task with <pre class="attr">id</pre> <pre class="name">2</pre> will compress a file with different quality <nobr>values (28-40).</nobr> The compressed files will be stored with <pre class="name">txtFile1_q</pre> as prefix and the used quality as suffix <nobr> in <pre class="name">{%EXAMPLE_DATA%}/qualityTest</pre> (34).</nobr> Additionally, an environment variable with the name <pre class="name">QUALITY</pre> is set which also contains the set <nobr>quality (38). </nobr> The sleep task at the end of the example shows how the colums of a <pre class="tag">processTable</pre> can be used as <nobr>input (43-57).</nobr> If the variable is of numeric type it can also be used within simple calculations which are presented in <nobr><a href="#simple_calculations">4.9</a> (55).</nobr>
+
+
+<!--<input class="button" id="spoilerprocess_blocksButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoilerprocess_blocks"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">?ProcessBlock</pre></td><td><pre class="attr">name</pre></td><td>string </td><td>is used as reference in the <pre class="attr">processBlock</pre> attribute of a task</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">processBlock</pre></td><td>string</td><td>name of a <pre class="tag">?ProcessBlock</pre> element</td></tr>
+<tr><td><pre class="tag">?ProcessBlock</pre></td><td><pre class="attr">[append]</pre></td><td>boolean </td><td>if set to true, two or more process blocks of the same type can be merged; supported by processSequence and ProcessFolder; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">processSequence</pre></td><td><pre class="attr">start</pre></td><td>double </td><td>inclusive start of the numeric series</td></tr>
+<tr><td><pre class="tag">processSequence</pre></td><td><pre class="attr">[step]</pre></td><td>double </td><td>number that is added until the value is greater than end; default: <pre class="name">1</pre></td></tr>
+<tr><td><pre class="tag">processSequence</pre></td><td><pre class="attr">end</pre></td><td>double </td><td>break condition, might be inclusive</td></tr>
+<tr><td><pre class="tag">processFolder</pre></td><td><pre class="attr">folder</pre></td><td>integer </td><td>absolute or relative to a <pre class="tag">baseFolder</pre> path to a folder</td></tr>
+<tr><td><pre class="tag">processFolder</pre></td><td><pre class="attr">pattern</pre></td><td>string </td><td>pattern selecting files that should be substituted; syntax as in bash</td></tr>
+<tr><td><pre class="tag">processFolder</pre></td><td><pre class="attr">[ignore]</pre></td><td>string </td><td>files matching that pattern will be ignored; syntax as in bash; default: not set</td></tr>
+<tr><td><pre class="tag">processFolder</pre></td><td><pre class="attr">[disable<br />ExistenceCheck]</pre></td><td>boolean </td><td>folder must not exist when Watchdog is started; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">processFolder</pre></td><td><pre class="attr">[maxDepth]</pre></td><td>integer</td><td>a positive integer will cause that <pre class="name">maxDepth</pre> levels of subdirectories are traversed while by default only the parent folder is processed; default: <pre class="name">0</pre></td></tr>
+<tr><td><pre class="tag">baseFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>absolute path which is used as prefix before the path of the <pre class="tag">processFolder</pre> is added</td></tr>
+<tr><td><pre class="tag">baseFolder</pre></td><td><pre class="attr">[maxDepth]</pre></td><td>integer</td><td>see description of <pre class="tag">processFolder</pre> <pre class="attr">[maxDepth]</pre>; if both are set, the value of the <pre class="tag">processFolder</pre> element is set; default: <pre class="name">0</pre></td></tr>
+<tr><td><pre class="tag">processTable</pre></td><td><pre class="attr">table</pre></td><td>string</td><td>path to a tab-separated file with header; the column names must consist out of [A-Za-z_]</td></tr>
+<tr><td><pre class="tag">processTable</pre></td><td><pre class="attr">[disable<br />ExistenceCheck]</pre></td><td>boolean </td><td>table file must not exist when Watchdog is started; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">processTable</pre></td><td><pre class="attr">[compareName]</pre></td><td>column</td><td>name that should be used to compare names of separate dependencies; default: complete line</td></tr>
+<tr><td><pre class="tag">processInput</pre></td><td><pre class="attr">sep</pre></td><td>string</td><td>separator which is used to join multiple values of global dependencies together; default: <pre class="name">:</pre></td></tr>
+<tr><td><pre class="tag">processInput</pre></td><td><pre class="attr">[compareName]</pre></td><td>string</td><td>name of return value that should be used to compare names of separate dependencies; default: name of precursor node</td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 2: Attributes in the context of process blocks</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">?ProcessBlock</pre></td><td><pre class="attr">name</pre></td><td>string </td><td>is used as reference in the <pre class="attr">processBlock</pre> attribute of a task</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">processBlock</pre></td><td>string</td><td>name of a <pre class="tag">?ProcessBlock</pre> element</td></tr>
+<tr><td><pre class="tag">?ProcessBlock</pre></td><td><pre class="attr">[append]</pre></td><td>boolean </td><td>if set to true, two or more process blocks of the same type can be merged; supported by processSequence and ProcessFolder; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">processSequence</pre></td><td><pre class="attr">start</pre></td><td>double </td><td>inclusive start of the numeric series</td></tr>
+<tr><td><pre class="tag">processSequence</pre></td><td><pre class="attr">[step]</pre></td><td>double </td><td>number that is added until the value is greater than end; default: <pre class="name">1</pre></td></tr>
+<tr><td><pre class="tag">processSequence</pre></td><td><pre class="attr">end</pre></td><td>double </td><td>break condition, might be inclusive</td></tr>
+<tr><td><pre class="tag">processFolder</pre></td><td><pre class="attr">folder</pre></td><td>integer </td><td>absolute or relative to a <pre class="tag">baseFolder</pre> path to a folder</td></tr>
+<tr><td><pre class="tag">processFolder</pre></td><td><pre class="attr">pattern</pre></td><td>string </td><td>pattern selecting files that should be substituted; syntax as in bash</td></tr>
+<tr><td><pre class="tag">processFolder</pre></td><td><pre class="attr">[ignore]</pre></td><td>string </td><td>files matching that pattern will be ignored; syntax as in bash; default: not set</td></tr>
+<tr><td><pre class="tag">processFolder</pre></td><td><pre class="attr">[disable<br />ExistenceCheck]</pre></td><td>boolean </td><td>folder must not exist when Watchdog is started; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">processFolder</pre></td><td><pre class="attr">[maxDepth]</pre></td><td>integer</td><td>a positive integer will cause that <pre class="name">maxDepth</pre> levels of subdirectories are traversed while by default only the parent folder is processed; default: <pre class="name">0</pre></td></tr>
+<tr><td><pre class="tag">baseFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>absolute path which is used as prefix before the path of the <pre class="tag">processFolder</pre> is added</td></tr>
+<tr><td><pre class="tag">baseFolder</pre></td><td><pre class="attr">[maxDepth]</pre></td><td>integer</td><td>see description of <pre class="tag">processFolder</pre> <pre class="attr">[maxDepth]</pre>; if both are set, the value of the <pre class="tag">processFolder</pre> element is set; default: <pre class="name">0</pre></td></tr>
+<tr><td><pre class="tag">processTable</pre></td><td><pre class="attr">table</pre></td><td>string</td><td>path to a tab-separated file with header; the column names must consist out of [A-Za-z_]</td></tr>
+<tr><td><pre class="tag">processTable</pre></td><td><pre class="attr">[disable<br />ExistenceCheck]</pre></td><td>boolean </td><td>table file must not exist when Watchdog is started; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">processTable</pre></td><td><pre class="attr">[compareName]</pre></td><td>column</td><td>name that should be used to compare names of separate dependencies; default: complete line</td></tr>
+<tr><td><pre class="tag">processInput</pre></td><td><pre class="attr">sep</pre></td><td>string</td><td>separator which is used to join multiple values of global dependencies together; default: <pre class="name">:</pre></td></tr>
+<tr><td><pre class="tag">processInput</pre></td><td><pre class="attr">[compareName]</pre></td><td>string</td><td>name of return value that should be used to compare names of separate dependencies; default: name of precursor node</td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+<a name="dependencies" class="subtopic">4.2 Dependencies</a>
+
+By default all tasks specified in the XML document are independent from each other. That implies that all tasks are scheduled at the same time if no other constraints exist.
+
+It is possible to define dependencies between tasks using the <pre class="tag">depends</pre> element that expects as value the id or name of an already defined task. The element must be a child of a <pre class="tag">dependencies</pre> element. Without any arguments the task will not be scheduled until all (sub)tasks of the dependencies have finished successfully. By setting the <pre class="attr">separate</pre> argument to <pre class="name">true</pre> a subtask can depend only on the corresponding subtask the task depends on. This option is only meaningful if both tasks are process block tasks and work on the same input set or a transformed version of it.
+
+<div class="box">	
+	<div class="head_box">Example 5: Definition of dependencies</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;settings&gt;
+ 5			&lt;!-- definition of two process folders --&gt;
+ 6			&lt;processBlock&gt;
+ 7				&lt;baseFolder folder="{%EXAMPLE_DATA%}/"&gt;
+ 8					&lt;processFolder name="txtFiles" folder="txt/" pattern="*.txt" /&gt;
+ 9					&lt;processFolder name="gzFiles" folder="txt_zipped/" pattern="*.gz" disableExistenceCheck="true" /&gt;
+10				&lt;/baseFolder&gt;
+11			&lt;/processBlock&gt;
+12		&lt;/settings&gt;
+13	
+14		&lt;tasks mail="{%MAIL%}"&gt;
+15			&lt;!-- definition a simple sleep task --&gt;
+16			&lt;sleepTask id="1" name="sleep"&gt;
+17				&lt;parameter&gt;
+18					&lt;wait&gt;30s&lt;/wait&gt;
+19				&lt;/parameter&gt;
+20			&lt;/sleepTask&gt;
+21	
+22			&lt;!-- compress all files with *.txt ending in /some/base/folder/TXT --&gt;
+23			&lt;gzipTask id="2" name="compress" processBlock="txtFiles"&gt;
+24				&lt;parameter&gt;
+25					&lt;input&gt;{}&lt;/input&gt;
+26					&lt;output&gt;{%EXAMPLE_DATA%}/txt_zipped/[1].gz&lt;/output&gt;
+27				&lt;/parameter&gt;
+28				&lt;!-- dependency definition --&gt;
+29				&lt;dependencies&gt;
+30					&lt;depends&gt;1&lt;/depends&gt;
+31				&lt;/dependencies&gt;
+32			&lt;/gzipTask&gt;
+33	
+34			&lt;!-- decompress all files with *.gz ending in /some/base/folder/TXT_ZIPPED --&gt;
+35			&lt;gzipTask id="3" name="decompress" processBlock="gzFiles"&gt;
+36				&lt;parameter&gt;
+37					&lt;input&gt;{}&lt;/input&gt;
+38					&lt;output&gt;{%EXAMPLE_DATA%}/txt_decompressed/[1].txt&lt;/output&gt;
+39					&lt;decompress&gt;true&lt;/decompress&gt;
+40				&lt;/parameter&gt;
+41				&lt;!-- dependency definition --&gt;
+42				&lt;dependencies&gt;
+43					&lt;depends separate="true" prefixName="[1]"&gt;2&lt;/depends&gt;
+44				&lt;/dependencies&gt;
+45			&lt;/gzipTask&gt;
+46		&lt;/tasks&gt;
+47	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+In example 5 a <pre class="name">compress</pre> task with id <pre class="name">2</pre> is defined which depends on the before defined <pre class="name">sleep</pre> <nobr>task (23-32)</nobr>. Additionally, a task, which will decompress the compressed files immediately after the compression is finished, is <nobr>defined (35-45).</nobr> In order to achieve this behavior the <pre class="attr">separate</pre> attribute is set <nobr>to <pre class="name">true</pre> (43)</nobr>. Because the <pre class="name">.txt</pre> ending of the original filename was cropped and a <pre class="name">.gz</pre> ending was added, only the first part of the filename is considered as specified in the <nobr><pre class="name">prefixName</pre> attribute (26,43).</nobr>
+
+
+<!--<input class="button" id="spoilerdependenciesButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoilerdependencies"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">dependencies</pre></td><td></td><td></td><td>parent of <pre class="tag">depends</pre> elements and child of <pre class="tag">?Task</pre></td></tr>
+<tr><td><pre class="tag">depends</pre></td><td></td><td>integer</td><td>already defined task id on which the task should depend on</td></tr>
+<tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[separate]</pre></td><td>boolean</td><td>if set to <pre class="name">true</pre> each subtask depends only on its corresponding subtask; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[keep4Slave]</pre></td><td>boolean</td><td>if set to <pre class="name">true</pre> a executor in slave mode will wait until all tasks with that id, which are running on that slave, are finished; only valid for separate dependencies; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[prefixName]</pre></td><td>[[0-9]*]</td><td>only meaningful if <pre class="attr">separate</pre> is set to <pre class="name">true</pre>; defines in which manner the variables of the two process blocks must be equal to each other: <br /> []/[0]: complete variables of the subtasks are compared<br />[<pre class="name">n</pre>]: it is checked if the variable of a subtask begins with the prefix of the finished subtask this task depends on; the first <pre class="name">n</pre> parts are taken was prefix whereby '.' is used as separator; default: <pre class="name">[]</pre></td></tr>
+<tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[sep]</pre></td><td>string</td><td>separator which is used together with <pre class="attr">prefixName</pre>; default: <pre class="name">.</pre></td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 3: Attributes in the context of dependencies</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">dependencies</pre></td><td></td><td></td><td>parent of <pre class="tag">depends</pre> elements and child of <pre class="tag">?Task</pre></td></tr>
+<tr><td><pre class="tag">depends</pre></td><td></td><td>integer</td><td>already defined task id on which the task should depend on</td></tr>
+<tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[separate]</pre></td><td>boolean</td><td>if set to <pre class="name">true</pre> each subtask depends only on its corresponding subtask; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[keep4Slave]</pre></td><td>boolean</td><td>if set to <pre class="name">true</pre> a executor in slave mode will wait until all tasks with that id, which are running on that slave, are finished; only valid for separate dependencies; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[prefixName]</pre></td><td>[[0-9]*]</td><td>only meaningful if <pre class="attr">separate</pre> is set to <pre class="name">true</pre>; defines in which manner the variables of the two process blocks must be equal to each other: <br /> []/[0]: complete variables of the subtasks are compared<br />[<pre class="name">n</pre>]: it is checked if the variable of a subtask begins with the prefix of the finished subtask this task depends on; the first <pre class="name">n</pre> parts are taken was prefix whereby '.' is used as separator; default: <pre class="name">[]</pre></td></tr>
+<tr><td><pre class="tag">depends</pre></td><td><pre class="attr">[sep]</pre></td><td>string</td><td>separator which is used together with <pre class="attr">prefixName</pre>; default: <pre class="name">.</pre></td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+<a name="execution_environments" class="subtopic">4.3 Execution environments</a>
+By default the tasks are executed one after the other locally on the host which runs Watchdog. It is possible to define different execution environments using the <pre class="tag">executors</pre> element. Possible environments:
+<ul>
+	<li><pre class="tag">local</pre> - task is executed on the local host</li>
+	<li><pre class="tag">remote</pre> - task is executed on a remote host using ssh</li>
+	<li><pre class="tag">cluster</pre> - task is executed on a computer cluster using DRMAA</li>
+	<li><pre class="tag">sge</pre> - task is executed on a SGE computer cluster using control binaries</li>
+	<li><pre class="tag">slurm</pre> - task is executed on a SLURM computer cluster using control binaries</li>
+</ul>
+
+<div class="box">	
+	<div class="head_box">Example 6: Definition of different execution environments</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;settings&gt;
+ 5			&lt;!-- examples of different execution environments --&gt;
+ 6			&lt;executors&gt;
+ 7				&lt;local name="localhost" maxRunning="2" /&gt;
+ 8				&lt;sge name="defaultCluster" default="true" memory="1G" beforeScripts="ulimitMemory.sh" queue="short.q" /&gt;
+ 9				&lt;sge name="highPerformanceCluster" slots="4" memory="3G" maxRunning="4" queue="short.q" /&gt;
+10				&lt;remote name="superComputer" user="mustermann" host="superComputer" privateKey="/path/to/private/auth/key" port="22" disableStrictHostCheck="false" /&gt;
+11			&lt;/executors&gt;
+12		&lt;/settings&gt;
+13	
+14		&lt;tasks mail="{%MAIL%}"&gt;
+15			&lt;!-- execute this task on the localhost --&gt;
+16			&lt;sleepTask id="1" name="sleep" executor="localhost"&gt;
+17				&lt;parameter&gt;
+18					&lt;wait&gt;30s&lt;/wait&gt;
+19				&lt;/parameter&gt;
+20			&lt;/sleepTask&gt;
+21		&lt;/tasks&gt;
+22	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+In example 6 four different execution environments are defined as childs of the <pre class="tag">executors</pre> <nobr>element (6-11)</nobr>. Tasks scheduled on first executor will run on the host on which Watchdog was <nobr>started (7)</nobr>.
+<br /><br />
+The executor with the name <pre class="name">defaultCluster</pre> is used by default and runs on the <pre class="name">short.q</pre> queue of the computer <nobr>cluster (8)</nobr>. Before the actual module command is executed on that executor, the commands stored in the before script <pre class="name">ulimitMemory.sh</pre> are executed. If a relative path is given, the script must be located in <pre class="name">core_lib/executor_scripts</pre>. In this example the script will enforce that the requested memory is not exceeded using the <pre class="name">ulimit</pre> command. 
+<br /><br />
+The next executor is reserved for high performance tasks because it reserves 4 slots on the cluster with each slot consuming three gigabyte of main <nobr>memory (9)</nobr>. In order not to occupy the complete computing power the attribute <pre class="attr">maxRunning</pre> is set to four which means that a maximum of four tasks will run simultaneously on that execution environment.
+<br /><br />
+In line 10 an example for a remote executor is given which executes tasks via ssh using a host named <pre class="name">superComputer</pre>.
+<br /><br />
+Afterwards the same sleep task is defined as in the first example and will run on the local executor (16). The other executors can be tested once you adapted them to your local infrastructure (see <a href="#remote_configuration">2.5</a> and <a href="#cluster_configuration">2.6</a>).
+
+
+<!--<input class="button" id="spoilerexecution_environmentsButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoilerexecution_environments"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>is used as reference in the executor attribute of a task</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">executor</pre></td><td>string</td><td>name of a <pre class="tag">?Executor</pre> element</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[environment]</pre></td><td>string</td><td>environment with that name is used as default environment; default: not set</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[default]</pre></td><td>boolean</td><td>defines which execution environment is taken as default; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[maxRunning]</pre></td><td>integer</td><td>number of tasks that can run at the same time; default: not restricted</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[workingDir]</pre></td><td>string</td><td>working directory to which the executor switches before task execution; default: <pre class="name">/usr/local/storage/</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[stickToHost]</pre></td><td>boolean</td><td>activates slave mode for that executor which means that tasks that depend on each other are executed on the same execution host; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[maxSlaveRunning]</pre></td><td>integer</td><td>number of tasks that can run at the same time on a slave if stickToHost is enabled; default: 1</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[pathToJava]</pre></td><td>string</td><td>path to java binary which is used for slave mode execution; default: <pre class="name">/usr/bin/java</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[shebang]</pre></td><td>string</td><td>shebang, which is used if a temporary script is build that defines environment variables or before/after script commands; default: <pre class="name">#!/bin/bash</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[beforeScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed before the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[afterScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed after the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
+<tr><td><pre class="tag">remote</pre></td><td><pre class="attr">user</pre></td><td>string</td><td>name of the user on the remote host system</td></tr>
+<tr><td><pre class="tag">remote</pre></td><td><pre class="attr">host</pre></td><td>string</td><td>name of the host which should be used for execution; multiple hostnames must be separated by ';' - in that case the maxRunning argument is applied on each host separately</td></tr>
+<tr><td><pre class="tag">remote</pre></td><td><pre class="attr">privateKey</pre></td><td>string</td><td>path the to private ssh auth key; should be protected by a passphrase!</td></tr>
+<tr><td><pre class="tag">remote</pre></td><td><pre class="attr">[port]</pre></td><td>integer</td><td>port which is used for the ssh connection; default: <pre class="name">22</pre></td></tr>
+<tr><td><pre class="tag">remote</pre></td><td><pre class="attr">[disableStrictHostCheck]</pre></td><td>boolean</td><td>disables the validation of the public key of the host; not recommended!; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the DRMAA system without further processing; default: not set</td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[slots]</pre></td><td>integer</td><td>number of cores which are reserved on the computer cluster; default: <pre class="name">1</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[memory]</pre></td><td>string</td><td>memory per slot suffixed with M (megabyte) or G (gigabyte); default: <pre class="name">3000M</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[queue]</pre></td><td>string</td><td>queue on which the tasks should run on the computer cluster; default: not set</td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[disableDefault]</pre></td><td>boolean</td><td>default parameters are ignored; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the SGE system without further processing; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">cluster</pre></td><td>string</td><td>cluster to communicate with; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[cpu]</pre></td><td>integer</td><td>number of cores which are reserved on the computer cluster; default: <pre class="name">1</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[memory]</pre></td><td>string</td><td>memory per slot suffixed with M (megabyte) or G (gigabyte); default: <pre class="name">3000M</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[partition]</pre></td><td>string</td><td>partition of the cluster on which the job should be executed; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[timelimit]</pre></td><td>string</td><td>maximum time the task will require to complete; default: 0-12:0</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[disableDefault]</pre></td><td>boolean</td><td>default parameters are ignored; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the SLURM system without further processing; default: not set</td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 4: Attributes in the context of execution environments</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>is used as reference in the executor attribute of a task</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">executor</pre></td><td>string</td><td>name of a <pre class="tag">?Executor</pre> element</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[environment]</pre></td><td>string</td><td>environment with that name is used as default environment; default: not set</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[default]</pre></td><td>boolean</td><td>defines which execution environment is taken as default; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[maxRunning]</pre></td><td>integer</td><td>number of tasks that can run at the same time; default: not restricted</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[workingDir]</pre></td><td>string</td><td>working directory to which the executor switches before task execution; default: <pre class="name">/usr/local/storage/</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[stickToHost]</pre></td><td>boolean</td><td>activates slave mode for that executor which means that tasks that depend on each other are executed on the same execution host; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[maxSlaveRunning]</pre></td><td>integer</td><td>number of tasks that can run at the same time on a slave if stickToHost is enabled; default: 1</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[pathToJava]</pre></td><td>string</td><td>path to java binary which is used for slave mode execution; default: <pre class="name">/usr/bin/java</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[shebang]</pre></td><td>string</td><td>shebang, which is used if a temporary script is build that defines environment variables or before/after script commands; default: <pre class="name">#!/bin/bash</pre></td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[beforeScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed before the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[afterScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed after the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
+<tr><td><pre class="tag">remote</pre></td><td><pre class="attr">user</pre></td><td>string</td><td>name of the user on the remote host system</td></tr>
+<tr><td><pre class="tag">remote</pre></td><td><pre class="attr">host</pre></td><td>string</td><td>name of the host which should be used for execution; multiple hostnames must be separated by ';' - in that case the maxRunning argument is applied on each host separately</td></tr>
+<tr><td><pre class="tag">remote</pre></td><td><pre class="attr">privateKey</pre></td><td>string</td><td>path the to private ssh auth key; should be protected by a passphrase!</td></tr>
+<tr><td><pre class="tag">remote</pre></td><td><pre class="attr">[port]</pre></td><td>integer</td><td>port which is used for the ssh connection; default: <pre class="name">22</pre></td></tr>
+<tr><td><pre class="tag">remote</pre></td><td><pre class="attr">[disableStrictHostCheck]</pre></td><td>boolean</td><td>disables the validation of the public key of the host; not recommended!; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">cluster</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the DRMAA system without further processing; default: not set</td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[slots]</pre></td><td>integer</td><td>number of cores which are reserved on the computer cluster; default: <pre class="name">1</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[memory]</pre></td><td>string</td><td>memory per slot suffixed with M (megabyte) or G (gigabyte); default: <pre class="name">3000M</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[queue]</pre></td><td>string</td><td>queue on which the tasks should run on the computer cluster; default: not set</td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[disableDefault]</pre></td><td>boolean</td><td>default parameters are ignored; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">sge</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the SGE system without further processing; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">cluster</pre></td><td>string</td><td>cluster to communicate with; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[cpu]</pre></td><td>integer</td><td>number of cores which are reserved on the computer cluster; default: <pre class="name">1</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[memory]</pre></td><td>string</td><td>memory per slot suffixed with M (megabyte) or G (gigabyte); default: <pre class="name">3000M</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[partition]</pre></td><td>string</td><td>partition of the cluster on which the job should be executed; default: not set</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[timelimit]</pre></td><td>string</td><td>maximum time the task will require to complete; default: 0-12:0</td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[disableDefault]</pre></td><td>boolean</td><td>default parameters are ignored; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">slurm</pre></td><td><pre class="attr">[customParameters]</pre></td><td>string</td><td>additional parameters that are directly passed to the SLURM system without further processing; default: not set</td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+<a name="global_constants" class="subtopic">4.4 Global constants</a>
+
+A constant can be defined globally using the <pre class="tag">const</pre> elements which must be a child of a <pre class="tag">constants</pre> element. The parent element itself must be a child of the <pre class="tag">settings</pre> environment. Every <pre class="tag">const</pre> element must own a unique name which is set with the <pre class="attr">name</pre> attribute. The value of the constant is stored between the opening and closing element tag. <pre class="name">${NAME_OF_CONSTANT}</pre> is substituted with the corresponding constant in every attribute or text content. Only the <pre class="attr">watchdogBase</pre> attribute of <pre class="tag">watchdog</pre>, the <pre class="attr">default</pre> attribute of <pre class="tag">?Executor</pre> and the <pre class="tag">id</pre> attribute of <pre class="tag">?Task</pre> and within <pre class="tag">depends</pre> elements can not be substituted. <br /><br />
+
+Currently, there are two pre-defined constants. The first is named <pre class="name">${TMP}</pre> and is substituted within <pre class="tag">?Task</pre> tags with the working directory of the executor that will execute the task. The second is named <pre class="name">${WF_PARENT}</pre> and is replaced with the parent folder containing the XML workflow file.
+
+<div class="box">	
+	<div class="head_box">Example 7: Definition and use of global constants</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;settings&gt;
+ 5			&lt;!-- definition of a constant named WAIT_TIME --&gt;
+ 6			&lt;constants&gt;
+ 7				&lt;const name="WAIT_TIME"&gt;30s&lt;/const&gt;
+ 8				&lt;const name="FILE_NAME"&gt;sleep&lt;/const&gt;
+ 9				&lt;const name="LOG_BASE"&gt;/tmp&lt;/const&gt;
+10			&lt;/constants&gt;
+11		&lt;/settings&gt;
+12	
+13		&lt;tasks mail="{%MAIL%}"&gt;
+14	
+15			&lt;!-- definition a simple sleep task with constant replacement --&gt;
+16			&lt;sleepTask id="1" name="sleep test"&gt;
+17				&lt;streams&gt;
+18					&lt;stdout&gt;${LOG_BASE}/${FILE_NAME}.out&lt;/stdout&gt;
+19				&lt;/streams&gt;
+20				&lt;parameter&gt;
+21					&lt;wait&gt;${WAIT_TIME}&lt;/wait&gt;
+22				&lt;/parameter&gt;
+23			&lt;/sleepTask&gt;
+24		&lt;/tasks&gt;
+25	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+In example 7 three constants are <nobr>defined (6-10).</nobr> The constant named <pre class="name">${WAIT_TIME}</pre> is used as wait time in the sleep <nobr>task (21).</nobr> The other two constants are used to construct the standard output file <nobr>path (18).</nobr>
+
+
+<!--<input class="button" id="spoilerglobal_constantsButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoilerglobal_constants"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">constants</pre></td><td></td><td></td><td>parent of <pre class="tag">const</pre> elements and child of <pre class="tag">settings</pre></td></tr>
+<tr><td><pre class="tag">const</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>name of the variable that is replaced with <pre class="name">${name}</pre> in attributes and text content; only chars out of [A-Za-z_] are allowed as first character followed by [A-Za-z_0-9] in the name; apart from a few exceptions it is allowed everywhere</td></tr>
+<tr><td><pre class="tag">const</pre></td><td></td><td>string</td><td>replacement value</td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 5: Attributes in the context of global constants</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">constants</pre></td><td></td><td></td><td>parent of <pre class="tag">const</pre> elements and child of <pre class="tag">settings</pre></td></tr>
+<tr><td><pre class="tag">const</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>name of the variable that is replaced with <pre class="name">${name}</pre> in attributes and text content; only chars out of [A-Za-z_] are allowed as first character followed by [A-Za-z_0-9] in the name; apart from a few exceptions it is allowed everywhere</td></tr>
+<tr><td><pre class="tag">const</pre></td><td></td><td>string</td><td>replacement value</td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+<a name="environment_variables" class="subtopic">4.5 Environment variables</a>
+
+Some tools expect specific environment variables to be set correctly. For example the <b>PATH</b> variable is important because executable programs are located only in directories defined by that variable. The environment variables which are set on the host running Watchdog can be simply inherited. With help of the <pre class="tag">var</pre> element new variables can be defined or updated. The name of the variable must be defined with the <pre class="attr">name</pre> attribute while the value is stored between the opening and closing element tag. The parent element of each <pre class="tag">var</pre> element must be a <pre class="tag">environment</pre> element which also owns a <pre class="attr">name</pre> attribute. This <pre class="attr">name</pre> attribute is used to link the environment with a task using the <pre class="attr">environment</pre> attribute all tasks possess. It is also possible to define environment variables locally within task definitions. If local and global variables with the same name are set, the local ones override the global variables.
+
+<br /><br />
+The following environment variables are set by Watchdog by default:
+<ul>
+	<li><b>IS_WATCHDOG_JOB</b>: if module was executed by Watchdog this value is set to <pre class="name">1</pre></li>
+	<li><b>WATCHDOG_CORES</b>: number of reserved cores if task runs on a cluster environment</li>
+	<li><b>WATCHDOG_MEMORY</b>: number of total reserved memory in megabyte if task runs on a cluster environment</li>
+</ul>
+
+
+<div class="box">	
+	<div class="head_box">Example 8: Definition of environment variables</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;settings&gt;
+ 5			&lt;!-- definition of a environment --&gt;
+ 6			&lt;environments&gt;
+ 7				&lt;environment name="pathEnv"&gt;
+ 8					&lt;var name="PATH" update="true"&gt;~/software/bin&lt;/var&gt;
+ 9				&lt;/environment&gt;
+10			&lt;/environments&gt;
+11		&lt;/settings&gt;
+12	
+13		&lt;!-- begin task block and use that mail to inform the user on success or failure --&gt;
+14		&lt;tasks mail="{%MAIL%}"&gt;
+15	
+16			&lt;!-- definition of a simple sleep task using custom environment variables --&gt;
+17			&lt;envTask id="1" name="env" environment="pathEnv"&gt;
+18				&lt;streams&gt;
+19					&lt;stdout&gt;/tmp/env.test&lt;/stdout&gt;
+20				&lt;/streams&gt;
+21	
+22				&lt;!-- definition of a local environment with two variables --&gt;
+23				&lt;environment&gt;
+24					&lt;var name="SHELL"&gt;/bin/sh&lt;/var&gt;
+25					&lt;var name="TEST" update="true" sep="@"&gt;separator test&lt;/var&gt;
+26				&lt;/environment&gt;
+27			&lt;/envTask&gt;
+28		&lt;/tasks&gt;
+29	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+In example 8 an environment named <pre class="name">pathEnv</pre> is defined in which the variable <pre class="name">PATH</pre> is <nobr>updated (8)</nobr>. The entry <pre class="name">~/software/bin</pre> is added at the beginning of the <pre class="name">PATH</pre> variable and after the default seperator character the previous value is kept. The <pre class="attr">environment</pre> attribute of the <pre class="name">env</pre> task is set to the name of the previously defined <nobr>environment (17).</nobr> Additionally two local environment variables are <nobr>defined (23-26).</nobr> The first one replaces the default shell with <pre class="name">/bin/sh</pre> while the second one updates a variable called <pre class="name">TEST</pre> using an alternative separator.
+
+
+<!--<input class="button" id="spoilerenvironment_variablesButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoilerenvironment_variables"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>is used as reference in the <pre class="attr">environment</pre> attribute of a task</td></tr>
+<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[copyLocalValue]</pre></td><td>boolean</td><td>copies all environment variables which are set on the host running Watchdog; set variables are not deleted on the remote system; bash functions which names are ending with () are not copied as this might cause problems; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[useExternalExport]</pre></td><td>boolean</td><td>uses a external command to set the variables; is necessary to update variables on remote or cluster executors and might also be necessary to set environment variables on remote hosts because of ssh security policies; default: <pre class="name">true</pre></td></tr>
+<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[exportCommand]</pre></td><td>string</td><td>custom command to set a environment variable; <pre class="name">{$NAME}</pre> and <pre class="name">{$VALUE}</pre> are substituted and must be part of the command; default: <pre class="name">export {$NAME}="{$VALUE}"</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">environment</pre></td><td>string</td><td>name of a <pre class="tag">environment</pre> element</td></tr>
+<tr><td><pre class="tag">var</pre></td><td></td><td>string</td><td>value of the environment variable</td></tr>
+<tr><td><pre class="tag">var</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>name of the environment variable</td></tr>
+<tr><td><pre class="tag">var</pre></td><td><pre class="attr">[update]</pre></td><td>boolean</td><td>if <pre class="name">true</pre> the value is added at the beginning of the variable and the old values comes afterwards separated with the value stored in the <pre class="attr">sep</pre> attribute; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">var</pre></td><td><pre class="attr">[sep]</pre></td><td>string</td><td>separator which is used when the value of the variable should be updated; default: <pre class="name">:</pre></td></tr>
+<tr><td><pre class="tag">var</pre></td><td><pre class="attr">[copyLocalValue]</pre></td><td>boolean</td><td>copies the environment variables with the name <pre class="attr">name</pre> which is set on the host running Watchdog; default: <pre class="name">false</pre></td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 6: Attributes in the context of environment variables</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>is used as reference in the <pre class="attr">environment</pre> attribute of a task</td></tr>
+<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[copyLocalValue]</pre></td><td>boolean</td><td>copies all environment variables which are set on the host running Watchdog; set variables are not deleted on the remote system; bash functions which names are ending with () are not copied as this might cause problems; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[useExternalExport]</pre></td><td>boolean</td><td>uses a external command to set the variables; is necessary to update variables on remote or cluster executors and might also be necessary to set environment variables on remote hosts because of ssh security policies; default: <pre class="name">true</pre></td></tr>
+<tr><td><pre class="tag">environment</pre></td><td><pre class="attr">[exportCommand]</pre></td><td>string</td><td>custom command to set a environment variable; <pre class="name">{$NAME}</pre> and <pre class="name">{$VALUE}</pre> are substituted and must be part of the command; default: <pre class="name">export {$NAME}="{$VALUE}"</pre></td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">environment</pre></td><td>string</td><td>name of a <pre class="tag">environment</pre> element</td></tr>
+<tr><td><pre class="tag">var</pre></td><td></td><td>string</td><td>value of the environment variable</td></tr>
+<tr><td><pre class="tag">var</pre></td><td><pre class="attr">name</pre></td><td>string</td><td>name of the environment variable</td></tr>
+<tr><td><pre class="tag">var</pre></td><td><pre class="attr">[update]</pre></td><td>boolean</td><td>if <pre class="name">true</pre> the value is added at the beginning of the variable and the old values comes afterwards separated with the value stored in the <pre class="attr">sep</pre> attribute; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">var</pre></td><td><pre class="attr">[sep]</pre></td><td>string</td><td>separator which is used when the value of the variable should be updated; default: <pre class="name">:</pre></td></tr>
+<tr><td><pre class="tag">var</pre></td><td><pre class="attr">[copyLocalValue]</pre></td><td>boolean</td><td>copies the environment variables with the name <pre class="attr">name</pre> which is set on the host running Watchdog; default: <pre class="name">false</pre></td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+<a name="mail_notification" class="subtopic">4.6 Mail notification</a>
+By default Watchdog informs the user only when an error occurs during the execution of a task or if an error was detected afterwards. But these behaviour can be changed using the <pre class="attr">notify</pre> attribute of tasks.
+
+<div class="box">	
+	<div class="head_box">Example 9: Different mail notification options</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3		
+ 4		&lt;settings&gt;
+ 5			&lt;!-- definition of different process blocks --&gt;
+ 6			&lt;processBlock&gt;
+ 7				&lt;processSequence name="sleepTime" start="5" end="15" step="5" /&gt;
+ 8			&lt;/processBlock&gt;
+ 9		&lt;/settings&gt;
+10	
+11		&lt;!-- begin task block and use that mail to inform the user on success or failure --&gt;
+12		&lt;tasks mail="{%MAIL%}"&gt;
+13			&lt;!-- definition a simple sleep task --&gt;
+14			&lt;sleepTask id="1" name="sleep simple" notify="enabled"&gt;
+15				&lt;parameter&gt;
+16					&lt;wait&gt;10s&lt;/wait&gt;
+17				&lt;/parameter&gt;
+18			&lt;/sleepTask&gt;
+19	
+20			&lt;!-- definition of process sequence sleep tasks --&gt;
+21			&lt;sleepTask id="2" name="sleep process sequence" notify="subtask" processBlock="sleepTime"&gt;
+22				&lt;parameter&gt;
+23					&lt;wait&gt;[]s&lt;/wait&gt;
+24				&lt;/parameter&gt;
+25			&lt;/sleepTask&gt;
+26		&lt;/tasks&gt;
+27	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+In example 9 different notification options are presented. The first defined task is the simple sleep task from the previous examples for which the <pre class="attr">notify</pre> attribute is set to <nobr><pre class="name">enabled</pre> (14)</nobr>. Once the task is finished a mail will be sent to the address the user specified in the <pre class="attr">mail</pre> attribute of the <pre class="tag">tasks</pre> <nobr>element (12)</nobr>. The second defined task is based on a process block named <pre class="name">sleepTime</pre> and causes Watchdog to inform the user as soon as a subtask is finished because the <pre class="attr">notify</pre> attribute is set to <nobr><pre class="name">subtask</pre> (7, 21)</nobr>.
+
+
+<!--<input class="button" id="spoilermail_notificationButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoilermail_notification"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">tasks</pre></td><td><pre class="attr">mail</pre></td><td>string</td><td>mail adress which is used for notification</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">notify</pre></td><td>enum</td><td>enabled: inform when complete task was executed<br />subtask: inform when a subtask was executed<br />disabled: notification only in case of an error</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">processBlock</pre></td><td>string</td><td>reference to a process block when <pre class="attr">notify</pre> is set to subtask</td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 7: Attributes in the context of mail notification</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">tasks</pre></td><td><pre class="attr">mail</pre></td><td>string</td><td>mail adress which is used for notification</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">notify</pre></td><td>enum</td><td>enabled: inform when complete task was executed<br />subtask: inform when a subtask was executed<br />disabled: notification only in case of an error</td></tr>
+<tr><td><pre class="tag">?Task</pre></td><td><pre class="attr">processBlock</pre></td><td>string</td><td>reference to a process block when <pre class="attr">notify</pre> is set to subtask</td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+<a name="streams" class="subtopic">4.7 Standard streams and working directory</a>
+
+By default the stdout and stderr stream of the tool which is executed by watchdog is not saved. This can be changed by setting a path via the <pre class="tag">stdout</pre> or <pre class="tag">stderr</pre> element. It is also possible to use a file as input via the <pre class="tag">stdin</pre> element. Additionally, a working directory can be set by using the <pre class="tag">workingDir</pre> element. When this is done also relative path for <pre class="tag">stdout</pre>, <pre class="tag">stderr</pre> and <pre class="tag">stdin</pre> are allowed. Other than usual, the elements must occour in the same order as they are listed in the following: <pre class="tag">workingDir</pre>, <pre class="tag">stdout</pre>, <pre class="tag">stderr</pre> and <pre class="tag">stdin</pre> (but each of them is optional)
+
+<div class="box">	
+	<div class="head_box">Example 10: Definition of standard streams and working directory</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;!-- begin task block and use that mail to inform the user on success or failure --&gt;
+ 5		&lt;tasks mail="{%MAIL%}"&gt;
+ 6	
+ 7			&lt;!-- definition a simple sleep task --&gt;
+ 8			&lt;sleepTask id="1" name="sleep"&gt;
+ 9				&lt;parameter&gt;
+10					&lt;wait&gt;30s&lt;/wait&gt;
+11				&lt;/parameter&gt;
+12				&lt;!-- definition of a standard output location and switch of the working directory --&gt;
+13				&lt;streams&gt;
+14					&lt;workingDir&gt;/tmp/&lt;/workingDir&gt;
+15					&lt;stdout&gt;{%EXAMPLE_DATA%}/sleepTest.out&lt;/stdout&gt;
+16					&lt;stderr append="true"&gt;sleepTest.err&lt;/stderr&gt;
+17				&lt;/streams&gt;
+18			&lt;/sleepTask&gt;
+19		&lt;/tasks&gt;
+20	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+In example 10 the working directory is set <nobr>to <pre class="name">/tmp</pre> (14).</nobr> Afterwards, the standard output of the <pre class="name">sleep</pre> task is written to the file <nobr><pre class="name">{%EXAMPLE_DATA%}/sleepTest.out</pre> (15).</nobr> The standard error stream is appended at the end of a file named <nobr><pre class="name">/tmp/sleepTest.err</pre> (16).</nobr>
+
+
+<!--<input class="button" id="spoilerstandard_streams_and_working_directoryButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoilerstandard_streams_and_working_directory"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">streams</pre></td><td></td><td>boolean</td><td>saves used resources to <STDOUT_FILE>.res if standard output stream is saved to a file; default: <pre class="name">false</pre> </td></tr>
+<tr><td><pre class="tag">workingDir</pre></td><td></td><td>string</td><td>sets a custom working directory before the tool is executed; default: <pre class="name">/usr/local/storage</pre></td></tr>
+<tr><td><pre class="tag">stdout</pre></td><td></td><td>string</td><td>writes standard output stream into file; default not saved</td></tr>
+<tr><td><pre class="tag">stderr</pre></td><td></td><td>string</td><td>writes standard error stream into file; default not saved</td></tr>
+<tr><td><pre class="tag">stdin</pre></td><td></td><td>string</td><td>file is used as standard input; default: not set</td></tr>
+<tr><td><pre class="tag">stdin</pre></td><td><pre class="attr">[disableExistenceCheck]</pre></td><td>boolean</td><td>file must not exist when Watchdog is started; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">stdout</pre>/<pre class="tag">stderr</pre></td><td><pre class="attr">[append]</pre></td><td>boolean</td><td>appends the stream at the end of the file; default: <pre class="name">false</pre></td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 8: Attributes in the context of standard streams_and_working_directory</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">streams</pre></td><td></td><td>boolean</td><td>saves used resources to <STDOUT_FILE>.res if standard output stream is saved to a file; default: <pre class="name">false</pre> </td></tr>
+<tr><td><pre class="tag">workingDir</pre></td><td></td><td>string</td><td>sets a custom working directory before the tool is executed; default: <pre class="name">/usr/local/storage</pre></td></tr>
+<tr><td><pre class="tag">stdout</pre></td><td></td><td>string</td><td>writes standard output stream into file; default not saved</td></tr>
+<tr><td><pre class="tag">stderr</pre></td><td></td><td>string</td><td>writes standard error stream into file; default not saved</td></tr>
+<tr><td><pre class="tag">stdin</pre></td><td></td><td>string</td><td>file is used as standard input; default: not set</td></tr>
+<tr><td><pre class="tag">stdin</pre></td><td><pre class="attr">[disableExistenceCheck]</pre></td><td>boolean</td><td>file must not exist when Watchdog is started; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">stdout</pre>/<pre class="tag">stderr</pre></td><td><pre class="attr">[append]</pre></td><td>boolean</td><td>appends the stream at the end of the file; default: <pre class="name">false</pre></td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+<a name="task_actions" class="subtopic">4.8 Task actions</a>
+
+Additional operations can be executed before and after the actual task is executed. Currently a set of IO operations are implemented that can be used to roll out data the task depends on or to clean up once the task is finished. This feature is especically usefull when Watchdog is running in slave mode (see <a href="#execution_environments">4.3</a>) in order to reduce load for the shared file system as some files might be requirements for different tasks. Hence, these files would have to be transfered multiple times from the shared file system to the host executing the task.
+<br />
+Moreover, files stored on remote files systems can be up- or downloaded by Watchdog. By default, virtual file systems based on the protocols File, HTTP, HTTPS, FTP, FTPS and SFTP as well as the main memory (RAM) are supported. These virtual file systems are provided by the Commons Virtual File System project of the Apache Software Foundation. Examples for valid URIs of these file systems can be can be found <a target="_blank" href="https://commons.apache.org/proper/commons-vfs/filesystems.html">here</a>. However, any file system with an implementation of the <pre class="name">FileProvider</pre> can also be included by the user as described in <a href="#vfs">7.1</a>.
+
+<br /><br />
+Task actions are defined in an <pre class="tag">actions</pre> tag as child of <pre class="tag">?Task</pre>. Slave mode is automatically activated if a task action is used. Currently six different IO operations are implemented:
+<ul>
+	<li><pre class="tag">createFile</pre> - creates an empty file</li>
+	<li><pre class="tag">createFolder</pre> - create an empty folder</li>
+	<li><pre class="tag">copyFile</pre> - copies a file</li>
+	<li><pre class="tag">copyFolder</pre> - copies a folder (with content)</li>
+	<li><pre class="tag">deleteFile</pre> - deletes a file</li>
+	<li><pre class="tag">deleteFolder</pre> - deletes a folder (with content)</li>
+</ul>
+
+The event after which the task actions are executed must be defined using the <pre class="attr">time</pre> attribute each <pre class="tag">actions</pre> tag owns. The following arguments are available:
+
+<ul>
+<li><pre class="attr">beforeTask</pre> - before the task is executed</li>
+<li><pre class="attr">afterTask</pre> - after the task is executed</li>
+<li><pre class="attr">onSuccess</pre> - when the task was successfully executed</li>
+<li><pre class="attr">onFailure</pre> - when task execution failed</li>
+<li><pre class="attr">beforeTerminate</pre> - before Watchdog or a slave terminates itself</li>
+</ul>
+
+<div class="box">	
+	<div class="head_box">Example 11: Definition of task actions</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;tasks mail="{%MAIL%}"&gt;
+ 5			&lt;gzipTask id="1" name="gzip task"&gt;
+ 6				&lt;parameter&gt;
+ 7					&lt;!-- path to a file that does not exist yet --&gt;
+ 8					&lt;input&gt;/tmp/watchdog_file_to_compress.tmp&lt;/input&gt;
+ 9				&lt;/parameter&gt;
+10				&lt;!-- action that copies a to the input location --&gt; 
+11				&lt;actions time="beforeTask"&gt;
+12					&lt;copyFile file="{%INSTALL%}examples/example_task_actions.xml" destination="/tmp/watchdog_file_to_compress.tmp" override="true" /&gt;
+13				&lt;/actions&gt;
+14			&lt;/gzipTask&gt;
+15		&lt;/tasks&gt;
+16	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+In example 11 a file name <pre class="name">/tmp/watchdog_file_to_compress.tmp</pre> is compressed using gzip (5-14). Before the compress task is executed, the task action defined within the <pre class="tag">actions</pre> tag is executed because the <pre class="attr">time</pre> attribute is set to <pre class="name">beforeTask</pre> (11-13). The task action copies the file stored in <pre class="name">{%INSTALL%}/examples/example_task_actions.xml</pre> to <pre class="name">/tmp/watchdog_file_to_compress.tmp</pre> (12).
+
+
+<!--<input class="button" id="spoileractionsButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoileractions"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">actions</pre></td><td><pre class="attr">time</pre></td><td>enum</td><td>defines when the task action block is executed; beforeTask: before the task is executed; afterTask: after the task is executed; onSuccess: when the task was successfully executed; onFailure: when task execution failed; beforeTerminate: before Watchdog or a slave terminates itself</td></tr>
+<tr><td><pre class="tag">actions</pre></td><td><pre class="attr">[uncoupleFromExecutor]</pre></td><td>boolean</td><td>if enabled, task actions are executed on the host running Watchdog instead of the execution host; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">createFile</pre></td><td><pre class="attr">file</pre></td><td>string</td><td>path to the file that should be created</td></tr>
+<tr><td><pre class="tag">createFile</pre></td><td><pre class="attr">[override]</pre></td><td>boolean</td><td>defines if an existing file should be overwritten; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">createFile</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
+<tr><td><pre class="tag">createFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>path to the folder that should be created and will be empty if action succeeds</td></tr>
+<tr><td><pre class="tag">createFolder</pre></td><td><pre class="attr">[override]</pre></td><td>boolean</td><td>defines if an existing folder should be deleted; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">createFolder</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
+<tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">file</pre></td><td>string</td><td>path to the file that should be copied</td></tr>
+<tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">destination</pre></td><td>string</td><td>path to the destination of the new file</td></tr>
+<tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">[override]</pre></td><td>boolean</td><td>defines if an existing file should be overwritten; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">[deleteSource]</pre></td><td>boolean</td><td>deletes the source file after the copy operation; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>path to the folder that should be copied</td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">destination</pre></td><td>string</td><td>path to the destination folder</td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[pattern]</pre></td><td>string </td><td>pattern selecting files that should be copied in that folder; syntax as in bash</td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[override]</pre></td><td>boolean</td><td>defines if an existing folder should be deleted; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[deleteSource]</pre></td><td>boolean</td><td>deletes the source folder after the copy operation; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
+<tr><td><pre class="tag">deleteFile</pre></td><td><pre class="attr">file</pre></td><td>string</td><td>path to the file that should be deleted</td></tr>
+<tr><td><pre class="tag">deleteFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>path to the folder that should be deleted</td></tr>
+<tr><td><pre class="tag">deleteFolder</pre></td><td><pre class="attr">[pattern]</pre></td><td>string </td><td>pattern selecting files that should be deleted in that folder; syntax as in bash</td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 9: Attributes in the context of actions</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">actions</pre></td><td><pre class="attr">time</pre></td><td>enum</td><td>defines when the task action block is executed; beforeTask: before the task is executed; afterTask: after the task is executed; onSuccess: when the task was successfully executed; onFailure: when task execution failed; beforeTerminate: before Watchdog or a slave terminates itself</td></tr>
+<tr><td><pre class="tag">actions</pre></td><td><pre class="attr">[uncoupleFromExecutor]</pre></td><td>boolean</td><td>if enabled, task actions are executed on the host running Watchdog instead of the execution host; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">createFile</pre></td><td><pre class="attr">file</pre></td><td>string</td><td>path to the file that should be created</td></tr>
+<tr><td><pre class="tag">createFile</pre></td><td><pre class="attr">[override]</pre></td><td>boolean</td><td>defines if an existing file should be overwritten; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">createFile</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
+<tr><td><pre class="tag">createFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>path to the folder that should be created and will be empty if action succeeds</td></tr>
+<tr><td><pre class="tag">createFolder</pre></td><td><pre class="attr">[override]</pre></td><td>boolean</td><td>defines if an existing folder should be deleted; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">createFolder</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
+<tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">file</pre></td><td>string</td><td>path to the file that should be copied</td></tr>
+<tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">destination</pre></td><td>string</td><td>path to the destination of the new file</td></tr>
+<tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">[override]</pre></td><td>boolean</td><td>defines if an existing file should be overwritten; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">[deleteSource]</pre></td><td>boolean</td><td>deletes the source file after the copy operation; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">copyFile</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>path to the folder that should be copied</td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">destination</pre></td><td>string</td><td>path to the destination folder</td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[pattern]</pre></td><td>string </td><td>pattern selecting files that should be copied in that folder; syntax as in bash</td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[override]</pre></td><td>boolean</td><td>defines if an existing folder should be deleted; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[deleteSource]</pre></td><td>boolean</td><td>deletes the source folder after the copy operation; default: <pre class="name">false</pre></td></tr>
+<tr><td><pre class="tag">copyFolder</pre></td><td><pre class="attr">[createParent]</pre></td><td>boolean</td><td>defines if the parent directories should be created if nonexistent; default: <pre class="name">true</pre></td></tr>
+<tr><td><pre class="tag">deleteFile</pre></td><td><pre class="attr">file</pre></td><td>string</td><td>path to the file that should be deleted</td></tr>
+<tr><td><pre class="tag">deleteFolder</pre></td><td><pre class="attr">folder</pre></td><td>string</td><td>path to the folder that should be deleted</td></tr>
+<tr><td><pre class="tag">deleteFolder</pre></td><td><pre class="attr">[pattern]</pre></td><td>string </td><td>pattern selecting files that should be deleted in that folder; syntax as in bash</td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+<a name="simple_calculations" class="subtopic">4.9 Simple calculations</a>
+
+Within a <pre class="tag">?Task</pre> element simple calculations can be preformed using the <pre class="name">$(expr)</pre> construct whereby <pre class="name">expr</pre> must be a numerical equation. The following operators are supported: +, -, *, /, ^, &sup2; and &sup3;. Additional the brackets <pre class="name">()</pre> are provided. Moreover in case of a <pre class="tag">processSequence</pre> <pre class="name">i</pre> is replaced by the current value of the process sequence. In the more general case of a <pre class="tag">processBlock</pre> <pre class="name">x</pre> is substituted by an increasing number starting at <pre class="name">1</pre>. The result of all calculations is rounded to five decimal places or converted to an integer if it is one.
+
+<div class="box">	
+	<div class="head_box">Example 12: Definition of simple calculations</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;settings&gt;
+ 5			&lt;!-- definition of two process blocks --&gt;
+ 6			&lt;processBlock&gt;
+ 7				&lt;processSequence name="sleepTime" start="1" end="5" step="1.5" /&gt;
+ 8				&lt;processFolder name="txtFiles" folder="{%EXAMPLE_DATA%}/txt/" pattern="*.txt" /&gt;
+ 9			&lt;/processBlock&gt;
+10		&lt;/settings&gt;
+11	
+12		&lt;tasks mail="{%MAIL%}"&gt;
+13			&lt;!-- sleep task with a simple calculation --&gt;
+14			&lt;sleepTask id="1" name="sleep" processBlock="sleepTime"&gt;
+15				&lt;parameter&gt;			
+16					&lt;wait&gt;$((i+1)^2-1)s&lt;/wait&gt;
+17				&lt;/parameter&gt;
+18			&lt;/sleepTask&gt;
+19	
+20			&lt;!-- compress txt files and write log files to ()/log/* --&gt;
+21			&lt;gzipTask id="2" name="quality test" processBlock="txtFiles"&gt;
+22				&lt;streams&gt;
+23					&lt;stdout&gt;()/log/$(x).out&lt;/stdout&gt;
+24				&lt;/streams&gt;
+25				&lt;parameter&gt;			
+26					&lt;input&gt;{}&lt;/input&gt;
+27					&lt;output&gt;{}.gz&lt;/output&gt;
+28					&lt;quality&gt;3&lt;/quality&gt;
+29				&lt;/parameter&gt;
+30			&lt;/gzipTask&gt;
+31		&lt;/tasks&gt;
+32	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+In example 12 the usage of the <pre class="name">$(expr)</pre> construct is shown. The wait time for the sleep task is calculated based on the input numbers of the <nobr><pre class="tag">processSequence</pre> (7, 16).</nobr> In the second gzip task the number of the subtask is used to name the standard output <nobr>files (23).</nobr>
+<a name="module_folders" class="subtopic">4.10 Multiple module search folders</a>
+
+By default Watchdog tries to locate modules in a folder named <pre class="name">modules/</pre> stored in the installation directory of Watchdog. By using the <pre class="tag">modules</pre> element as child of <pre class="tag">settings</pre>, additional folders can be added.
+
+<div class="box">	
+	<div class="head_box">Example 13: Definition of multiple module include folders</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;settings&gt;
+ 5			&lt;!-- TODO: modify one of these folders {%INSTALL%}myCustomFolder/ or --&gt;
+ 6			&lt;!-- /home/TODO/additionalModules/ to match a folder that contains the 'sleep' module --&gt;
+ 7			&lt;modules defaultFolder="myCustomFolder/"&gt;
+ 8				&lt;folder&gt;/home/TODO/additionalModules/&lt;/folder&gt;
+ 9			&lt;/modules&gt;
+10		&lt;/settings&gt;
+11	
+12		&lt;!-- begin task block and use that mail to inform the user on success or failure --&gt;
+13		&lt;tasks mail="{%MAIL%}"&gt;
+14			&lt;!-- definition a simple sleep task --&gt;
+15			&lt;sleepTask id="1" name="sleep"&gt;
+16				&lt;parameter&gt;
+17					&lt;wait&gt;30s&lt;/wait&gt;
+18				&lt;/parameter&gt;
+19			&lt;/sleepTask&gt;
+20		&lt;/tasks&gt;
+21	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+In example 13 the default directory is changed to <pre class="name">myCustomFolder/</pre> with the <pre class="attr">defaultFolder</pre> <nobr>attribute (7).</nobr> Moreover, in line 8 an additional folder is added to Watchdog's search path. Watchdog will now try to locate modules in the directories <pre class="name">{%INSTALL%}/myCustomFolder/</pre> and <pre class="name">/home/additionalModules/</pre>. In order to test that example you must create a new folder, copy the <pre class="name">sleep</pre> module from Watchdog's module folder and adapt the path in line 7 or 8 to match that folder.
+
+
+<!--<input class="button" id="spoilermodule_include_foldersButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoilermodule_include_folders"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">modules</pre></td><td><pre class="attr">[defaultFolder]</pre></td><td>string</td><td>changes the default search folder; an absolute or relative path to Watchdog's install dir is allowed <nobr>(must end with /);</nobr> default: <pre class="name">modules/</pre></td></tr>
+<tr><td><pre class="tag">folder</pre></td><td></td><td>string</td><td>adds a new directory to that is used for localization of modules</td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 10: Attributes in the context of module include_folders</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">modules</pre></td><td><pre class="attr">[defaultFolder]</pre></td><td>string</td><td>changes the default search folder; an absolute or relative path to Watchdog's install dir is allowed <nobr>(must end with /);</nobr> default: <pre class="name">modules/</pre></td></tr>
+<tr><td><pre class="tag">folder</pre></td><td></td><td>string</td><td>adds a new directory to that is used for localization of modules</td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+<a name="checkers" class="subtopic">4.11 Custom success and error checker</a>
+
+In some cases the exit code of a command is not a reliable indicator whether the command was executed successfully or not. For example some tools return as exit code zero regardless of whether the command succeeded or failed. Furthermore, a command could succeed technically but the desired result is not obtained (e.g. wrong index used for mapping of RNA-seq data results in a very low mapping rate). In order to handle such cases the user has the option to implement custom success and error checkers in Java that are executed by Watchdog once a task has terminated. Two steps must be performed to use custom checkers: implementation in Java and invocation in the XML workflow.
+<br /><br />
+Interfaces for checkers are stored in the package <i>de.lmu.ifi.bio.watchdog.interfaces</i>. Basically a function returning a boolean value that indicates whether the task succeeded or failed must be implemented. The constructor must accept as first argument a object of the type <i>Task</i> that contains information about the task that was finished. Additional arguments of type <i>Boolean</i>, <i>Integer</i>, <i>Double</i> or <i>String</i> can be passed via the XML definition.
+<br />
+<div class="box">	
+	<div class="head_box">Example 14: Load custom checkers</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3	
+ 4		&lt;!-- begin task block and use that mail to inform the user on success or failure --&gt;
+ 5		&lt;tasks mail="{%MAIL%}"&gt;
+ 6	
+ 7			&lt;!-- definition a simple sleep task --&gt;
+ 8			&lt;sleepTask id="1" name="sleep"&gt;
+ 9				&lt;parameter&gt;
+10					&lt;wait&gt;30s&lt;/wait&gt;
+11				&lt;/parameter&gt;
+12				&lt;checkers&gt; 
+13					&lt;!-- load a success checker with one additional constructor argument --&gt;
+14					&lt;!-- it will check, if the file {%INSTALL%}examples/mail_config exists and is not empty --&gt;
+15					&lt;checker classPath="{%EXAMPLE_DATA%}/OutputFileExistsSuccessChecker.class" className="de.lmu.ifi.bio.watchdog.successChecker.OutputFileExistsSuccessChecker" type="success"&gt;
+16						&lt;cArg type="string"&gt;{%INSTALL%}examples/mail_config&lt;/cArg&gt;
+17					&lt;/checker&gt;
+18				&lt;/checkers&gt;
+19			&lt;/sleepTask&gt;
+20		&lt;/tasks&gt;
+21	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+<br />
+Example 14 shows an example of how an success checker can be added to a task by using the <pre class="tag">checkers</pre> element as a child of <pre class="tag">?Task</pre> (12-18). In addition to the location of the compiled Java class and the full class name arguments can be passed to the constructor of the class. In this example one variable of type <pre class="name">string</pre> is passed to the constructor of the success checker using the <pre class="tag">cArg</pre> element (16). Once the task is finished, the checkers are evaluated in the same order as they were added in the XML workflow. In cases in which simultaneously success and error were detected, the task will be treated as failed. In this example the success checker will ensure that the file <pre class="name">{%INSTALL%}/examples/mail_config exists</pre> and is not empty (15-16)
+
+
+
+<!--<input class="button" id="spoilercustom_checkersButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
+<div id="spoilercustom_checkers"><div></div>
+	<table class="attributes" cellpadding="0" cellspacing="0">
+		<thead class="attributes">
+			<tr><td>tag</td><td>attribute</td><td>type</td><td>function</td></tr>
+		</thead>
+		<tbody class="attributes">
+			<tr><td><pre class="tag">checker</pre></td><td><pre class="attr">type</pre></td><td>enum</td><td>type of the checker; success: checker should be used as success checker; error: checker is used as error checker</td></tr>
+<tr><td><pre class="tag">checker</pre></td><td><pre class="attr">className</pre></td><td>string</td><td>complete class name including the package the class is located in</td></tr>
+<tr><td><pre class="tag">checker</pre></td><td><pre class="attr">classPath</pre></td><td>string</td><td>absolute path to the compiled java class file</td></tr>
+<tr><td><pre class="tag">cArg</pre></td><td><pre class="attr">type</pre></td><td>enum</td><td>type to which the argument should be parsed in java; possible values: boolean, integer, double and string</td></tr>
+
+		</tbody>
+	</table>
+</div>-->
+
+
+<div class="box">	
+	<div class="head_box">Table 11: Attributes in the context of custom checkers</div>
+	<div class="box_body">
+		<table class="attributes">
+			<thead class="attributes">
+				<tr><th>element</th><th>attribute</th><th>type</th><th>function</th></tr>
+			</thead>
+			<tbody class="attributes">
+				<tr><td><pre class="tag">checker</pre></td><td><pre class="attr">type</pre></td><td>enum</td><td>type of the checker; success: checker should be used as success checker; error: checker is used as error checker</td></tr>
+<tr><td><pre class="tag">checker</pre></td><td><pre class="attr">className</pre></td><td>string</td><td>complete class name including the package the class is located in</td></tr>
+<tr><td><pre class="tag">checker</pre></td><td><pre class="attr">classPath</pre></td><td>string</td><td>absolute path to the compiled java class file</td></tr>
+<tr><td><pre class="tag">cArg</pre></td><td><pre class="attr">type</pre></td><td>enum</td><td>type to which the argument should be parsed in java; possible values: boolean, integer, double and string</td></tr>
+
+			</tbody>
+		</table>
+	</div>
+</div>
+<div class="chapter"><a name="custom_modules" class="topic">5 Creating custom modules</a>
+
+In the following the steps that are needed to create a custom module named <pre class="attr">nameOfModule</pre> are explained. Basic XSD skills are needed to understand how things work together. Modules are defined in XSD format and should have the basic structure showed in example 15. To actually create modules the script <pre class="name">helper_scripts/createNewModule.sh</pre> can be used and modified by hand as not all settings can be configured by it.
+<br /><br />
+Alternatively, the newly developed GUI <pre class="name">moduleMaker</pre> (available at <a href="https://github.com/watchdog-wms/moduleMaker" target="_blank">watchdog-wms/moduleMaker</a>) can be used to automatically extract parameters and flags from a software help page to more conveniently create the corresponding module. See <a href="#basic_jars">2.3</a> for installation hints.
+
+<div class="box">	
+	<div class="head_box">Example 15: Basic XSD structure</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+ 2	&lt;x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org"&gt;
+ 3	
+ 4	...
+ 5	
+ 6	&lt;/x:schema&gt;</code></pre>
+	</div>
+</div>
+
+As a first step, a folder with the name <pre class="name">nameOfModule</pre> must be created in the <pre class="name">modules</pre> folder. That folder must contain a file named <pre class="name">nameOfModule.xsd</pre> which will hold the actual module definition.
+
+<a name="custom_modules_input" class="subtopic">5.1 Input parameter definition</a>
+Example 16 shows how input parameters and flags can be defined. 
+
+<div class="box">	
+	<div class="head_box">Example 16: Input parameter</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;!-- definition of the task parameters --&gt;
+ 2	&lt;x:complexType name="nameOfModuleTaskParameterType"&gt;
+ 3		&lt;x:all&gt;
+ 4			&lt;x:element name="parameter1" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" /&gt;
+ 5			&lt;x:element name="parameter2" type="paramString" minOccurs="0" maxOccurs="unbounded" /&gt;
+ 6			&lt;x:element name="flag1" type="paramBoolean" minOccurs="0" maxOccurs="1" /&gt;
+ 7		&lt;/x:all&gt;
+ 8	&lt;/x:complexType&gt;</code></pre>
+	</div>
+</div>
+
+In line 4 and 5 two parameters are defined while line 6 creates a flag. Using the <pre class="attr">minOccurs</pre> and <pre class="attr">maxOccurs</pre> attributes it can be specified how often a parameter can be used. Also parameters can have different types which are enforced during the validation of the XML workflows. Some pre-defined types are
+
+<ul>
+<li>paramBoolean (for flags)</li>
+<li>paramString</li>
+<li>paramInteger</li>
+<li>paramDouble</li>
+</ul>
+
+These types accept by default booleans, strings, integers or doubles but also allow all values that are substituted by Watchdog. Moreover own parameter types can be defined as showed in example 17.
+
+<div class="box">	
+	<div class="head_box">Example 17: Input parameter</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;!-- module specific parameter types --&gt;
+ 2	&lt;x:complexType name="paramWait_sleep"&gt;
+ 3		&lt;x:simpleContent&gt;
+ 4			&lt;x:restriction base="paramString"&gt;
+ 5				&lt;x:assertion test="matches($value, '(${[A-Za-z_]+})|($(.+))|([[({]($[A-Za-z_]+(,s*){0,1}){0,1}([0-9]+(,S*){0,1}){0,1}[])}])') or matches($value, '^[0-9]+[smhd]{0,1}$')" xerces:message="Parameter with name '{$tag}' must match [0-9]+[smhd]{0,1}." /&gt;
+ 6			&lt;/x:restriction&gt;
+ 7		&lt;/x:simpleContent&gt;
+ 8	&lt;/x:complexType&gt;</code></pre>
+	</div>
+</div>
+
+<a name="custom_modules_output" class="subtopic">5.2 Output parameter definition</a>
+
+Optionally a module can return output parameters that can be used for the following tasks as input. Return parameters must be written to a file in the format {%VAR_NAME%} TAB {%VALUE%}. The name of the file to write into is automatically sent to the module by Watchdog using the <pre class="name">returnFilePathParameter</pre> parameter. If you want to change this default parameter name see <a href="#custom_modules_binary">5.3</a>. 
+
+<div class="box">	
+	<div class="head_box">Example 18: Output parameter</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;!-- define output parameters which must be written to a file --&gt;
+ 2	&lt;x:complexType name="nameOfModuleTaskReturnType"&gt;
+ 3		&lt;x:complexContent&gt;
+ 4			&lt;x:extension base="taskReturnType"&gt;
+ 5				&lt;x:all&gt;
+ 6					&lt;x:element name="outputParam1" type="x:string" /&gt;
+ 7				&lt;/x:all&gt;
+ 8			&lt;/x:extension&gt;
+ 9		&lt;/x:complexContent&gt;
+10	&lt;/x:complexType&gt;</code></pre>
+	</div>
+</div>
+
+Line 6 in example 18 specifies that the module must return a parameter named <pre class="name">outputParam1</pre> of type <pre class="name">x:string</pre>. The module itself must ensure that the parameters are written physically before the module exits or otherwise Watchdog will terminate itself. In case of a bash script which is executed, two functions named <pre class="name">writeParam2File</pre> and <pre class="name">blockUntilFileIsWritten</pre> defined in <pre class="name">core_lib/functions.sh</pre> can be used.
+
+<a name="custom_modules_binary" class="subtopic">5.3 Binary call command and other settings</a>
+
+Now the command that will be executed can be defined. Example 19 specifies that a script named <pre class="name">nameOfModule.sh</pre> that is stored in <pre class="name">modules/nameOfModule</pre> will be called.
+
+<div class="box">	
+	<div class="head_box">Example 19: Binary call command</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;!-- set command and other settings --&gt;
+ 2	&lt;x:complexType name="nameOfModuleTaskOverrideType"&gt;
+ 3		&lt;x:complexContent&gt;
+ 4			&lt;x:restriction base="baseAttributeTaskType"&gt;
+ 5				&lt;x:attribute name="binName" type="x:string" fixed="nameOfModule.sh" /&gt;
+ 6			&lt;/x:restriction&gt;
+ 7		&lt;/x:complexContent&gt;
+ 8	&lt;/x:complexType&gt;</code></pre>
+	</div>
+</div>
+
+In addition to that, the following settings can be modified:
+<ul>
+<li><pre class="name">binName</pre>: name of the command which should be called</li>
+<li><pre class="name">preBinCommand</pre>: command that is added before the binName; e.g. interpreter</li>
+<li><pre class="name">isWatchdogModule</pre>: by default the command must be located in modules/<pre class="name">binName</pre>; if this parameter is false the command must point to a absolute binary or be reachable via the PATH environment variable</li>
+<li><pre class="name">returnFilePathParameter</pre>: name of the parameter that is used to store the return values</li>
+<li><pre class="name">watchdogModuleVersionParameter</pre>: name of the parameter that passes the module version to the called command if a version different to <pre class="name">1</pre> should be used; default: <pre class="name">moduleVersion</pre> (using the default parameter pasing options defined with the settings below; use an empty string to disable the passing of the module version)</li>
+<li><pre class="name">paramFormat</pre>: defines how names of parameters are prefixed; (do not print parameter name, - or --); default: <pre class="name">--</pre></li>
+<li><pre class="name">spacingFormat</pre>: defines how names of parameters and values are spaced; default: <pre class="name">blank</pre></li>
+<li><pre class="name">quoteFormat</pre>: defines how values are quoted; default: <pre class="name">single quoting</pre></li>
+<li><pre class="name">separateFormat</pre>: defines the separator string between multiple occurrences of the same parameter; default: <pre class="name">,</pre></li>
+<li><pre class="name">versionQueryParameter</pre>: parameter of the <pre class="name">binName</pre> command used to query software versions of third-party software; is called on the executor after task execution and stored together with the used parameters in a log file; default: not set</li>
+</ul>
+
+The last three arguments can also be used for each parameter separately.
+
+<a name="custom_modules_name" class="subtopic">5.4 Assign a name to the new module</a>
+
+Finally, a name must be assigned to the module. This can simply be done by creating a element with the attribute <pre class="attr">name</pre> of type <pre class="name">nameOfModuleType</pre> and <pre class="attr">substitutionGroup</pre> set to <pre class="name">abstractTask</pre>.
+Example 20 shows the needed line for the example module. Afterwards the type of the task is defined (5-15). If no output parameters are used line 10 can be omitted.
+
+<div class="box">	
+	<div class="head_box">Example 20: Assign a name to the module</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;!-- make task definition availible via substitution group --&gt;
+ 2	&lt;x:element name="nameOfModuleTask" type="nameOfModuleType" substitutionGroup="abstractTask" /&gt;
+ 3	
+ 4	&lt;!-- definition of final task --&gt;
+ 5	&lt;x:complexType name="nameOfModuleTaskType"&gt;
+ 6		&lt;x:complexContent&gt;
+ 7			&lt;x:extension base="nameOfModuleTaskOverrideType"&gt;
+ 8				&lt;x:all&gt;
+ 9					&lt;x:element name="parameter" type="nameOfModuleTaskParameterType" minOccurs="1" maxOccurs="1" /&gt;
+10					&lt;x:element name="return" type="nameOfModuleTaskReturnType" minOccurs="0" maxOccurs="0" /&gt;
+11					&lt;x:group ref="defaultTaskElements" /&gt;
+12				&lt;/x:all&gt;
+13			&lt;/x:extension&gt;
+14		&lt;/x:complexContent&gt;
+15	&lt;/x:complexType&gt;</code></pre>
+	</div>
+</div>
+
+<a name="custom_modules_all_together" class="subtopic">5.5 Putting it all together</a>
+
+Example 21 shows the definition of the complete module.
+<div class="box">	
+	<div class="head_box">Example 21: Putting it all together</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+ 2	&lt;x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org"&gt;
+ 3	
+ 4		&lt;!-- definition of the task parameters --&gt;
+ 5		&lt;x:complexType name="nameOfModuleTaskParameterType"&gt;
+ 6			&lt;x:all&gt;
+ 7				&lt;x:element name="parameter1" type="paramAbsoluteFilePath" minOccurs="1" maxOccurs="1" /&gt;
+ 8				&lt;x:element name="parameter2" type="paramString" minOccurs="0" maxOccurs="unbounded" /&gt;
+ 9				&lt;x:element name="flag1" type="paramBoolean" minOccurs="0" maxOccurs="1" /&gt;
+10			&lt;/x:all&gt;
+11		&lt;/x:complexType&gt;
+12	
+13		&lt;!-- define output parameters which must be written to a file --&gt;
+14		&lt;x:complexType name="nameOfModuleTaskReturnType"&gt;
+15			&lt;x:complexContent&gt;
+16				&lt;x:extension base="taskReturnType"&gt;
+17					&lt;x:all&gt;
+18						&lt;x:element name="outputParam1" type="x:string" /&gt;
+19					&lt;/x:all&gt;
+20				&lt;/x:extension&gt;
+21			&lt;/x:complexContent&gt;
+22		&lt;/x:complexType&gt;
+23	
+24		&lt;!-- set command and other settings --&gt;
+25		&lt;x:complexType name="nameOfModuleTaskOverrideType"&gt;
+26			&lt;x:complexContent&gt;
+27				&lt;x:restriction base="baseAttributeTaskType"&gt;
+28					&lt;x:attribute name="binName" type="x:string" fixed="nameOfModule.sh" /&gt;
+29				&lt;/x:restriction&gt;
+30			&lt;/x:complexContent&gt;
+31		&lt;/x:complexType&gt;
+32	
+33		&lt;!-- make task definition availible via substitution group --&gt;
+34		&lt;x:element name="nameOfModuleTask" type="nameOfModuleTaskType" substitutionGroup="abstractTask" /&gt;
+35	
+36		&lt;!-- definition of final task --&gt;
+37		&lt;x:complexType name="nameOfModuleTaskType"&gt;
+38			&lt;x:complexContent&gt;
+39				&lt;x:extension base="nameOfModuleTaskOverrideType"&gt;
+40					&lt;x:all&gt;
+41						&lt;x:element name="parameter" type="nameOfModuleTaskParameterType" minOccurs="1" maxOccurs="1" /&gt;
+42						&lt;x:element name="return" type="nameOfModuleTaskReturnType" minOccurs="0" maxOccurs="0" /&gt;
+43						&lt;x:group ref="defaultTaskElements" /&gt;
+44					&lt;/x:all&gt;
+45				&lt;/x:extension&gt;
+46			&lt;/x:complexContent&gt;
+47		&lt;/x:complexType&gt;
+48	
+49	&lt;/x:schema&gt;</code></pre>
+	</div>
+</div>
+
+<a name="module_versions" class="subtopic">5.6 Module versions</a>
+
+As parameters of the command that is called by the module might change over time, it is possible to define different versions of the same module. The version that should be used during XML validation and workflow execution can be set using the <pre class="attr">version</pre> attribute each <pre class="tag">?Task</pre> tag owns. By default version <pre class="name">1</pre> of each module is used. Be aware that only one version of the same module can be used within a workflow.<br /><br />
+
+In order to avoid duplication of the complete XSD file, the minimum and maximum supported module version can be defined for each tag within the XSD file using the <pre class="attr">minVersion</pre> and <pre class="attr">maxVersion</pre> attributes. If a tag is not part of a particular version, it is removed with all its childs from the XSD file that is generated dynamically at runtime for that module version. By using these two attributes the input parameter, the return parameter, the called command and more can be changed for different module version. Example 22 shows a part of the <pre class="name">featureCounts</pre> module. Among other things a parameter needs to be renamed to support the most recent binary of <pre class="name">featureCounts</pre> (11-12). 
+
+<div class="box">	
+	<div class="head_box">Example 22: Rename of parameters</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+ 2	&lt;x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1" xmlns:xerces="http://xerces.apache.org"&gt;
+ 3	
+ 4		&lt;!-- definition of the task parameters --&gt;
+ 5		&lt;x:complexType name="featureCountsTaskParameterType"&gt;
+ 6			&lt;x:all&gt;
+ 7				&lt;!-- attributes common to all versions --&gt;
+ 8				...
+ 9	
+10				&lt;!-- attributes that differ between versions --&gt;
+11				&lt;x:element name="minOverlap" type="paramInteger" minOccurs="0" maxOccurs="1" maxVersion="1" /&gt;
+12				&lt;x:element name="minReadOverlap" type="paramInteger" minOccurs="0" maxOccurs="1" minVersion="2" /&gt;
+13				...
+14			&lt;/x:all&gt;
+15		&lt;/x:complexType&gt;
+16	...
+17	&lt;/x:schema&gt;</code></pre>
+	</div>
+</div>
+
+Example 23 shows how a module script can be made version dependent using bash functions that are delivered with Watchdog. First, the bash variable <pre class="name">${MODULE_VERSION_PARAMETER_NAME}</pre> is set to the complete name of the parameter that is used to pass the module version (e.g. <pre class="name">--moduleVersion</pre>) (3). After sourcing of <pre class="name">includeBasics.sh</pre> the module version is automatically stored in the <pre class="name">${MODULE_VERSION}</pre> variable. This information can be used to alter the parameters and the behavior of the script as an alternative to duplication if differences between module versions are only minor (15,18).
+
+<div class="box">	
+	<div class="head_box">Example 23: Version dependent bash script</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	#!/bin/bash
+ 2	SCRIPT_FOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+ 3	MODULE_VERSION_PARAMETER_NAME="--moduleVersion"
+ 4	source $SCRIPT_FOLDER/../../core_lib/includeBasics.sh $@
+ 5	...
+ 6	
+ 7	# define parameters
+ 8	# params used in any version of the module
+ 9	DEFINE_string 'annotation' '' 'feature annotation in GTF or SAF format' 'a'
+10	DEFINE_string 'input' '' 'index bam file which should be used for counting' 'i'
+11	DEFINE_string 'output' '' 'path to output file' 'o'
+12	...
+13	
+14	# params only available in module version 1
+15	if [ ${MODULE_VERSION} -eq 1 ]; then
+16		DEFINE_string 'minOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
+17	# params only available in module version 2
+18	elif [ ${MODULE_VERSION} -eq 2 ]; then
+19		DEFINE_string 'minReadOverlap' '1' '[optional] minimum number of overlapped bases required to assign a read to a feature; also negative values are allowed' 'm'
+20		...
+21	fi
+22	DEFINE_integer 'moduleVersion' '1' '[optional] version of the module that should be used' ''
+23	DEFINE_boolean 'debug' 'false' '[optional] prints out debug messages.' ''
+24	...</code></pre>
+	</div>
+</div>
+
+<a name="module_documentation" class="subtopic">5.7 Documentation of modules</a>
+
+Modules can be documented using an XML format that is defined by an XSD schema. Such an XML module documentation file consists of the main sections <pre class="tag">info</pre>, <pre class="tag">parameter</pre> and <pre class="tag">return</pre>. The first section is mandatory while the other two are optional (e.g. for modules that do not require any parameter or do not return variables).
+
+<div class="box">	
+	<div class="head_box">Example 24: XML module documentation format</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;documentation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="documentation.xsd"&gt;
+ 3	  &lt;!-- mandatory fields: author, category, updated, description --&gt;
+ 4	  &lt;info&gt;
+ 5	    &lt;!-- forename lastname --&gt;
+ 6	    &lt;author&gt;Michael Kluge&lt;/author&gt;
+ 7	    &lt;!-- day the module was updated the last time --&gt;
+ 8	    &lt;updated&gt;2019-03-13&lt;/updated&gt;
+ 9	    &lt;category&gt;Sequencing&lt;/category&gt;
+10	    &lt;description maxVersion="1" minVersion="1"&gt;creates an index for a BAM file using samtools index&lt;/description&gt;
+11	    &lt;!-- ##### optional ##### --&gt;
+12	    &lt;!-- website of the dependencies used in this module --&gt;
+13	    &lt;website&gt;https://www.htslib.org/doc/samtools.html&lt;/website&gt;
+14	    &lt;!-- short description and PubmedID for the methods section of a manuscript --&gt;
+15	    &lt;paperDescription&gt;Samtools (%SOFTWARE_VERSION%) was used to index the BAM files [Li H, Handsaker B, Wysoker A, Fennell T, Ruan J, Homer N, Marth G, Abecasis G, Durbin R, and 1000 Genome Project Data Processing Subgroup, The Sequence alignment/map (SAM) format and SAMtools, Bioinformatics (2009) 25(16) 2078-9].&lt;/paperDescription&gt;
+16	    &lt;PMID&gt;19505943&lt;/PMID&gt;
+17	    &lt;!-- external dependencies required for that module --&gt;
+18	    &lt;dependencies maxVersion="1" minVersion="1"&gt;samtools&lt;/dependencies&gt;
+19	    &lt;dependencies maxVersion="1" minVersion="1"&gt;GNU Core Utilities&lt;/dependencies&gt;
+20	  &lt;/info&gt;
+21	  &lt;!-- ##### optional ##### --&gt;
+22	  &lt;!-- github usernames of users who should be able to commit changes to that module --&gt;
+23	  &lt;maintainer&gt;
+24	    &lt;username&gt;klugem&lt;/username&gt;
+25	  &lt;/maintainer&gt;
+26	  &lt;parameter&gt;
+27	    &lt;!-- mandatory fields per parameter: name, type, description --&gt;
+28	    &lt;!-- optional fields per parameter: restrictions, default, minOccurs, maxOccurs, minVersion, maxVersion --&gt;
+29	    &lt;param maxOccurs="1" minOccurs="1" name="bam" type="file path" restrictions="absolute"&gt;
+30	      &lt;description&gt;path to the BAM file&lt;/description&gt;
+31	    &lt;/param&gt;
+32	    &lt;param default="true" maxOccurs="1" minOccurs="0" name="link" type="boolean"&gt;
+33	      &lt;description&gt;creates a link called NAME.bam.bai because some tool expect the index under that name; use --nolink to disable it&lt;/description&gt;
+34	    &lt;/param&gt;
+35	  &lt;/parameter&gt;
+36	  &lt;return&gt;
+37	    &lt;!-- mandatory fields per return variable: name, type, description --&gt;
+38	    &lt;!-- optional fields per return variable: minVersion, maxVersion --&gt;
+39	    &lt;var name="BAMFile" type="string"&gt;
+40	      &lt;description&gt;path to the BAM file for which the index was created&lt;/description&gt;
+41	    &lt;/var&gt;
+42	  &lt;/return&gt;
+43	&lt;/documentation&gt;</code></pre>
+	</div>
+</div>
+
+Example 24 shows the XML documentation file for the <pre class="name">indexBam</pre> module. The tag <pre class="tag">paperDescription</pre> (15), which is a child of <pre class="tag">info</pre>, allows to define the description used during report generation (see <a href="#jars_reportGen">6.3</a>). This description can also contain references to parameters of the task (<pre class="name">%param_name%</pre>) or the software version (<pre class="name">%SOFTWARE_VERSION%</pre>).
+
+<br /><br />
+An XML template for documenting a new module can be generated based on the XSD module file using the <pre class="name">docuTemplateExtractor.jar</pre> (see <a href="#jars_templateGen">6.1</a>). Hence, only some information must be updated or added manually.
+
+<a name="custom_modules_other" class="subtopic">5.8 Other matters</a>
+
+<b>Exit codes: </b> The module developer must ensure that a command does only exit with exit status 0 if the command was executed sucessfully. File <pre class="name">core_lib/exitCodes.sh</pre> contains some exit codes which names are also included in mail notifications if they are used. Custom exit codes can be easily added.
+<br /><br />
+<b>Error messages: </b> Watchdog can detect by default error messages in standard out and standard error streams if they begin with <pre class="name">[ERROR]</pre>. The errors are only stored if standard out and error files are saved to disk using the <pre class="tag">streams</pre> tag. If an error was detected but the exit code was 0 the command will also fail.
+<br /><br />
+<b>Module test: </b> A script named <pre class="name">test_nameOfModule.sh</pre> can also be part of the module. It is automatically called, if the user calls <pre class="name">helper_scripts/moduleTest.sh</pre>. Also the module folder might contain some test data in the folder <pre class="name">test_data</pre>. For simple test cases the bash function <pre class="name">testExitCode</pre> can be used to test, if an input leads to the expected output.
+<div class="chapter"><a name="JARs" class="topic">6 New features in Watchdog 2.0</a>
+
+In the following the new command-line tools (available in the <pre class="name">jars/</pre> subfolder of the Watchdog installation directory) are described in more detail. 
+All tools can be executed using <pre class="name">java -jar path/to/jar/name.jar -options</pre>. The available parameter and flags can be listed using <pre class="name">java -jar path/to/jar/name.jar -help</pre>.
+<br /><br />
+Information on module versioning can be found in section <a href="#module_versions">5.6</a>. The documentation of the graphical user interface for module creation (<pre class="name">moduleMaker.jar</pre>) has its own <a href="https://github.com/watchdog-wms/moduleMaker" target="_blank" />documentation</a>.
+
+<a name="jars_templateGen" class="subtopic">6.1 Documentation template extractor</a>
+
+The <pre class="name">docuTemplateExtractor</pre> command-line tool can be used to extract parameter and return value information from XSD module files. The program then creates an XML documentation template file for each module in the corresponding module folder. By default existing XML documentation files of modules are not overwritten. This can be disabled with the <pre class="name">-overwrite</pre> flag. Using the <pre class="name">-authors</pre>, <pre class="name">-maintainer</pre> or <pre class="name">-categories</pre>  parameter, the same author, maintainer or categories can be included in all created template files.
+<br /><br />
+Example call:<br />
+<pre class="name">java -jar docuTemplateExtractor.jar -moduleFolder /path/to/watchog/modules</pre>
+<br /><br />
+Moreover, custom extractor plugins can be implemented to extract additional information like default parameters or descriptions. Currently, parameter extractors for the python <pre class="name">argparse</pre> and the Bash <pre class="name">shflags</pre> library are available. Additional custom extractors can be added by implementing the Java <pre class="name">Extractor</pre> interface of the <pre class="name">de.lmu.ifi.bio.watchdog.docu.extractor</pre> package. Afterwards a compiled class file must be added to <pre class="name">docuTemplateExtractor</pre>, which can be edited with any ZIP editor. The tool will automatically detected all classes implementing the <pre class="name">Extractor</pre> interface.
+<br /><br />
+
+Information on the module XML documentation format itself can be found in section <a href="#module_documentation">5.7</a>.
+
+<a name="jars_referenceGen" class="subtopic">6.2 Module reference book generator</a>
+The module reference book can be created from the XML documentation files using the <pre class="name">refBookGenerator</pre> command-line tool.
+<br /><br />
+One ore more path to the parent folder(s) of modules that should be included in the module reference book must be provided using the <pre class="name">-moduleFolder</pre> parameter. Moreover, a path to a folder, in which the module reference book should be stored, must be specified using the <pre class="name">-outputFolder</pre> parameter.
+<br /><br />
+Example call:<br />
+<pre class="name">java -jar refBookGenerator.jar -moduleFolder /path/to/watchog/modules -moduleFolder /tmp/customModules -outputFolder /tmp/refBook</pre> 
+
+<a name="jars_reportGen" class="subtopic">6.3 Report generator</a>
+
+A report of the executed steps of a workflow can be automatically created using the <pre class="name">reportGenerator</pre> command-line tool. 
+
+In order to generate a report, these three parameters are required:
+<ul>
+<li>-resume: path to watchdog status log file (alias resume file) from a previous Watchdog run</li>
+<li>-xml: path to the XML workflow file (required for loading the correct module folders)</li>
+<li>-outputFile: path to an output file in which the resulting report is stored as text</li>
+</ul>
+
+Example call:<br />
+<pre class="name">java -jar reportGenerator.jar -xml /path/to/wf1.xml -resume /path/to/wf1_2019_11_07_11_48_26.watchdog.resume -outputFile /tmp/report.txt</pre> 
+<br /><br />
+Additional parameters exist to enable or supress the output of some information or to modify the output format. The available parameters can be listed using the <pre class="name">-help</pre> flag.
+
+<a name="jars_validators" class="subtopic">6.4 Module and workflow validator</a>
+
+The module (<pre class="name">moduleValidator</pre>) and workflow (<pre class="name">workflowValidator</pre>) validators can be used to verify the integrity of modules or workflows respectively.
+<br /><br />
+Both tools require as input the name of a check to perform (parameter <pre class="name">-check</pre>) and a folder to apply the check onto (parameter <pre class="name">-folder</pre>). Please note that only one module or workflow can be located in the folder. Names of checks that can be performed can be listed using the <pre class="name">-list</pre> flag.
+<br /><br />
+Example call:<br />
+<pre class="name">java -jar moduleValidator.jar -check XSD_VALIDATION -folder /path/to/watchog/modules/sleep</pre> 
+<br /><br />
+Additional information on the function of the applied checks can be found online at <a href="https://github.com/watchdog-wms/watchdog-wms-modules/blob/master/CONTRIBUTING.md#automatic-tests-on-pull-requests" target="_blank">watchdog-wms-modules</a> and <a href="https://github.com/watchdog-wms/watchdog-wms-workflows/blob/master/CONTRIBUTING.md#automatic-tests-on-pull-requests" target="_blank">watchdog-wms-workflows</a>.
+
+<a name="new_repositories" class="subtopic">6.5 Module and workflow repositories</a>
+Watchdog 2.0 now provides two repositories on Github under the <a href="https://github.com/watchdog-wms/" target="_blank">watchdog-wms organization</a> that are dedicated for sharing <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">modules</a> and <a href="https://github.com/watchdog-wms/watchdog-wms-workflows" target="_blank">workflows</a>, respectively, by other users.
+
+<a name="execution_modes" class="subtopic">6.6 New execution modes</a>
+
+Two additional execution modes were implemented to provide more comfort and flexibility in workflow execution.
+<br /><br />
+The resume mode allows restarting execution of a workflow by (re-)running only tasks that previously did not run (successfully) or were added or modified compared to the original execution. With Watchdog 2.0 each execution of a workflow creates a *.resume file that contains information on successfully finished tasks. With that file the <pre class="name">-resume</pre> parameter of the Watchdog scheduler can be used to resume the execution of an aborted or modified workflow.
+<br /><br />
+Example call:<br />
+<pre class="name">./watchdog.sh -xml /path/to/wf1.xml -resume /path/to/wf1_2019_11_07_11_48_26.watchdog.resume</pre>
+<br /><br />
+The second mode allows detaching the scheduler from workflow execution without aborting tasks running on a computer cluster and reattaching to execution at a later time and/or a different computer. A detach can be requested by pressing CTRL+C during workflow execution with the command-line version. The GUI provides a button to request a detach. A successful detach results in an *.attach file, which can be used to reattach to workflow execution with the new <pre class="name">-attachInfo</pre> parameter of the Watchdog scheduler.
+<br /><br />
+Example call:<br />
+<pre class="name">./watchdog.sh -xml /path/to/wf1.xml -attachInfo /path/to/wf1_2019_11_07_11_48_26.watchdog.attach</pre>
+
+<a name="software_version_logging" class="subtopic">6.7 Software version logging</a>
+
+Watchdog 2.0 now implements a general approach for reporting versions of third-party software used in a module in the log file. For this purpose, a new attribute (<pre class="name">versionQueryParameter</pre>) in the module XSD file can be used to define the flag for version printing of third-party software (see <a href="#custom_modules_binary">5.3</a>). During workflow execution, after a task or subtask has been completed successfully on a particular computer, the program call defined in the corresponding module is invoked with the version flag on the same computer to retrieve the installed third-party software version. This software version is then reported for the task/subtask in the log file and can also be used during report generation (see <a href="#module_documentation">5.7</a> and <a href="#jars_reportGen">6.3</a>). 
+<div class="chapter"><a name="extensions" class="topic">7 Extend Watchdog's functionality</a>
+In the following sections two different ways to extend Watchdog's functionality are described.
+<ul>
+<li><i>Virtual File Systems</i> that can be used within task actions (see <a href="#vfs">7.1</a>)</li>
+<li><i>XML Plugins</i> that add new <pre class="tag">?Executor</pre> and <pre class="tag">?ProcessBlock</pre> elements (see <a href="#plugins">7.2</a>)</li>
+</ul>
+
+<a name="vfs" class="subtopic">7.1 Virtual file systems for task actions</a>
+
+With the help of task actions, file system operations can be performed before and after tasks (see <a href="#task_actions">4.8</a>). By default, virtual file systems based on the protocols File, HTTP, HTTPS, FTP, FTPS and SFTP as well as the main memory (RAM) are supported. These virtual file systems are provided by the Commons Virtual File System project of the Apache Software Foundation. <br /><br />
+
+In order to add a new virtual file system, a class that implements the <pre class="name">VFSRegister</pre> interface can be addded to the jar-file. The class will be automatically loaded by Watchdog and the new virtual file system will be useable without other modifications. The following four methods must be implemented for the interface: 
+
+<ul>
+<li><pre class="name">getFileProvider</pre> - must return an instance of the <pre class="name">FileProvider</pre> interface as defined in the Commons Virtual File System project</li>
+<li><pre class="name">getURLSchemes</pre> - returns the url schemes that should be used in combination with that <pre class="name">FileProvider</pre> (e.g. <pre class="name">ftp</pre>)</li>
+<li><pre class="name">getMimeTypes</pre> - sets schemes that should be used for specific mimetypes</li>
+<li><pre class="name">getExtensions</pre> - sets schemes that should be used for specific file extension</li>
+</ul>
+
+The class <pre class="name">SimpleVFSRegister</pre> can be extended if an instance of the <pre class="name">FileProvider</pre> class can be created without arguments. Then only the name of the <pre class="name">FileProvider</pre> class and the URL schemes that should be used must be defined. Example 25 shows how the virtual FTP file system is integrated in Watchdog by using the <pre class="name">FtpsFileProvider</pre> class of the Commons Virtual File System project.
+
+<div class="box">	
+	<div class="head_box">Example 25: Simple implementation of the VFSRegister interface</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	package de.lmu.ifi.bio.watchdog.task.actions.vfs.impl;
+ 2	
+ 3	public class FTPSVFSRegister extends SimpleVFSRegister {
+ 4	
+ 5		private static final String CLASS_NAME = "org.apache.commons.vfs2.provider.ftps.FtpsFileProvider";
+ 6		private static final String[] SCHEME = new String[]{"ftps"};
+ 7		
+ 8		public FTPSVFSRegister() throws Exception {
+ 9			super(CLASS_NAME, SCHEME);
+10		}
+11	}</code></pre>
+	</div>
+</div>
+<a name="plugins" class="subtopic">7.2 XML Plugins</a>
+
+Watchdog provides a flexible plugin system that allows extending Watchdog by additional types of executors and process blocks without modifying the original Java classes. Essentially, this means creating a new XML element for use in Watchdog workflows as well as implementing additional Java classes that provide the functionality for this element. 
+
+
+In brief, you have to do the following to use the plugin system:
+<ul>
+<li>create an XSD file describing the new element and its parent element for use in Watchdog workflows</li>
+<li>Extend a few abstract classes</li>
+<li>Add class files for the new classes to the Watchdog jar-file and copy the new XSD file to a sub-directory of the Watchdog installation directory</li>
+</ul>
+
+In the Watchdog command-line version, all non-abstract classes in the Watchdog jar-file that extend the <pre class="name">XMLParserPlugin</pre> abstract class are loaded dynamically during workflow execution. Currently, this is restricted to XML parsers for the generic type <pre class="name">ProcessBlock</pre> or <pre class="name">ExecutorInfo</pre>. The XML parser for a new XML element provides the functionality to parse this element in a workflow (i.e. a new executor or process block type) and to create a new object representing the corresponding element type. Here, the four most important functions of the <pre class="name">XMLParserPlugin</pre> abstract class that have to be implemented are:
+<ul>
+<li><pre class="name">getNameOfParseableTag</pre>: returns the name of the element the class can parse</li>
+<li><pre class="name">getNameOfParentTag</pre>: returns the name of the parent element of this element</li>
+<li><pre class="name">getXSDDefinition</pre>: returns the path to the XSD file describing this element (relative to the <i>xsd</i> sub-directory of the Watchdog directory)</li>
+<li><pre class="name">parseElement</pre>: implements the actual parsing process.</li>
+</ul>
+The last function creates an object of a class representing the new element. This class has to implement the interfaces <pre class="name">XMLDataStore</pre> and <pre class="name">XMLPlugin</pre>, for instance by extending one of the abstract classes <pre class="name">ProcessBlock</pre> or <pre class="name">ExecutorInfo</pre> or one of their subclasses.
+<br />
+For use in the Workflow designer GUI of Watchdog, two additional requirements have to be met:
+<ul>
+<li>An FXML file has to be provided describing how the attributes of the new element type are represented graphically. FXML is an XML-based markup language for describing the layout of a user interface in a JavaFX application.</li>
+<li>Classes extending <pre class="name">PluginView</pre> and <pre class="name">PluginViewController</pre> have to be implemented for testing whether the input is valid and for loading and saving data to and from XML.</li>
+</ul>
+All executors and process blocks integrated in Watchdog are using this plugin system. Hence, examples how to implement a new XML element can be found in the package <pre class="name">de.lmu.ifi.bio.watchdog.xmlParser.plugins</pre> of the <a target="_blank" href="https://github.com/klugem/watchdog/tree/master/java_source/de/lmu/ifi/bio/watchdog/xmlParser/plugins">Java source code</a>.
+<div class="chapter"><a name="docker" class="topic">8 Docker</a>
+
+In order to run a Docker image, Docker must be installed and configured correctly as descibed <a target="_blank" href="https://docs.docker.com">here</a>.
+
+<a name="docker_watchdog_install" class="subtopic">8.1 Install the Watchdog Docker image</a>
+
+A Watchdog image for Docker can be obtained from <a target="_blank" href="https://hub.docker.com/r/klugem/watchdog-wms/">hub.docker.com</a>. The image is rebuild automatically by the Bioconda project once a new version is released on <a target="_blank" href="https://bioconda.github.io/">Bioconda</a>. <br /><br />
+
+You can download the latest version of the image with <pre class="name">docker pull klugem/watchdog-wms</pre>.
+Within the Docker image the environment variable <pre class="name">WATCHDOG_HOME</pre> is set automatically to the installation directory of Watchdog (required for the <pre class="attr">watchdogBase</pre> attribute). The <pre class="name">-useEnvBase</pre> flag of the command line version can be used to override the <pre class="attr">watchdogBase</pre> attribute of the XML workflow with the value stored in <pre class="name">WATCHDOG_HOME</pre>. Moreover, the installation directory of Watchdog is mounted under <pre class="name">/watchdog</pre> within the Docker image.
+
+<a name="docker_share" class="subtopic">8.2 Sharing of files</a>
+
+In order to exchange files with the host system, the -v or -mount option of Docker can be used. These option can be used multiple times.<br /><br />
+
+<pre class="name">docker run -v source_folder_or_file_on_host:destination_folder_or_file[:ro] image command</pre><br /><br />
+
+More information can be found in the <a target="_blank" href="https://docs.docker.com/storage/volumes/">documentation</a> of Docker.
+
+<a name="docker_port" class="subtopic">8.3 Port forwarding</a>
+
+In order to use the build-in webserver of Watchdog, the port used by the webserver must be forwarded to the host running the Docker container. <br /><br />
+
+The command <pre class="name">docker run -p 8090:8080 image command</pre> maps the container port 8080 (TCP) to the port 8090 (TCP) on the Docker host. More information can be found in the <a target="_blank" href="https://docs.docker.com/config/containers/container-networking/#published-ports">documentation</a> of Docker.
+
+<a name="docker_watchdog_usage" class="subtopic">8.4 How to use the Docker Watchdog image</a>
+
+The examples within the Docker image are automatically configured when {%Nwatchdog-cmd%N} is started the first time and are stored in <pre class="name">/watchdog/examples</pre>. The command<br /><br />
+
+<pre class="name">docker run -h localhost -p 8080:8080 klugem/watchdog-wms watchdog-cmd -useEnvBase -x /watchdog/examples/&#8203;example_basic_sleep.xml</pre><br /><br />
+executes the example described in <a href="#basic_xml_structure">3.2</a> and forwards the webserver port to the host port 8080.
+<br /><br />
+Alternatively, it is possible to run a workflow that is stored on the host system as described in <a href="#docker_share">8.2</a>. Ensure that all files used in the workflow are made accessible within the Docker image.
+<br /><br />
+To start the workflow designer GUI, run docker in interactive mode and allow it to connect to the local Xserver:
+<br /><br />
+<pre class="name">docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -it klugem/watchdog-wms /bin/bash</pre>
+<br /><br />
+Then you can use <pre class="name">watchdog-gui</pre> to start the workflow designer.
+
+<a name="docker_modules" class="subtopic">8.5 Use Docker in modules</a>
+
+A Docker image can also be used in a module. The module <pre class="name">bowtie2Docker</pre> implements an example module that uses the Docker image of <a target="_blank" href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">Bowtie 2</a> that is provided by <a target="_blank" href="https://bioconda.github.io/">Bioconda</a> and hosted on <a target="_blank" href="https://quay.io/repository/biocontainers/bowtie2">quay.io</a>. The Docker image will be automatically downloaded if it is not found locally. <br /><br />
+
+Make sure that the Docker daemon is installed and running before you test this example.
+
+<div class="box">	
+	<div class="head_box">Example 26: Example usage of the Bowtie 2 Docker module</div>
+	<div class="box_body">
+		<pre><code class="example"> 1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ 2	&lt;watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true"&gt;
+ 3		
+ 4		&lt;settings&gt;
+ 5			&lt;constants&gt;
+ 6				&lt;const name="BASE"&gt;{%INSTALL%}/modules/bowtie2Docker/example_data&lt;/const&gt;
+ 7			&lt;/constants&gt;
+ 8		&lt;/settings&gt;
+ 9	
+10		&lt;tasks mail="{%MAIL%}"&gt;
+11			&lt;bowtie2DockerTask id="1" name="bowtie2_in_docker"&gt;
+12				&lt;streams&gt;
+13					&lt;stdout&gt;/tmp/bowtie2.docker.test.out&lt;/stdout&gt;
+14					&lt;stderr&gt;/tmp/bowtie2.docker.test.err&lt;/stderr&gt;
+15				&lt;/streams&gt;
+16				&lt;parameter&gt;
+17					&lt;genome&gt;${BASE}/index/lambda_virus&lt;/genome&gt;
+18					&lt;reads&gt;${BASE}/reads/reads_1.fq&lt;/reads&gt;
+19					&lt;reads&gt;${BASE}/reads/reads_1.fq&lt;/reads&gt;
+20					&lt;outfile&gt;/tmp/bowtie2.docker.test.sam&lt;/outfile&gt;
+21				&lt;/parameter&gt;
+22			&lt;/bowtie2DockerTask&gt;
+23		&lt;/tasks&gt;
+24	&lt;/watchdog&gt;</code></pre>
+	</div>
+</div>
+
+Example 26 shows how the <pre class="name">bowtie2Docker</pre> module can be used with the provided example data. The test data that is shipped with Bowtie 2 is stored in the folder <pre class="name">example_data</pre> of the module (6). Log files are written to <pre class="name">/tmp/bowtie2.docker.test.[out|err]</pre> (13, 14) while the mapped reads are stored in SAM format in <pre class="name">/tmp/bowtie2.docker.test.sam</pre> (20).
+		</div>
+	</body>
+</html> 

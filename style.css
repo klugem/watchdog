@@ -1,0 +1,262 @@
+body {
+	background-color: #FFFFFF;
+	font-family: Verdana,Calibri,Candara,Segoe,Segoe UI,Optima,Arial,sans-serif;
+	height: 100%;
+	margin: 0px;
+	padding: 0px;
+} 
+
+:not(pre.name) {
+	text-align: justify;
+}
+
+.noblock {
+	text-align: left;
+}
+
+#page-footer {
+	display: none;
+}
+
+#main {
+	min-width: 850px;
+	width: 850px;
+	background-color: #FAFAFA;
+	margin-left: auto;
+	margin-right: auto;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 100%;
+	box-shadow: 2px 2px 10px #292929;
+	padding: 20px 50px;
+}
+
+a.watchdog {
+	background-image:url('gfx/watchdog.png');
+	width: 256px;
+	height: 256px;
+	border: none;
+	margin-left: 500px;
+	margin-top: -145px;
+	padding: 0;
+	background-size: 175px 175px;
+	background-repeat: no-repeat;
+	position: absolute;
+}
+
+div.mainTopic::first-letter {
+	color: #DD1144;
+	font-style: normal;
+	letter-spacing: -3px;
+} 
+
+
+pre.tag { 
+	color: #000080;
+	font-weight: bold;
+	display: inline;
+	font-size: 13px;
+}
+
+pre.tag:after {
+	content: '>';
+}
+
+pre.tag:before {
+	content: '<';
+}
+
+pre.attr { 
+	color: #008080;
+	font-weight: bold;
+	display: inline;
+	font-size: 13px;
+}
+
+pre.name {
+	color: #DD1144;
+	font-style: italic;
+	display: inline;
+	font-size: 13px;
+}
+
+pre { 
+	white-space: pre-wrap;
+	-moz-tab-size: 5;
+	-o-tab-size: 5;
+	tab-size: 5;
+	text-align: left;
+}
+
+
+span.function {
+	font-weight: bold;
+}
+
+span.todo {
+	color: red;
+	font-weight: bold;
+}
+
+span.todo:before {
+	content: 'TODO: ';
+}
+
+div.box {
+	margin-top: 18px;
+	margin-bottom: 18px;
+	background-color: #FFFFFF;
+	border-color: #FFBF00;
+	border-style: solid;
+	border-width: 1px 1px 1px 1px;
+	width: 100%;
+}
+
+div.head_box { 
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffec64), color-stop(1, #ffab23));
+	background: -moz-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: -webkit-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: -o-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: -ms-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: linear-gradient(to bottom, #ffec64 5%, #ffab23 100%);
+	filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#ffec64', endColorstr='#ffab23',GradientType=0);
+	border: 1px so solid #FFBF00;
+	padding-left: 20px;
+	font-weight: bold;
+	height: 25px;
+	line-height: 25px;
+	margin-bottom: -1px;
+}
+
+div.box_body { 
+	padding-left: 15px;
+	padding-right: 15px;
+	display: inline-block;
+	width: 100%;
+}
+
+
+table.attributes {
+	position: relative;
+	border-collapse: collapse;
+	border-style: hidden;
+	margin: 20px 5px 5px 5px;
+	width: 95%;
+}
+
+thead.attributes {
+	font-weight: bold;	
+}
+
+tbody.attributes {
+
+}
+
+td {
+	padding: 2px 4px;
+}
+
+table td {
+	border: 1px solid  #000000;
+}
+
+table th {
+	border-bottom: 2px solid #000000;
+	border-left: 1px solid #000000;
+	border-left: 1px solid #000000;
+}
+
+a[href^="#"] {
+	color: #0000FF;
+}
+
+div.mainTopic {
+	display: block;
+	font-size: 3em; 
+	margin: .67em 0;
+	width: 100%;
+	text-align: center;
+	font-family: Impact, Charcoal, sans-serif;
+	letter-spacing: 4px;
+	font-style: italic;
+	margin-left: -50px;
+	padding-top: 20px;
+}
+
+a.smalltopic {
+
+}
+
+a.smallsubtopic {
+	padding-left: 20px;
+}
+
+a.smallNoidenttopic {
+
+}
+
+a.smallNoidentsubtopic {
+
+}
+
+a.topic {
+	color: #000000;
+	display: block;
+	font-weight: bolder;
+	font-size: 1.5em; 
+	margin: .75em 0;
+}
+
+
+a.subtopic {
+	color: #000000;
+	display: block;
+	font-weight: bolder;
+	font-size: 1.17em; 
+	margin: .83em 0;
+}
+
+/* generated with http://www.bestcssbuttongenerator.com */
+input.button {
+	-moz-box-shadow: inset 0px 1px 0px 0px #fff6af;
+	-webkit-box-shadow: inset 0px 1px 0px 0px #fff6af;
+	box-shadow: inset 0px 1px 0px 0px #fff6af;
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ffec64), color-stop(1, #ffab23));
+	background: -moz-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: -webkit-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: -o-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: -ms-linear-gradient(top, #ffec64 5%, #ffab23 100%);
+	background: linear-gradient(to bottom, #ffec64 5%, #ffab23 100%);
+	filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#ffec64', endColorstr='#ffab23',GradientType=0);
+	background-color: #ffec64;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
+	border: 1px solid #ffaa22;
+	cursor: pointer;
+	color: #333333;
+	padding: 2px 24px;
+	text-decoration: none;
+	text-shadow: 0px 1px 0px #ffee66;
+	display: none;
+}
+input.button:active {
+	position:relative;
+	top:1px;
+}
+
+/* animated spoiler CSS by Bloggersentral.com */
+#spoilerExecutorsButton {margin:5px 0;}
+#spoilerExecutors {overflow:hidden;background: #f5f5f5;}
+#spoilerExecutors > div {-webkit-transition: all 0.05s ease;-moz-transition: margin 0.5s ease;-o-transition: all 0.5s ease;transition: margin 0.5s ease;}
+#spoilerExecutorsButton[value="Show detailed attribute information"] + #spoilerExecutors > div {margin-top:-100%;}
+#spoilerExecutorsButton[value="Hide detailed attribute information"] + #spoilerExecutors {padding:1px;}
+
+#spoilerBlocksButton {margin:5px 0;}
+#spoilerBlocks {overflow:hidden;background: #f5f5f5;}
+#spoilerBlocks > div {-webkit-transition: all 0.05s ease;-moz-transition: margin 0.5s ease;-o-transition: all 0.5s ease;transition: margin 0.5s ease;}
+#spoilerBlocksButton[value="Show detailed attribute information"] + #spoilerBlocks > div {margin-top:-100%;}
+#spoilerBlocksButton[value="Hide detailed attribute information"] + #spoilerBlocks {padding:1px;}
+
