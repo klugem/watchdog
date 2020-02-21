@@ -1,3 +1,6 @@
+![](https://img.shields.io/github/release/klugem/watchdog.svg)
+![](https://img.shields.io/github/workflow/status/klugem/watchdog/mvn_build)
+
 ################################## MANUAL ##################################
 The most recent version of the manual can be found online at 
 https://www.bio.ifi.lmu.de/files/Software/Watchdog/Watchdog-manual.html
