@@ -28,7 +28,7 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE/gh-pages"
           if [ ! -z "$(git status --porcelain)" ]; then
-            curl -H "Authorization: token ${{ secrets.DOWNLOAD_TOKEN }}" "${{ secrets.SECURE_DOWNLOAD_URL }}" | gpg --yes --no-tty --import - > /dev/null 2>&1
+            curl -s -H "Authorization: token ${{ secrets.WATCHDOG_WMS_BOT_TOKEN }}" "${{ secrets.SECURE_DOWNLOAD_URL }}" | gpg --yes --no-tty --import - > /dev/null 2>&1
             git config --local user.email "kluge-watchdog@bio.ifi.lmu.de"
             git config --local user.name "watchdog-wms-bot"
             git add -A
