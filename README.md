@@ -29,7 +29,7 @@ The distributed jar files are build for Java 11 and are called internally by the
 To call the jar file directly is not recommended as CTRL+C signal will be forwarded to all child processes, which might cause errors on locally running tasks.
 
 The workflow designer can be started using 
-`./workflowDesigner.sh` # (or java -jar _jars/WatchdogDesigner.jar_)`
+`./workflowDesigner.sh` # (or java -jar _jars/WatchdogDesigner.jar_)
 
 The workflow designer depends on the Javafx SDK 11 or higher. The bash script will try to identify the installation location of the Javafx SDK automatically.
 
@@ -43,9 +43,9 @@ The workflow designer depends on the Javafx SDK 11 or higher. The bash script wi
 - workflowValidator.jar - command-line tool that can be used to verify integrity of workflows
 - moduleMaker.jar - provides a graphical user interface for module creation
 
-All jar files except moduleMaker.jar are available in the _jars/_ subdirectory of the Watchdog installation folder. The ModuleCreator is not shipped with Watchdog but can be obtained by running `./helper_scripts/downloadModuleMaker.sh` located in the Watchdog installation directory. See https://github.com/watchdog-wms/moduleMaker/blob/master/README.md for more information.
+All jar files except moduleMaker.jar are available in the _jars/_ subdirectory of the Watchdog installation folder. The ModuleMaker is not shipped with Watchdog but can be obtained by running `./helper_scripts/downloadModuleMaker.sh` located in the Watchdog installation directory. See https://github.com/watchdog-wms/moduleMaker/blob/master/README.md for more information.
 
-More information on how to use these programmes can be found in the manual in section 6.
+More information on how to use these programmes can be found in the [manual](https://klugem.github.io/watchdog/Watchdog-manual.html#JARs) in section 6.
 
 ### GETTING STARTED
 
