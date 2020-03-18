@@ -69,7 +69,7 @@ Once Watchdog is correctly installed, you can run example workflows shipped with
 
 More information on these example workflows can be found in the [manual](https://klugem.github.io/watchdog/Watchdog-manual.html#getting_started) in section 3 and 4.
 
-An introduction on how to use the workflow designer (GUI) can be found [here](https://klugem.github.io/watchdog/WorkflowDesigner_Overview.pdf) or in documentation/WorkflowDesigner_Overview.pdf.
+An introduction on how to [analyse replicate data](https://klugem.github.io/watchdog/ReplicateAnalysis_Overview.pdf) or how use the [workflow designer (GUI)](https://klugem.github.io/watchdog/WorkflowDesigner_Overview.pdf) can be found in the _documentation/_ folder.
 
 ### WATCHDOG COMMUNITY
 Two repositories on Github under the watchdog-wms organization (https://github.com/watchdog-wms/) are dedicated for sharing modules and workflows by other users: 
