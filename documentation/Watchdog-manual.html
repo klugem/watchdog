@@ -20,9 +20,10 @@
 <a href="#requirements" class="smallsubtopic">2.1 Requirements</a><br />
 <a href="#installation" class="smallsubtopic">2.2 Installation</a><br />
 <a href="#basic_jars" class="smallsubtopic">2.3 JAR Files</a><br />
-<a href="#mail_server" class="smallsubtopic">2.4 E-Mail Server Configuration</a><br />
-<a href="#remote_configuration" class="smallsubtopic">2.5 SSH Configuration</a><br />
-<a href="#cluster_configuration" class="smallsubtopic">2.6 DRMAA Cluster Configuration</a><br />
+<a href="#get_started" class="smallsubtopic">2.4 Getting started</a><br />
+<a href="#mail_server" class="smallsubtopic">2.5 E-Mail Server Configuration</a><br />
+<a href="#remote_configuration" class="smallsubtopic">2.6 SSH Configuration</a><br />
+<a href="#cluster_configuration" class="smallsubtopic">2.7 DRMAA Cluster Configuration</a><br />
 </div><div class="smallchapter"><a href="#getting_started" class="smalltopic">3 Watchdog Overview</a><br />
 <a href="#basic_modules" class="smallsubtopic">3.1 Modules</a><br />
 <a href="#basic_xml_structure" class="smallsubtopic">3.2 Basic XML structure</a><br />
@@ -100,7 +101,9 @@ Here, we present Watchdog, a WMS for the automated and distributed analysis of l
 
 <a name="requirements" class="subtopic">2.1 Requirements</a>
 
-Watchdog is platform independent as it is written in Java and requires JRE (Java Runtime Environment) 11 or higher. The GUI of the workflow designer and the <pre class="name">moduleMaker</pre> depends on the JavaFX SDK that is not part of new JRE builds. Both launcher bash scripts (<pre class="name">workflowDesigner.sh</pre> and <pre class="name">moduleMaker.sh</pre>) will try to identify the installation location of the JavaFX SDK automatically. If that fails or the installation location of the JavaFX SDK is known the <pre class="name">JFX_SDK_LIB_PATH_ENV</pre> environment variable can be used to set the path manually using <pre class="name">export JFX_SDK_LIB_PATH_ENV=/path/to/javafx/sdk/</pre>.
+Watchdog is platform independent as it is written in Java. Hence, it requires JDK 11 or higher, which can be <a href="https://docs.oracle.com/en/java/javase/11/install/overview-jdk-installation.html" target="_blank">obtained from Oracle</a> and installed on Windows, Linux, or macOS.
+<br /><br />
+The GUI of the workflow designer and the <pre class="name">moduleMaker</pre> depend on the JavaFX SDK 11 or higher. It can be downloaded from <a href="https://gluonhq.com/products/javafx/" target="_blank">Gluon</a> and an installation guide is provided <a href="https://openjfx.io/openjfx-docs/" target="_blank">here</a>. Both launcher bash scripts (<pre class="name">workflowDesigner.sh</pre> and <pre class="name">moduleMaker.sh</pre>) will try to identify the installation location of the JavaFX SDK automatically. If that fails or the installation location of the JavaFX SDK is known, the <pre class="name">JFX_SDK_LIB_PATH_ENV</pre> environment variable can be used to set the path manually using <pre class="name">export JFX_SDK_LIB_PATH_ENV=/path/to/javafx/sdk/</pre>.
 
 <br /><br />
 Most Watchdog modules require a Unix based system and were tested on SUSE Linux. They might not run without any changes on other Unix systems or Windows but users can define custom modules that are compatible with their installed software and operating system. Each of the modules might require additional software to be installed. These requirements can be checked for the modules that are delivered with Watchdog with the help of <pre class="name">helper_scripts/dependencyTest.sh</pre> as described below.
@@ -108,7 +111,8 @@ Most Watchdog modules require a Unix based system and were tested on SUSE Linux.
 <a name="installation" class="subtopic">2.2 Installation</a>
 The installation of Watchdog is very easy. After downloading, extract the provided archive into a folder of your choice (either using <pre class="name">tar xfvz watchdog.tar.gz</pre> or <pre class="name">unzip watchdog.zip</pre> depending on which archive you downloaded). The folder must be accessible for remote or cluster executors if you plan to use some. Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda -c conda-forge watchdog-wms</pre>. In that case the binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">8</a>. 
 <br /><br />
-Modules previously delivered with Watchdog are now located at the community github repository <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">watchdog-wms/watchdog-wms-modules</a>. Thus, as a next step you should download Watchdog modules from the <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">community github repository</a> and extract them into the <pre class="name">modules/</pre> folder of the Watchdog directory. Alternatively, you can run <pre class="name">modules/downloadCommunityModules.sh</pre> from the Watchdog directory.
+Modules previously delivered with Watchdog are now located at the community github repository <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">watchdog-wms/watchdog-wms-modules</a>. The reference book for all modules part of this repository is available at <a href="https://watchdog-wms.github.io/watchdog-wms-modules" target="_blank">https://watchdog-wms.github.io/watchdog-wms-modules</a>. Thus, as a next step you should download Watchdog modules from the <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">community github repository</a> and extract them into the <pre class="name">modules/</pre> folder of the Watchdog directory. Alternatively, you can run <pre class="name">modules/downloadCommunityModules.sh</pre> from the Watchdog directory.
+
 
 <br /><br />In the next few lines the content of each folder is explained:
 
@@ -131,7 +135,7 @@ The script <pre class="name">helper_scripts/dependencyTest.sh</pre> can be used 
 <br /><br />
 In order to test if all modules that provide tests work as expected on your system you can run <pre class="name">helper_scripts/moduleTest.sh</pre>. If you want to test the examples which are discussed in this manual, you can configure them by running:<br /><br />
 
-<pre class="name">helper_scripts/configureExamples.sh -i /path/to/install/folder/of/watchdog [-m your@mail-adress.com]</pre> (mail attribute (-m) is optional, see <a href="#mail_server">2.4</a> for E-mail server configuration)
+<pre class="name">helper_scripts/configureExamples.sh -i /path/to/install/folder/of/watchdog [-m your@mail-adress.com]</pre> (mail attribute (-m) is optional, see <a href="#mail_server">2.5</a> for E-mail server configuration)
 
 <br /><br />Afterwards the configured examples will be located in <pre class="name">/path/to/install/folder/of/watchdog/examples/</pre> and can be executed (from the watchdog installation directory) using the following command: <pre class="name">./watchdog.sh -x examples/filename.xml</pre> or alternatively <pre class="name">java -jar jars/watchdog.jar -x examples/filename.xml</pre><br /><br />
 For instance: <pre class="name">./watchdog.sh -x examples/workflow1_basic_information_extraction.xml</pre><br />
@@ -159,7 +163,33 @@ Please note that the <pre class="name">moduleMaker</pre> is not shipped with Wat
 <pre class="name">helper_scripts/downloadModuleMaker.sh</pre> located in the Watchdog installation directory.
 See <a target="_blank" href="https://github.com/watchdog-wms/moduleMaker/blob/master/README.md">watchdog-wms/moduleMaker</a> for more information.
 
-<a name="mail_server" class="subtopic">2.4 E-Mail Server Configuration</a>
+<a name="get_started" class="subtopic">2.4 Getting started</a>
+
+Once Watchdog is correctly installed, you can run example workflows shipped with Watchdog. To configure them run <pre class="name">helper_scripts/configureExamples.sh -i /path/to/install/folder/of/watchdog [-m your@mail-adress.com]</pre>. Afterwards, the example workflows are located in <pre class="name">examples/</pre> and can be started using <pre class="name">./watchdog.sh -x path2/xml-file.xml</pre>.
+
+<ul>
+<li>example_basic_sleep.xml - basic example with one task to show XML workflow structure</li>
+<li>example_dependencies.xml - workflow with dependencies between tasks</li>
+<li>example_execution_environments.xml - workflow using different execution environments (requires modifications)</li>
+<li>example_process_blocks.xml - shows how to work with process sequences, folders and tables</li>
+<li>example_task_actions.xml - introduces task actions using the example of a file copy action</li>
+<li>example_checkers.xml - shows how to use a custom success checker</li>
+<li>example_docker.xml - uses a module that internally uses a docker image containing bowtie2</li>
+<li>example_include.xml - shows how to use additional module folders</li>
+<li>example_simple_calculations.xml - usage of simple mathematical calculations within a workflow</li>
+<li>example_constant_replacement.xml - shows to to use constants in workflows</li>
+<li>example_environment_variables.xml - setting environment variables</li>
+<li>example_mail_notification.xml - example with mail notifications on completed subtasks and checkpoints</li>
+<li>example_streams.xml - rediction of stdout and stderr streams</li>
+<li>workflow1_basic_information_extraction.xml - simple workflow that extracts information from files using basic UNIX tools</li>
+<li>workflow2_differential_gene_expression.xml - workflow performing a differential gene expression analysis on an example data set (needs bwa and ContextMap2 to be installed and configured)
+</ul>
+
+More information on these example workflows can be found in section <a href="#getting_started">3</a> and <a href="#advanced_xml">4</a>.
+<br /><br />
+An introduction on how to use the workflow designer (GUI) can be found HERERERERER: TODO
+
+<a name="mail_server" class="subtopic">2.5 E-Mail Server Configuration</a>
 As Watchdog will send e-mails it needs a working mail configuration. If you don't want Watchdog to send e-mails, simply don't use the <pre class="attr">mail</pre> attribute of the <pre class="tag">tasks</pre> tag. In that case the content of the mails with be printed to the standard output stream.<br /><br />
 
 By default a server listening on SMTP port 25 is expected that accepts mails without authentication.
@@ -180,14 +210,14 @@ In order to use another configuration the parameter <pre class="name">-mailConfi
 
 Example 1 shows a configuration for a gmail account. More information about the variables that can be used can be found <a href="https://javamail.java.net/nonav/docs/api/com/sun/mail/smtp/package-summary.html" target="_blank">here</a>. An template mail config file that can be edited can be found in <pre class="name">examples/mail_config</pre> once the examples are configured as described above.
 
-<a name="remote_configuration" class="subtopic">2.5 SSH Configuration</a>
+<a name="remote_configuration" class="subtopic">2.6 SSH Configuration</a>
 Watchdog supports execution of tasks via ssh on remote hosts. In order to use that feature a private ssh key must be provided. It is strongly recommended that the private key is protected by a passphrase. In that case the passphrase must be entered after Watchdog was started and will be hold encrypted in memory until the passphrase is needed. <br /><br />
 
 A key pair that can be used for ssh authentification can be generated using the tool <pre class="name">ssh-keygen</pre> that is part of <pre class="name">openssh</pre>.
 If you need further information you can find many online tutorials that explain how to use a private key for ssh authentication. E.g. <a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2" target="_blank">How To Set Up SSH Keys</a> and <a href="https://help.ubuntu.com/community/SSH/OpenSSH/Keys" target="_blank">SSH/OpenSSH/Keys</a>
 
 
-<a name="cluster_configuration" class="subtopic">2.6 DRMAA Cluster Configuration</a>
+<a name="cluster_configuration" class="subtopic">2.7 DRMAA Cluster Configuration</a>
 Watchdog supports cluster solutions which provide a <pre class="name">DRMAA</pre> java binding. By default it is bundled with a DRMAA binding for the <pre class="name">sun grid engine</pre> (SGE 6.1).
 <br /><br />
 The following environment variables must be set correctly in order to communicate with the SGE:
@@ -670,7 +700,7 @@ The next executor is reserved for high performance tasks because it reserves 4 s
 <br /><br />
 In line 10 an example for a remote executor is given which executes tasks via ssh using a host named <pre class="name">superComputer</pre>.
 <br /><br />
-Afterwards the same sleep task is defined as in the first example and will run on the local executor (16). The other executors can be tested once you adapted them to your local infrastructure (see <a href="#remote_configuration">2.5</a> and <a href="#cluster_configuration">2.6</a>).
+Afterwards the same sleep task is defined as in the first example and will run on the local executor (16). The other executors can be tested once you adapted them to your local infrastructure (see <a href="#remote_configuration">2.6</a> and <a href="#cluster_configuration">2.7</a>).
 
 
 <!--<input class="button" id="spoilerexecution_environmentsButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
