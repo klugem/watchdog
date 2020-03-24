@@ -2,8 +2,9 @@
 SCRIPT_FOLDER=$(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || readlink "${BASH_SOURCE[0]}" || echo "${BASH_SOURCE[0]}")) && pwd -P)
 source "${SCRIPT_FOLDER}/includeBasics.sh"
 
-REQUIRED_JFX_MODULES=javafx.base,javafx.controls,javafx.graphics,javafx.fxml,javafx.controls
+REQUIRED_JFX_MODULES=javafx.base,javafx.controls,javafx.graphics,javafx.fxml
 JAVA_FX_TEST_NAME='javafx.fxml.jar'
+JAVA_FX_TEST_NAME_VAR='javafx-fxml*.jar'
 BASHRC_FILE="${HOME}/.bashrc"
 
 # get the name path to the jar to launch
@@ -29,13 +30,22 @@ if [ "${JFX_SDK_LIB_PATH_ENV}" != "" ]; then
 	JFX_SDK_LIB_PATH=${JFX_SDK_LIB_PATH_ENV}
 fi
 
+# if not set try to use version obtained with Maven
+if [ "${JFX_SDK_LIB_PATH}" == "" ] && [ -e "${SCRIPT_FOLDER}/../jars/libs/modules/" ]; then
+	# try to find test file
+	RET=$(find "${SCRIPT_FOLDER}/../jars/libs/modules/" -name "${JAVA_FX_TEST_NAME_VAR}" 2> /dev/null | wc -l)
+	if [ $? -eq 0 ] && [ $RET -gt 0 ]; then
+		JFX_SDK_LIB_PATH="${SCRIPT_FOLDER}/../jars/libs/modules/"
+	fi
+fi
+
 # manually modify javafx SDK path here
 #JFX_SDK_LIB_PATH='some/other/path'
 
 # try to locate the javafx SDK
 if [ "${JFX_SDK_LIB_PATH}" == "" ]; then
 	echo "Path to javafx SDK is not set via 'JFX_SDK_LIB_PATH_ENV' environment variable or within this script."
-	confirm "Do you want to search for it in ${CONDA_PREFIX}/usr and ${CONDA_PREFIX}/share ? (y / n)"
+	confirm "Do you want to search for it in ${CONDA_PREFIX}/usr, ${CONDA_PREFIX}/share and ${CONDA_PREFIX}/lib? (y / n)"
 	if [ $CONFIRM_RETURN -ne 1 ]; then
 		exit 1
 	fi

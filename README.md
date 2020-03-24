@@ -7,6 +7,7 @@ The most recent version of the manual can be found online at https://www.bio.ifi
 Watchdog is written in Java and requires JDK 11 or higher. Oracle provides an installation guide for Windows, Linux and macOS at https://docs.oracle.com/en/java/javase/11/install/overview-jdk-installation.html.
 
 The GUI of the workflow designer and the moduleMaker depend on the JavaFX SDK 11 or higher, which can be obtained from https://gluonhq.com/products/javafx/. An installation guide is provided here: https://openjfx.io/openjfx-docs/
+Alternatively, the JavaFX version obtained with the Maven build script can be used that is located in _jars/libs/modules/_.
 
 ### INSTALLATION
 - Manually:
@@ -86,3 +87,5 @@ Watchdog is free software: you can redistribute it and/or modify it under the te
 Watchdog is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with Watchdog.  If not, see <http://www.gnu.org/licenses/>.
+
+Licenses of libraries Watchdog depends on can be found in _jars/libs/_.
