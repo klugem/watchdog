@@ -7,7 +7,7 @@ import java.util.ResourceBundle;
 import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
 import de.lmu.ifi.bio.watchdog.GUI.helper.TextFilter;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginPropertyViewController;
-import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
+import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginViewController;
 import de.lmu.ifi.bio.watchdog.executor.remote.RemoteExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.SSHPassphraseAuth;
@@ -21,7 +21,7 @@ import javafx.scene.control.TextField;
  * @author kluge
  *
  */
-public class RemoteGUIExecutorViewController extends GUIExecutorViewController {
+public class RemoteGUIExecutorViewController extends PluginViewController<RemoteExecutorInfo>  {
 	
 	@FXML private TextField host;
 	@FXML private TextField port;
@@ -35,7 +35,7 @@ public class RemoteGUIExecutorViewController extends GUIExecutorViewController {
 	}
 
 	@Override
-	public void addPropertyViewControllerToValidate(PluginPropertyViewController<ExecutorInfo> executorPropertyViewController, String condition) {
+	public void addPropertyViewControllerToValidate(PluginPropertyViewController<RemoteExecutorInfo> executorPropertyViewController, String condition) {
 		// add integer enforcer
 		this.port.setTextFormatter(TextFilter.getPositiveIntFormater());
 		
@@ -60,8 +60,9 @@ public class RemoteGUIExecutorViewController extends GUIExecutorViewController {
 	@Override
 	public void setHandlerForGUIColoring() {}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public ExecutorInfo getXMLPluginObject(Object[] data) {
+	public RemoteExecutorInfo getXMLPluginObject(Object[] data) {
 		// cast the data
 		String name = (String) data[0];
 		boolean isDefault = (boolean) data[1];
@@ -73,12 +74,12 @@ public class RemoteGUIExecutorViewController extends GUIExecutorViewController {
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
 		String shebang = (String) data[9];
-		@SuppressWarnings("unchecked")
 		ArrayList<String> beforeScripts = (ArrayList<String>) data[10];
-		@SuppressWarnings("unchecked")
 		ArrayList<String> afterScripts = (ArrayList<String>) data[11];
+		ArrayList<String> packageManager = (ArrayList<String>) data[12];
+		String container = (String) data[13];
 		
-		return new RemoteExecutorInfo(XMLParser.REMOTE, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, this.host.getText(), this.user.getText(), Integer.parseInt(this.port.getText()), !this.disableStrictHostCheck.isSelected(), workingDir, new SSHPassphraseAuth(name, this.privateKey.getText(), true), beforeScripts, afterScripts);
+		return new RemoteExecutorInfo(XMLParser.REMOTE, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, this.host.getText(), this.user.getText(), Integer.parseInt(this.port.getText()), !this.disableStrictHostCheck.isSelected(), workingDir, new SSHPassphraseAuth(name, this.privateKey.getText(), true), beforeScripts, afterScripts, packageManager, container);
 	}
 
 	@Override

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="build" name="Watchdog" xmlns:if="ant:if" xmlns:unless="ant:unless">
+	<property environment="env" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="11" />
+	<property name="source" value="11" />
+	<property name="bin.dir" value="jars/" />
+	<property name="libname" value="libs" />
+	<property name="lib.dir" value="${bin.dir}/${libname}/" />
+
+	<property name="final.jar.1" value="${bin.dir}/watchdog.jar" />
+	<property name="final.jar.2" value="${bin.dir}/watchdogSlave.jar" />
+	<property name="final.jar.3" value="${bin.dir}/watchdogDesigner.jar" />
+	<property name="final.jar.4" value="${bin.dir}/refBookGenerator.jar" />
+	<property name="final.jar.5" value="${bin.dir}/docuTemplateExtractor.jar" />
+	<property name="final.jar.6" value="${bin.dir}/moduleValidator.jar" />
+	<property name="final.jar.7" value="${bin.dir}/workflowValidator.jar" />
+	<property name="final.jar.8" value="${bin.dir}/reportGenerator.jar" />
+
+	<property name="main.class.1" value="de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner" />
+	<property name="main.class.2" value="de.lmu.ifi.bio.watchdog.slave.SlaveRunner" />
+	<property name="main.class.3" value="de.lmu.ifi.bio.watchdog.GUI.WorkflowDesignerRunner" />
+	<property name="main.class.4" value="de.lmu.ifi.bio.watchdog.runner.ModuleLibraryCreatorRunner" />
+	<property name="main.class.5" value="de.lmu.ifi.bio.watchdog.runner.ModuleDocuExtractorRunner" />
+	<property name="main.class.6" value="de.lmu.ifi.bio.watchdog.validator.github.ModuleGithubCheckerRunner" />	
+	<property name="main.class.7" value="de.lmu.ifi.bio.watchdog.validator.github.WorkflowGithubCheckerRunner" />	
+	<property name="main.class.8" value="de.lmu.ifi.bio.watchdog.runner.MethodTemplateGeneratorRunner" />	
+
+	<!-- get jars that are stored in the libs folder -->
+	<fileset id="build.classpath" dir="${basedir}/${lib.dir}" includes="*.jar"/>   
+	<pathconvert pathsep=" " property="build.classpath.joined" refid="build.classpath">
+		<globmapper from="${basedir}/${bin.dir}*" to="*"/>
+	</pathconvert>
+
+	<!-- create a JAR file -->
+	<macrodef name="create.jar">
+		<attribute name="mainClass" />
+		<attribute name="outputJarFile" />
+		<sequential>
+			<!-- delete old jar file if it exists -->
+			<delete file="@{outputJarFile}" />
+			
+			<!-- build source -->
+			<delete file="${final.jar}" />
+			<!--<build srcDir="${srcDirBuild}"/>-->
+			<jar destfile="@{outputJarFile}" filesetmanifest="mergewithoutmain">
+				<manifest>
+					<attribute name="Main-Class" value="@{mainClass}" />
+					<attribute name="Class-Path" value="watchdog-DEV.jar" />
+					<attribute name="Class-Path" value="watchdog-RELEASE.jar" />
+					<attribute name="Class-Path" value="${build.classpath.joined}" />
+				</manifest>
+			</jar>
+		</sequential>
+	</macrodef>
+
+	<target name="build">
+		<create.jar mainClass="${main.class.1}" outputJarFile="${final.jar.1}"/>
+		<create.jar mainClass="${main.class.2}" outputJarFile="${final.jar.2}"/>
+		<create.jar mainClass="${main.class.3}" outputJarFile="${final.jar.3}"/>
+		<create.jar mainClass="${main.class.4}" outputJarFile="${final.jar.4}"/>
+		<create.jar mainClass="${main.class.5}" outputJarFile="${final.jar.5}"/>
+		<create.jar mainClass="${main.class.6}" outputJarFile="${final.jar.6}"/>
+		<create.jar mainClass="${main.class.7}" outputJarFile="${final.jar.7}"/>
+		<create.jar mainClass="${main.class.8}" outputJarFile="${final.jar.8}"/>
+		<delete dir="${build.dir}"/>
+	</target>
+</project>

@@ -25,8 +25,8 @@ public class DefaultExecutorInfo extends ExecutorInfo {
 	 * @param environment
 	 * @param workingDir
 	 */
-	public DefaultExecutorInfo(String name, boolean isDefault, boolean isStick2Host, int maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang, ArrayList<String> beforeScripts, ArrayList<String> afterScripts) {
-		super(null, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts);
+	public DefaultExecutorInfo(String name, boolean isDefault, boolean isStick2Host, int maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang, ArrayList<String> beforeScripts, ArrayList<String> afterScripts, ArrayList<String> packageManagers, String container) {
+		super(null, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts, packageManagers, container);
 	}
 
 	@Override

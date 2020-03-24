@@ -73,6 +73,7 @@ public class Task implements Serializable {
 	protected int executionCounter = 0;
 	protected int maxRunningAtOnce = -1;
 	protected boolean isOnHold = false;
+	protected File MODULE_FOLDER = null;
 	protected File STD_IN = null;
 	protected File STD_OUT = null;
 	protected File STD_ERR = null;
@@ -120,9 +121,10 @@ public class Task implements Serializable {
 	 * @param env
 	 */
 	public Task(int taskID, String name, ExecutorInfo executor, String command, LinkedHashMap<String, Pair<Pair<String, String>, String>> detailArguments, ArrayList<Task> dependencies,  ArrayList<ErrorChecker> errorChecker, ArrayList<SuccessChecker> successChecker, String groupFileName,
-				 File stdIn, File stdOut, File stdErr, boolean stdOutAppend, boolean stdErrAppend, File workingDir, Class<? extends ProcessBlock> processBlockClass, HashMap<String, Integer> processTableMapping, Environment env, ArrayList<TaskAction> taskActions, boolean saveRes) {
+				 File stdIn, File stdOut, File stdErr, boolean stdOutAppend, boolean stdErrAppend, File workingDir, Class<? extends ProcessBlock> processBlockClass, HashMap<String, Integer> processTableMapping, Environment env, ArrayList<TaskAction> taskActions, boolean saveRes, File moduleFolder) {
 		this.TASK_ID = taskID;
 		this.NAME = name;
+		this.MODULE_FOLDER = moduleFolder;
 		this.executor = executor;
 		this.DETAIL_ARGUMENTS = detailArguments;
 		String[] tmp = command.split(" ");
@@ -235,7 +237,7 @@ public class Task implements Serializable {
 	}
 
 	public static Task getShutdownTask(ArrayList<TaskAction> shutdownActions, ExecutorInfo e) {
-		return new Task(0, "on shutdown event", e, "", null, null, null, null, null, null, null, null, false, false, null, null, null, null, shutdownActions, false);
+		return new Task(0, "on shutdown event", e, "", null, null, null, null, null, null, null, null, false, false, null, null, null, null, shutdownActions, false, null);
 	}
 	
 	public void addModuleVersionParam() {
@@ -1308,5 +1310,21 @@ public class Task implements Serializable {
 	 */
 	public Logger getLogger() {
 		return this.LOGGER;
+	}
+	
+	/**
+	 * true, if a module folder is set
+	 * @return
+	 */
+	public boolean hasModuleFolder() {
+		return this.getModuleFolder() != null;
+	}
+	
+	/**
+	 * returns the module folder
+	 * @return
+	 */
+	public File getModuleFolder() {
+		return this.MODULE_FOLDER;
 	}
 }

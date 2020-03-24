@@ -10,7 +10,6 @@ import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
-import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser.XMLExecutorInfoParser;
 
 /**
  * SGE executor info
@@ -48,8 +47,8 @@ public class SGEExecutorInfo extends ExternalExecutorInfo {
 	 * @param memory
 	 * @param queue
 	 */
-	public SGEExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, int slots, String memory, String queue, String workingDir, String customParams, boolean disableDefault, ArrayList<String> beforeScripts, ArrayList<String> afterScripts) {
-		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts);
+	public SGEExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, int slots, String memory, String queue, String workingDir, String customParams, boolean disableDefault, ArrayList<String> beforeScripts, ArrayList<String> afterScripts, ArrayList<String> packageManagers, String container) {
+		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts, packageManagers, container);
 		this.SLOTS = Math.max(1, slots);
 		this.MEMORY = memory;
 		this.QUEUE = queue;
@@ -161,17 +160,9 @@ public class SGEExecutorInfo extends ExternalExecutorInfo {
 		// start with basic tag
 		x.startTag(SGEWorkloadManagerConnector.EXECUTOR_NAME, false);
 		x.addQuotedAttribute(XMLParser.NAME, this.getName());
-
 		// add optional attributes
-		if(this.hasDefaultEnv())
-			x.addQuotedAttribute(XMLParser.ENVIRONMENT, this.getEnv().getName());
-		if(this.isDefaultExecutor())
-			x.addQuotedAttribute(XMLParser.DEFAULT, true);
-		if(this.isStick2Host())
-			x.addQuotedAttribute(XMLParser.STICK2HOST, true);
+		this.addDefaultExecutorAttributes(x);
 		
-		if(this.getMaxSimRunning() >= 1)
-			x.addQuotedAttribute(XMLParser.MAX_RUNNING, this.getMaxSimRunning());
 		// add default grid parameters
 		if(!this.isDefaultParametersIgnored()) {
 			if(this.getSlots() > 1)
@@ -187,15 +178,6 @@ public class SGEExecutorInfo extends ExternalExecutorInfo {
 		// add custom parameters
 		if(this.hasCustomParametersSet())
 			x.addQuotedAttribute(XMLParser.CUSTOM_PARAMETERS, this.getCustomParameters());
-		
-		if(this.hasColor())
-			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());
-		if(this.hasCustomShebang()) 
-			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
-		if(this.hasBeforeScripts()) 
-			x.addQuotedAttribute(XMLParser.BEFORE_SCRIPTS, XMLExecutorInfoParser.joinString(this.getBeforeScriptNames()));
-		if(this.hasAfterScripts()) 
-			x.addQuotedAttribute(XMLParser.AFTER_SCRIPTS, XMLExecutorInfoParser.joinString(this.getAfterScriptNames()));
 		
 		// end the tag
 		x.endCurrentTag();

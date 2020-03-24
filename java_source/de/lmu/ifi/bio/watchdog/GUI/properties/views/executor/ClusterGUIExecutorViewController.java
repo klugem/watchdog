@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
 
 import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginPropertyViewController;
-import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
+import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginViewController;
 import de.lmu.ifi.bio.watchdog.executor.external.drmaa.DRMAAExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
@@ -18,7 +18,7 @@ import javafx.scene.control.TextField;
  * @author kluge
  *
  */
-public class ClusterGUIExecutorViewController extends GUIExecutorViewController {
+public class ClusterGUIExecutorViewController extends  PluginViewController<DRMAAExecutorInfo>  {
 
 	@FXML private TextField customParams;
 	
@@ -28,7 +28,7 @@ public class ClusterGUIExecutorViewController extends GUIExecutorViewController 
 	}
 
 	@Override
-	public void addPropertyViewControllerToValidate(PluginPropertyViewController<ExecutorInfo> executorPropertyViewController, String condition) {
+	public void addPropertyViewControllerToValidate(PluginPropertyViewController<DRMAAExecutorInfo> executorPropertyViewController, String condition) {
 		executorPropertyViewController.addValidateToControl(this.customParams, "customParams", f -> true, condition);
 		
 		// add suggest constants support
@@ -45,8 +45,9 @@ public class ClusterGUIExecutorViewController extends GUIExecutorViewController 
 		this.customParams.setText((String) data[0]);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public ExecutorInfo getXMLPluginObject(Object[] data) {
+	public DRMAAExecutorInfo getXMLPluginObject(Object[] data) {
 		// cast the data
 		String name = (String) data[0];
 		boolean isDefault = (boolean) data[1];
@@ -58,12 +59,12 @@ public class ClusterGUIExecutorViewController extends GUIExecutorViewController 
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
 		String shebang = (String) data[9];
-		@SuppressWarnings("unchecked")
 		ArrayList<String> beforeScripts = (ArrayList<String>) data[10];
-		@SuppressWarnings("unchecked")
 		ArrayList<String> afterScripts = (ArrayList<String>) data[11];
+		ArrayList<String> packageManager = (ArrayList<String>) data[12];
+		String container = (String) data[13];
 		
 		// create the instance
-		return new DRMAAExecutorInfo(XMLParser.CLUSTER, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, workingDir, this.customParams.getText(), beforeScripts, afterScripts);
+		return new DRMAAExecutorInfo(XMLParser.CLUSTER, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, workingDir, this.customParams.getText(), beforeScripts, afterScripts, packageManager, container);
 	}
 }

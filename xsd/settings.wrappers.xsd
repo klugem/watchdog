@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
+
+	<!-- wrapper block -->
+	<x:complexType name="executionwrapperAbstractType" abstract="true">
+		<x:simpleContent>
+			<x:extension base="x:string">
+				<x:attribute name="name" type="x:string" use="required" />
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+
+	<!-- element for group substitution -->
+	<x:element name="executionwrapperType" />
+
+	<!-- definition of the executors type block -->
+	<x:complexType name="executionwrappersType">
+		<x:all>
+			<x:element ref="executionwrapperType" minOccurs="1" maxOccurs="unbounded" />
+		</x:all>
+	</x:complexType>
+
+</x:schema>

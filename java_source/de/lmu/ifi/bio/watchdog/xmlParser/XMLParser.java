@@ -45,6 +45,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import de.lmu.ifi.bio.watchdog.executionWrapper.ExecutionWrapper;
+import de.lmu.ifi.bio.watchdog.executionWrapper.OS;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.local.LocalExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.ActionType;
@@ -76,6 +78,7 @@ import de.lmu.ifi.bio.watchdog.task.actions.CopyTaskAction;
 import de.lmu.ifi.bio.watchdog.task.actions.CreateTaskAction;
 import de.lmu.ifi.bio.watchdog.task.actions.DeleteTaskAction;
 import de.lmu.ifi.bio.watchdog.xmlParser.plugins.XMLPluginTypeLoaderAndProcessor;
+import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executionWrapperParser.XMLExecutionWrapperProcessor;
 import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser.XMLExecutorProcessor;
 import de.lmu.ifi.bio.watchdog.xmlParser.plugins.processBlockParser.XMLProcessBlockProcessor;
 
@@ -87,6 +90,8 @@ import de.lmu.ifi.bio.watchdog.xmlParser.plugins.processBlockParser.XMLProcessBl
 public class XMLParser {
 	public static final String XML_1_1 = "http://www.w3.org/XML/XMLSchema/v1.1";
 	public static final String HOST_SEP = ";";
+	public static final String SCRIPTS_SEP = ":";
+	public static final String WRAPPERS_SEP = ",";
 	public static final Logger LOGGER = new Logger();
 	private static final String BASE_FOLDER_CONST_PREFIX = "BASE_FOLDER_";
 	private static final String IS_TEMPLATE_STRING = "isTemplate"; 
@@ -127,6 +132,7 @@ public class XMLParser {
 	public static final String CPU = "cpu";
 	public static final String TIMELIMIT = "timelimit";
 	public static final String PROCESS_BLOCK = "processBlock";
+	public static final String EXECUTION_WRAPPER = "executionWrapper";
 	public static final String PROCESS_FOLDER = "processFolder";
 	public static final String DISABLE_EXISTANCE_CHECK = "disableExistenceCheck";
 	public static final String PARAMETER = "parameter";
@@ -134,6 +140,7 @@ public class XMLParser {
 	public static final String ENVIRONMENT = "environment";
 	public static final String CHECKERS = "checkers";
 	public static final String SETTINGS = "settings";
+	public static final String WRAPPERS = "wrappers";
 	
 	public static final String CHECKER = "checker";
 	public static final String ERROR = "error";
@@ -228,6 +235,8 @@ public class XMLParser {
 	public static final String MODULE_VERSION_PARAM_NAME_TO_SET = "watchdogModuleVersionParameter";
 	public static final String BEFORE_SCRIPTS = "beforeScripts";
 	public static final String AFTER_SCRIPTS = "afterScripts";
+	public static final String PACKAGE_MANAGERS = "packageManagers";
+	public static final String CONTAINER = "container";
 	
 	/* values for the return param */
 	private static final String X_EXTENSION = "x:extension";
@@ -298,7 +307,7 @@ public class XMLParser {
 	private static HashSet<String> XSD_PLUGIN_FILES = new HashSet<>();
 	private static XMLExecutorProcessor PLUGIN_EXECUTOR_PARSER;
 	private static XMLProcessBlockProcessor PLUGIN_PROCESSBLOCK_PARSER;
-	
+	private static XMLExecutionWrapperProcessor PLUGIN_WRAPPER_PARSER;
 	
 	static {
 		Functions.filterErrorStream();
@@ -312,8 +321,11 @@ public class XMLParser {
 		// load all XML plugins that are installed
 		PLUGIN_EXECUTOR_PARSER = new XMLExecutorProcessor();
 		PLUGIN_PROCESSBLOCK_PARSER = new XMLProcessBlockProcessor();
+		PLUGIN_WRAPPER_PARSER = new XMLExecutionWrapperProcessor();
+		
 		LOADED_PLUGINS.add(PLUGIN_EXECUTOR_PARSER);
 		LOADED_PLUGINS.add(PLUGIN_PROCESSBLOCK_PARSER);
+		LOADED_PLUGINS.add(PLUGIN_WRAPPER_PARSER);
 	}
 	
 	public static void setGUILoadAttempt(boolean guiLoadAttempt) {
@@ -370,6 +382,7 @@ public class XMLParser {
 		// will be executed only once --> init plugins
 		initPlugins(watchdogBaseDir, LOGGER, noExit, isGUILoadAttempt());
 
+		OS os = OS.getOS();
 		HashMap<String, Integer> name2id = new HashMap<>();
 		String mail = null;
 		
@@ -494,6 +507,7 @@ public class XMLParser {
 			docEle = XMLParser.getRootElement(dbf, xmlFile);
 		
 		LinkedHashMap<String, ProcessBlock> blocks = new LinkedHashMap<>();
+		LinkedHashMap<String, ExecutionWrapper> wrappers = new LinkedHashMap<>();
 		LinkedHashMap<String, Element> envs = new LinkedHashMap<>();
 		LinkedHashMap<String, String> consts;
 		LinkedHashMap<String, ExecutorInfo> exec = new LinkedHashMap<>();
@@ -634,16 +648,55 @@ public class XMLParser {
 						if(!noExit) System.exit(1);
 					}
 					
+					/********** check for wrapper tag */
+					NodeList wrapperNodes = docEle.getElementsByTagName(WRAPPERS);
+					if(wrapperNodes.getLength() == 1) {
+						Element el = (Element) wrapperNodes.item(0);
+						NodeList wrappersList = el.getChildNodes();
+						
+						// go through each of the annotated executors
+						for(int i = 0 ; i < wrappersList.getLength(); i++) {
+							if(wrappersList.item(i) instanceof Element) {
+								el = (Element)wrappersList.item(i);
+								String type = el.getTagName();
+								String name = XMLParser.getAttribute(el, NAME);
+				
+								// get appropriate parser
+								ExecutionWrapper wrapper = null;
+								try {
+									wrapper = PLUGIN_WRAPPER_PARSER.parseElement(el, watchdogBaseDir, new Object[] { });
+									
+									// test if wrapper can be used on this OS
+									if(!wrapper.doesSupportOS(os)) {
+										LOGGER.error("Executor plugin for execution wrapper '"+name+"' of type <"+type+"> can not be used on OS '"+os.name()+"'.");
+										if(!noExit) System.exit(1);
+									}
+									
+								} catch(IllegalArgumentException ex) {
+									LOGGER.error("Executor plugin for execution wrapper '"+name+"' of type <"+type+"> was not found.");
+									ex.printStackTrace();
+									if(!noExit) System.exit(1);
+								}	
+								// save in list
+								wrappers.put(name, wrapper);
+							}
+						}
+					}
+					else if(wrapperNodes.getLength() > 0) {
+						LOGGER.error("Found multiple '<"+WRAPPERS+">' elements!");
+						if(!noExit) System.exit(1);
+					}
+					
 					// ignore all the executor stuff and use only a local executor!
 					if(ignoreExecutor != 0) {
-						defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, ignoreExecutor, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null, null, null, null);		
+						defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, ignoreExecutor, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null, null, null, null, null, null);		
 					}
 					else {
 						/********** check for executor tag */
 						NodeList executors = docEle.getElementsByTagName(EXECUTORS);
 						// just add the default local executor
 						if(executors.getLength() == 0) {
-							defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, 1, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null, null, null, null);
+							defaultExecutor = new LocalExecutorInfo(XMLParser.LOCAL, DEFAULT_LOCAL_NAME , true, false, null, 1, watchdogBaseDir, new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), null, null, null, null, null, null);
 						}
 						else if(executors.getLength() == 1) {
 							Element el = (Element) executors.item(0);
@@ -655,6 +708,7 @@ public class XMLParser {
 									el = (Element)executorsList.item(i);
 									String type = el.getTagName();
 									String name = XMLParser.getAttribute(el, NAME);
+									ArrayList<String> wrapperNames = splitString(XMLParser.getAttribute(el, XMLParser.WRAPPERS), XMLParser.WRAPPERS_SEP);
 
 									// get environment is some is set
 									String environment =  XMLParser.getAttribute(el, ENVIRONMENT);					
@@ -669,12 +723,22 @@ public class XMLParser {
 												envExecutor = XMLParser.parseEnvironment(environment, envs.get(environment), LOCAL.equals(type), null, null);
 											}
 									}
-									
-									
+									// check, if wrappers is there
+									if(wrapperNames != null && wrapperNames.size() > 0) {
+										for(String w : wrapperNames) {
+											if(!wrappers.containsKey(w)) {
+												LOGGER.error("Execution wrapper with name '" + w + "' does not exist for executor with name '" + name + "'.");
+												if(!noExit) System.exit(1);
+											}
+										}
+									}
+													
 									// get appropriate parser
 									ExecutorInfo exinfo = null;
 									try {
 										exinfo = PLUGIN_EXECUTOR_PARSER.parseElement(el, watchdogBaseDir, new Object[] { envExecutor });
+										exinfo.setWrappers(wrappers);
+										
 									} catch(IllegalArgumentException ex) {
 										LOGGER.error("Executor plugin for executor '"+name+"' of type <"+type+"> was not found.");
 										ex.printStackTrace();
@@ -755,6 +819,7 @@ public class XMLParser {
 								int maxRunning = Integer.parseInt(XMLParser.getAttribute(task, MAX_RUNNING));
 								int version = task.hasAttribute(VERSION) ? Integer.parseInt(XMLParser.getAttribute(task, VERSION)) : 1;
 								String versionSetName = XMLParser.getAttribute(task, MODULE_VERSION_PARAM_NAME_TO_SET);
+								String moduleFolder = new File(moduleName2Path.get(taskType)).getAbsoluteFile().getParent();
 								
 								ProcessBlock pb = null;
 								OptionFormat globalOptionFormater = getFormater(task);
@@ -813,11 +878,11 @@ public class XMLParser {
 								ActionType notifyEnum = getActionType(notify);
 								ActionType checkpointEnum = getActionType(checkpoint);
 								ActionType confirmParamEnum = getActionType(confirmParam);
-																
+								
 								// update watchdog call if needed
 								if(isWatchdogModule) {
 									// make command relative to the module folder it is located in
-									File binNameFile = new File(new File(moduleName2Path.get(taskType)).getAbsoluteFile().getParent() + File.separator + binName);
+									File binNameFile = new File(moduleFolder + File.separator + binName);
 									binName = binNameFile.getAbsolutePath();
 									
 									// check if binName is executable
@@ -884,7 +949,7 @@ public class XMLParser {
 								}			
  
 								// create new task
-								XMLTask x = new XMLTask(id, taskType, version, binName, name, projectName,  globalOptionFormater, executorInfo, pb);
+								XMLTask x = new XMLTask(id, taskType, version, binName, name, projectName,  globalOptionFormater, executorInfo, pb, new File(moduleFolder));
 								x.setMaxRunning(maxRunning);
 								x.setNotify(notifyEnum);
 								x.setCheckpoint(checkpointEnum);
@@ -1255,7 +1320,7 @@ public class XMLParser {
 							Element e = envs.get(n);
 							enivronments.put(n, XMLParser.parseEnvironment(n, e, false, null, null));
 						}
-						return new Object[] {parsedTasks, mail, null, retInfo, name2id, dbf, blocks, enivronments, exec, watchdogBaseDir, consts}; // third element is not used anymore
+						return new Object[] {parsedTasks, mail, null, retInfo, name2id, dbf, blocks, enivronments, exec, watchdogBaseDir, consts, wrappers}; // third element is not used anymore
 					}
 					else  {
 						LOGGER.error("multiple '<"+TASKS+">' elements!");
@@ -2654,5 +2719,23 @@ public class XMLParser {
 		}
 		catch(Exception e) {}
 		return false;
+	}
+	
+	
+	/**
+	 * splits a string using a separator
+	 * @param 
+	 * @param splitSep
+	 * @return
+	 */
+	public static ArrayList<String> splitString(String stringToSplit, String splitSep) {
+		ArrayList<String> r = new ArrayList<>();
+		if(stringToSplit != null && stringToSplit.length() > 0) {
+			for(String p : stringToSplit.split(splitSep)) {
+				if(p.length() > 0)
+					r.add(p);
+			}
+		}	
+		return r;
 	}
 }

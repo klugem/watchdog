@@ -1,5 +1,6 @@
 package de.lmu.ifi.bio.watchdog.GUI.properties.views;
 
+import de.lmu.ifi.bio.watchdog.executionWrapper.ExecutionWrapper;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Constants;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
@@ -12,7 +13,7 @@ import de.lmu.ifi.bio.watchdog.processblocks.ProcessBlock;
  *
  */
 public enum PropertyViewType {
-	ENVIRONMENT("environment variables", "environment property", Environment.class), EXECUTOR("executors", "executor property", ExecutorInfo.class), PROCESS_BLOCK("process blocks", "process block property", ProcessBlock.class), CONSTANTS("constants", "constant", Constants.class);
+	ENVIRONMENT("environment variables", "environment property", Environment.class), EXECUTOR("executors", "executor property", ExecutorInfo.class), PROCESS_BLOCK("process blocks", "process block property", ProcessBlock.class), CONSTANTS("constants", "constant", Constants.class), WRAPPERS("execution wrappers", "execution wrapper property", ExecutionWrapper.class);
 	
 	private final String LABEL;
 	private final String PROPERTY_NAME;

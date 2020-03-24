@@ -10,7 +10,6 @@ import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
-import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser.XMLExecutorInfoParser;
 
 /**
  * generic drmaa executor info
@@ -32,8 +31,8 @@ public class DRMAAExecutorInfo extends ExternalExecutorInfo {
 	 * @param watchdogBaseDir
 	 * @param environment
 	 */
-	public DRMAAExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, String workingDir, String customParams, ArrayList<String> beforeScripts, ArrayList<String> afterScripts) {
-		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts);
+	public DRMAAExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, String workingDir, String customParams, ArrayList<String> beforeScripts, ArrayList<String> afterScripts, ArrayList<String> packageManagers, String container) {
+		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts, packageManagers, container);
 		this.CUSTOM_PARAMS = customParams;
 	}
 	
@@ -69,29 +68,12 @@ public class DRMAAExecutorInfo extends ExternalExecutorInfo {
 		x.addQuotedAttribute(XMLParser.NAME, this.getName());
 
 		// add optional attributes
-		if(this.hasDefaultEnv())
-			x.addQuotedAttribute(XMLParser.ENVIRONMENT, this.getEnv().getName());
-		if(this.isDefaultExecutor())
-			x.addQuotedAttribute(XMLParser.DEFAULT, true);
-		if(this.isStick2Host())
-			x.addQuotedAttribute(XMLParser.STICK2HOST, true);
-		
-		if(this.getMaxSimRunning() >= 1)
-			x.addQuotedAttribute(XMLParser.MAX_RUNNING, this.getMaxSimRunning());
+		this.addDefaultExecutorAttributes(x);
 		
 		// add custom parameters
 		if(this.hasCustomParametersSet())
 			x.addQuotedAttribute(XMLParser.CUSTOM_PARAMETERS, this.getCustomParameters());
-		
-		if(this.hasColor())
-			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());
-		if(this.hasCustomShebang()) 
-			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
-		if(this.hasBeforeScripts()) 
-			x.addQuotedAttribute(XMLParser.BEFORE_SCRIPTS, XMLExecutorInfoParser.joinString(this.getBeforeScriptNames()));
-		if(this.hasAfterScripts()) 
-			x.addQuotedAttribute(XMLParser.AFTER_SCRIPTS, XMLExecutorInfoParser.joinString(this.getAfterScriptNames()));
-		
+	
 		// end the tag
 		x.endCurrentTag();
 		return x.toString();

@@ -1,0 +1,3 @@
+delete.png : http://www.iconarchive.com/show/sleek-xp-basic-icons-by-hopstarter/Close-2-icon.html - https://www.deviantart.com/hopstarter
+add.png : http://www.iconarchive.com/show/vista-artistic-icons-by-awicons/add-icon.html - http://awicons.com
+config.png : http://www.iconarchive.com/show/ios8-setting-icons-by-uiconstock/settings-icon.html - http://uiconstock.com

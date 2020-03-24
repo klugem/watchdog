@@ -4,8 +4,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 Changelog started with version 1.2.0
 
 ## [Unreleased]
+### Added
+- [PLUGIN] Used XML plugin system to add support for execution wrappers (package managers / virtualizer)
+- [PLUGIN] Implemented support for Conda as package manager execution wrapper (<conda>)
+- [] Added helper script (formatCondaYaml.py) that formats Conda enironment definition files (*.conda.yml)
+- [JAR] Added Maven file to build Jar files and download dependencies
+- [DOCU] Added replicate analysis and WorkflowDesigner tutorials
+
 ### Fixed
 - [CMD] Fixed null pointer exception when no workflow XML file was passed to Watchdog
+- [BASH] Added lib/ folder to search folder for javaFX SDK
+
+### Changed
+- [JAR] Jars are now build with Maven and do not include dependencies
+- [README] The readme is now formated in Markdown 
 
 ## [2.0.4] - 2019-11-27
 ### Fixed

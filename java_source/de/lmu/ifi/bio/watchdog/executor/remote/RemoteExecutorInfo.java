@@ -12,7 +12,6 @@ import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
-import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser.XMLExecutorInfoParser;
 
 /**
  * Executor info for ssh executor
@@ -29,8 +28,8 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 	private final String ORIGINAL_HOST_LIST;
 	private SSHPassphraseAuth AUTH;
 
-	public RemoteExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, String host, String user, int port, boolean strictHostChecking, String workingDir, SSHPassphraseAuth auth, ArrayList<String> beforeScripts, ArrayList<String> afterScripts) {
-		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts);
+	public RemoteExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String shebang, String host, String user, int port, boolean strictHostChecking, String workingDir, SSHPassphraseAuth auth, ArrayList<String> beforeScripts, ArrayList<String> afterScripts, ArrayList<String> packageManagers, String container) {
+		super(type, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts, packageManagers, container);
 		
 		// save the additional stuff
 		this.USER = user;
@@ -140,6 +139,9 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 		XMLBuilder x = new XMLBuilder();
 		// start with basic tag
 		x.startTag(XMLParser.REMOTE, false);
+		// add default optional attributes
+		this.addDefaultExecutorAttributes(x);
+
 		x.addQuotedAttribute(XMLParser.NAME, this.getName());
 		x.addQuotedAttribute(XMLParser.USER, this.getUser());
 		x.addQuotedAttribute(XMLParser.HOST, this.getOriginalHostList());
@@ -147,29 +149,10 @@ public class RemoteExecutorInfo extends ExecutorInfo {
 		x.addQuotedAttribute(XMLParser.PRIVATE_KEY, authFile);
 		authFile = null;
 		System.gc();
-				
-		// add optional attributes
-		if(this.hasDefaultEnv())
-			x.addQuotedAttribute(XMLParser.ENVIRONMENT, this.getEnv().getName());
-		if(this.isDefaultExecutor())
-			x.addQuotedAttribute(XMLParser.DEFAULT, true);
-		if(this.getMaxSimRunning() >= 1)
-			x.addQuotedAttribute(XMLParser.MAX_RUNNING, this.getMaxSimRunning());
+					
 		if(this.getPort() != 22)
 			x.addQuotedAttribute(XMLParser.PORT, this.getPort());
 		if(!this.isStrictHostCheckingEnabled())
-			x.addQuotedAttribute(XMLParser.DISABLE_STRICT_HOST_CHECK, true);
-		if(this.isStick2Host())
-			x.addQuotedAttribute(XMLParser.STICK2HOST, true);
-		if(this.hasCustomShebang()) 
-			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
-		if(this.hasBeforeScripts()) 
-			x.addQuotedAttribute(XMLParser.BEFORE_SCRIPTS, XMLExecutorInfoParser.joinString(this.getBeforeScriptNames()));
-		if(this.hasAfterScripts()) 
-			x.addQuotedAttribute(XMLParser.AFTER_SCRIPTS, XMLExecutorInfoParser.joinString(this.getAfterScriptNames()));
-		
-		if(this.hasColor())
-			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());
 		
 		// end the tag
 		x.endCurrentTag();

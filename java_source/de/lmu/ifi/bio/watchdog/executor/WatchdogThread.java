@@ -79,7 +79,7 @@ public class WatchdogThread extends StopableLoopThread {
 		this.SIMULATE = simulate;
 		this.SLAVE_MODE = slaveMode;
 
-		this.SLAVE_EXEC_INFO = new LocalExecutorInfo(XMLParser.LOCAL, "slave executor", false, false, null, maxRunningOnSlave, watchdogXSDPath.getAbsoluteFile().getParentFile().getParent(), new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), "", null, null, null);
+		this.SLAVE_EXEC_INFO = new LocalExecutorInfo(XMLParser.LOCAL, "slave executor", false, false, null, maxRunningOnSlave, watchdogXSDPath.getAbsoluteFile().getParentFile().getParent(), new Environment(XMLParser.DEFAULT_LOCAL_COPY_ENV, true, true), "", null, null, null, null, null);
 		
 		// set start date
 		String qName = AttachInfo.ATTACH_INITIAL_START_TIME;

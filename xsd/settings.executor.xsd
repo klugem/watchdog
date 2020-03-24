@@ -66,6 +66,8 @@
 				<x:attribute name="shebang" type="x:string" default="#!/bin/bash"/>
 				<x:attribute name="beforeScripts" type="x:string" default=""/>
 				<x:attribute name="afterScripts" type="x:string" default=""/>
+				<x:attribute name="packageManagers" type="x:string" />
+				<x:attribute name="container" type="x:string" default=""/>
 			</x:extension>
 		</x:simpleContent>
 	</x:complexType>

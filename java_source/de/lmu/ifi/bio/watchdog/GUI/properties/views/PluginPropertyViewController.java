@@ -128,7 +128,7 @@ public abstract class PluginPropertyViewController<T extends XMLDataStore> exten
 			pane = viewDummy.getClass().newInstance();
 		} catch(Exception e) { e.printStackTrace(); System.exit(1);} // must work
 		
-		PluginView<T> view = PluginView.getExecutorPropertyView(viewDummy.getFXMLResourceFilename(), pane);
+		PluginView<T> view = PluginView.getPropertyView(viewDummy.getFXMLResourceFilename(), pane);
 		view.addValidateToControl(this);
 		return view;
 	}

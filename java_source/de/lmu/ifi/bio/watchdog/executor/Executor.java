@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 
 import org.apache.commons.lang3.StringUtils;
 
+import de.lmu.ifi.bio.watchdog.executionWrapper.ExecutionWrapper;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
 import de.lmu.ifi.bio.watchdog.logger.LogLevel;
@@ -212,7 +213,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 		String vqp = this.TASK.getVersionQueryParameter();
 		boolean addVersionQuery = (vqp != null && vqp.length() > 0);
 		// no script needed
-		if(this.isSingleCommand() && !addBashWrappingScript && !addVersionQuery) {
+		if(this.isSingleCommand() && !addBashWrappingScript && !addVersionQuery && !this.EXEC_INFO.hasPackageManagers()) {
 			c.add(this.TASK.getBinaryCall());
 			
 			// remove quoting, if needed
@@ -227,6 +228,26 @@ public abstract class Executor<A extends ExecutorInfo> {
 		}
 		// write the stuff to a file
 		else {
+			ExecutionWrapper w = null;
+			if(this.EXEC_INFO.hasPackageManagers()) {
+				HashMap<String, ExecutionWrapper> allWrappers = this.EXEC_INFO.getExecutionWrappers();
+				for(String wrapperName : this.EXEC_INFO.getPackageManagers()) {
+						// we don't need to test, wrapper existence must be enforced before
+						// and we don't need to test OS support 
+						w = allWrappers.get(wrapperName);
+						// get the first wrapper that can be applied on the task (if any)
+						if(w.canBeAppliedOnTask(this.TASK)) {
+							ArrayList<String> init = w.getInitCommands(this.TASK);
+							if(init != null && init.size() > 0)
+								c.addAll(init);
+							
+							break;
+						}
+					}
+				}
+			
+			// TODO: handle virtualizer
+
 			c.addAll(this.BEFORE_COMMAND);
 			String taskParameter = (this.TASK.getArguments().size() > 0 ? " " + StringUtils.join(this.TASK.getArguments(), " ") : "");
 			c.add(this.TASK.getBinaryCall() + taskParameter);
@@ -238,8 +259,15 @@ public abstract class Executor<A extends ExecutorInfo> {
 				this.addAfterCommand(this.TASK.getBinaryCall() + " " + this.TASK.getVersionQueryParameter() + taskParameter + " 2>&1 > " + v.getAbsolutePath());
 				this.TASK.setVersionQueryInfoFile(v);
 			}
-			
 			c.addAll(this.AFTER_COMMAND);
+			
+			// add clean-up if wrapper is used
+			if(w != null) {
+				ArrayList<String> clean = w.getCleanupCommands(this.TASK);
+				if(clean != null && clean.size() > 0)
+					c.addAll(clean);
+			}
+			
 			c.add(EXIT_MAIN_COMMAND_RETURN);
 			return new String[] {this.writeCommandsToFile(StringUtils.join(c, Executor.COMMAND_SEP))};
 		}

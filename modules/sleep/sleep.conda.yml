@@ -1,0 +1,4 @@
+channels:
+  - conda-forge
+dependencies:
+  - coreutils=8.31

@@ -3,14 +3,18 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.lmu.ifi.bio</groupId>
 	<artifactId>watchdog</artifactId>
-	<version>DEV-SNAPSHOT</version>
+	<version>DEV</version>
 	<properties>
 		<jdk.version>11</jdk.version>
-		<targetDirectory>${project.basedir}/build</targetDirectory>
+   		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<targetDirectory>${project.basedir}/jars</targetDirectory>
+		<!-- todo: change tmp directory if /tmp does not exist -->
+		<tmpBuildDirectory>/tmp/watchdog-build/</tmpBuildDirectory>
 	</properties>
 	<build>
-		<!-- todo: change tmp directory if /tmp does not exist -->
-		<directory>/tmp/watchdog-build/</directory>
+		<defaultGoal>initialize package clean</defaultGoal>
+		<!-- configure the source files -->
+		<directory>${tmpBuildDirectory}</directory>
 		<sourceDirectory>java_source/</sourceDirectory>
 		<resources>
 			<resource>
@@ -42,6 +46,15 @@
 					</compilerArgs>
 				</configuration>
 			</plugin>
+			<!-- create jar file with compiled Watchdog classes -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<outputDirectory>${targetDirectory}</outputDirectory>
+				</configuration>
+			</plugin>
 			<!-- copy dependencies to libs -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -62,22 +75,67 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- move javafx modules to libs/modules and copy launcher -->
+			<!-- collect and bundle the source files -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<configuration>
+							<finalName>watchdog</finalName>
+						</configuration>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- move javafx modules to libs/modules and generate run JARs -->
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.8</version>
 				<executions>
+					<!-- clean destination folder -->
 					<execution>
+						<id>cleanDest</id>
+						<phase>initialize</phase>
+						<configuration>
+							<target>
+							<delete quiet="true">
+								<fileset dir="${targetDirectory}/" includes="**/*" excludes="watchdog-RELEASE.jar" />
+							</delete>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<!-- move javafx modules and source file-->
+					<execution>
+						<id>moveModules</id>
 						<phase>package</phase>
 						<configuration>
 							<target>
 								<move todir="${targetDirectory}/libs/modules/" overwrite="true">
 									<fileset dir="${targetDirectory}/libs/" includes="javafx-*.jar" />
 								</move>
-								<copy todir="${targetDirectory}/" overwrite="true">
-									<fileset dir="${project.basedir}/helper_scripts/" includes="snapshotLauncher.sh"/>
-								</copy>
-								<chmod file="${targetDirectory}/snapshotLauncher.sh" perm="ugo+x"/>
+								<copy file="${tmpBuildDirectory}/watchdog-sources.jar" todir="${targetDirectory}/"/>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<!-- create run JARS using the ant script -->
+					<execution>
+						<id>generateRunJars</id>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<ant antfile="${project.basedir}/generateRunableJARs.ant" />
 							</target>
 						</configuration>
 						<goals>
@@ -86,14 +144,30 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- create jar file with compiled Watchdog classes -->
+			<!-- obtain licenses of used libs -->
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
-				<configuration>
-					<outputDirectory>${targetDirectory}</outputDirectory>
-				</configuration>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>download-licenses</goal>
+							<goal>add-third-party</goal>
+						</goals>
+						<configuration>
+							<licensesOutputDirectory>${targetDirectory}/libs/licenses/</licensesOutputDirectory>
+							<cleanLicensesOutputDirectory>true</cleanLicensesOutputDirectory>
+							<forceDownload>true</forceDownload>
+							<errorRemedy>ignore</errorRemedy>
+							<sortByGroupIdAndArtifactId>true</sortByGroupIdAndArtifactId>
+							<outputDirectory>${targetDirectory}/libs/</outputDirectory>
+							<thirdPartyFilename>THIRD-PARTY-LIB-LICENSES.txt</thirdPartyFilename>
+							<licensesOutputFileEncoding>UTF8</licensesOutputFileEncoding>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<!-- do some cleaning -->
 			<plugin>
@@ -102,9 +176,6 @@
 				<executions>
 					<execution>
 						<phase>package</phase>
-						<goals>
-							<goal>clean</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>

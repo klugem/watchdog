@@ -14,7 +14,6 @@ import de.lmu.ifi.bio.watchdog.xmlParser.plugins.XMLParserPlugin;
 public abstract class XMLExecutorInfoParser<A extends ExecutorInfo> extends XMLParserPlugin<A> {
 	
 	public static final String PARENT_TAG = XMLParser.EXECUTOR;
-	public static final String SCRIPTS_SEP = ":";
 	
 	/**
 	 * [IMPORTANT] Extending classes must implement exactly a constructor of the same type or reflection call will fail!
@@ -36,6 +35,7 @@ public abstract class XMLExecutorInfoParser<A extends ExecutorInfo> extends XMLP
 	 * @param additionalData: first element must be of type Environment
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public DefaultExecutorInfo parseMandatoryParameter(Element el, String watchdogBaseDir, Object[] additionalData) {
 		Environment envExecutor = null;
 		if(additionalData.length > 0 && additionalData[0] instanceof Environment)
@@ -51,32 +51,18 @@ public abstract class XMLExecutorInfoParser<A extends ExecutorInfo> extends XMLP
 		String color = XMLParser.getAttribute(el, XMLParser.COLOR);
 		String path2java = XMLParser.getAttribute(el, XMLParser.PATH2JAVA);
 		String shebang = XMLParser.getAttribute(el, XMLParser.SHEBANG);
-		ArrayList<String> beforeScript = splitString(XMLParser.getAttribute(el, XMLParser.BEFORE_SCRIPTS));
-		ArrayList<String> afterScript = splitString(XMLParser.getAttribute(el, XMLParser.AFTER_SCRIPTS));
-
+		ArrayList<String> beforeScript = XMLParser.splitString(XMLParser.getAttribute(el, XMLParser.BEFORE_SCRIPTS), XMLParser.SCRIPTS_SEP);
+		ArrayList<String> afterScript = XMLParser.splitString(XMLParser.getAttribute(el, XMLParser.AFTER_SCRIPTS), XMLParser.SCRIPTS_SEP);
+		ArrayList<String> packageManagers = XMLParser.splitString(XMLParser.getAttribute(el, XMLParser.PACKAGE_MANAGERS), XMLParser.WRAPPERS_SEP);
+		String container = XMLParser.getAttribute(el, XMLParser.CONTAINER);
+		
 		// generate info class
-		DefaultExecutorInfo exinfo = new DefaultExecutorInfo(name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, envExecutor, workingDir, shebang, beforeScript, afterScript);
+		DefaultExecutorInfo exinfo = new DefaultExecutorInfo(name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, envExecutor, workingDir, shebang, beforeScript, afterScript, packageManagers, container);
 		// set color, if some is set
 		if(color != null)
 			exinfo.setColor(color);
 		
 		return exinfo;
-	}
-	
-	/**
-	 * splits a string using the separator ':'
-	 * @param scripts
-	 * @return
-	 */
-	public static ArrayList<String> splitString(String scripts) {
-		ArrayList<String> r = new ArrayList<>();
-		if(scripts != null && scripts.length() > 0) {
-			for(String p : scripts.split(SCRIPTS_SEP)) {
-				if(p.length() > 0)
-					r.add(p);
-			}
-		}	
-		return r;
 	}
 	
 	/**
@@ -88,6 +74,6 @@ public abstract class XMLExecutorInfoParser<A extends ExecutorInfo> extends XMLP
 		if(scripts == null || scripts.size() == 0)
 			return "";
 		else
-			return StringUtils.join(scripts, SCRIPTS_SEP);
+			return StringUtils.join(scripts, XMLParser.SCRIPTS_SEP);
 	}
 }

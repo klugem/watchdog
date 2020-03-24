@@ -9,6 +9,7 @@
 	<x:include schemaLocation="settings.processBlock.xsd" />
 	<x:include schemaLocation="settings.constants.xsd" />
 	<x:include schemaLocation="settings.modules.xsd" />
+	<x:include schemaLocation="settings.wrappers.xsd" />
 	<x:include schemaLocation="gui_info.xsd" />
 	<x:include schemaLocation="abstract_task.xsd" />
 
@@ -30,6 +31,7 @@
 							<x:element name="executors" type="executorsType" minOccurs="0" maxOccurs="1" />
 							<x:element name="constants" type="constantsType" minOccurs="0" maxOccurs="1" />
 							<x:element name="modules" type="modulesType" minOccurs="0" maxOccurs="1" />
+							<x:element name="wrappers" type="executionwrappersType" minOccurs="0" maxOccurs="1" />
 						</x:all>
 					</x:complexType>
 				</x:element>

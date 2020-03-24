@@ -214,7 +214,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						if(completeArguments.containsKey(inputName))
 							completeRawargumentList = completeArguments.get(inputName);
 						
-						t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled());
+						t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled(), x.getModuleFolder());
 						t.setMaxRunning(x.getMaxRunning());
 						t.setProject(x.getProjectName());
 						t.addErrorChecker(new WatchdogErrorCatcher(t));

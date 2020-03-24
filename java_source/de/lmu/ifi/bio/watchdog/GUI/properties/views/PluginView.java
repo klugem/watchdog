@@ -13,7 +13,7 @@ public abstract class PluginView<T extends XMLDataStore> extends Pane {
 	/** hide constructor */ 
 	protected PluginView() {}
 	
-	public static <A extends XMLDataStore> PluginView<A> getExecutorPropertyView(String fxmlFile, PluginView<A> pane) {
+	public static <A extends XMLDataStore> PluginView<A> getPropertyView(String fxmlFile, PluginView<A> pane) {
 		try {
 			FXMLRessourceLoader<PluginView<A>, PluginViewController<A>> l = new FXMLRessourceLoader<>(fxmlFile, pane);
 			Pair<PluginView<A>, PluginViewController<A>> pair = l.getNodeAndController();
@@ -74,5 +74,3 @@ public abstract class PluginView<T extends XMLDataStore> extends Pane {
 		this.controller.loadData(data);
 	}
 }
-
-

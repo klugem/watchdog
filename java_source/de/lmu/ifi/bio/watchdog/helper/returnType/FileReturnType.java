@@ -24,6 +24,8 @@ public class FileReturnType extends ReturnType {
 	
 	public static FileReturnType AB_FILE = new FileReturnType(ABSOLUTE_FILE);
 	public static FileReturnType AB_FOLDER = new FileReturnType(ABSOLUTE_FOLDER);
+	public static FileReturnType RE_FILE = new FileReturnType(RELATIVE_FILE);
+	public static FileReturnType RE_FOLDER = new FileReturnType(RELATIVE_FOLDER);
 	
 	private final String FILE_TYPE;
 	

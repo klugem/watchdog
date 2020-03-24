@@ -54,7 +54,7 @@ public class DRMAAExecutorInfoParser extends XMLExecutorInfoParser<DRMAAExecutor
 		// get additional grid attributes
 		String customParams = XMLParser.getAttribute(el, XMLParser.CUSTOM_PARAMETERS); 		
 
-		DRMAAExecutorInfo info = new DRMAAExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getWorkingDir(), di.getShebang(), customParams, di.getBeforeScriptNames(), di.getAfterScriptNames());
+		DRMAAExecutorInfo info = new DRMAAExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getWorkingDir(), di.getShebang(), customParams, di.getBeforeScriptNames(), di.getAfterScriptNames(), di.getPackageManagers(), di.getContainer());
 		if(di.getColor() != null)
 			info.setColor(di.getColor());
 		return info;

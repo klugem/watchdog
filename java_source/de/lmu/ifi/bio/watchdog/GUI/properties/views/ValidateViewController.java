@@ -229,19 +229,64 @@ public abstract class ValidateViewController implements Initializable {
 			return ret;
 		}
 		
-		public boolean isAbsoluteFile(TextField box, String text) {
-			boolean ret = FileReturnType.AB_FILE.checkType(box.getText());
-			GUIFormat.colorTextField(box, ret); // color the stuff correctly
-			if(!ret)
-				this.addMessageToPrivateLog(MessageType.WARNING, text);
+		private boolean testFileFolder(TextField box, String text, boolean isFile, boolean isAbsolute, boolean updateColorAndAddText) {
+			// determine the file type to test
+			FileReturnType test = null;
+			if(isFile) {
+				if(isAbsolute) test = FileReturnType.AB_FILE;
+				else test = FileReturnType.RE_FILE;
+			} else {
+				if(isAbsolute) test = FileReturnType.AB_FOLDER;
+				else test = FileReturnType.RE_FOLDER;
+			}
+			
+			// make the test
+			boolean ret = test.checkType(box.getText());
+			if(updateColorAndAddText) {
+				GUIFormat.colorTextField(box, ret); // color the stuff correctly
+				if(!ret)
+					this.addMessageToPrivateLog(MessageType.WARNING, text);
+			}
 			return ret;
 		}
 		
+		public boolean isAbsoluteFile(TextField box, String text) {
+			return testFileFolder(box, text, true, true, true);
+		}
+		
 		public boolean isAbsoluteFolder(TextField box, String text) {
-			boolean ret = FileReturnType.AB_FOLDER.checkType(box.getText());
-			GUIFormat.colorTextField(box, ret); // color the stuff correctly
-			if(!ret)
-				this.addMessageToPrivateLog(MessageType.WARNING, text);
+			return testFileFolder(box, text, false, true, true);
+		}
+		
+		public boolean isRelativeFile(TextField box, String text) {
+			return testFileFolder(box, text, true, false, true);
+		}
+		
+		public boolean isRelativeFolder(TextField box, String text) {
+			return testFileFolder(box, text, false, false, true);
+		}
+		
+		public boolean isAbsoluteOrRelativeFolder(TextField box, String text, boolean isOptional) {
+			return isAbsoluteOrRelativeFolder(box, text, false, isOptional);
+		}
+		
+		public boolean isAbsoluteOrRelativeFile(TextField box, String text, boolean isOptional) {
+			return isAbsoluteOrRelativeFolder(box, text, true, isOptional);
+		}
+		
+		private boolean isAbsoluteOrRelativeFolder(TextField box, String text, boolean isFile, boolean isOptional) {
+			if(isOptional && box.getText().isEmpty())
+				return true;
+			
+			boolean abs = testFileFolder(box, text, isFile, true, false);
+			boolean rel = testFileFolder(box, text, isFile, false, false);
+			
+			boolean ret = abs || rel;
+			if(!ret) {
+				GUIFormat.colorTextField(box, ret); // color the stuff correctly
+				if(!ret)
+					this.addMessageToPrivateLog(MessageType.WARNING, text);
+			}
 			return ret;
 		}
 

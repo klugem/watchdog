@@ -15,6 +15,7 @@ import de.lmu.ifi.bio.watchdog.GUI.module.WorkflowModuleController;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PropertyViewFactory;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PropertyViewType;
+import de.lmu.ifi.bio.watchdog.executionWrapper.ExecutionWrapper;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Constants;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
@@ -268,6 +269,8 @@ public class PropertyManagerController implements Initializable {
 				else if(data instanceof ExecutorInfo)
 					XMLDataStore.unregisterData(data);
 				else if(data instanceof Constants)
+					XMLDataStore.unregisterData(data);
+				else if(data instanceof ExecutionWrapper)
 					XMLDataStore.unregisterData(data);
 				else {
 					System.err.println("delete of PropertyManager is not implemented for object of type '"+ data.getClass().getSimpleName() +"'");

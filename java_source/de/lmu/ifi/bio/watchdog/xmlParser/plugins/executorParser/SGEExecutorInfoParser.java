@@ -51,7 +51,7 @@ public class SGEExecutorInfoParser extends XMLExecutorInfoParser<SGEExecutorInfo
 		if(slots <= 0) 
 			slots = 1; 
 	
-		SGEExecutorInfo info = new SGEExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getShebang(), slots, memory, queue, di.getWorkingDir(), customParams, disableDefault, di.getBeforeScriptNames(), di.getAfterScriptNames());
+		SGEExecutorInfo info = new SGEExecutorInfo(this.getNameOfParseableTag(), di.getName(), di.isDefaultExecutor(), di.isStick2Host(), di.getMaxSlaveRunningTasks(), di.getPath2Java(), di.getMaxSimRunning(), di.getWatchdogBaseDir(), di.getEnv(), di.getShebang(), slots, memory, queue, di.getWorkingDir(), customParams, disableDefault, di.getBeforeScriptNames(), di.getAfterScriptNames(), di.getPackageManagers(), di.getContainer());
 		if(di.getColor() != null)
 			info.setColor(di.getColor());
 		return info;

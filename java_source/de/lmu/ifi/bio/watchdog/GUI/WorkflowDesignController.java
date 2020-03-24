@@ -47,6 +47,7 @@ import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyLine;
 import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyManager;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PropertyViewType;
 import de.lmu.ifi.bio.watchdog.docu.DocuXMLParser;
+import de.lmu.ifi.bio.watchdog.executionWrapper.ExecutionWrapper;
 import de.lmu.ifi.bio.watchdog.executor.Executor;
 import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
 import de.lmu.ifi.bio.watchdog.executor.HTTPListenerThread;
@@ -406,9 +407,11 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			LinkedHashMap<String, ProcessBlock> processblocks = new LinkedHashMap<>();
 			LinkedHashMap<String, Environment> environments = new LinkedHashMap<>();
 			LinkedHashMap<String, ExecutorInfo> executors = new LinkedHashMap<>();
+			LinkedHashMap<String, ExecutionWrapper> wrappers = new LinkedHashMap<>();
 			processblocks.putAll(((HashMap<String, ProcessBlock>) ret[6]));
 			environments.putAll(((HashMap<String, Environment>) ret[7]));
 			executors.putAll(((HashMap<String, ExecutorInfo>) ret[8]));
+			wrappers.putAll(((HashMap<String, ExecutionWrapper>) ret[11]));
 			LinkedHashMap<String, String> constants = (LinkedHashMap<String, String>) ret[10];
 			HashMap<String, WorkflowModule> workModules = new HashMap<>();
 			
@@ -556,6 +559,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			PropertyManager constManager = this.PROP_MANAGER.get(PropertyViewType.CONSTANTS);
 			PropertyManager execManager = this.PROP_MANAGER.get(PropertyViewType.EXECUTOR);
 			PropertyManager blockManager = this.PROP_MANAGER.get(PropertyViewType.PROCESS_BLOCK);
+			PropertyManager wrapperManager = this.PROP_MANAGER.get(PropertyViewType.WRAPPERS);
 			HashMap<String, PropertyLine> blocksProp = new HashMap<>();
 			HashMap<String, PropertyLine> envProp = new HashMap<>();
 			HashMap<String, PropertyLine> exProp = new HashMap<>();
@@ -570,6 +574,12 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			for(String cname : sortedConst) {
 				String value = constants.get(cname);
 				line = constManager.loadProperty(null, i++, new Constants(cname, value));
+			}
+			
+			// load execution wrappers
+			i = 1;
+			for(ExecutionWrapper w : wrappers.values()) {
+				line = wrapperManager.loadProperty(null, i++, w);
 			}
 
 			// load environments
@@ -954,6 +964,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 		ArrayList<XMLDataStore> environments = this.PROP_MANAGER.get(PropertyViewType.ENVIRONMENT).getXMLData();
 		ArrayList<XMLDataStore> executor = this.PROP_MANAGER.get(PropertyViewType.EXECUTOR).getXMLData();
 		ArrayList<XMLDataStore> processblock = this.PROP_MANAGER.get(PropertyViewType.PROCESS_BLOCK).getXMLData();
+		ArrayList<XMLDataStore> wrappers = this.PROP_MANAGER.get(PropertyViewType.WRAPPERS).getXMLData();
 		
 		// collect module folders that must be loaded
 		HashSet<String> requiredModules = new HashSet<String>();
@@ -970,7 +981,7 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 			}
 		}
 		
-		if(requiredModules.size() > 0 || constants.size() > 0 || environments.size() > 0 || executor.size() > 0 || processblock.size() > 0) {
+		if(requiredModules.size() > 0 || constants.size() > 0 || environments.size() > 0 || executor.size() > 0 || processblock.size() > 0 || wrappers.size() > 0) {
 			b.startTag(XMLParser.SETTINGS, true, true);
 			b.endOpeningTag();
 			
@@ -997,14 +1008,21 @@ public class WorkflowDesignController implements Initializable, GUISaveHelper {
 				b.addXMLDataStoreContent(constants, true);
 				b.endCurrentTag(true);
 			}
-			// add environment section if required
+			// add wrapper section if required
+			if(wrappers.size() > 0) {
+				b.startTag(XMLParser.WRAPPERS, true, true);
+				b.endOpeningTag();
+				b.addXMLDataStoreContent(wrappers, true);
+				b.endCurrentTag(true);
+			}
+			// add executor section if required
 			if(executor.size() > 0) {
 				b.startTag(XMLParser.EXECUTORS, true, true);
 				b.endOpeningTag();
 				b.addXMLDataStoreContent(executor, true);
 				b.endCurrentTag(true);
 			}
-			// add environment section if required
+			// add process block section if required
 			if(processblock.size() > 0) {
 				b.startTag(XMLParser.PROCESS_BLOCK, true, true);
 				b.endOpeningTag();

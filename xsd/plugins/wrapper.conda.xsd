@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
+	<!--  execution wrapper  -->
+	<x:complexType name="condaWrapperType">
+		<x:simpleContent>
+			<x:extension base="executionwrapperAbstractType">
+				<x:attribute name="path2conda" type="absolutePathType" use="required" />
+				<x:attribute name="path2environments" type="absoluteOrRelativePathType" default="" />
+			</x:extension>
+		</x:simpleContent>
+	</x:complexType>
+	<!--  tag for process block in XML file  -->
+	<x:element name="conda" type="condaWrapperType" substitutionGroup="executionwrapperType" />
+</x:schema>

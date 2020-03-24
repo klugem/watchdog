@@ -7,16 +7,22 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
+
+import de.lmu.ifi.bio.watchdog.executionWrapper.ExecutionWrapper;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.SyncronizedLineWriter;
+import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.helper.XMLDataStore;
 import de.lmu.ifi.bio.watchdog.interfaces.XMLPlugin;
 import de.lmu.ifi.bio.watchdog.runner.XMLBasedWatchdogRunner;
 import de.lmu.ifi.bio.watchdog.task.Task;
-
+import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
+import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executorParser.XMLExecutorInfoParser;
 
 /**
  * Stores information about executors
@@ -34,9 +40,10 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	private final String WATCHDOG_BASE_DIR;
 	private final String PATH2JAVA;
 	private final String WORKING_DIR;
-	private final String STATIC_WORKING_DIR;
 	private final ArrayList<String> BEFORE_SCRIPT;
 	private final ArrayList<String> AFTER_SCRIPT;
+	private final ArrayList<String> PACKAGE_MANAGERS;
+	private final String CONTAINER;
 	private static final String LOCAL = "/usr/local/storage/";
 	private static final String TMP = "/tmp/";
 	private static final String JAVA = "/usr/bin/java"; 
@@ -52,7 +59,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	private String shebang = DEFAULT_SHEBANG;
 	private ArrayList<String> beforeCommands = new ArrayList<String>();
 	private ArrayList<String> afterCommands = new ArrayList<String>();
-	
+	private LinkedHashMap<String, ExecutionWrapper> wrappers = null;
 	
 	/**
 	 * Constructor
@@ -62,7 +69,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	 * @param watchdogBaseDir
 	 * @param environment
 	 */
-	public ExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang, ArrayList<String> beforeScripts, ArrayList<String> afterScripts) {
+	public ExecutorInfo(String type, String name, boolean isDefault, boolean isStick2Host, Integer maxSlaveRunning, String path2java, int maxRunning, String watchdogBaseDir, Environment environment, String workingDir, String shebang, ArrayList<String> beforeScripts, ArrayList<String> afterScripts, ArrayList<String> packageManager, String container) {
 		// test, if we can use some of the default working dirs
 		if(workingDir == null)
 			workingDir = ExecutorInfo.getWorkingDir(watchdogBaseDir);
@@ -77,10 +84,11 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 		this.WATCHDOG_BASE_DIR = watchdogBaseDir;
 		this.IS_STICK2HOST = isStick2Host;
 		this.PATH2JAVA = path2java;
-		this.STATIC_WORKING_DIR = workingDir;
 		this.WORKING_DIR = workingDir;
 		this.BEFORE_SCRIPT = beforeScripts;
 		this.AFTER_SCRIPT = afterScripts;
+		this.PACKAGE_MANAGERS = packageManager;
+		this.CONTAINER = container;
 		
 		// set slave mode stuff
 		if(isStick2Host)
@@ -103,7 +111,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	 * @param listToAdd
 	 * @param beforeScript
 	 */
-	private void readAndAddScriptFile(String pathToScriptFile, ArrayList<String> listToAdd, boolean beforeScript) {
+	public void readAndAddScriptFile(String pathToScriptFile, ArrayList<String> listToAdd, boolean beforeScript) {
 		if(pathToScriptFile == null || pathToScriptFile.length() == 0)
 			return;
 		// test if relative path
@@ -201,7 +209,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	 * @return
 	 */
 	public String getStaticWorkingDir() {
-		return this.STATIC_WORKING_DIR;
+		return this.WORKING_DIR;
 	}
 	
 	/**
@@ -229,6 +237,22 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	}
 	
 	/**
+	 * returns the list of package managers
+	 * @return
+	 */
+	public ArrayList<String> getPackageManagers() {
+		return this.PACKAGE_MANAGERS != null ? this.PACKAGE_MANAGERS : new ArrayList<String>();
+	}
+	
+	/**
+	 * name of the container to use
+	 * @return
+	 */
+	public String getContainer() {
+		return this.CONTAINER;
+	}
+	
+	/**
 	 * tests if before scripts are set
 	 * @return
 	 */
@@ -242,6 +266,22 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	 */
 	public boolean hasAfterScripts() {
 		return this.AFTER_SCRIPT != null && this.AFTER_SCRIPT.size() > 0;
+	}
+	
+	/**
+	 * true, if package managers are used
+	 * @return
+	 */
+	public boolean hasPackageManagers() {
+		return this.PACKAGE_MANAGERS != null &&  this.PACKAGE_MANAGERS.size() > 0;
+	}
+	
+	/**
+	 * true, if a wrapping container is used
+	 * @return
+	 */
+	public boolean usesContainer()  {
+		return this.CONTAINER != null && this.CONTAINER.length() > 0;
 	}
 	
 	/**
@@ -408,6 +448,22 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	}
 	
 	/**
+	 * sets the execution wrappers that are defined
+	 * @param wrappers
+	 */
+	public void setWrappers(LinkedHashMap<String, ExecutionWrapper> wrappers) {
+		this.wrappers = wrappers;
+	}
+	
+	/**
+	 * returns all defined execution wrappers
+	 * @return
+	 */
+	public LinkedHashMap<String, ExecutionWrapper> getExecutionWrappers() {
+		return this.wrappers;
+	}
+	
+	/**
 	 * true, if a non-default shebang was set
 	 * @return
 	 */
@@ -429,6 +485,48 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 	 */
 	public ArrayList<String> getAfterCommands() {
 		return this.afterCommands;
+	}
+	
+	/**
+	 * true, if it has a custom java path
+	 * @return
+	 */
+	public boolean hasCustomPath2Java() {
+		return !PATH2JAVA.equals(this.getPath2Java());
+	}
+	
+	/**
+	 * adds all executor attributes that are common to all executors
+	 * @param x
+	 */
+	public void addDefaultExecutorAttributes(XMLBuilder x) {
+
+		if(this.isStick2Host())
+			x.addQuotedAttribute(XMLParser.STICK2HOST, true);
+		if(this.hasDefaultEnv())
+			x.addQuotedAttribute(XMLParser.ENVIRONMENT, this.getEnv().getName());
+		if(this.isDefaultExecutor())
+			x.addQuotedAttribute(XMLParser.DEFAULT, true);
+		if(this.getMaxSimRunning() >= 1)
+			x.addQuotedAttribute(XMLParser.MAX_RUNNING, this.getMaxSimRunning());
+		if(this.isStick2Host())
+			x.addQuotedAttribute(XMLParser.STICK2HOST, true);
+		if(this.hasColor())
+			x.addQuotedAttribute(XMLParser.COLOR, this.getColor());
+		if(this.hasCustomShebang()) 
+			x.addQuotedAttribute(XMLParser.SHEBANG, this.getShebang());
+		if(this.hasBeforeScripts()) 
+			x.addQuotedAttribute(XMLParser.BEFORE_SCRIPTS, XMLExecutorInfoParser.joinString(this.getBeforeScriptNames()));
+		if(this.hasAfterScripts()) 
+			x.addQuotedAttribute(XMLParser.AFTER_SCRIPTS, XMLExecutorInfoParser.joinString(this.getAfterScriptNames()));
+		if(this.hasPackageManagers())
+			x.addQuotedAttribute(XMLParser.PACKAGE_MANAGERS, StringUtils.join(this.getPackageManagers(), XMLParser.WRAPPERS_SEP));
+		if(this.usesContainer())
+			x.addQuotedAttribute(XMLParser.CONTAINER, this.getContainer());
+		if(this.hasCustomPath2Java())
+			x.addQuotedAttribute(XMLParser.PATH2JAVA, this.getPath2Java());
+		if(!LOCAL.equals(this.getWorkingDir()))
+			x.addQuotedAttribute(XMLParser.WORKING_DIR_EXC, this.getWorkingDir());
 	}
 
 	/**

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginPropertyViewController;
-import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
+import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginViewController;
 import de.lmu.ifi.bio.watchdog.executor.local.LocalExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
@@ -15,7 +15,7 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
  * @author kluge
  *
  */
-public class LocalGUIExecutorViewController extends GUIExecutorViewController {
+public class LocalGUIExecutorViewController extends PluginViewController<LocalExecutorInfo>  {
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -23,7 +23,7 @@ public class LocalGUIExecutorViewController extends GUIExecutorViewController {
 	}
 
 	@Override
-	public void addPropertyViewControllerToValidate(PluginPropertyViewController<ExecutorInfo> executorPropertyViewController, String condition) {}
+	public void addPropertyViewControllerToValidate(PluginPropertyViewController<LocalExecutorInfo> executorPropertyViewController, String condition) {}
 
 	@Override
 	public void setHandlerForGUIColoring() {}
@@ -31,9 +31,9 @@ public class LocalGUIExecutorViewController extends GUIExecutorViewController {
 	@Override
 	public void loadData(Object[] data) {}
 
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "unchecked" })
 	@Override
-	public ExecutorInfo getXMLPluginObject(Object[] data) {
+	public LocalExecutorInfo getXMLPluginObject(Object[] data) {
 		// cast the data
 		String name = (String) data[0];
 		boolean isDefault = (boolean) data[1];
@@ -45,11 +45,11 @@ public class LocalGUIExecutorViewController extends GUIExecutorViewController {
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
 		String shebang = (String) data[9];
-		@SuppressWarnings("unchecked")
 		ArrayList<String> beforeScripts = (ArrayList<String>) data[10];
-		@SuppressWarnings("unchecked")
 		ArrayList<String> afterScripts = (ArrayList<String>) data[11];
+		ArrayList<String> packageManager = (ArrayList<String>) data[12];
+		String container = (String) data[13];
 		
-		return new LocalExecutorInfo(XMLParser.LOCAL, name, isDefault, isStick2Host, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts);
+		return new LocalExecutorInfo(XMLParser.LOCAL, name, isDefault, isStick2Host, path2java, maxRunning, watchdogBaseDir, environment, workingDir, shebang, beforeScripts, afterScripts, packageManager, container);
 	}
 }

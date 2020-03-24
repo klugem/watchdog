@@ -3,21 +3,31 @@
 USED_TOOLS_FUNCTIONS='echo:head:tr:md5sum:touch:mkdir:mktemp:cut:printf:tee:sync'
 MESSAGE_SIZE=100
 
+printPrimaryCaller() {
+	if [ "${PRIMARY_CALLER}" != "" ]; then
+		printf "[$PRIMARY_CALLER]"
+	fi 
+	printf "\n";
+}
+
 echoInfo() {
 	if [ ! -z "$1" ]; then
-		printf "[INFO] $1 [$PRIMARY_CALLER]\n"
+		printf "[INFO] $1"
+		printPrimaryCaller
 	fi
 }
 
 echoWarn() {
 	if [ ! -z "$1" ]; then
-		printf "[WARN] $1 [$PRIMARY_CALLER]\n"
+		printf "[WARN] $1"
+		printPrimaryCaller
 	fi
 }
 
 echoError() {
 	if [ ! -z "$1" ]; then
-		printf "[ERROR] $1 [$PRIMARY_CALLER]\n" 1>&2
+		printf "[ERROR] $1" 1>&2
+		printPrimaryCaller 1>&2
 	fi
 }
 

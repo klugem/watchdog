@@ -3,6 +3,7 @@ package de.lmu.ifi.bio.watchdog.GUI.properties.views;
 import de.lmu.ifi.bio.watchdog.GUI.properties.PropertyData;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.ExecutorPropertyView;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.processblocks.ProcessblockPropertyView;
+import de.lmu.ifi.bio.watchdog.GUI.properties.views.wrapper.ExecutionWrapperPropertyView;
 import javafx.scene.paint.Color;
 
 public class PropertyViewFactory {
@@ -36,6 +37,9 @@ public class PropertyViewFactory {
 		case CONSTANTS:
 			view = ConstantsPropertyView.getConstantsPropertyView();
 			break;
+		case WRAPPERS:
+			view = ExecutionWrapperPropertyView.getExecutionWrapperPropertyView();
+			break;
 		default:
 			throw new Exception("PropertyViewFactory does not accept type " + type + " yet!");
 		}
@@ -46,6 +50,7 @@ public class PropertyViewFactory {
 		PropertyData data = null;
 		switch (this.TYPE) {
 		case CONSTANTS:
+		case WRAPPERS:
 			data = new PropertyData(number);
 			break;
 		default:

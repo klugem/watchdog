@@ -51,7 +51,7 @@ if [ "${JFX_SDK_LIB_PATH}" == "" ]; then
 	# use find
 	if [ $LOCATE_OK -eq 0 ]; then
 		echoInfo "Searching for javafx SDK using find; this might take a while..."
-		RET=$(find "${CONDA_PREFIX}/usr" "${CONDA_PREFIX}/share" -name "${JAVA_FX_TEST_NAME}" 2> /dev/null)
+		RET=$(find "${CONDA_PREFIX}/usr" "${CONDA_PREFIX}/share" "${CONDA_PREFIX}/lib" -name "${JAVA_FX_TEST_NAME}" 2> /dev/null)
 	fi
 
 	# prepare results

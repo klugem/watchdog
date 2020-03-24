@@ -7,7 +7,7 @@ import java.util.ResourceBundle;
 import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
 import de.lmu.ifi.bio.watchdog.GUI.helper.TextFilter;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginPropertyViewController;
-import de.lmu.ifi.bio.watchdog.executor.ExecutorInfo;
+import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginViewController;
 import de.lmu.ifi.bio.watchdog.executor.external.slurm.SlurmExecutorInfo;
 import de.lmu.ifi.bio.watchdog.helper.Environment;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
@@ -20,7 +20,7 @@ import javafx.scene.control.TextField;
  * @author kluge
  *
  */
-public class SlurmGUIExecutorViewController extends GUIExecutorViewController {
+public class SlurmGUIExecutorViewController extends PluginViewController<SlurmExecutorInfo> {
 
 	@FXML private TextField cluster;
 	@FXML private TextField partition;
@@ -36,7 +36,7 @@ public class SlurmGUIExecutorViewController extends GUIExecutorViewController {
 	}
 
 	@Override
-	public void addPropertyViewControllerToValidate(PluginPropertyViewController<ExecutorInfo> executorPropertyViewController, String condition) {
+	public void addPropertyViewControllerToValidate(PluginPropertyViewController<SlurmExecutorInfo> executorPropertyViewController, String condition) {
 		// add integer enforcer
 		this.cpu.setTextFormatter(TextFilter.getPositiveIntFormater());
 		this.memory.setTextFormatter(TextFilter.getMemoryFormater());
@@ -65,8 +65,9 @@ public class SlurmGUIExecutorViewController extends GUIExecutorViewController {
 	@Override
 	public void setHandlerForGUIColoring() {}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public ExecutorInfo getXMLPluginObject(Object[] data) {
+	public SlurmExecutorInfo getXMLPluginObject(Object[] data) {
 		// cast the data
 		String name = (String) data[0];
 		boolean isDefault = (boolean) data[1];
@@ -78,12 +79,12 @@ public class SlurmGUIExecutorViewController extends GUIExecutorViewController {
 		Environment environment = (Environment) data[7];
 		String workingDir = (String) data[8];
 		String shebang = (String) data[9];
-		@SuppressWarnings("unchecked")
 		ArrayList<String> beforeScripts = (ArrayList<String>) data[10];
-		@SuppressWarnings("unchecked")
 		ArrayList<String> afterScripts = (ArrayList<String>) data[11];
+		ArrayList<String> packageManager = (ArrayList<String>) data[12];
+		String container = (String) data[13];
 		
-		return new SlurmExecutorInfo(XMLParser.CLUSTER, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, Integer.parseInt(this.cpu.getText()), this.memory.getText(), this.cluster.getText(), this.partition.getText(), this.timelimit.getText(), workingDir, this.customParams.getText(), this.disableDefaultParams.isSelected(), beforeScripts, afterScripts);
+		return new SlurmExecutorInfo(XMLParser.CLUSTER, name, isDefault, isStick2Host, maxSlaveRunning, path2java, maxRunning, watchdogBaseDir, environment, shebang, Integer.parseInt(this.cpu.getText()), this.memory.getText(), this.cluster.getText(), this.partition.getText(), this.timelimit.getText(), workingDir, this.customParams.getText(), this.disableDefaultParams.isSelected(), beforeScripts, afterScripts, packageManager, container);
 	}
 
 	@Override

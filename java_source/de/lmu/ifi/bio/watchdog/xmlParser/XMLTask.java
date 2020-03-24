@@ -60,6 +60,7 @@ public class XMLTask {
 	private final String NAME;
 	private final String PROJECT_NAME;
 	private final ProcessBlock PROCESS_BLOCK;
+	private final File MODULE_FOLDER;
 	private final ExecutorInfo EXECUTOR_INFO;
 	private final OptionFormat OPTION_FORMAT;
 	private final HashMap<Integer, Integer> DEPENDS = new HashMap<>();
@@ -131,6 +132,7 @@ public class XMLTask {
 		this.OPTION_FORMAT = optionFormater;
 		this.EXECUTOR_INFO = executorInfo;
 		this.PROCESS_BLOCK = null;
+		this.MODULE_FOLDER = null;
 		this.setEnvironment(environment);
 		// store the task in the static variable
 		XML_TASKS.put(this.getXMLID(), this);
@@ -145,8 +147,9 @@ public class XMLTask {
 	 * @param optionFormater
 	 * @param executorInfo
 	 * @param processBlock might be null
+	 * @param moduleFolder might be null
 	 */
-	public XMLTask(int xmlID, String taskType, int version, String binName, String name, String projectName, OptionFormat optionFormater, ExecutorInfo executorInfo, ProcessBlock processBlock) {
+	public XMLTask(int xmlID, String taskType, int version, String binName, String name, String projectName, OptionFormat optionFormater, ExecutorInfo executorInfo, ProcessBlock processBlock, File moduleFolder) {
 		this.XML_ID = xmlID;
 		this.VERSION = version;
 		this.TASK_TYPE = taskType + XMLParser.VERSION_SEP + this.VERSION; 
@@ -156,6 +159,7 @@ public class XMLTask {
 		this.OPTION_FORMAT = optionFormater;
 		this.EXECUTOR_INFO = executorInfo;
 		this.PROCESS_BLOCK = processBlock;
+		this.MODULE_FOLDER = moduleFolder;
 
 		// store the task in the static variable
 		XML_TASKS.put(this.getXMLID(), this);
@@ -1610,5 +1614,21 @@ public class XMLTask {
 
 	public void removeAttachInfo(String inputName) {
 		this.ATTACH_INFO.remove(inputName);
+	}
+	
+	/**
+	 * true, if a module folder is set
+	 * @return
+	 */
+	public boolean hasModuleFolder() {
+		return this.getModuleFolder() != null;
+	}
+	
+	/**
+	 * returns the module folder
+	 * @return
+	 */
+	public File getModuleFolder() {
+		return this.MODULE_FOLDER;
 	}
 }

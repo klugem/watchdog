@@ -1,0 +1,188 @@
+<html><head>
+<title>CUP Parser Generator for Java</title>
+</head>
+<body BGCOLOR=white>
+
+<hr>
+<img src="cup_logo.gif" alt="[CUP Logo Image]">
+<hr>
+<h1>CUP Parser Generator for Java</h1>
+
+<table align=center border=10 bgcolor=pink bordercolor=blue>
+<tr><td>
+<font size="+3">
+<strong>
+<a href="http://www2.cs.tum.edu/projects/cup">
+CUP is now maintained and improved at the Technical University of Munich.
+Please follow this link.</a>
+</strong></font>
+</table>
+
+<p>
+
+<table align=center border=10 bgcolor=yellow bordercolor=blue>
+<tr><td>
+<h2>Previous, obsolete content of this page</h2>
+<small>
+
+<h3><a href="http://www.cs.cmu.edu/~hudson/">
+Scott E. Hudson</a><br> 
+</h3>
+Modified by <a href="http://www.princeton.edu/~frankf"></A>Frank Flannery, <a href="http://cscott.net/">C. Scott Ananian</a>, 
+<a href="http://www.cs.princeton.edu/~danwang">Dan Wang</a> with advice from 
+<a href="http://www.cs.princeton.edu/~appel">Andrew W. Appel</a><br>
+<BR>
+<i>Sep 1999</i> (v0.10k)
+<hr>
+
+<h3><a href="manual.html">User Manual</a></h3>
+<h3><a href="#LICENSE">Copyright Notice, License, and Disclaimer</a></h3>
+<h3>Source code (CUP 0.10k)
+<a href="java_cup_v10k.tar.gz">(compressed tar)</A>
+<A href="java_cup_v10k.zip"><small>(ZIP archive)</small></A>
+</h3>
+<h3><A href="CHANGELOG">Change log for current version</A></H3>
+<H3><A href="bugs.html">Known issues with current release</A>
+    <SMALL>(updated 24-Jul-1999)</SMALL></H3>
+<p>[CUP 0.10k requires JDK 1.1 or greater.]</p>
+<!--
+<P><A HREF="java_cup_v10k-b2.tar.gz">CUP 0.10k beta 2 (compressed tar)</A>
+(posted 8-Sep-1999)</p>
+-->
+<HR>
+<b>FAQs:</b>
+<ul>
+<li><i>How do I get the line number where my parse error occurred?</i>
+Look at how the Grammar for Java below does it.  That's canonical.</li>
+<li><i>"Symbol recycling detected (fix your scanner)" -- help!</i>
+Your lexer can't return the same object twice; see the CHANGELOG entry
+for 0.10j in the CUP distribution for more details.</li>
+<li><i>Why haven't there been any releases recently?</i> Because
+CUP doesn't have any known bugs.  Just "feature requests," and they
+get very low priority if a patch isn't included with your request.
+</ul>
+<HR>
+<FONT COLOR=red><B>NEW!</B></FONT>
+<font size="+1"><a name="grammar">
+  CUP Grammar for the Java Programming language</a>, versions 1.0 through 1.5.
+</font>
+(<A HREF="javagrm.tar.gz">compressed tar</A>)
+(<A HREF="javagrm.zip">ZIP archive</A>)
+(<A HREF="javagrm-README.txt">README</A>)
+<BR>
+<!--
+<B>UPDATED:</B> Fixed lexer Float/Double bug
+[14-Jul-1998]. See README for details.<BR>
+<B>UPDATED:</B> Fixed class literal omission, unicode escape parsing
+[10-Feb-1999].  See README for details.<BR>
+<B>UPDATED:</B> Updated to Java 1.2; fixed lexer bugs with funny octal
+escapes and large integer constants
+[11-Feb-1999].  See README for details.<BR>
+<B>UPDATED:</B> Fixed position reporting buglet
+[13-Sep-1999].  See README for details.<BR>
+<B>UPDATED:</B> Fixed another position reporting buglet
+[27-Oct-1999].  See README for details.<BR>
+<B>UPDATED:</B> Extended to Java 1.4;
+fixed "semicolon after class definition" bug.
+[10-Apr-2002].  See README for details.<BR>
+<B>UPDATED:</B> Added support for JSR-14 "Adding Generics to Java".
+[12-Apr-2002].  See README for details.<BR>
+<B>UPDATED:</B> Fixes for better JLS2 compatibility; also nested
+parameterized types in JSR-14 now supported.
+[13-Apr-2003].  See README for details.<BR>
+-->
+<B>UPDATED:</B> Grammar extended to handle latest version of the Java 1.5
+specification with wildcard parameterizations and JSR-201 constructs
+(up-to-date with 
+<A HREF="http://developer.java.sun.com/developer/earlyAccess/adding_generics/"
+>prototype 2.2</A> of JSR-14 + JSR-201 features).
+[28-Jul-2003].  
+<P>
+See <A HREF="javagrm-README.txt">README</A> for previous changes to
+the grammar and additional details on this release.
+</P>
+<P>
+My <A HREF="http://cscott.net/Projects/GJ/">GJ page</A>
+has more information on "Generic Java", JSR-14, JSR-201, and the proposed
+Java 1.5.
+</P>
+<P><SMALL>Archive of old grammar releases:
+[<A HREF="javagrm-14-Jul-1998.tar.gz">14-Jul-1998</A>]
+[<A HREF="javagrm-10-Feb-1999.tar.gz">10-Feb-1999</A>]
+[<A HREF="javagrm-11-Feb-1999.tar.gz">11-Feb-1999</A>]
+[<A HREF="javagrm-13-Sep-1999.tar.gz">13-Sep-1999</A>]
+[<A HREF="javagrm-27-Oct-1999.tar.gz">27-Oct-1999</A>]
+[<A HREF="javagrm-10-Apr-2002.tar.gz">10-Apr-2002</A>]
+[<A HREF="javagrm-12-Apr-2002.tar.gz">12-Apr-2002</A>]
+[<A HREF="javagrm-13-Apr-2003.tar.gz">13-Apr-2003</A>]
+[<A HREF="javagrm-28-Jul-2003.tar.gz">28-Jul-2003</A>]
+</SMALL></P>
+<HR>
+<FONT COLOR=red><B>NEW!</B></FONT>
+  CUP/<a href="../JLex">JLex</a> interoperability example.
+<A HREF="minimal.tar.gz">(compressed tar)</A>
+<A HREF="minimal.zip">(ZIP archive)</A><BR>
+<HR>
+<FONT SIZE=+1><B>A mailing list has been set up
+for announcements of new CUP/<a href="../JLex">JLex</a> releases.
+To subscribe, send mail to 
+<a href="mailto:majordomo@cs.princeton.edu">majordomo@cs.princeton.edu</A>
+with "subscribe jtools" in the body of the message.
+</B></FONT>
+<HR>
+<h4>Archive of obsolete versions:</h4>
+<a href="java_cup_v10j.tar.gz">Previous version: CUP 0.10j (July 1999)</a><br>
+<a href="java_cup_v10i.tar.gz">Previous version: CUP 0.10i (February 1999)</a><br>
+<a href="java_cup_v10h.tar.gz">Previous version: CUP 0.10h (February 1999)</a><br>
+<a href="java_cup_v10g.tar.gz">Previous version: CUP 0.10g (March 1998)</a><br>
+<a href="java_cup_v10f.tar.gz">Previous version: CUP 0.10f (December 1997)</a>
+<a href="cup0.10f">[Manual]</a><br>
+<a href="java_cup_v10e.tar.gz">Previous version: CUP 0.10e (September
+1997)</a> (last version that worked with JDK 1.0)<br>
+<a href="java_cup_v10d.tar.gz">Previous version: CUP 0.10d (September 1997)</a><br>
+<a href="java_cup_v10c.tar.gz">Previous version: CUP 0.10c (July 1997)</a><br>
+<a href="java_cup_v10b.tar.gz">Previous version: CUP 0.10b (November 1996)</a><br>
+<a href="java_cup_v10a.tar.gz">Previous version: CUP 0.10a (August 1996)</a>
+<a href="cup0.10a">[Manual]</A><br>
+<a href="java_cup_v9e.tar.gz">Previous version: CUP 0.9e (March 1996)</a>
+<a href="http://www.cc.gatech.edu/gvu/people/Faculty/hudson/java_cup/manual.html">[Manual]</a>
+
+<HR>
+<h3><a name="LICENSE">CUP Parser Generator Copyright Notice, License, and Disclaimer</a></h3>
+
+Copyright 1996-1999 by Scott Hudson, Frank Flannery, C. Scott Ananian
+<p>
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
+provided that the above copyright notice appear in all copies and that
+both the copyright notice and this permission notice and warranty
+disclaimer appear in supporting documentation, and that the names of
+the authors or their employers not be used in advertising or publicity 
+pertaining to distribution of the software without specific, written 
+prior permission.
+<p>
+The authors and their employers disclaim all warranties with regard to 
+this software, including all implied warranties of merchantability and 
+fitness.  In no event shall the authors or their employers be liable 
+for any special, indirect or consequential damages or any damages 
+whatsoever resulting from loss of use, data or profits, whether in an 
+action of contract, negligence or other tortious action, arising out of 
+or in connection with the use or performance of this software.
+
+<hr>
+This is an
+<a href="http://www.opensource.org/licenses/historical.php">open source
+license</a>.  It is also
+<a href="http://www.gnu.org/licenses/license-list.html#StandardMLofNJ">GPL-Compatible</a> (see entry for "Standard ML of New Jersey").
+The portions of CUP output which are hard-coded into the CUP source code
+are (naturally) covered by this same license, as is the CUP runtime code linked
+with the generated parser.
+
+<p>  
+Java is a trademark of Sun Microsystems, Inc.  References to the Java
+programming language in relation to JLex are not meant to imply that Sun 
+endorses this product.
+</small>
+</table>
+</body></html>
+
