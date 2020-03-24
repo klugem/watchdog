@@ -18,6 +18,7 @@ Changelog started with version 1.2.0
 ### Changed
 - [JAR] Jars are now build with Maven and do not include dependencies
 - [README] The readme is now formated in Markdown 
+- [GUI] JavaFX SDK obtained by Maven is used if not otherwise specified
 
 ## [2.0.4] - 2019-11-27
 ### Fixed
