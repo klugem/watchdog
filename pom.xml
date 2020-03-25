@@ -243,11 +243,11 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.14</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.ibissource/ibis-xerces -->
+		<!-- https://mvnrepository.com/artifact/org.opengis.cite.eclipse.webtools.sse/org.eclipse.wst.xml.xpath2.processor -->
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-xerces</artifactId>
-			<version>2.12.1-xml-schema-1.1</version>
+		    <groupId>org.opengis.cite.eclipse.webtools.sse</groupId>
+		    <artifactId>org.eclipse.wst.xml.xpath2.processor</artifactId>
+		    <version>1.1.5-738bb7b85d</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/io.github.classgraph/classgraph -->
 		<dependency>
