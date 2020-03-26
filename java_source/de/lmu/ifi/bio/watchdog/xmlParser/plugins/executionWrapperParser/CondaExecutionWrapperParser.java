@@ -22,7 +22,7 @@ public class CondaExecutionWrapperParser extends XMLExecutionWrapperParser<Conda
 	
 	public static final String PATH2CONDA = "path2conda";
 	public static final String PATH2ENV = "path2environments";
-	public static final String DEFAULT_CONDA_ENV_NAME = "conda_env";
+	public static final String DEFAULT_CONDA_ENV_NAME = "conda_watchdog_env";
 	
 	static {
 		// register the execution wrapper plugins shipped with watchdog on GUI

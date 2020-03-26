@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<watchdog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="watchdog.xsd" watchdogBase="{%INSTALL%}" isTemplate="true">
+	<settings>
+		<!-- definition of execution wrappers -->
+		<wrappers>
+			<!-- TODO: modify path2conda and path2environments-->
+			<conda name="condaWrapper" path2conda="/your/path/to/conda/" path2environments="/tmp/conda_watchdog_env/"/>
+		</wrappers>
+		<!-- local executor that will use the package manager condaWrapper for supporting modules -->
+		<executors>
+			<local name="localhost" packageManagers="condaWrapper"/>
+		</executors>
+	</settings>
+	<tasks>
+		<!-- definition of a simple sleep task, which will be executed in a Conda environment -->
+		<sleepTask id="1" name="sleep" executor="localhost">
+			<parameter>
+				<wait>10s</wait>
+			</parameter>
+		</sleepTask>
+	</tasks>
+</watchdog>
