@@ -33,6 +33,7 @@ function conda_init() {
 			if [ ${EXIT_CODE} -eq 0 ]; then
 				echoInfo "Created conda environment form '${PATH_TO_YML}' into '${PATH_TO_ENV}'."
 				touch "${CONDA_READY_FILE}"
+				sync
 			else 
 				echoError "Failed with exit code '$EXIT_CODE' to create conda environment form '${PATH_TO_YML}' into '${PATH_TO_ENV}'."
 			fi

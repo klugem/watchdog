@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import de.lmu.ifi.bio.watchdog.executionWrapper.ExecutionWrapper;
+import de.lmu.ifi.bio.watchdog.task.Task;
 
 /**
  * Abstract class that loads the before and after commands from files and adapts them to the used operating system
@@ -77,8 +78,8 @@ public abstract class FileBasedPackageManger extends ExecutionWrapper {
 	 * ready to add list of the before script commands
 	 * @return
 	 */
-	public ArrayList<String> getBeforeScriptCommands() {
-		ArrayList<String> l = this.addVariables(this.getAdditionalVariables(), this.readScript(this.getBeforeScriptPath()));
+	public ArrayList<String> getBeforeScriptCommands(Task t) {
+		ArrayList<String> l = this.addVariables(this.getAdditionalVariables(t), this.readScript(this.getBeforeScriptPath()));
 		return l;
 	}
 
@@ -86,7 +87,7 @@ public abstract class FileBasedPackageManger extends ExecutionWrapper {
 	 * ready to add list of the after script commands
 	 * @return
 	 */
-	public ArrayList<String> getAfterScriptCommands() {
+	public ArrayList<String> getAfterScriptCommands(Task t) {
 		return this.readScript(this.getAfterScriptPath());
 	}
 	
@@ -106,5 +107,5 @@ public abstract class FileBasedPackageManger extends ExecutionWrapper {
 	 * returns environment variables that are required in the before / after scripts
 	 * @return
 	 */
-	protected abstract HashMap<String, String> getAdditionalVariables();
+	protected abstract HashMap<String, String> getAdditionalVariables(Task t);
 }

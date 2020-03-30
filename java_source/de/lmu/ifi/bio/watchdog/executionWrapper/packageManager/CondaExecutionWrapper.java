@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import de.lmu.ifi.bio.watchdog.executionWrapper.OS;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
@@ -35,8 +36,7 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 	private final String CONDA_PATH;
 	private final String CONDA_ENV_PREFIX_PATH;
 	
-	private boolean searched = false;
-	private File condaDefFile = null;
+	private final ConcurrentHashMap<File, File> CONDA_DEF_FILES = new ConcurrentHashMap<>();
 
 	public CondaExecutionWrapper(String name, String watchdogBaseDir, String path2condaBasedir, String path2condaEnvironmentDir) {
 		super(name, watchdogBaseDir);
@@ -107,10 +107,7 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 	 * @return
 	 */
 	public File findCondaEnvDefinitionFile(File folder) {
-		if(this.searched == true) return this.condaDefFile;
-		
-		this.searched = true;
-		if(folder != null) {
+		if(folder != null && !this.CONDA_DEF_FILES.containsKey(folder)) {
 			File[] yml = folder.listFiles(x -> x.getName().endsWith(CONDA_YML));
 			int ok = 0;
 			File lastOK = null;
@@ -118,9 +115,10 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 				lastOK = y;
 				ok++;
 			}
-			if(ok == 1) this.condaDefFile = lastOK;
+			if(ok == 1)
+				this.CONDA_DEF_FILES.put(folder, lastOK);
 		}
-		return this.condaDefFile;
+		return this.CONDA_DEF_FILES.get(folder);
 	}
 
 	@Override
@@ -132,18 +130,17 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 	 * path to the conda dependency definition file
 	 * @return
 	 */
-	protected String getPathToYmlFile() {
-		return this.condaDefFile.getAbsolutePath(); 
+	protected File getPathToYmlFile(Task t) {
+		return this.findCondaEnvDefinitionFile(t.getModuleFolder());
 	}
 	
 	/**
 	 * name of the environment based on the file hash
 	 * @return
 	 */
-	protected String getNameOfEnv() {
+	protected String getNameOfEnv(Task t) {
 		try { 
-			File f = new File(this.getPathToYmlFile());
-			String hash = Functions.getFileHash(f);
+			String hash = Functions.getFileHash(this.getPathToYmlFile(t));
 		return hash;
 		}
 		catch(IOException e) { e.printStackTrace(); }
@@ -152,18 +149,18 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 
 	@Override
 	public ArrayList<String> getInitCommands(Task t) {
-		return this.getBeforeScriptCommands();
+		return this.getBeforeScriptCommands(t);
 	}
 	
 	@Override
-	public ArrayList<String> getCleanupCommands(Task T) {
-		return this.getAfterScriptCommands();
+	public ArrayList<String> getCleanupCommands(Task t) {
+		return this.getAfterScriptCommands(t);
 	}
 	
 	@Override
-	protected HashMap<String, String> getAdditionalVariables() {
+	protected HashMap<String, String> getAdditionalVariables(Task t) {
 		try {
-			String env_hash = Functions.getFileHash(this.condaDefFile);
+			String env_hash = Functions.getFileHash(this.getPathToYmlFile(t));
 			String path2env = this.getCondaEnvironmentPrefixPath() + File.separator + env_hash;
 			
 			// create the list of vars
@@ -171,7 +168,7 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 			vars.put(CONDA_PATH_PLUGIN, this.getPluginScriptFolder());
 			vars.put(CONDA_PATH_TO_BIN, this.getCondaBinaryPath());
 			vars.put(CONDA_PATH_TO_ENV, path2env);
-			vars.put(CONDA_PATH_TO_YML, this.getPathToYmlFile());
+			vars.put(CONDA_PATH_TO_YML, this.getPathToYmlFile(t).getAbsolutePath());
 			return vars;
 		} catch(Exception e) {
 			e.printStackTrace();

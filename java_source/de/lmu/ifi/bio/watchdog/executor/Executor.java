@@ -243,6 +243,9 @@ public abstract class Executor<A extends ExecutorInfo> {
 							
 							break;
 						}
+						else {
+							w = null;
+						}
 					}
 				}
 			

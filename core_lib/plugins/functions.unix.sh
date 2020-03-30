@@ -15,6 +15,7 @@ function lockFile() {
 function unlockFile() {
 	LOCK_FILE=$(getLockFilename $1)
 	rm -f "$LOCK_FILE" 2>&1 > /dev/null
+	sync
 }
 
 function wait4Lock() {
