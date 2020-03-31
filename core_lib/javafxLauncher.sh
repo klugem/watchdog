@@ -4,8 +4,20 @@ source "${SCRIPT_FOLDER}/includeBasics.sh"
 
 REQUIRED_JFX_MODULES=javafx.base,javafx.controls,javafx.graphics,javafx.fxml
 JAVA_FX_TEST_NAME='javafx.fxml.jar'
-JAVA_FX_TEST_NAME_VAR='javafx-fxml*.jar'
+JAVA_FX_TEST_NAME_VAR='javafx[.-]fxml*.jar'
 BASHRC_FILE="${HOME}/.bashrc"
+
+function locateFile() {
+	WHERE=$1
+	WHAT=$2
+
+	RET=$(find "${WHERE}" -name "${WHAT}" 2> /dev/null | wc -l)
+	if [ $? -eq 0 ] && [ $RET -gt 0 ]; then
+		echo 1
+	else
+		echo 0
+	fi
+}
 
 # get the name path to the jar to launch
 if [ $# -eq 0 ]; then
@@ -33,8 +45,8 @@ fi
 # if not set try to use version obtained with Maven
 if [ "${JFX_SDK_LIB_PATH}" == "" ] && [ -e "${SCRIPT_FOLDER}/../jars/libs/modules/" ]; then
 	# try to find test file
-	RET=$(find "${SCRIPT_FOLDER}/../jars/libs/modules/" -name "${JAVA_FX_TEST_NAME_VAR}" 2> /dev/null | wc -l)
-	if [ $? -eq 0 ] && [ $RET -gt 0 ]; then
+	RET=$(locateFile "${SCRIPT_FOLDER}/../jars/libs/modules/" "${JAVA_FX_TEST_NAME_VAR}")
+	if [ "$RET" == "1" ]; then
 		JFX_SDK_LIB_PATH="${SCRIPT_FOLDER}/../jars/libs/modules/"
 	fi
 fi
@@ -96,5 +108,19 @@ if [ "${JFX_SDK_LIB_PATH}" == "" ]; then
 	fi
 fi
 
+# ensure that it could be a valid javafx sdk install dir
+RET=$(locateFile "${JFX_SDK_LIB_PATH}" "${JAVA_FX_TEST_NAME_VAR}")
+if [ "$RET" == "0" ]; then
+	echoError "'${JFX_SDK_LIB_PATH}' seems to be no valid javafx SDK installation folder. "
+	
+	confirm "Do you want to use it anyhow? (y / n)"
+	if [ $CONFIRM_RETURN -ne 1 ]; then
+		exit 1
+	fi
+fi
+
+# try to start the GUI
+echoInfo "Using javafx SDK in '$JFX_SDK_LIB_PATH'... "
 java -Djdk.gtk.version=2 --add-opens javafx.fxml/javafx.fxml=ALL-UNNAMED --add-opens javafx.controls/com.sun.javafx.scene.control=ALL-UNNAMED --module-path "${JFX_SDK_LIB_PATH}" --add-modules "${REQUIRED_JFX_MODULES}" -jar "${JAR2START}" $@
 exit $?
+
