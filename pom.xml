@@ -6,7 +6,7 @@
 	<version>DEV</version>
 	<properties>
 		<jdk.version>11</jdk.version>
-   		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetDirectory>${project.basedir}/jars</targetDirectory>
 		<!-- todo: change tmp directory if /tmp does not exist -->
 		<tmpBuildDirectory>/tmp/watchdog-build/</tmpBuildDirectory>
@@ -102,16 +102,15 @@
 						<phase>initialize</phase>
 						<configuration>
 							<target>
-							<delete quiet="true">
-								<fileset dir="${targetDirectory}/" includes="**/*" excludes="watchdog-RELEASE.jar" />
-							</delete>
+								<delete quiet="true">
+									<fileset dir="${targetDirectory}/" includes="**/*" excludes="watchdog-RELEASE.jar" />
+								</delete>
 							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
 						</goals>
 					</execution>
-
 					<!-- move javafx modules and source file-->
 					<execution>
 						<id>moveModules</id>
@@ -121,14 +120,13 @@
 								<move todir="${targetDirectory}/libs/modules/" overwrite="true">
 									<fileset dir="${targetDirectory}/libs/" includes="javafx-*.jar" />
 								</move>
-								<copy file="${tmpBuildDirectory}/watchdog-sources.jar" todir="${targetDirectory}/"/>
+								<copy file="${tmpBuildDirectory}/watchdog-sources.jar" todir="${targetDirectory}/" />
 							</target>
 						</configuration>
 						<goals>
 							<goal>run</goal>
 						</goals>
 					</execution>
-
 					<!-- create run JARS using the ant script -->
 					<execution>
 						<id>generateRunJars</id>
@@ -225,17 +223,17 @@
 			<artifactId>commons-vfs2</artifactId>
 			<version>2.6.0</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.9</version>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.6</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.9</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
 		<dependency>
@@ -243,23 +241,11 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.14</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.opengis.cite.eclipse.webtools.sse/org.eclipse.wst.xml.xpath2.processor -->
-		<dependency>
-		    <groupId>org.opengis.cite.eclipse.webtools.sse</groupId>
-		    <artifactId>org.eclipse.wst.xml.xpath2.processor</artifactId>
-		    <version>1.1.5-738bb7b85d</version>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/io.github.classgraph/classgraph -->
 		<dependency>
 			<groupId>io.github.classgraph</groupId>
 			<artifactId>classgraph</artifactId>
 			<version>4.8.62</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-nop -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-nop</artifactId>
-			<version>2.0.0-alpha1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/net.sf.jsignature.io-tools/easystream -->
 		<dependency>
@@ -284,6 +270,27 @@
 			<groupId>us.levk</groupId>
 			<artifactId>drmaa-common</artifactId>
 			<version>1.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-nop -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-nop</artifactId>
+			<version>2.0.0-alpha1</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/edu.princeton.cup/java-cup -->
+		<dependency>
+			<groupId>edu.princeton.cup</groupId>
+			<artifactId>java-cup</artifactId>
+			<version>10k</version>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.opengis.cite.xerces/xercesImpl-xsd11 -->
+		<dependency>
+			<groupId>org.opengis.cite.xerces</groupId>
+			<artifactId>xercesImpl-xsd11</artifactId>
+			<version>2.12-beta-r1667115</version>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 </project>
