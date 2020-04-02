@@ -46,9 +46,9 @@ fi
 if [ "${JFX_SDK_LIB_PATH}" == "" ] && [ -e "${SCRIPT_FOLDER}/../jars/libs/modules/" ]; then
 	
 	# try to find version in base folder (self-compiled by maven script)
-	RET=$(locateFile "${SCRIPT_FOLDER}/../jars/libs/modules/${OS_VERSION}" "${JAVA_FX_TEST_NAME_VAR}")
+	RET=$(locateFile "${SCRIPT_FOLDER}/../jars/libs/modules/" "${JAVA_FX_TEST_NAME_VAR}")
 	if [ "$RET" == "1" ]; then
-		JFX_SDK_LIB_PATH="${SCRIPT_FOLDER}/../jars/libs/modules/${OS_VERSION}/"
+		JFX_SDK_LIB_PATH="${SCRIPT_FOLDER}/../jars/libs/modules/"
 	else # try to detect downloaded version from git repo
 		# detect OS 
 		if [[ "$OSTYPE" == "darwin"* ]]; then
