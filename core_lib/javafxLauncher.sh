@@ -11,7 +11,7 @@ function locateFile() {
 	WHERE=$1
 	WHAT=$2
 
-	RET=$(find "${WHERE}" -name "${WHAT}" 2> /dev/null | wc -l)
+	RET=$(find "${WHERE}" -maxdepth 1 -name "${WHAT}" 2> /dev/null | wc -l)
 	if [ $? -eq 0 ] && [ $RET -gt 0 ]; then
 		echo 1
 	else
@@ -44,10 +44,26 @@ fi
 
 # if not set try to use version obtained with Maven
 if [ "${JFX_SDK_LIB_PATH}" == "" ] && [ -e "${SCRIPT_FOLDER}/../jars/libs/modules/" ]; then
-	# try to find test file
-	RET=$(locateFile "${SCRIPT_FOLDER}/../jars/libs/modules/" "${JAVA_FX_TEST_NAME_VAR}")
+	
+	# try to find version in base folder (self-compiled by maven script)
+	RET=$(locateFile "${SCRIPT_FOLDER}/../jars/libs/modules/${OS_VERSION}" "${JAVA_FX_TEST_NAME_VAR}")
 	if [ "$RET" == "1" ]; then
-		JFX_SDK_LIB_PATH="${SCRIPT_FOLDER}/../jars/libs/modules/"
+		JFX_SDK_LIB_PATH="${SCRIPT_FOLDER}/../jars/libs/modules/${OS_VERSION}/"
+	else # try to detect downloaded version from git repo
+		# detect OS 
+		if [[ "$OSTYPE" == "darwin"* ]]; then
+			OS_VERSION="mac"
+		else
+			OS_VERSION="linux" 
+		fi
+
+		# try to find test file
+		if [ -d "${SCRIPT_FOLDER}/../jars/libs/modules/${OS_VERSION}" ]; then
+			RET=$(locateFile "${SCRIPT_FOLDER}/../jars/libs/modules/${OS_VERSION}" "${JAVA_FX_TEST_NAME_VAR}")
+			if [ "$RET" == "1" ]; then
+				JFX_SDK_LIB_PATH="${SCRIPT_FOLDER}/../jars/libs/modules/${OS_VERSION}/"
+			fi
+		fi
 	fi
 fi
 
@@ -109,6 +125,7 @@ if [ "${JFX_SDK_LIB_PATH}" == "" ]; then
 fi
 
 # ensure that it could be a valid javafx sdk install dir
+JFX_SDK_LIB_PATH=$(abspath "${JFX_SDK_LIB_PATH}")
 RET=$(locateFile "${JFX_SDK_LIB_PATH}" "${JAVA_FX_TEST_NAME_VAR}")
 if [ "$RET" == "0" ]; then
 	echoError "'${JFX_SDK_LIB_PATH}' seems to be no valid javafx SDK installation folder. "

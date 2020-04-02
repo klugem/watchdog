@@ -102,8 +102,8 @@
 						<phase>initialize</phase>
 						<configuration>
 							<target>
-								<delete quiet="true">
-									<fileset dir="${targetDirectory}/" includes="**/*" excludes="watchdog-RELEASE.jar" />
+								<delete quiet="true" includeemptydirs="true">
+									<fileset dir="${targetDirectory}/" excludes="watchdog-RELEASE.jar" />
 								</delete>
 							</target>
 						</configuration>
