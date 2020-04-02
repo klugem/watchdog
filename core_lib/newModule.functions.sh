@@ -143,7 +143,7 @@ function getMinMax() {
 				REPLACE_CHECK="${REPLACE_CHECK}${SPACER}"$(cat $SCRIPT_FOLDER/../xsd/template/integer_greater_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e's/'${VAR_VALUE}'/'${VALUE_V}'/g' -e 's/"/\\"/g')
 
 				XSD_TEMPLATE="integer_greater.template.xsd"
-				ARGUMENT_TYPE_XSD="${TYPE}Greater_${NAME}_${FLAGS_name}"
+				ARGUMENT_TYPE_XSD="${L_TYPE}Greater_${NAME}_${FLAGS_name}"
 			else
 				REPLACE_CHECK="${REPLACE_CHECK}${SPACER}"$(cat $SCRIPT_FOLDER/../xsd/template/integer_lower_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e 's/'${VAR_VALUE}'/'${VALUE_V}'/g' -e 's/"/\\"/g')
 			
@@ -156,7 +156,7 @@ function getMinMax() {
 
 	if [ ! -z $XSD_TEMPLATE ]; then
 		# replace the stuff in the XSD file
-		CUSTOM_PARAM="${CUSTOM_PARAM}"$(cat "$SCRIPT_FOLDER/../xsd/template/${XSD_TEMPLATE}" | sed -e 's/'${VAR_MIN}'/'${MIN_VALUE_V}'/g' -e 's/'${VAR_MAX}'/'${MAX_VALUE_V}'/g' -e 's/'${ARGUMENT_NUMERIC_TYPE}'/'${TYPE}'/g' -e 's/'${MODULE_REPLACE}'/'${FLAGS_name}'/g' -e 's/'${ARGUMENT_NAME_REPLACE}'/'${NAME}'/g' -e 's/"/\\"/g')"\n"  
+		CUSTOM_PARAM="${CUSTOM_PARAM}"$(cat "$SCRIPT_FOLDER/../xsd/template/${XSD_TEMPLATE}" | sed -e 's/'${VAR_MIN}'/'${MIN_VALUE_V}'/g' -e 's/'${VAR_MAX}'/'${MAX_VALUE_V}'/g' -e 's/'${ARGUMENT_NUMERIC_TYPE}'/'${TYPE}'/g' -e 's/'${ARGUMENT_XSD_TYPE}'/'${L_TYPE}'/g' -e 's/'${MODULE_REPLACE}'/'${FLAGS_name}'/g' -e 's/'${ARGUMENT_NAME_REPLACE}'/'${NAME}'/g' -e 's/"/\\"/g')"\n"  
 		unset XSD_TEMPLATE
 	fi
 }

@@ -1,7 +1,7 @@
 	<x:complexType name="paramString_{%NAME%}_{%MODULE%}">
 		<x:simpleContent>
 			<x:restriction base="paramString">
-				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or matches($value, '{%PATTERN%}')" xerces:message="Parameter with name '{$tag}' must match pattern '{%PATTERN%}'." />
+				<x:assert test="matches($value, '(\$\{[A-Za-z_]+\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or matches($value, '{%PATTERN%}')" xerces:message="Parameter with name '{%NAME%}' must match pattern '{%PATTERN%}'." />
 			</x:restriction>
 		</x:simpleContent>
 	</x:complexType>
