@@ -98,6 +98,7 @@ public class Task implements Serializable {
 	private String externalExecutorID;
 	private String versionQueryParameter = null; // used to get the software version of third-party software
 	private File versionQueryInfoFile = null;
+	private Integer MODULE_VERSION = null;
 	
 	/**
 	 * Constructor
@@ -239,11 +240,7 @@ public class Task implements Serializable {
 	public static Task getShutdownTask(ArrayList<TaskAction> shutdownActions, ExecutorInfo e) {
 		return new Task(0, "on shutdown event", e, "", null, null, null, null, null, null, null, null, false, false, null, null, null, null, shutdownActions, false, null);
 	}
-	
-	public void addModuleVersionParam() {
-		
-	}
-	
+
 	/**
 	 * complete ID of that task (if task from processGroup --> taskID:subTaskID)
 	 * @return
@@ -1326,5 +1323,29 @@ public class Task implements Serializable {
 	 */
 	public File getModuleFolder() {
 		return this.MODULE_FOLDER;
+	}
+	
+	/**
+	 * sets a module version
+	 * @param version
+	 */
+	public void setModuleVersion(Integer version) {
+		this.MODULE_VERSION = version;
+	}
+	
+	/**
+	 * returns the module version if set or null otherwise 
+	 * @return
+	 */
+	public Integer getModuleVersion() {
+		return this.MODULE_VERSION;
+	}
+	
+	/**
+	 * true, if task was create from a module and hence has a module
+	 * @return
+	 */
+	public boolean hasModuleVersion() {
+		return this.MODULE_VERSION != null;
 	}
 }

@@ -36,6 +36,8 @@ function conda_init() {
 				sync
 			else 
 				echoError "Failed with exit code '$EXIT_CODE' to create conda environment form '${PATH_TO_YML}' into '${PATH_TO_ENV}'."
+				rm -rf  "${PATH_TO_ENV}"
+				exit 12
 			fi
 
 		fi

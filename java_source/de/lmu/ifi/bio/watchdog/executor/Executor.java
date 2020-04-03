@@ -52,6 +52,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 	protected final ArrayList<String> AFTER_COMMAND = new ArrayList<>();
 	protected final A EXEC_INFO;
 	protected HashMap<String, String> internalEnv;
+
 	
 	/**
 	 * Constructor without any checker
@@ -69,6 +70,11 @@ public abstract class Executor<A extends ExecutorInfo> {
 		for(String name : esev.keySet()) {
 			this.TASK.addEnvVariable(name, esev.get(name));
 		}
+		
+		// get the module version if task was created from a XMLTask
+		XMLTask xmlTask = XMLTask.getXMLTask(t.getTaskID());
+		if(xmlTask != null) 
+			t.setModuleVersion(xmlTask.getVersion());
 	
 		// check, if the task should be executed on the same host as preceding or following tasks
 		if(this.TASK.willRunOnSlave()) {
@@ -81,7 +87,10 @@ public abstract class Executor<A extends ExecutorInfo> {
 		
 				// get the old or newly set slave ID!
 				String slaveID = this.TASK.getSlaveID();
-				LinkedHashSet<Integer> depToKeep = XMLTask.getXMLTask(t.getTaskID()).getSeparateSlaveDependencies();
+				LinkedHashSet<Integer> depToKeep = new LinkedHashSet<>();
+				if(xmlTask != null)
+					depToKeep = xmlTask.getSeparateSlaveDependencies();
+				
 				XMLTask slave = Master.addSlave(slaveID, this.TASK, Executor.watchdogBase, (ExecutorInfo) this.EXEC_INFO.clone(), this.EXEC_INFO.env, depToKeep);
 				// slave must be spawned first!
 				if(slave != null)

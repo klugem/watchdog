@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.lmu.ifi.bio.watchdog.executionWrapper.OS;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
@@ -23,9 +25,11 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 
 	private static final long serialVersionUID = -7837779548673768374L;
 	private static final String CONDA_BIN = File.separator + "bin" + File.separator;
-	private static final String CONDA_YML = "conda.yml";
+	private static final String CONDA_YML = ".conda.yml";
 	private static final String BEFORE_SCRIPT_PATH = "conda.before.sh";
 	private static final String AFTER_SCRIPT_PATH = "conda.after.sh";
+	private static final String MOD_VERSION_SUFFIX = (".v([0-9])+" + CONDA_YML).replaceAll("\\.", "\\\\.");
+	private static final Pattern MOD_VERSION_PATTERN = Pattern.compile(".+" + MOD_VERSION_SUFFIX);
 	
 	/** names for the variables used in conda scripts */
 	public static String CONDA_PATH_PLUGIN = "CONDA_PATH_PLUGIN";
@@ -106,24 +110,44 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 	 * @param folder
 	 * @return
 	 */
-	public File findCondaEnvDefinitionFile(File folder) {
+	public File findCondaEnvDefinitionFile(File folder, Integer moduleVersion) {
 		if(folder != null && !this.CONDA_DEF_FILES.containsKey(folder)) {
 			File[] yml = folder.listFiles(x -> x.getName().endsWith(CONDA_YML));
 			int ok = 0;
+			int okNoVersion = 0;
 			File lastOK = null;
+			File lastNoVersion = null;
 			for(File y : yml) {
-				lastOK = y;
-				ok++;
+				Matcher m = MOD_VERSION_PATTERN.matcher(y.getName());
+				
+				// try to find specific file depending on module version 
+				if(moduleVersion != null) {
+					if(m.matches() && Integer.parseInt(m.group(1)) == moduleVersion) {
+						lastOK = y;
+						ok++;
+					}
+					else if(!m.matches()) {
+						lastNoVersion = y;
+						okNoVersion++;
+					}
+				} // generic file
+				else if(!m.matches()) {
+					lastNoVersion = y;
+					okNoVersion++;
+				}
 			}
-			if(ok == 1)
+			// found one specific hit
+			if(moduleVersion != null && ok == 1) 
 				this.CONDA_DEF_FILES.put(folder, lastOK);
+			else if(okNoVersion == 1)
+				this.CONDA_DEF_FILES.put(folder, lastNoVersion);
 		}
 		return this.CONDA_DEF_FILES.get(folder);
 	}
 
 	@Override
 	public boolean canBeAppliedOnTask(Task t) {
-		return this.findCondaEnvDefinitionFile(t.getModuleFolder()) != null;
+		return this.findCondaEnvDefinitionFile(t.getModuleFolder(), t.getModuleVersion()) != null;
 	}
 	
 	/**
@@ -131,7 +155,7 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 	 * @return
 	 */
 	protected File getPathToYmlFile(Task t) {
-		return this.findCondaEnvDefinitionFile(t.getModuleFolder());
+		return this.findCondaEnvDefinitionFile(t.getModuleFolder(), t.getModuleVersion());
 	}
 	
 	/**

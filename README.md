@@ -6,7 +6,7 @@ The most recent version of the manual can be found online at https://www.bio.ifi
 ### REQUIREMENTS
 Watchdog is written in Java and requires JDK 11 or higher. Oracle provides an installation guide for Windows, Linux and macOS at https://docs.oracle.com/en/java/javase/11/install/overview-jdk-installation.html.
 
-The GUI of the workflow designer and the moduleMaker depend on the JavaFX SDK 11 or higher. The JavaFX version obtained with the Maven build script is used by default, which is located in _jars/libs/modules/_. Alternatively, it can be obtained from https://gluonhq.com/products/javafx/. An installation guide is provided here: https://openjfx.io/openjfx-docs/
+The GUI of the workflow designer and the moduleMaker depend on the JavaFX SDK 11 or higher. The JavaFX SDK is also included with Watchdog and located in _jars/libs/modules/_. This version is used by default. Alternatively, it can be obtained from https://gluonhq.com/products/javafx/. An installation guide is provided here: https://openjfx.io/openjfx-docs/.
 
 ### INSTALLATION
 - Manually:
@@ -20,6 +20,9 @@ The GUI of the workflow designer and the moduleMaker depend on the JavaFX SDK 11
     - `docker pull klugem/watchdog-wms`
 
 In case of conda or docker installation, the binaries are named watchdog-cmd and watchdog-gui while the rest of the files are located in _${PREFIX}/share/watchdog-wms-${VERSION}_.
+
+### BUILD WATCHDOG
+Watchdog can be build from the source files using Maven. The command `mvn` downloads all dependencies into _jars/libs_ and rebuilds the jar files.
 
 ### RUN WATCHDOG
 The distributed jar files are build for Java 11 and are called internally by the bash scripts. In order to run a xml-file using the command line tool, call
