@@ -1767,7 +1767,7 @@ Example 24 shows how a module script can be made version dependent using bash fu
 
 <a name="module_packageManager" class="subtopic">5.7 Requirements to support package manager wrappers</a>
 
-Currently, only the Conda package manager is supported as execution wrapper. A module that should support the <pre class="tag">conda</pre> wrapper must contain a <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually" target="_blank">YAML file</a> defining the Conda environment. The suffix of file the must be <pre class="name">.conda.yml</pre> to be detected by the conda wrapper.
+Currently, only the Conda package manager is supported as execution wrapper. A module that should support the <pre class="tag">conda</pre> wrapper must contain a <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually" target="_blank">YAML file</a> defining the Conda environment. The suffix of file the must be <pre class="name">.conda.yml</pre> to be detected by the conda wrapper. If a module version requires a different environment, additional files following the name schema <pre class="name">.v[0-9]+.conda.yml</pre> can be created.
 
 <div class="box">	
 	<div class="head_box">Example 25: Conda environment file format</div>
