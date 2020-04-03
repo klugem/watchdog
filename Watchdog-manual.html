@@ -19,11 +19,12 @@
 </div><div class="smallchapter"><a href="#install_watchdog" class="smalltopic">2 Install and Configure Watchdog</a><br />
 <a href="#requirements" class="smallsubtopic">2.1 Requirements</a><br />
 <a href="#installation" class="smallsubtopic">2.2 Installation</a><br />
-<a href="#basic_jars" class="smallsubtopic">2.3 JAR Files</a><br />
-<a href="#get_started" class="smallsubtopic">2.4 Getting started</a><br />
-<a href="#mail_server" class="smallsubtopic">2.5 E-Mail Server Configuration</a><br />
-<a href="#remote_configuration" class="smallsubtopic">2.6 SSH Configuration</a><br />
-<a href="#cluster_configuration" class="smallsubtopic">2.7 DRMAA Cluster Configuration</a><br />
+<a href="#build" class="smallsubtopic">2.3 Build from source</a><br />
+<a href="#basic_jars" class="smallsubtopic">2.4 JAR Files</a><br />
+<a href="#get_started" class="smallsubtopic">2.5 Getting started</a><br />
+<a href="#mail_server" class="smallsubtopic">2.6 E-Mail Server Configuration</a><br />
+<a href="#remote_configuration" class="smallsubtopic">2.7 SSH Configuration</a><br />
+<a href="#cluster_configuration" class="smallsubtopic">2.8 DRMAA Cluster Configuration</a><br />
 </div><div class="smallchapter"><a href="#getting_started" class="smalltopic">3 Watchdog Overview</a><br />
 <a href="#basic_modules" class="smallsubtopic">3.1 Modules</a><br />
 <a href="#basic_xml_structure" class="smallsubtopic">3.2 Basic XML structure</a><br />
@@ -105,9 +106,9 @@ Here, we present Watchdog, a WMS for the automated and distributed analysis of l
 
 <a name="requirements" class="subtopic">2.1 Requirements</a>
 
-Watchdog is platform independent as it is written in Java. Hence, it requires JDK 11 or higher, which can be <a href="https://docs.oracle.com/en/java/javase/11/install/overview-jdk-installation.html" target="_blank">obtained from Oracle</a> and installed on Windows, Linux, or macOS.
+Watchdog is platform independent as it is written in Java. It requires JDK 11 or higher. Oracle provides an <a href="https://docs.oracle.com/en/java/javase/11/install/overview-jdk-installation.html" target="_blank">installation guide</a> for Windows, Linux and macOS.
 <br /><br />
-The GUI of the workflow designer and the <pre class="name">moduleMaker</pre> depend on the JavaFX SDK 11 or higher. The JavaFX version obtained with the Maven build script is used by default, which is located in <pre class="name">jars/libs/modules/</pre>.
+The GUI of the workflow designer and the <pre class="name">moduleMaker</pre> depend on the JavaFX SDK 11 or higher. The JavaFX SDK is also included with Watchdog and located in <pre class="name">jars/libs/modules/</pre>. This version is used by default.
 <br /><br />
 Alternatively, it can be downloaded from <a href="https://gluonhq.com/products/javafx/" target="_blank">Gluon</a>. An installation guide is provided <a href="https://openjfx.io/openjfx-docs/" target="_blank">here</a>. Both launcher bash scripts (<pre class="name">workflowDesigner.sh</pre> and <pre class="name">moduleMaker.sh</pre>) will try to identify the installation location of the JavaFX SDK automatically. If that fails or the installation location of the JavaFX SDK is known, the <pre class="name">JFX_SDK_LIB_PATH_ENV</pre> environment variable can be used to set the path manually using <pre class="name">export JFX_SDK_LIB_PATH_ENV=/path/to/javafx/sdk/</pre>.
 
@@ -115,10 +116,9 @@ Alternatively, it can be downloaded from <a href="https://gluonhq.com/products/j
 Most Watchdog modules require a Unix based system and were tested on SUSE Linux. They might not run without any changes on other Unix systems or Windows but users can define custom modules that are compatible with their installed software and operating system. Each of the modules might require additional software to be installed. These requirements can be checked for the modules that are delivered with Watchdog with the help of <pre class="name">helper_scripts/dependencyTest.sh</pre> as described below.
 
 <a name="installation" class="subtopic">2.2 Installation</a>
-The installation of Watchdog is very easy. After downloading, extract the provided archive into a folder of your choice (either using <pre class="name">tar xfvz watchdog.tar.gz</pre> or <pre class="name">unzip watchdog.zip</pre> depending on which archive you downloaded). The folder must be accessible for remote or cluster executors if you plan to use some. Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda -c conda-forge watchdog-wms</pre>. In that case the binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">8</a>. 
+The installation of Watchdog is very easy. After downloading a <a href="https://github.com/klugem/watchdog/releases"  target="_blank">release</a>, extract the provided archive into a folder of your choice (either using <pre class="name">tar xfvz watchdog.tar.gz</pre> or <pre class="name">unzip watchdog.zip</pre> depending on which archive you downloaded). The folder must be accessible for remote or cluster executors if you plan to use some. Alternatively Watchdog can be installed automatically via conda using <pre class="name">conda install -c bioconda -c conda-forge watchdog-wms</pre>. In that case the binaries are named <pre class="name">watchdog-cmd</pre> and <pre class="name">watchdog-gui</pre> while the rest of the files is located in <pre class="name">${PREFIX}/share/watchdog-wms-${VERSION}</pre>. If you want to use Watchdog with Docker, read section <a href="#docker">8</a>. 
 <br /><br />
 Modules previously delivered with Watchdog are now located at the community github repository <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">watchdog-wms/watchdog-wms-modules</a>. The reference book for all modules part of this repository is available at <a href="https://watchdog-wms.github.io/watchdog-wms-modules" target="_blank">https://watchdog-wms.github.io/watchdog-wms-modules</a>. Thus, as a next step you should download Watchdog modules from the <a href="https://github.com/watchdog-wms/watchdog-wms-modules" target="_blank">community github repository</a> and extract them into the <pre class="name">modules/</pre> folder of the Watchdog directory. Alternatively, you can run <pre class="name">modules/downloadCommunityModules.sh</pre> from the Watchdog directory.
-
 
 <br /><br />In the next few lines the content of each folder is explained:
 
@@ -140,7 +140,7 @@ The script <pre class="name">helper_scripts/dependencyTest.sh</pre> can be used 
 <br /><br />
 In order to test if all modules that provide tests work as expected on your system you can run <pre class="name">helper_scripts/moduleTest.sh</pre>. If you want to test the examples which are discussed in this manual, you can configure them by running:<br /><br />
 
-<pre class="name">helper_scripts/configureExamples.sh -i /path/to/install/folder/of/watchdog [-m your@mail-adress.com]</pre> (mail attribute (-m) is optional, see <a href="#mail_server">2.5</a> for E-mail server configuration)
+<pre class="name">helper_scripts/configureExamples.sh -i /path/to/install/folder/of/watchdog [-m your@mail-adress.com]</pre> (mail attribute (-m) is optional, see <a href="#mail_server">2.6</a> for E-mail server configuration)
 
 <br /><br />Afterwards the configured examples will be located in <pre class="name">/path/to/install/folder/of/watchdog/examples/</pre> and can be executed (from the watchdog installation directory) using the following command: <pre class="name">./watchdog.sh -x examples/filename.xml</pre> or alternatively <pre class="name">java -jar jars/watchdog.jar -x examples/filename.xml</pre><br /><br />
 For instance: <pre class="name">./watchdog.sh -x examples/workflow1_basic_information_extraction.xml</pre><br />
@@ -149,7 +149,10 @@ If you want to use the workflow designer (GUI), you can start it by using (from 
 
 <pre class="name">./workflowDesigner.sh</pre> or alternatively <pre class="name">java -jar jars/WatchdogDesigner.jar </pre>
 
-<a name="basic_jars" class="subtopic">2.3 JAR Files</a>
+<a name="build" class="subtopic">2.3 Build from source</a>
+Watchdog can be build from the source files using Maven. The command `mvn` downloads all dependencies into <pre class="name">jars/libs</pre> and rebuilds the jar files.
+
+<a name="basic_jars" class="subtopic">2.4 JAR Files</a>
 These runnable JAR-files (except moduleMaker.jar) are shipped together with Watchdog in the <pre class="name">jars/</pre> subdirectory of the Watchdog installation folder.
 
 <ul>
@@ -164,12 +167,14 @@ These runnable JAR-files (except moduleMaker.jar) are shipped together with Watc
 <li><pre class="name">watchdog-[DEV|RELEASE].jar:</pre> contains the compiled Watchdog classes, which are invoked by all other JARs</li>
 </ul>
 
+If <pre class="name">watchdog-DEV.jar</pre> and <pre class="name">watchdog-RELEASE.jar</pre> are avalilabe, the compiled classes from <pre class="name">watchdog-DEV.jar</pre> will be used.
+<br /><br />
 More information on how to use these programmes can be found in the manual in section <a href="#JARs">6</a>.
 Please note that the <pre class="name">moduleMaker</pre> is not shipped with Watchdog but can be obtained by running
 <pre class="name">helper_scripts/downloadModuleMaker.sh</pre> located in the Watchdog installation directory.
 See <a target="_blank" href="https://github.com/watchdog-wms/moduleMaker/blob/master/README.md">watchdog-wms/moduleMaker</a> for more information.
 
-<a name="get_started" class="subtopic">2.4 Getting started</a>
+<a name="get_started" class="subtopic">2.5 Getting started</a>
 
 Once Watchdog is correctly installed, you can run example workflows shipped with Watchdog. To configure them run <pre class="name">helper_scripts/configureExamples.sh -i /path/to/install/folder/of/watchdog [-m your@mail-adress.com]</pre>. Afterwards, the example workflows are located in <pre class="name">examples/</pre> and can be started using <pre class="name">./watchdog.sh -x path2/xml-file.xml</pre>.
 
@@ -194,9 +199,9 @@ Once Watchdog is correctly installed, you can run example workflows shipped with
 
 More information on these example workflows can be found in section <a href="#getting_started">3</a> and <a href="#advanced_xml">4</a>.
 <br /><br />
-An introduction on how to use the workflow designer (GUI) can be found <a href="WorkflowDesigner_Overview.pdf" target="blank">here</a>.
+An introduction on how to <a href="ReplicateAnalysis_Overview.pdf" target="_blank">analyse replicate data</a> or how to <a href="WorkflowDesigner_Overview.pdf" target="_blank">use the workflow designer (GUI)</a> can be found in the <pre class="name">documentation/</pre> folder.
 
-<a name="mail_server" class="subtopic">2.5 E-Mail Server Configuration</a>
+<a name="mail_server" class="subtopic">2.6 E-Mail Server Configuration</a>
 As Watchdog will send e-mails it needs a working mail configuration. If you don't want Watchdog to send e-mails, simply don't use the <pre class="attr">mail</pre> attribute of the <pre class="tag">tasks</pre> tag. In that case the content of the mails with be printed to the standard output stream.<br /><br />
 
 By default a server listening on SMTP port 25 is expected that accepts mails without authentication.
@@ -217,14 +222,14 @@ In order to use another configuration the parameter <pre class="name">-mailConfi
 
 Example 1 shows a configuration for a gmail account. More information about the variables that can be used can be found <a href="https://javamail.java.net/nonav/docs/api/com/sun/mail/smtp/package-summary.html" target="_blank">here</a>. An template mail config file that can be edited can be found in <pre class="name">examples/mail_config</pre> once the examples are configured as described above.
 
-<a name="remote_configuration" class="subtopic">2.6 SSH Configuration</a>
+<a name="remote_configuration" class="subtopic">2.7 SSH Configuration</a>
 Watchdog supports execution of tasks via ssh on remote hosts. In order to use that feature a private ssh key must be provided. It is strongly recommended that the private key is protected by a passphrase. In that case the passphrase must be entered after Watchdog was started and will be hold encrypted in memory until the passphrase is needed. <br /><br />
 
 A key pair that can be used for ssh authentification can be generated using the tool <pre class="name">ssh-keygen</pre> that is part of <pre class="name">openssh</pre>.
 If you need further information you can find many online tutorials that explain how to use a private key for ssh authentication. E.g. <a href="https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys--2" target="_blank">How To Set Up SSH Keys</a> and <a href="https://help.ubuntu.com/community/SSH/OpenSSH/Keys" target="_blank">SSH/OpenSSH/Keys</a>
 
 
-<a name="cluster_configuration" class="subtopic">2.7 DRMAA Cluster Configuration</a>
+<a name="cluster_configuration" class="subtopic">2.8 DRMAA Cluster Configuration</a>
 Watchdog supports cluster solutions which provide a <pre class="name">DRMAA</pre> java binding. By default it is bundled with a DRMAA binding for the <pre class="name">sun grid engine</pre> (SGE 6.1).
 <br /><br />
 The following environment variables must be set correctly in order to communicate with the SGE:
@@ -293,7 +298,7 @@ Example 2 shows parts of the XSD definition of a module which are important to k
 <a name="basic_xml_structure" class="subtopic">3.2 Basic XML structure</a>
 Tasks which should be executed by Watchdog must be defined in an XML file. In the following the structure of the XML file is presented. The expression <pre class="tag">?Task</pre> is used to refer to a task which is not further specified. In general this syntax is used if some attributes are valid for all classes that inherit from that class type.
 
-Within the following examples these variables are user-specific and contain therefore no concrete values:<br /><br />
+In all examples, the following variables serve only as placeholders and have to be replaced by user-specific values. They are not part of the Watchdog XML syntax and cannot be used in a workflow.<br /><br />
 {%INSTALL%} - path to the root installation directory of Watchdog<br />
 {%MAIL%} - email adress of the user<br />
 {%EXAMPLE_DATA%} - path to the folder in which the example data is located<br /><br />
@@ -708,7 +713,7 @@ The next executor is reserved for high performance tasks because it reserves 4 s
 <br /><br />
 In line 10 an example for a remote executor is given which executes tasks via ssh using a host named <pre class="name">superComputer</pre>.
 <br /><br />
-Afterwards the same sleep task is defined as in the first example and will run on the local executor (16). The other executors can be tested once you adapted them to your local infrastructure (see <a href="#remote_configuration">2.6</a> and <a href="#cluster_configuration">2.7</a>).
+Afterwards the same sleep task is defined as in the first example and will run on the local executor (16). The other executors can be tested once you adapted them to your local infrastructure (see <a href="#remote_configuration">2.7</a> and <a href="#cluster_configuration">2.8</a>).
 
 
 <!--<input class="button" id="spoilerexecution_environmentsButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
@@ -730,7 +735,7 @@ Afterwards the same sleep task is defined as in the first example and will run o
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[shebang]</pre></td><td>string</td><td>shebang, which is used if a temporary script is build that defines environment variables or before/after script commands; default: <pre class="name">#!/bin/bash</pre></td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[beforeScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed before the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[afterScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed after the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
-<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">packageManagers</pre></td><td>string</td><td>list of name(s) of <pre class="tag">?Wrapper</pre> package manager separated by ',' </td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">packageManagers</pre></td><td>string</td><td>list of name(s) of <pre class="tag">?Wrapper</pre> package manager separated by ','; the first package manager a module supports will be used</td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">container</pre></td><td>string</td><td>name of a <pre class="tag">?Wrapper</pre> virtualizer</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">user</pre></td><td>string</td><td>name of the user on the remote host system</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">host</pre></td><td>string</td><td>name of the host which should be used for execution; multiple hostnames must be separated by ';' - in that case the maxRunning argument is applied on each host separately</td></tr>
@@ -776,7 +781,7 @@ Afterwards the same sleep task is defined as in the first example and will run o
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[shebang]</pre></td><td>string</td><td>shebang, which is used if a temporary script is build that defines environment variables or before/after script commands; default: <pre class="name">#!/bin/bash</pre></td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[beforeScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed before the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">[afterScripts]</pre></td><td>string</td><td>path to a script containing commands that are executed after the actual module command; multiple scripts can be provided by using ':' as separator; default: not set</td></tr>
-<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">packageManagers</pre></td><td>string</td><td>list of name(s) of <pre class="tag">?Wrapper</pre> package manager separated by ',' </td></tr>
+<tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">packageManagers</pre></td><td>string</td><td>list of name(s) of <pre class="tag">?Wrapper</pre> package manager separated by ','; the first package manager a module supports will be used</td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">container</pre></td><td>string</td><td>name of a <pre class="tag">?Wrapper</pre> virtualizer</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">user</pre></td><td>string</td><td>name of the user on the remote host system</td></tr>
 <tr><td><pre class="tag">remote</pre></td><td><pre class="attr">host</pre></td><td>string</td><td>name of the host which should be used for execution; multiple hostnames must be separated by ';' - in that case the maxRunning argument is applied on each host separately</td></tr>
@@ -802,16 +807,16 @@ Afterwards the same sleep task is defined as in the first example and will run o
 	</div>
 </div>
 <a name="wrappers" class="subtopic">4.4 Execution wrappers</a>
-Execution wrappers can be used in combination with <pre class="tag">?Executor</pre> as package managers or virtualizer.
+Execution wrappers can be used in combination with <pre class="tag">?Executor</pre> to support the use of package managers (e.g. conda) or virtualization (e.g. Docker).
 
-Multiple execution wrappers can be defined within the <pre class="tag">wrappers</pre> element. 
+Multiple execution wrappers can be defined within the <pre class="tag">wrappers</pre> element. Additional execution wrappers can be implemented using Watchdog's plugin system (see <a href="#plugins">7.2</a>).
 <br /><br />Implemented package managers:
 <ul>
-	<li><pre class="tag">conda</pre> - tasks are executed in a Conda environment if supported by the module</li>
+	<li><pre class="tag">conda</pre> - tasks are executed in a Conda envsks are executed in a Conda environment if supported by the module (see <a href="#module_packageManager">5.7</a>)</li>
 </ul>
 Implemented virtualizer:
 <ul>
-	<li><pre class="tag">docker</pre> - WIP
+	<li><pre class="tag">docker</pre> - will be implemented in a future release
 	<!--<li><pre class="tag">docker</pre> - tasks are executed in a Docker container</li>-->
 </ul>
 
@@ -843,7 +848,7 @@ Implemented virtualizer:
 	</div>
 </div>
 
-In example 7 a Conda execution wrapper is defined as child of the <pre class="tag">wrappers</pre> <nobr>element (5-8)</nobr>. The wrapper will be used for tasks that were created from modules that support the Conda package manager <nobr>wrapper (7)</nobr>. The attribute <pre class="attr">path2conda</pre> defines the Conda installation to use. Conda environments are initialized once per module and stored in the <pre class="attr">path2environments</pre> directory.
+In example 7 a Conda execution wrapper is defined as child of the <pre class="tag">wrappers</pre> <nobr>element (5-8)</nobr>. The wrapper will be used for tasks that were created from modules that support the Conda package manager <nobr>wrapper (7)</nobr>. If a module does not support the Conda package manager, the package manager will be ignored during task execution. The attribute <pre class="attr">path2conda</pre> defines the Conda installation to use. Conda environments are initialized once per module and stored in the <pre class="attr">path2environments</pre> directory.
 <br /><br />
 In line 11, a localhost executor is defined that uses the previously defined execution wrapper named <pre class="name">condaWrapper</pre>.
 
@@ -1501,7 +1506,7 @@ Example 15 shows an example of how an success checker can be added to a task by 
 
 In the following the steps that are needed to create a custom module named <pre class="attr">nameOfModule</pre> are explained. Basic XSD skills are needed to understand how things work together. Modules are defined in XSD format and should have the basic structure showed in example 16. To actually create modules the script <pre class="name">helper_scripts/createNewModule.sh</pre> can be used and modified by hand as not all settings can be configured by it.
 <br /><br />
-Alternatively, the newly developed GUI <pre class="name">moduleMaker</pre> (available at <a href="https://github.com/watchdog-wms/moduleMaker" target="_blank">watchdog-wms/moduleMaker</a>) can be used to automatically extract parameters and flags from a software help page to more conveniently create the corresponding module. See <a href="#basic_jars">2.3</a> for installation hints.
+Alternatively, the newly developed GUI <pre class="name">moduleMaker</pre> (available at <a href="https://github.com/watchdog-wms/moduleMaker" target="_blank">watchdog-wms/moduleMaker</a>) can be used to automatically extract parameters and flags from a software help page to more conveniently create the corresponding module. See <a href="#basic_jars">2.4</a> for installation hints.
 
 <div class="box">	
 	<div class="head_box">Example 16: Basic XSD structure</div>
@@ -1762,8 +1767,7 @@ Example 24 shows how a module script can be made version dependent using bash fu
 
 <a name="module_packageManager" class="subtopic">5.7 Requirements to support package manager wrappers</a>
 
-Currently, only the Conda package manager is supported as execution wrapper by the <pre class="tag">conda</pre> XML plugin.
-A module that should support the <pre class="tag">conda</pre> XML plugin must contain a <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually" target="_blank">YAML file</a> defining the Conda environment.
+Currently, only the Conda package manager is supported as execution wrapper. A module that should support the <pre class="tag">conda</pre> wrapper must contain a <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually" target="_blank">YAML file</a> defining the Conda environment. The suffix of file the must be <pre class="name">.conda.yml</pre> to be detected by the conda wrapper.
 
 <div class="box">	
 	<div class="head_box">Example 25: Conda environment file format</div>
@@ -1781,8 +1785,7 @@ A module that should support the <pre class="tag">conda</pre> XML plugin must co
 
 Example 25 shows the Conda environment file for the <pre class="name">indexBam</pre> module.
 <br /><br />
-The script <pre class="name">helper_scripts/formatCondaYaml.py</pre> can be used to sort channels and dependencies alphabetically.
-This is important as only one Conda environment per file hash will be initilaized and hence could reduce space usage if many modules depend on the same requirements.
+In order to use a Conda environment, Conda downloads and installs packages that are required by the module in a dedicated folder. The folder name is set as the sha256 hash sum of the <pre class="name">*.conda.yml</pre> file. If multiple modules have the same requirements and corresponding Conda environment files are sorted alphabetically, the sha256 hash sum is the same for the <pre class="name">*.conda.yml</pre> file. In this case, the corresponding Conda environment will only be initialized once. The script <pre class="name">helper_scripts/formatCondaYaml.py</pre> can be used to sort Conda environment files. It recursively finds all <pre class="name">*.conda.yml</pre> files, sorts channels and dependencies and saves the sorted file under the original name.
 <a name="module_documentation" class="subtopic">5.8 Documentation of modules</a>
 
 Modules can be documented using an XML format that is defined by an XSD schema. Such an XML module documentation file consists of the main sections <pre class="tag">info</pre>, <pre class="tag">parameter</pre> and <pre class="tag">return</pre>. The first section is mandatory while the other two are optional (e.g. for modules that do not require any parameter or do not return variables).
@@ -1853,7 +1856,7 @@ An XML template for documenting a new module can be generated based on the XSD m
 In the following the new command-line tools (available in the <pre class="name">jars/</pre> subfolder of the Watchdog installation directory) are described in more detail. 
 All tools can be executed using <pre class="name">java -jar path/to/jar/name.jar -options</pre>. The available parameter and flags can be listed using <pre class="name">java -jar path/to/jar/name.jar -help</pre>.
 <br /><br />
-Information on module versioning can be found in section <a href="#module_versions">5.6</a>. The new XML plugin for execution wrappers is described in <a href="#wrappers">4.4</a> and requirements modules must fulfil to be supported by the Conda package manager in <a href="#module_packageManager">5.7</a>. The documentation of the graphical user interface for module creation (<pre class="name">moduleMaker.jar</pre>) has its own <a href="https://github.com/watchdog-wms/moduleMaker" target="_blank" />documentation</a>.
+Information on module versioning can be found in section <a href="#module_versions">5.6</a>. The newly implemented execution wrappers are described in <a href="#wrappers">4.4</a> and requirements modules must fulfil to be supported by the Conda package manager in <a href="#module_packageManager">5.7</a>. The graphical user interface for module creation (<pre class="name">moduleMaker.jar</pre>) has its own <a href="https://github.com/watchdog-wms/moduleMaker" target="_blank" />documentation</a>.
 
 <a name="jars_templateGen" class="subtopic">6.1 Documentation template extractor</a>
 
