@@ -6,8 +6,14 @@ source "${WATCHDOG_CONDA_PATH_PLUGIN}/functions.unix.sh"
 function conda_init() {
 	PATH_TO_ENV=$1
 	PATH_TO_YML=$2
-
 	CONDA_READY_FILE=$(condaReadyFile "${PATH_TO_ENV}")
+
+	# get verbose param
+	if [ $# -eq 3 ]; then
+		VERBOSE_VALUE=$3
+	else
+		VERBOSE_VALUE="--quiet"
+	fi
 
 	# test if environment exists
 	if [ ! -e "${CONDA_READY_FILE}" ]; then
@@ -26,7 +32,7 @@ function conda_init() {
 
 			echoInfo "Creating new conda environment '${PATH_TO_ENV}'..."
 			# try to install the environment
-			conda env create --prefix "${PATH_TO_ENV}" --quiet --file "${PATH_TO_YML}"
+			conda env create --prefix "${PATH_TO_ENV}" "${VERBOSE_VALUE}" --file "${PATH_TO_YML}"
 			EXIT_CODE=$?
 
 			# test if installation was ok
