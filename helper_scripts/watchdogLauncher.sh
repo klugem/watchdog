@@ -1,7 +1,7 @@
 #!/bin/bash
 SCRIPT_FOLDER=$(cd $(dirname $(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || readlink "${BASH_SOURCE[0]}" || echo "${BASH_SOURCE[0]}")) && pwd -P)
 PRIMARY_CALLER="launcher"
-source "${SCRIPT_FOLDER}/../core_lib/includeBasics.sh"
+source "${SCRIPT_FOLDER}/../core_lib/functions.sh"
 
 function createLink() {
 	SOURCE=$1
