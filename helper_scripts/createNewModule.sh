@@ -42,6 +42,8 @@ VAR_VALUE='{%VAR_VALUE%}'
 VAR_MIN=$ARGUMENT_MIN_REPLACE 
 VAR_MAX=$ARGUMENT_MAX_REPLACE
 VAR_PARAM_PARENT_OPTIONAL=0
+RETURN_VARIABLES='{%RETURN_VARIABLES%}'
+SH_VARIABLES_RETURN_VARIABLES_BLOCK='{%RETURN_VARIABLES_BLOCK%}'
 
 # define parameters
 DEFINE_string 'name' '' 'name of module' 'n'
@@ -142,6 +144,7 @@ if [ ! -e "$SCRIPT_FOLDER/../${MODULE_FOLDER}/$FLAGS_name" ]; then
 	REPLACE_CHECK=""
 	PATTERN=""
 	VERIFY_EXIST=""
+	RETURN_VARS=""
 	TEMPLATE_FILE="$SCRIPT_FOLDER/../xsd/template/argument.template.xsd"
 
 	confirm "Do you want to add an argument?"
@@ -276,7 +279,7 @@ if [ ! -e "$SCRIPT_FOLDER/../${MODULE_FOLDER}/$FLAGS_name" ]; then
 		esac
 
 		################################### add the return variable ###################################
-		addReturn "$RETURN_NAME" "$RETURN_TYPE_XSD"
+		addReturn "$RETURN_NAME" "$RETURN_TYPE_XSD" 
 		if [ $FIRST_RET -eq 1 ]; then
 			addReturnArgument
 			if [ "${REPLACE_SH}" != "" ]; then
@@ -286,6 +289,9 @@ if [ ! -e "$SCRIPT_FOLDER/../${MODULE_FOLDER}/$FLAGS_name" ]; then
 			fi
 		fi
 		FIRST_RET=0
+
+		# add the SH write part
+		RETURN_VARS="${RETURN_VARS}"$(cat "$SCRIPT_FOLDER/../xsd/template/returnElement.template.sh" | sed -e 's/'${RETURN_NAME_V}'/'"${RETURN_NAME}"'/g')"\n" 
 		confirm "Do you want to add another return variable?"
 	done
 
@@ -321,7 +327,7 @@ if [ ! -e "$SCRIPT_FOLDER/../${MODULE_FOLDER}/$FLAGS_name" ]; then
 	# if no return parameters are used
 	if [ "${REPLACE_COMPLETE_RETURN}" == "" ]; then
 		# remove the line in the task definition
-				START_LINE=$(grep -n "${FLAGS_name}TaskReturnType" "$XSD_FILENAME" | cut -f 1 -d ":" | head -n 1)
+		START_LINE=$(grep -n "${FLAGS_name}TaskReturnType" "$XSD_FILENAME" | cut -f 1 -d ":" | head -n 1)
 		if [ "$START_LINE" == "" ]; then
 			echoError "Start line was not found for '${RETURN_ELEMENTS}' in the XML file."
 			exit $EXIT_MISFORMATED_INPUT
@@ -341,6 +347,8 @@ if [ ! -e "$SCRIPT_FOLDER/../${MODULE_FOLDER}/$FLAGS_name" ]; then
 		sedinline $RANGE_CUT "$XSD_FILENAME"
 	else
 		replaceInFile "${RETURN_ELEMENTS}" "${REPLACE_COMPLETE_RETURN}" "$XSD_FILENAME"
+		# prepare complete SH part
+		RETURN_VARS_COMPLETE=$(cat "$SCRIPT_FOLDER/../xsd/template/returnBlock.template.sh" | sed -e 's/'${RETURN_VARIABLES}'/'"${RETURN_VARS}"'/g') 
 	fi
 
 	# add the custom param types
@@ -352,6 +360,7 @@ if [ ! -e "$SCRIPT_FOLDER/../${MODULE_FOLDER}/$FLAGS_name" ]; then
 		replaceInFile "${SH_VARIABLES_REPLACE}" "${REPLACE_SH}" "$MSCRIPT_FILENAME"
 		replaceInFile "${SH_VARIABLES_CHECK_REPLACE}" "${REPLACE_CHECK}" "$MSCRIPT_FILENAME"
 		replaceInFile "${SH_VARIABLES_EXISTS_REPLACE}" "${VERIFY_EXIST}" "$MSCRIPT_FILENAME"
+		replaceInFile "${SH_VARIABLES_RETURN_VARIABLES_BLOCK}" "${RETURN_VARS_COMPLETE}" "$MSCRIPT_FILENAME"
 
 		# make the script executable
 		chmod uog+x "$MSCRIPT_FILENAME"

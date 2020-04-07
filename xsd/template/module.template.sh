@@ -44,9 +44,7 @@ printParamValues "parameters before actual script starts" # print param values, 
 # check, if the input files exist
 {%FILE_EXISTENCE_CHECK%}
 
-
-
-
+{%RETURN_VARIABLES_BLOCK%}
 
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< #
 
