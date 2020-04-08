@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.ggf.drmaa.DrmaaException;
+
 import de.lmu.ifi.bio.multithreading.StopableLoopRunnable;
 import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
 import de.lmu.ifi.bio.watchdog.task.Task;
@@ -19,12 +21,13 @@ import de.lmu.ifi.bio.watchdog.task.TaskStatusUpdate;
  *
  */
 public class FileWatcherLockguard extends StopableLoopRunnable {
-	
-	private final Map<Task, ArrayList<File>> MONITOR = new ConcurrentHashMap<Task, ArrayList<File>>();
+	private final Map<String, Long> INSERT_TIME = new ConcurrentHashMap<>();
+	private final Map<Task, ArrayList<File>> MONITOR = new ConcurrentHashMap<>();
 	
 	private static FileWatcherLockguard lock = null;
 	private static final int CREATE_DIFF_MILLI = 5000; // was not modified for at least 5 seconds
 	private static final int WAIT_TIME_MILLI = 1000;
+	private static final int MAX_WAIT_TIME_MILLI = 30 * 1000; // wait max. 30 seconds for a file to apear
 	
 	/**
 	 * singleton class
@@ -40,6 +43,7 @@ public class FileWatcherLockguard extends StopableLoopRunnable {
 			return 1;
 		
 		// loop over all files and test them
+		String id;
 		File f;
 		ArrayList<File> a;
 		Entry<Task, ArrayList<File>> e;
@@ -50,14 +54,26 @@ public class FileWatcherLockguard extends StopableLoopRunnable {
 			for(Iterator<File> itf = a.iterator(); itf.hasNext(); ) {
 				f = itf.next();
 				// test if file exists, can be read and was last changed after a specific time
-				if(f.exists() && f.canRead() && ((curTime-f.lastModified()) >= FileWatcherLockguard.CREATE_DIFF_MILLI)) {
-					itf.remove();
+				if(f.exists() && f.canRead()) {
+					if(((curTime-f.lastModified()) >= FileWatcherLockguard.CREATE_DIFF_MILLI))
+						itf.remove();
+				}
+				// test if max time is gone
+				else {
+					id = e.getKey().getID();
+					if((curTime - this.INSERT_TIME.get(id)) >= FileWatcherLockguard.MAX_WAIT_TIME_MILLI) {
+						// don't wait any longer for this task
+						a.clear();
+						LOGGER.warn("Maximal wait time for file '" +f.getAbsolutePath()+ "' expired for task with id '" +id+ "'.");
+						break;
+					}
 				}
 			}
 			// process it and remove it from monitor list
 			if(a.size() == 0) {
 				this.performUpdate(e.getKey());
 				it.remove();
+				this.INSERT_TIME.remove(e.getKey().getID());
 			}
 		}
 		return 1;
@@ -89,11 +105,19 @@ public class FileWatcherLockguard extends StopableLoopRunnable {
 		ArrayList<File> files = new ArrayList<>();
 		if(t.getStdOut(false) != null) files.add(t.getStdOut(false));
 		if(t.getStdErr(false) != null) files.add(t.getStdErr(false));
-		if(t.hasVersionQueryInfoFile()) files.add(t.getVersionQueryInfoFile());
-
+		
+		int exitCode = 0;
+		try { exitCode = t.getJobInfo().getExitStatus(); } catch(DrmaaException e) {}
+		
+		// if task has failed we don't enforce that
+		if(exitCode == 0 && t.hasVersionQueryInfoFile())
+			files.add(t.getVersionQueryInfoFile());
+		
 		// add it to monitor if required or perform update instantly if possible
-		if(files.size() > 0)
+		if(files.size() > 0) {
 			this.MONITOR.put(t, files);
+			this.INSERT_TIME.put(t.getID(), System.currentTimeMillis());
+		}
 		else
 			this.performUpdate(t);
 	}
