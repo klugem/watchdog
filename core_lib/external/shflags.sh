@@ -98,8 +98,14 @@ FLAGS_VERSION='1.2.3'
 # change by Michael Kluge
 # if we are on macOS try to use the binary shipped with Watchdog
 if [[ $OSTYPE == darwin* && "${FLAGS_GETOPT_CMD}" == "" ]]; then
-  LIB_SCRIPT_FOLDER_FLAGS=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-  FLAGS_GETOPT_CMD_TMP="$LIB_SCRIPT_FOLDER_FLAGS/getopt_mac"
+  # test if gnu-getopt is installed
+  RET_GNU_GETOPT=$(which gnu-getopt)
+  if [ $? -eq 0 ]; then
+    FLAGS_GETOPT_CMD_TMP="${RET_GNU_GETOPT}"
+  else 
+    LIB_SCRIPT_FOLDER_FLAGS=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+    FLAGS_GETOPT_CMD_TMP="$LIB_SCRIPT_FOLDER_FLAGS/getopt_mac"
+  fi
 
   # test, if binary works
   $(${FLAGS_GETOPT_CMD_TMP} -T)
@@ -107,7 +113,7 @@ if [[ $OSTYPE == darwin* && "${FLAGS_GETOPT_CMD}" == "" ]]; then
   if [ $? -eq 4 ]; then
     FLAGS_GETOPT_CMD=${FLAGS_GETOPT_CMD_TMP}
   else 
-    echo "flags:WARN tried to use custom mac version of getopt stored in '${FLAGS_GETOPT_CMD_TMP}' but failed. (see shflags.sh)" >&2
+    echo "flags:WARN tried to use GNU mac version of getopt stored in '${FLAGS_GETOPT_CMD_TMP}' but failed. (see shflags.sh)" >&2
   fi
 fi
 ################################
