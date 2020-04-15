@@ -22,7 +22,7 @@ import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
  */
 public class ReplaceSpecialConstructs {
 	
-	private static final String REGEX_PATH = "((/([^/]+/+)*[^/]+/{0,})|([A-Z]:\\\\([^\\\\]+\\\\+)*[^\\\\]+/{0,}))";
+	public static final String REGEX_PATH = "((/([^/'\"]+/+)*[^/'\\\"]+/{0,})|([A-Z]:\\\\([^\\\\'\\\"]+\\\\+)*[^\\\\'\\\"]+/{0,}))";
 	public static final String TAB = "\t";
 	private static final String MATCH_RANDOM = ".*?";
 	private static final String SUBSTITUTE_FILENAME_PATTERN = "\\[([0-9]*)(,([^]\\)\\}]*)){0,1}\\]";

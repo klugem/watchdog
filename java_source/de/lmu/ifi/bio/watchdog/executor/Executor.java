@@ -31,6 +31,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 	public static final String WATCHGOD_MEMORY = "WATCHDOG_MEMORY";
 	public static final String VERSION_INFO_PREFIX = "version_";
 
+	public static final String QUOTE = "'";
 	public static final String COMMAND_SEP = System.lineSeparator();
 	public static final String EXECUTE = "execute";
 	public static final String WATCHGOD_ENV_IDENTIFIER = "IS_WATCHDOG_JOB";
@@ -222,7 +223,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 		String vqp = this.TASK.getVersionQueryParameter();
 		boolean addVersionQuery = (vqp != null && vqp.length() > 0);
 		// no script needed
-		if(this.isSingleCommand() && !addBashWrappingScript && !addVersionQuery && !this.EXEC_INFO.hasPackageManagers()) {
+		if(this.isSingleCommand() && !addBashWrappingScript && !addVersionQuery && !this.EXEC_INFO.hasPackageManagers() && !this.EXEC_INFO.usesContainer()) {
 			c.add(this.TASK.getBinaryCall());
 			
 			// remove quoting, if needed
@@ -238,27 +239,34 @@ public abstract class Executor<A extends ExecutorInfo> {
 		// write the stuff to a file
 		else {
 			ExecutionWrapper w = null;
+			ExecutionWrapper container = null;
+			// process package manager
 			if(this.EXEC_INFO.hasPackageManagers()) {
-				HashMap<String, ExecutionWrapper> allWrappers = this.EXEC_INFO.getExecutionWrappers();
 				for(String wrapperName : this.EXEC_INFO.getPackageManagers()) {
-						// we don't need to test, wrapper existence must be enforced before
-						// and we don't need to test OS support 
-						w = allWrappers.get(wrapperName);
-						// get the first wrapper that can be applied on the task (if any)
-						if(w.canBeAppliedOnTask(this.TASK)) {
-							ArrayList<String> init = w.getInitCommands(this.TASK);
-							if(init != null && init.size() > 0)
-								c.addAll(init);
-							
-							break;
-						}
-						else {
-							w = null;
-						}
+					// we don't need to test, wrapper existence must be enforced before
+					// and we don't need to test OS support 
+					w = this.EXEC_INFO.getExecutionWrappers().get(wrapperName);
+					// get the first wrapper that can be applied on the task (if any)
+					if(w.canBeAppliedOnTask(this.TASK)) {
+						ArrayList<String> init = w.getInitCommands(this.TASK);
+						if(init != null && init.size() > 0)
+							c.addAll(init);
+						
+						break;
+					}
+					else {
+						w = null;
 					}
 				}
-			
-			// TODO: handle virtualizer
+			}
+			// handle virtualizer
+			if(this.EXEC_INFO.usesContainer()) {
+				String containerName = this.EXEC_INFO.getContainer();
+				container = this.EXEC_INFO.getExecutionWrappers().get(containerName);
+				// make sure that it can be used for task t
+				if(!container.canBeAppliedOnTask(this.TASK))
+					container = null;
+			}
 
 			c.addAll(this.BEFORE_COMMAND);
 			String taskParameter = (this.TASK.getArguments().size() > 0 ? " " + StringUtils.join(this.TASK.getArguments(), " ") : "");
@@ -279,9 +287,31 @@ public abstract class Executor<A extends ExecutorInfo> {
 				if(clean != null && clean.size() > 0)
 					c.addAll(clean);
 			}
-			
 			c.add(EXIT_MAIN_COMMAND_RETURN);
-			return new String[] {this.writeCommandsToFile(StringUtils.join(c, Executor.COMMAND_SEP))};
+			
+			// write commands to file
+			String tmpCommandFile = this.writeCommandsToFile(StringUtils.join(c, Executor.COMMAND_SEP));
+			
+			// test, if we need to wrap that into a container
+			if(container != null) {
+				ArrayList<String> conCom = new ArrayList<>();
+				conCom.addAll(container.getInitCommands(this.TASK));
+				
+				// update the last command
+				String lastCommand = conCom.remove(conCom.size()-1);
+				lastCommand = lastCommand + Executor.QUOTE + tmpCommandFile + Executor.QUOTE;
+				conCom.add(lastCommand);
+				
+				// add return exit code and clean up stuff
+				conCom.add(MAIN_COMMAND_RETURN);
+				conCom.addAll(container.getCleanupCommands(this.TASK));
+				conCom.add(EXIT_MAIN_COMMAND_RETURN);
+				
+				return new String[] {this.writeCommandsToFile(StringUtils.join(conCom, Executor.COMMAND_SEP))};
+			}
+			else {
+				return new String[] {tmpCommandFile};
+			}
 		}
 	}
 	

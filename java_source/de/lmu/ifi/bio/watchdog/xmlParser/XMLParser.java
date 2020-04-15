@@ -664,7 +664,7 @@ public class XMLParser {
 								// get appropriate parser
 								ExecutionWrapper wrapper = null;
 								try {
-									wrapper = PLUGIN_WRAPPER_PARSER.parseElement(el, watchdogBaseDir, new Object[] { });
+									wrapper = PLUGIN_WRAPPER_PARSER.parseElement(el, watchdogBaseDir, new Object[] { consts });
 									
 									// test if wrapper can be used on this OS
 									if(!wrapper.doesSupportOS(os)) {

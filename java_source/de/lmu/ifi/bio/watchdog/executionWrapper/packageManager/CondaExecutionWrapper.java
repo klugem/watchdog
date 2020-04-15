@@ -99,11 +99,6 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 
 	@Override
 	public Object[] getDataToLoadOnGUI() { return new Object[] { this.getCondaPath(), this.getCondaEnvironmentPrefixPath() }; }
-
-	@Override
-	public boolean isPackageManager() {
-		return true;
-	}
 	
 	/**
 	 * tests if a conda environment definition file is there 

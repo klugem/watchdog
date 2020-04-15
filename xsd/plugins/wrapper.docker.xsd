@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x:schema xmlns:x="http://www.w3.org/2001/XMLSchema" xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning" vc:minVersion="1.1">
+	<!-- mount -->
+	<x:complexType name="dockerMountType">
+		<x:all>
+			<x:element name="host" type="absolutePathType" minOccurs="1" maxOccurs="1"/>	
+			<x:element name="container" type="absolutePathType" minOccurs="0" maxOccurs="1" />
+		</x:all>
+	</x:complexType>
+	<!-- blacklist -->
+	<x:complexType name="dockerBlacklistType">
+		<x:attribute name="pattern" type="x:string" use="required" />
+	</x:complexType>
+
+	<!--  execution wrapper  -->
+	<x:complexType name="dockerWrapperType">
+		<x:complexContent>
+			<x:extension base="executionwrapperAbstractType">
+			<x:all>
+				<x:element name="mount" type="dockerMountType" minOccurs="0" maxOccurs="unbounded"/>
+				<x:element name="blacklist" type="dockerBlacklistType" minOccurs="0" maxOccurs="unbounded"/>
+			</x:all>
+				<x:attribute name="path2docker" type="absoluteFileType" use="required" />
+				<x:attribute name="image" type="x:string" use="required" />
+				<x:attribute name="execKeyword" type="x:string" default="run"/>
+				<x:attribute name="addCallParams" type="x:string" default="" />
+				<x:attribute name="disableAutodetectMount" type="x:boolean" default="false"/>
+			</x:extension>
+		</x:complexContent>
+	</x:complexType>
+
+	<!--  tag for process block in XML file  -->
+	<x:element name="docker" type="dockerWrapperType" substitutionGroup="executionwrapperType" />
+</x:schema>

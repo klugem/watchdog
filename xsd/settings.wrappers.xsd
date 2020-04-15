@@ -3,11 +3,7 @@
 
 	<!-- wrapper block -->
 	<x:complexType name="executionwrapperAbstractType" abstract="true">
-		<x:simpleContent>
-			<x:extension base="x:string">
-				<x:attribute name="name" type="x:string" use="required" />
-			</x:extension>
-		</x:simpleContent>
+		<x:attribute name="name" type="x:string" use="required" />
 	</x:complexType>
 
 	<!-- element for group substitution -->

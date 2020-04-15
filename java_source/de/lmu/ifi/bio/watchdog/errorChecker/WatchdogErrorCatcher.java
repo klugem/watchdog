@@ -60,8 +60,8 @@ public class WatchdogErrorCatcher extends ErrorChecker implements Serializable {
 			String line;
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(f));
-				while((line = br.readLine()) != null) {
-					if(line.startsWith(ERROR_START))
+				while((line = br.readLine()) != null) { // TODO: add dedicated error checker for docker
+					if(line.startsWith(ERROR_START) || line.startsWith("Error:"))
 						buffer.append(line);
 					else if(line.contains(ERROR_CHECKER_START))
 						errorMode = true;
