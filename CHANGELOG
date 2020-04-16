@@ -7,18 +7,24 @@ Changelog started with version 1.2.0
 ### Added
 - [PLUGIN] Used XML plugin system to add support for execution wrappers (package managers / virtualizer)
 - [PLUGIN] Implemented support for Conda as package manager execution wrapper (<conda>)
-- [] Added helper script (formatCondaYaml.py) that formats Conda enironment definition files (*.conda.yml)
+- [PLUGIN] Implemented support for Docker as virtualizer execution wrapper (<docker>)
 - [JAR] Added Maven file to build Jar files and download dependencies
 - [DOCU] Added replicate analysis and WorkflowDesigner tutorials
+- [] Added helper script (formatCondaYaml.py) that formats Conda enironment definition files (*.conda.yml)
+- [] Implemented helper script (installCondaYaml.sh) to pre-initialize all conda environments
+- [] Added helper script (watchdogLauncher.sh) to make Watchdog's JARs and helper scripts better accessible within the watchdog-wms Conda package
 
 ### Fixed
 - [CMD] Fixed null pointer exception when no workflow XML file was passed to Watchdog
-- [BASH] Added lib/ folder to search folder for javaFX SDK
+- [CMD] Don't wait for version query file when task failed.
+- [BASH] Added 'lib/' folder to search folder for the javaFX SDK
+- [XSD] Numeric range tests did not work as type casting is required
 
 ### Changed
 - [JAR] Jars are now build with Maven and do not include dependencies
-- [README] The readme is now formated in Markdown 
+- [README] The readme is now formated using Markdown 
 - [GUI] JavaFX SDK obtained by Maven is used if not otherwise specified
+- [] Templates for writing return variables to a file are added to the bash script created by createNewModule.sh
 
 ## [2.0.4] - 2019-11-27
 ### Fixed

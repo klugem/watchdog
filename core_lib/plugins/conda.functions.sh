@@ -6,6 +6,16 @@ source "${WATCHDOG_CONDA_PATH_PLUGIN}/functions.unix.sh"
 function conda_init() {
 	PATH_TO_ENV=$1
 	PATH_TO_YML=$2
+
+	# ensure that folder exists
+	if [ ! -d "${PATH_TO_ENV}" ]; then
+		mkdir -p "${PATH_TO_ENV}"
+		if [ ! -d "${PATH_TO_ENV}" ]; then
+			echoError "Failed to create environment folder '${PATH_TO_ENV}'."
+			exit 16
+		fi
+	fi
+
 	CONDA_READY_FILE=$(condaReadyFile "${PATH_TO_ENV}")
 
 	# get verbose param

@@ -4,19 +4,46 @@
 		<!-- definition of execution wrappers -->
 		<wrappers>
 			<!-- TODO: modify path2conda and path2environments-->
-			<conda name="condaWrapper" path2conda="/your/path/to/conda/" path2environments="/tmp/conda_watchdog_env/"/>
+			<conda name="condaWrapper" path2conda="/your/local/path/to/conda/base/" path2environments="/tmp/conda_watchdog_env/"/>
+
+			<conda name="condaContainer" path2conda="/usr/local/" path2environments="/tmp/conda_watchdog_env/"/>
+			<!-- TODO: modify path2docker to point to docker/podman/singularity binary-->
+			<docker name="podman" path2docker="/your/path/to/bin/podman" image="conda/miniconda3">
+				<blacklist pattern="/usr/local/storage/" />
+				<!-- in this case /tmp/watchdogLogs/ is used to store stdout and stderr -->
+				<mount>
+					<host>/tmp/watchdogLogs/</host>
+				</mount>
+			</docker>
 		</wrappers>
-		<!-- local executor that will use the package manager condaWrapper for supporting modules -->
 		<executors>
-			<local name="localhost" packageManagers="condaWrapper"/>
+			<!-- local executor that will use the package manager condaWrapper for supporting modules -->
+			<local name="localhost" packageManagers="condaWrapper" />
+			<!-- the condaWrapper is started within a container additionally -->				
+			<local name="localDocker" packageManagers="condaContainer" container="podman" />
 		</executors>
 	</settings>
 	<tasks>
-		<!-- definition of a simple sleep task, which will be executed in a Conda environment -->
-		<sleepTask id="1" name="sleep" executor="localhost">
+		<!-- will be executed in a Conda environment -->
+		<sleepTask id="1" name="sleep I" executor="localhost">
 			<parameter>
 				<wait>10s</wait>
 			</parameter>
+			<streams>
+				<stdout>/tmp/watchdogLogs/sleep.conda.out</stdout>
+				<stderr>/tmp/watchdogLogs/sleep.conda.err</stderr>
+			</streams>
+		</sleepTask>
+
+		<!-- will be executed in a Conda environment that is started in a Docker container -->
+		<sleepTask id="2" name="sleep II" executor="localDocker">
+			<parameter>
+				<wait>10s</wait>
+			</parameter>
+			<streams>
+				<stdout>/tmp/watchdogLogs/sleep.docker.out</stdout>
+				<stderr>/tmp/watchdogLogs/sleep.docker.err</stderr>
+			</streams>
 		</sleepTask>
 	</tasks>
 </watchdog>
