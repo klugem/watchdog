@@ -93,6 +93,7 @@ Here, we present Watchdog, a WMS for the automated and distributed analysis of l
 <li><pre class="name">[new]</pre> execution: use custom before and after command scripts</li>
 <li><pre class="name">[new]</pre> execution: implementation of XML plugin supporting package managers and virtualizer</li>
 <li><pre class="name">[new]</pre> execution: support of Conda package manager for module dependencies</li>
+<li><pre class="name">[new]</pre> execution: support of Docker container</li>
 <li><pre class="name">[new]</pre> graphical user interface for module creation</li>
 <li><pre class="name">[new]</pre> documentation: standardized documentation format for modules</li>
 <li><pre class="name">[new]</pre> documentation: generation of module reference book</li>
@@ -183,7 +184,7 @@ Once Watchdog is correctly installed, you can run example workflows shipped with
 <li>example_dependencies.xml - workflow with dependencies between tasks</li>
 <li>example_execution_environments.xml - workflow using different execution environments (requires modifications)</li>
 <li>example_process_blocks.xml - shows how to work with process sequences, folders and tables</li>
-<li>example_execution_wrapper.xml - module dependencies are obtained by the Conda package manager (requires modifications)</li>
+<li>example_execution_wrapper.xml - usage of the Conda as package manager and Docker as virtualizer (requires modifications)</li>
 <li>example_task_actions.xml - introduces task actions using the example of a file copy action</li>
 <li>example_checkers.xml - shows how to use a custom success checker</li>
 <li>example_docker.xml - uses a module that internally uses a docker image containing bowtie2</li>
@@ -807,17 +808,16 @@ Afterwards the same sleep task is defined as in the first example and will run o
 	</div>
 </div>
 <a name="wrappers" class="subtopic">4.4 Execution wrappers</a>
-Execution wrappers can be used in combination with <pre class="tag">?Executor</pre> to support the use of package managers (e.g. conda) or virtualization (e.g. Docker).
+Execution wrappers can be used in combination with <pre class="tag">?Executor</pre> to support the use of package managers (e.g. Conda) or virtualization (e.g. Docker).
 
 Multiple execution wrappers can be defined within the <pre class="tag">wrappers</pre> element. Additional execution wrappers can be implemented using Watchdog's plugin system (see <a href="#plugins">7.2</a>).
 <br /><br />Implemented package managers:
 <ul>
-	<li><pre class="tag">conda</pre> - tasks are executed in a Conda envsks are executed in a Conda environment if supported by the module (see <a href="#module_packageManager">5.7</a>)</li>
+	<li><pre class="tag">conda</pre> - tasks are executed in a Conda environment if supported by the module (see <a href="#module_packageManager">5.7</a>)</li>
 </ul>
 Implemented virtualizer:
 <ul>
-	<li><pre class="tag">docker</pre> - will be implemented in a future release
-	<!--<li><pre class="tag">docker</pre> - tasks are executed in a Docker container</li>-->
+	<li><pre class="tag">docker</pre> - tasks are executed in a Docker container</li>
 </ul>
 
 <div class="box">	
@@ -829,28 +829,60 @@ Implemented virtualizer:
  4			&lt;!-- definition of execution wrappers --&gt;
  5			&lt;wrappers&gt;
  6				&lt;!-- TODO: modify path2conda and path2environments--&gt;
- 7				&lt;conda name="condaWrapper" path2conda="/your/path/to/conda/" path2environments="/tmp/conda_watchdog_env/" /&gt;
- 8			&lt;/wrappers&gt;
- 9			&lt;!-- local executor that will use the package manager condaWrapper for supporting modules --&gt;
-10			&lt;executors&gt;
-11				&lt;local name="localhost" packageManagers="condaWrapper" /&gt;
-12			&lt;/executors&gt;
-13		&lt;/settings&gt;
-14		&lt;tasks&gt;
-15			&lt;!-- definition of a simple sleep task, which will be executed in a Conda environment --&gt;
-16			&lt;sleepTask id="1" name="sleep" executor="localhost"&gt;
-17				&lt;parameter&gt;
-18					&lt;wait&gt;10s&lt;/wait&gt;
-19				&lt;/parameter&gt;
-20			&lt;/sleepTask&gt;
-21		&lt;/tasks&gt;
-22	&lt;/watchdog&gt;</code></pre>
+ 7				&lt;conda name="condaWrapper" path2conda="/your/local/path/to/conda/base/" path2environments="/tmp/conda_watchdog_env/" /&gt;
+ 8	
+ 9				&lt;conda name="condaContainer" path2conda="/usr/local/" path2environments="/tmp/conda_watchdog_env/" /&gt;
+10				&lt;!-- TODO: modify path2docker to point to docker/podman/singularity binary--&gt;
+11				&lt;docker name="podman" path2docker="/your/path/to/bin/podman" image="conda/miniconda3"&gt;
+12					&lt;blacklist pattern="/usr/local/storage/" /&gt;
+13					&lt;!-- in this case /tmp/watchdogLogs/ is used to store stdout and stderr --&gt;
+14					&lt;mount&gt;
+15						&lt;host&gt;/tmp/watchdogLogs/&lt;/host&gt;
+16					&lt;/mount&gt;
+17				&lt;/docker&gt;
+18			&lt;/wrappers&gt;
+19			&lt;executors&gt;
+20				&lt;!-- local executor that will use the package manager condaWrapper for supporting modules --&gt;
+21				&lt;local name="localhost" packageManagers="condaWrapper" /&gt;
+22				&lt;!-- the condaWrapper is started within a container additionally --&gt;				
+23				&lt;local name="localDocker" packageManagers="condaContainer" container="podman" /&gt;
+24			&lt;/executors&gt;
+25		&lt;/settings&gt;
+26		&lt;tasks&gt;
+27			&lt;!-- will be executed in a Conda environment --&gt;
+28			&lt;sleepTask id="1" name="sleep I" executor="localhost"&gt;
+29				&lt;parameter&gt;
+30					&lt;wait&gt;10s&lt;/wait&gt;
+31				&lt;/parameter&gt;
+32				&lt;streams&gt;
+33					&lt;stdout&gt;/tmp/watchdogLogs/sleep.conda.out&lt;/stdout&gt;
+34					&lt;stderr&gt;/tmp/watchdogLogs/sleep.conda.err&lt;/stderr&gt;
+35				&lt;/streams&gt;
+36			&lt;/sleepTask&gt;
+37	
+38			&lt;!-- will be executed in a Conda environment that is started in a Docker container --&gt;
+39			&lt;sleepTask id="2" name="sleep II" executor="localDocker"&gt;
+40				&lt;parameter&gt;
+41					&lt;wait&gt;10s&lt;/wait&gt;
+42				&lt;/parameter&gt;
+43				&lt;streams&gt;
+44					&lt;stdout&gt;/tmp/watchdogLogs/sleep.docker.out&lt;/stdout&gt;
+45					&lt;stderr&gt;/tmp/watchdogLogs/sleep.docker.err&lt;/stderr&gt;
+46				&lt;/streams&gt;
+47			&lt;/sleepTask&gt;
+48		&lt;/tasks&gt;
+49	&lt;/watchdog&gt;</code></pre>
 	</div>
 </div>
 
-In example 7 a Conda execution wrapper is defined as child of the <pre class="tag">wrappers</pre> <nobr>element (5-8)</nobr>. The wrapper will be used for tasks that were created from modules that support the Conda package manager <nobr>wrapper (7)</nobr>. If a module does not support the Conda package manager, the package manager will be ignored during task execution. The attribute <pre class="attr">path2conda</pre> defines the Conda installation to use. Conda environments are initialized once per module and stored in the <pre class="attr">path2environments</pre> directory.
+In example 7 a Conda execution wrapper is defined as child of the <pre class="tag">wrappers</pre> <nobr>element (5-18)</nobr>. The wrapper will be used for tasks that were created from modules that support the Conda package manager <nobr>wrapper (7)</nobr>. If a module does not support the Conda package manager, the package manager will be ignored during task execution. The attribute <pre class="attr">path2conda</pre> defines the Conda installation to use. Conda environments are initialized once per module and stored in the <pre class="attr">path2environments</pre> directory.
 <br /><br />
-In line 11, a localhost executor is defined that uses the previously defined execution wrapper named <pre class="name">condaWrapper</pre>.
+In line 9 another Conda execution wrapper is defined, which is configured to be used within a Docker image.
+The Docker wrapper is defined with the <pre class="tag">docker</pre> <nobr>element (11-17)</nobr>. The attribute <pre class="attr">path2docker</pre> must specify the path to the virtualizer binary, which can be docker, podman or singularity. The <pre class="attr">image</pre> attribute defines which image is used to start the container (e.g. <pre class="name">conda/miniconda3</pre>).
+<br /><br />
+Most tasks process files stored on the host file system. Hence, these files must be made availibe within the container using mount points. Watchdog will try to detect the required mount paths automatically using the task parameters. Hence, most workflows can be run in a Docker container without further adjustments. The element <pre class="tag">blacklist</pre> can be used to avoid mounting of automaitcally detected directories (e.g. directories mounted on local disks as <pre class="name">/tmp/</pre> or <pre class="name">/usr/local/storage/</pre>). Another possibility is to disable the automatic detection using the <pre class="attr">disableAutodetectMount</pre> attribute and to define the required mounts manually using <nobr><pre class="tag">mount</pre> (14-16).</nobr>
+<br /><br />
+In line 21, a localhost executor is defined that uses the previously defined execution wrapper named <pre class="name">condaWrapper</pre>. Another local executor is defined in line 23, which uses the Docker wrapper <pre class="name">podman</pre> and the Conda execution wrapper <pre class="name">condaContainer</pre>. On both executors a simple sleep task will be <nobr>executed (28-47).</nobr>
 
 
 <!--<input class="button" id="spoilerexecution_wrappersButton" type="button" value="Show detailed attribute information" onclick="this.value=this.value=='Show detailed attribute information'?'Hide detailed attribute information':'Show detailed attribute information';" />
@@ -864,7 +896,16 @@ In line 11, a localhost executor is defined that uses the previously defined exe
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">packageManagers</pre></td><td>string</td><td>list of name(s) of <pre class="tag">?Wrapper</pre> package manager separated by ',' </td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">container</pre></td><td>string</td><td>name of a <pre class="tag">?Wrapper</pre> virtualizer</td></tr>
 <tr><td><pre class="tag">conda</pre></td><td><pre class="attr">path2conda</pre></td><td>string</td><td>absolute path to Conda installation directory</td></tr>
-<tr><td><pre class="tag">conda</pre></td><td><pre class="attr">[path2environments]</pre></td><td>string</td><td>path to directory in which Conda environments will be installed; path can also be relative to path2conda; default: conda_watchdog_env/</td></tr>
+<tr><td><pre class="tag">conda</pre></td><td><pre class="attr">[path2environments]</pre></td><td>string</td><td>path to directory in which Conda environments will be installed; path can also be relative to path2conda; default: <pre class="name">conda_watchdog_env/</pre></td></tr>
+<tr><td><pre class="tag">docker</pre></td><td><pre class="attr">path2docker</pre></td><td>string</td><td>path to the virtualizer binary; tested with docker, podman and singularity</td></tr>
+<tr><td><pre class="tag">docker</pre></td><td><pre class="attr">image</pre></td><td>string</td><td>name of the image that should be used</td></tr>
+<tr><td><pre class="tag">docker</pre></td><td><pre class="attr">[addCallParams]</pre></td><td>string</td><td>additional parameters that are passed to the binary; default: not set</td></tr>
+<tr><td><pre class="tag">docker</pre></td><td><pre class="attr">[execKeyword]</pre></td><td>string</td><td>keyword that is used to start a command within the container; default: <pre class="name">run</pre></td></tr>
+<tr><td><pre class="tag">docker</pre></td><td><pre class="attr">[disableAutodetectMount]</pre></td><td>boolean</td><td>disables the automatic detection of volume mount points, which is based on defined constants and task parameters; default: <pre class="name">false</pre> </td></tr>
+<tr><td><pre class="tag">mount</pre></td><td></td><td></td><td>parent of <pre class="tag">host</pre> and <pre class="tag">container</pre> and child of <pre class="tag">docker</pre>; used to make folders of the host available within the container</td></tr>
+<tr><td><pre class="tag">host</pre></td><td></td><td>string</td><td>path to a folder on the host, which should be made availible within the container</td></tr>
+<tr><td><pre class="tag">container</pre></td><td></td><td>string</td><td>if set the host directory is mounted with a different name within the container; element is optional</td></tr>
+<tr><td><pre class="tag">blacklist</pre></td><td><pre class="attr">pattern</pre></td><td>string</td><td>child of <pre class="tag">docker</pre>; path or regular expression that can be used to avoid mounting of automatically detected directories; e.g. directories mounted on local disks as <pre class="name">/tmp/</pre> or <pre class="name">/usr/local/storage/</pre></td></tr>
 
 		</tbody>
 	</table>
@@ -883,7 +924,16 @@ In line 11, a localhost executor is defined that uses the previously defined exe
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">packageManagers</pre></td><td>string</td><td>list of name(s) of <pre class="tag">?Wrapper</pre> package manager separated by ',' </td></tr>
 <tr><td><pre class="tag">?Executor</pre></td><td><pre class="attr">container</pre></td><td>string</td><td>name of a <pre class="tag">?Wrapper</pre> virtualizer</td></tr>
 <tr><td><pre class="tag">conda</pre></td><td><pre class="attr">path2conda</pre></td><td>string</td><td>absolute path to Conda installation directory</td></tr>
-<tr><td><pre class="tag">conda</pre></td><td><pre class="attr">[path2environments]</pre></td><td>string</td><td>path to directory in which Conda environments will be installed; path can also be relative to path2conda; default: conda_watchdog_env/</td></tr>
+<tr><td><pre class="tag">conda</pre></td><td><pre class="attr">[path2environments]</pre></td><td>string</td><td>path to directory in which Conda environments will be installed; path can also be relative to path2conda; default: <pre class="name">conda_watchdog_env/</pre></td></tr>
+<tr><td><pre class="tag">docker</pre></td><td><pre class="attr">path2docker</pre></td><td>string</td><td>path to the virtualizer binary; tested with docker, podman and singularity</td></tr>
+<tr><td><pre class="tag">docker</pre></td><td><pre class="attr">image</pre></td><td>string</td><td>name of the image that should be used</td></tr>
+<tr><td><pre class="tag">docker</pre></td><td><pre class="attr">[addCallParams]</pre></td><td>string</td><td>additional parameters that are passed to the binary; default: not set</td></tr>
+<tr><td><pre class="tag">docker</pre></td><td><pre class="attr">[execKeyword]</pre></td><td>string</td><td>keyword that is used to start a command within the container; default: <pre class="name">run</pre></td></tr>
+<tr><td><pre class="tag">docker</pre></td><td><pre class="attr">[disableAutodetectMount]</pre></td><td>boolean</td><td>disables the automatic detection of volume mount points, which is based on defined constants and task parameters; default: <pre class="name">false</pre> </td></tr>
+<tr><td><pre class="tag">mount</pre></td><td></td><td></td><td>parent of <pre class="tag">host</pre> and <pre class="tag">container</pre> and child of <pre class="tag">docker</pre>; used to make folders of the host available within the container</td></tr>
+<tr><td><pre class="tag">host</pre></td><td></td><td>string</td><td>path to a folder on the host, which should be made availible within the container</td></tr>
+<tr><td><pre class="tag">container</pre></td><td></td><td>string</td><td>if set the host directory is mounted with a different name within the container; element is optional</td></tr>
+<tr><td><pre class="tag">blacklist</pre></td><td><pre class="attr">pattern</pre></td><td>string</td><td>child of <pre class="tag">docker</pre>; path or regular expression that can be used to avoid mounting of automatically detected directories; e.g. directories mounted on local disks as <pre class="name">/tmp/</pre> or <pre class="name">/usr/local/storage/</pre></td></tr>
 
 			</tbody>
 		</table>
