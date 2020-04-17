@@ -229,7 +229,7 @@ public abstract class ValidateViewController implements Initializable {
 			return ret;
 		}
 		
-		private boolean testFileFolder(TextField box, String text, boolean isFile, boolean isAbsolute, boolean updateColorAndAddText) {
+		protected boolean testFileFolder(TextField box, String text, boolean isFile, boolean isAbsolute, boolean updateColorAndAddText) {
 			// determine the file type to test
 			FileReturnType test = null;
 			if(isFile) {

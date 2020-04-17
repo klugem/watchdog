@@ -8,6 +8,9 @@ import java.util.LinkedHashMap;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import de.lmu.ifi.bio.watchdog.GUI.properties.views.executor.ExecutorPropertyViewController;
+import de.lmu.ifi.bio.watchdog.GUI.properties.views.wrapper.GUIDockerExecutionWrapperView;
 import de.lmu.ifi.bio.watchdog.executionWrapper.container.DockerExecutionWrapper;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.logger.Logger;
@@ -36,8 +39,7 @@ public class DockerExecutionWrapperParser extends XMLExecutionWrapperParser<Dock
 	static {
 		// register the execution wrapper plugins shipped with watchdog on GUI
 		if(Functions.hasJavaFXInstalled()) {
-			// TODO: add GUI support
-		//	ExecutorPropertyViewController.registerWatchdogPluginOnGUI(DockerExecutionWrapper.class, GUIDockerExecutionWrapperView.class);
+			ExecutorPropertyViewController.registerWatchdogPluginOnGUI(DockerExecutionWrapper.class, GUIDockerExecutionWrapperView.class);
 		}
 	}
 

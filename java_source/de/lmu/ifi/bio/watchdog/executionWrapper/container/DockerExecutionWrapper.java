@@ -57,9 +57,6 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 			this.BLACKLIST.put(p, Pattern.compile(pp));
 		}
 		
-		// add watchdog mount
-		this.MOUNTS.put(this.getWatchdogBaseDir(), this.getWatchdogBaseDir());
-		
 		// find mount points in the constants
 		this.CONSTANTS_PATH = this.collectedPath(constants, false, (x -> this.matchBlacklist(x)));
 	}
@@ -137,6 +134,7 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 		
 		// add attribute values
 		x.addQuotedAttribute(XMLParser.NAME, this.getName());
+		x.addQuotedAttribute(DockerExecutionWrapperParser.PATH2DOCKER, this.getDockerPath());
 		x.addQuotedAttribute(DockerExecutionWrapperParser.IMAGE, this.getImageName());
 		if(this.getExecKeyword().length() > 0 && !DEFAULT_EXEC_KEYWORD.equals(this.getExecKeyword()))
 			x.addQuotedAttribute(DockerExecutionWrapperParser.EXEC_KEYWORD, this.getExecKeyword());
@@ -144,32 +142,38 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 			x.addQuotedAttribute(DockerExecutionWrapperParser.ADD_PARAMS, this.getAdditionalCallParams());
 		if(this.isAutoMountDetectionDisabled()) 
 			x.addQuotedAttribute(DockerExecutionWrapperParser.DISABLE_AUTODETECT_MOUNT, true);
-		
+		x.endOpeningTag();
+			
 		// write mount part
-		x.startTag(DockerExecutionWrapperParser.MOUNT, true);
-		for(String host : this.MOUNTS.keySet()) {
-			if(this.getWatchdogBaseDir().equals(host))
-				continue;
-			
-			String container = this.MOUNTS.get(host);
-			x.startTag(DockerExecutionWrapperParser.HOST_DIR, true);
-			x.addContentAndCloseTag(host);
-			
-			// if not the same
-			if(!host.equals(container)) {
-				x.startTag(DockerExecutionWrapperParser.CONTAINER_DIR, true);
-				x.addContentAndCloseTag(container);
+		if(this.MOUNTS.size() > 0) {
+			for(String host : this.MOUNTS.keySet()) {
+				if(this.getWatchdogBaseDir().equals(host))
+					continue;
+				
+				x.startTag(DockerExecutionWrapperParser.MOUNT, true, true);
+				String container = this.MOUNTS.get(host);
+				x.startTag(DockerExecutionWrapperParser.HOST_DIR, true);
+				x.addContentAndCloseTag(host);
+					
+				// if not the same
+				if(container != null && container.length() > 0 && !host.equals(container)) {
+					x.startTag(DockerExecutionWrapperParser.CONTAINER_DIR, true, true);
+					x.addContentAndCloseTag(container);
+				}
+				x.endCurrentTag();
 			}
 		}
-		x.endCurrentTag();
 		// end of mount part
 		
 		// write blacklist
-		for(String p : this.getBlacklist()) {
-			x.startTag(DockerExecutionWrapperParser.BLACKLIST, true);
-			x.addQuotedAttribute(DockerExecutionWrapperParser.PATTERN, p);
-			x.endCurrentTag();
+		if(this.getBlacklist().size() > 0) {
+			for(String p : this.getBlacklist()) {
+				x.startTag(DockerExecutionWrapperParser.BLACKLIST, true, true);
+				x.addQuotedAttribute(DockerExecutionWrapperParser.PATTERN, p);
+				x.endCurrentTag();
+			}
 		}
+		// end of blacklist
 		
 		// end the tag
 		x.endCurrentTag();
@@ -189,7 +193,11 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	 * @param b
 	 * @param mounts
 	 */
-	protected void addMounts(StringBuilder b, HashMap<String, String> mounts, boolean applyBlacklist) {
+	protected void addMounts(StringBuilder b, HashMap<String, String> m, boolean applyBlacklist) {	
+		// add watchdog mount
+		HashMap<String, String> mounts = new HashMap<>(m);
+		mounts.put(this.getWatchdogBaseDir(), this.getWatchdogBaseDir());
+		
 		for(String h : mounts.keySet()) {
 			// check if some pattern matches
 			if(applyBlacklist && !this.getWatchdogBaseDir().equals(h)) {
