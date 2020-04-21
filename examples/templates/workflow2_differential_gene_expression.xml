@@ -17,18 +17,35 @@
 			<const name="SAMPLE_ANNO">{%INSTALL%}examples/test_data/complex/sample_condition.txt</const>
 			<const name="CONTROL_COND">WT</const>
 			<const name="TEST_COND">KO</const>
-			<!-- TODO: set correct path to BWA binary -->
+			<!-- TODO: make sure that bwa is in the PATH variable or set correct path to bwa binary -->
 			<const name="BWA">/path/to/todo/bwa</const>
-			<!-- TODO: set correct path to contextMap jar -->
-			<const name="CONTEXTMAP_JAR">/path/to/todo/ContextMap.jar</const>
 			<!-- TODO: you can adjust the output folder, if you want to -->
 			<const name="OUTPUT">{%INSTALL%}examples/workflow_output/workflow2</const>
+			<!-- TODO: if docker and conda should be used: modify path2docker to point to docker/podman/singularity binary -->
+			<const name="DOCKER_BIN">/usr/bin/podman</const>
+			<!-- TODO: modify path to conda environments that will be mounted within the docker container -->
+			<const name="CONDA_ENV_PATH">/mnt/store/conda_watchdog_env/</const>
 		</constants>
+		<!-- TODO: remove comments if you want to use docker and conda -->
+		<!--<wrappers>
+			<docker name="docker" path2docker="${DOCKER_BIN}" image="conda/miniconda3">
+				<blacklist pattern="/usr/local/storage/" />
+				<blacklist pattern="/tmp/" />
+				<mount>
+					<host>${CONDA_ENV_PATH}</host>
+				</mount>
+			</docker>
+			<conda name="conda" path2conda="/usr/local/" path2environments="${CONDA_ENV_PATH}"/>
+		</wrappers>-->
 		<!-- executors with different resource requirements; TODO: adjust that on your environment -->
 		<executors>
-			<sge name="cluster mapping" environment="local copy" maxRunning="8" slots="16" memory="2G" queue="hpclient.q" color="0xffa500ff" />
-			<sge name="cluster normal" environment="local copy" slots="1" default="true" queue="hpclient.q" memory="1G"/>
-			<local name="local host" maxRunning="4" color="0x0cff09ff" />
+			<!--
+			<sge name="cluster mapping" environment="local copy" maxRunning="8" slots="16" memory="2G" queue="long.q" color="0xffa500ff" />
+			<sge name="cluster normal" environment="local copy" slots="1" queue="short.q" memory="1G"/>
+			-->
+			<local name="local host" default="true" maxRunning="4" color="0x0cff09ff" />
+			<!-- TODO: use this executor for docker and conda support -->
+			<!-- <local name="localhost" default="true" maxRunning="4" color="0xffff00ff" container="docker" packageManagers="conda" /> -->
 		</executors>
 		<processBlock>
 			<!-- process folder that creates the variable input sets based on a file pattern -->
@@ -76,19 +93,19 @@
 			</streams>
 		</fastQCTask>
 		<!-- run contextmap and notify the user on the status of every subtask-->
-		<contextMapTask id="5" name="contextmap" executor="cluster mapping" processBlock="input block" notify="subtask"  posX="5" posY="1">
+		<contextMapTask id="5" name="contextmap" processBlock="input block" notify="subtask"  posX="5" posY="1">
 			<dependencies>
 				<!-- wait until fastQC reports are finished -->
 				<depends separate="true">2</depends>
 				<depends separate="true">1</depends>
 			</dependencies>
 			<parameter>
-				<alignerBin>${BWA}</alignerBin>
+				<!-- TODO: set path if bwa is not in PATH variable -->
+				<!--<alignerBin>${BWA}</alignerBin>-->
 				<alignerName>bwa</alignerName>
 				<genome>${GENOME}</genome>
 				<gtf>${GTF}</gtf>
 				<indices>${INDEX}</indices>
-				<jarPath>${CONTEXTMAP_JAR}</jarPath>
 				<keeptmp>false</keeptmp>
 				<localTmpFolder>/usr/local/storage/</localTmpFolder>
 				<mining>false</mining>
@@ -206,7 +223,7 @@
 			</parameter>
 		</featureCountsTask>
 		<!-- merge flagstats statistics -->
-		<mergeStatisticsTask id="13" name="mergeFlag" executor="local host" posX="5" posY="7">
+		<mergeStatisticsTask id="13" name="mergeFlag" posX="5" posY="7">
 			<dependencies>
 				<depends>10</depends>
 				<depends>21</depends>
@@ -219,7 +236,7 @@
 			</parameter>
 		</mergeStatisticsTask>
 		<!-- merge bam statistics -->
-		<mergeStatisticsTask id="11" name="bamstatsMerge" executor="local host" posX="5" posY="9">
+		<mergeStatisticsTask id="11" name="bamstatsMerge" posX="5" posY="9">
 			<dependencies>
 				<depends>10</depends>
 				<depends>22</depends>
@@ -232,7 +249,7 @@
 			</parameter>
 		</mergeStatisticsTask>
 		<!-- create bam contigt distribution plot -->
-		<bamContigtDistributionTask id="15" name="plotDist" processBlock="input block" executor="local host" posX="7" posY="9">
+		<bamContigtDistributionTask id="15" name="plotDist" processBlock="input block" posX="7" posY="9">
 			<dependencies>
 				<depends>11</depends>
 			</dependencies>
@@ -242,7 +259,7 @@
 			</parameter>
 		</bamContigtDistributionTask>
 		<!-- merge FastQC statistics -->
-		<mergeStatisticsTask id="14" name="FastQC merge" executor="local host" posX="5" posY="3">
+		<mergeStatisticsTask id="14" name="FastQC merge" posX="5" posY="3">
 			<dependencies>
 				<depends>10</depends>
 				<depends>22</depends>
@@ -255,7 +272,7 @@
 			</parameter>
 		</mergeStatisticsTask>
 		<!-- merge the feature counts files -->
-		<mergeStatisticsTask id="12" name="merge fc" executor="local host" posX="5" posY="5">
+		<mergeStatisticsTask id="12" name="merge fc" posX="5" posY="5">
 			<dependencies>
 				<depends>22</depends>
 				<depends>21</depends>
@@ -268,7 +285,7 @@
 			</parameter>
 		</mergeStatisticsTask>
 		<!-- merge the feature counts files -->
-		<mergeFeatureCountsTask id="16" name="merge fc" executor="local host" posX="7" posY="5">
+		<mergeFeatureCountsTask id="16" name="merge fc" posX="7" posY="5">
 			<dependencies>
 				<depends>11</depends>
 				<depends>13</depends>

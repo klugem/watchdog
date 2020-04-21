@@ -11,10 +11,28 @@
 			<const name="BASE">{%INSTALL%}examples/test_data/complex</const>
 			<!-- TODO: you can adjust the output folder, if you want to -->
 			<const name="OUTPUT">{%INSTALL%}examples/workflow_output/workflow1</const>
+
+			<!-- TODO: if docker and conda should be used: modify path2docker to point to docker/podman/singularity binary -->
+			<const name="DOCKER_BIN">/usr/bin/podman</const>
+			<!-- TODO: modify path to conda environments that will be mounted within the docker container -->
+			<const name="CONDA_ENV_PATH">/mnt/store/conda_watchdog_env/</const>
 		</constants>
+		<!-- TODO: remove comments if you want to use docker and conda -->
+		<!--<wrappers>
+			<docker name="docker" path2docker="${DOCKER_BIN}" image="conda/miniconda3">
+				<blacklist pattern="/usr/local/storage/" />
+				<blacklist pattern="/tmp/" />
+				<mount>
+					<host>${CONDA_ENV_PATH}</host>
+				</mount>
+			</docker>
+			<conda name="conda" path2conda="/usr/local/" path2environments="${CONDA_ENV_PATH}"/>
+		</wrappers>-->
 		<!-- execute workflow on the local system with a maximum of 4 tasks running at the same time TODO: adjust that if you want to run the workflow on distributed hardware -->
 		<executors>
 			<local name="localhost" default="true" maxRunning="4" color="0xffff00ff" />
+			<!-- TODO: use this executor for docker and conda support -->
+			<!--<local name="localhost" default="true" maxRunning="4" color="0xffff00ff" container="docker" packageManagers="conda"/> -->
 		</executors>
 		<processBlock>
 			<!-- process folders that create the variable input sets based on file patterns -->
