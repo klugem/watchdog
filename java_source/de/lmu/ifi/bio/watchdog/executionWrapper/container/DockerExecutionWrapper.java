@@ -36,7 +36,7 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	private final boolean DISABLE_AUTO_DETECT;
 	private final HashMap<String, String> MOUNTS;
 	private final HashMap<String, Pattern> BLACKLIST = new HashMap<>();
-	private final ArrayList<String> CONSTANTS_PATH;
+	private final ArrayList<String> CONSTANTS_PATH = new ArrayList<>();
 	
 	public DockerExecutionWrapper(String name, String watchdogBaseDir, String path2docker, String image, String execKeyword, String addParams, boolean disableAutoDetection, HashMap<String, String> mounts, ArrayList<String> blacklist, ArrayList<String> constants) {
 		super(name, watchdogBaseDir);
@@ -53,12 +53,15 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 			// ensure that pattern is bound to the start of the string (if pattern is actually a path)
 			if(!pp.startsWith("^"))
 				pp = "^" + pp;
+			if(!pp.endsWith("$"))
+				pp = pp + ".*$";
 
 			this.BLACKLIST.put(p, Pattern.compile(pp));
 		}
 		
+		// we don't do that for the moment
 		// find mount points in the constants
-		this.CONSTANTS_PATH = this.collectedPath(constants, false, (x -> this.matchBlacklist(x)));
+		//this.CONSTANTS_PATH.addAll(this.collectedPath(constants, false, (x -> this.matchBlacklist(x))));
 	}
 	
 	/**
@@ -237,13 +240,15 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 		com.append(this.getAdditionalCallParams());
 		
 		// add explicit set mounts
-		this.addMounts(com, this.MOUNTS, false);
+		HashMap<String, String> mounts = new HashMap<>(this.MOUNTS);
 		
 		// add auto-detected mounts
 		if(!this.isAutoMountDetectionDisabled()) {
-			HashMap<String, String> mounts = this.getMountList(t, this.CONSTANTS_PATH, (x -> this.matchBlacklist(x) || this.MOUNTS.containsKey(x)));
-			this.addMounts(com, mounts, false);
+			this.getMountList(mounts, t, this.CONSTANTS_PATH, (x -> this.matchBlacklist(x) || this.MOUNTS.containsKey(x)));
 		}
+	
+		// add mounts
+		this.addMounts(com, mounts, false);
 		com.append(SPACE);
 		com.append(this.quote(this.getImageName()));
 		com.append(SPACE);

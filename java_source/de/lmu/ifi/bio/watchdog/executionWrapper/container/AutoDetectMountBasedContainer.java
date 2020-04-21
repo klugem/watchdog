@@ -93,12 +93,20 @@ public abstract class AutoDetectMountBasedContainer extends ExecutionWrapper {
 	 * ready to add list of the after script commands
 	 * @return
 	 */
-	protected HashMap<String, String> getMountList(Task t, ArrayList<String> otherPaths, Predicate<String> isOnBlacklist) {
-		HashMap<String, String> map = new HashMap<>();
+	protected HashMap<String, String> getMountList(HashMap<String, String> map, Task t, ArrayList<String> otherPaths, Predicate<String> isOnBlacklist) {
 		ArrayList<String> cp = collectedPath(t.getArguments(), true, isOnBlacklist);
 		cp.addAll(otherPaths);
-		Collections.sort(cp);
 		
+		// add streams if they exist
+		if(t.getStdErr(false) != null)
+			cp.add(t.getStdErr(false).getAbsolutePath());
+		if(t.getStdOut(false) != null)
+			cp.add(t.getStdOut(false).getAbsolutePath());
+		if(t.getStdIn() != null)
+			cp.add(t.getStdIn().getAbsolutePath());
+		if(t.getWorkingDir(false) != null)
+			cp.add(t.getWorkingDir(false).getAbsolutePath());
+				
 		// find LCPs
 		ArrayList<String> lcps = this.getLCPs(cp);
 		for(String l : lcps) {
@@ -126,7 +134,8 @@ public abstract class AutoDetectMountBasedContainer extends ExecutionWrapper {
 		
 		GraphFolderpath graph = new GraphFolderpath();
 		for(String p : paths) {
-			graph.addPath(p);
+			if(p != null)
+				graph.addPath(p);
 		}
 		return graph.getLCPs(MIN_PATH_DEPTH);
 	}

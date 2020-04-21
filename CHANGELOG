@@ -4,6 +4,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 Changelog started with version 1.2.0
 
 ## [Unreleased]
+### Fixed 
+- [PLUGIN] Watchdog's base directory is only added once when Docker virtualizer is used
+
+### Changed
+- [PLUGIN] Streams instead of constants are now also used to detect path that are automatically mounted when Docker virtualizer is used
 
 ## [2.0.5] - 2020-04-17
 ### Added
