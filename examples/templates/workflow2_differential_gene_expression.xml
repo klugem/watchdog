@@ -21,14 +21,17 @@
 			<const name="BWA">/path/to/todo/bwa</const>
 			<!-- TODO: you can adjust the output folder, if you want to -->
 			<const name="OUTPUT">{%INSTALL%}examples/workflow_output/workflow2</const>
+			<!-- TODO: folder that is used to store temporary files -->
+			<const name="LOCAL_TMP_FOLDER">/tmp/</const>
 			<!-- TODO: if docker and conda should be used: modify path2docker to point to docker/podman/singularity binary -->
 			<const name="DOCKER_BIN">/usr/bin/podman</const>
-			<!-- TODO: modify path to conda environments that will be mounted within the docker container -->
+			<!-- TODO: use docker://conda/miniconda3 if you use singularity -->
+			<const name="DOCKER_IMAGE">conda/miniconda3</const>
+			<!-- TODO: modify the path where conda environments will be stored by Watchdog; it will also be mounted within the docker container -->
 			<const name="CONDA_ENV_PATH">/mnt/store/conda_watchdog_env/</const>
 		</constants>
-		<!-- TODO: remove comments if you want to use docker and conda -->
-		<!--<wrappers>
-			<docker name="docker" path2docker="${DOCKER_BIN}" image="conda/miniconda3">
+		<wrappers>
+			<docker name="docker" path2docker="${DOCKER_BIN}" image="${DOCKER_IMAGE}">
 				<blacklist pattern="/usr/local/storage/" />
 				<blacklist pattern="/tmp/" />
 				<mount>
@@ -36,14 +39,10 @@
 				</mount>
 			</docker>
 			<conda name="conda" path2conda="/usr/local/" path2environments="${CONDA_ENV_PATH}"/>
-		</wrappers>-->
+		</wrappers>
 		<!-- executors with different resource requirements; TODO: adjust that on your environment -->
 		<executors>
-			<!--
-			<sge name="cluster mapping" environment="local copy" maxRunning="8" slots="16" memory="2G" queue="long.q" color="0xffa500ff" />
-			<sge name="cluster normal" environment="local copy" slots="1" queue="short.q" memory="1G"/>
-			-->
-			<local name="local host" default="true" maxRunning="4" color="0x0cff09ff" />
+			<local name="local host" default="true" maxRunning="2" color="0x0cff09ff" />
 			<!-- TODO: use this executor for docker and conda support -->
 			<!-- <local name="localhost" default="true" maxRunning="4" color="0xffff00ff" container="docker" packageManagers="conda" /> -->
 		</executors>
@@ -85,7 +84,7 @@
 			<parameter>
 				<fastq>{$createdGzipFile}</fastq> <!-- use the return variable 'createdGzipFile' as input file -->
 				<outdir>${OUTPUT}/fastqc/</outdir>
-				<threads>16</threads>
+				<threads>4</threads>
 			</parameter>
 			<streams>
 				<stderr>{$createdGzipFile}.err</stderr>
@@ -93,7 +92,7 @@
 			</streams>
 		</fastQCTask>
 		<!-- run contextmap and notify the user on the status of every subtask-->
-		<contextMapTask id="5" name="contextmap" processBlock="input block" notify="subtask"  posX="5" posY="1">
+		<contextMapTask id="5" name="contextmap" processBlock="input block" notify="subtask"  posX="5" posY="1" maxRunning="1">
 			<dependencies>
 				<!-- wait until fastQC reports are finished -->
 				<depends separate="true">2</depends>
@@ -107,7 +106,7 @@
 				<gtf>${GTF}</gtf>
 				<indices>${INDEX}</indices>
 				<keeptmp>false</keeptmp>
-				<localTmpFolder>/usr/local/storage/</localTmpFolder>
+				<localTmpFolder>${LOCAL_TMP_FOLDER}</localTmpFolder>
 				<mining>false</mining>
 				<noclipping>false</noclipping>
 				<noncanonicaljunctions>false</noncanonicaljunctions>
@@ -120,7 +119,7 @@
 				<splitseedmismatches>0</splitseedmismatches>
 				<splitseedsizes>20</splitseedsizes>
 				<strandspecific>false</strandspecific>
-				<threads>16</threads>
+				<threads>4</threads>
 				<verbose>false</verbose>
 			</parameter>
 			<streams>
@@ -136,7 +135,7 @@
 			<parameter>
 				<bam>{$contextMapSAMFile,1,.}.bam</bam>
 				<sam>{$contextMapSAMFile}</sam>
-				<threads>16</threads>
+				<threads>4</threads>
 			</parameter>
 		</sam2bamTask>
 		<!-- index the bam file -->
@@ -198,7 +197,7 @@
 				<multiMapping>false</multiMapping>
 				<output>${OUTPUT}/featureCounts/E75/[$BAMFile,1,.].PR1.counts</output>
 				<primary>true</primary>
-				<threads>16</threads>
+				<threads>4</threads>
 			</parameter>
 		</featureCountsTask>
 		<!-- create pseudo-replicate with a bit of variation -->
@@ -219,7 +218,7 @@
 				<multiMapping>false</multiMapping>
 				<output>${OUTPUT}/featureCounts/E75/[$BAMFile,1,.].PR2.counts</output>
 				<primary>true</primary>
-				<threads>16</threads>
+				<threads>4</threads>
 			</parameter>
 		</featureCountsTask>
 		<!-- merge flagstats statistics -->

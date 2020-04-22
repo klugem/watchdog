@@ -14,12 +14,13 @@
 
 			<!-- TODO: if docker and conda should be used: modify path2docker to point to docker/podman/singularity binary -->
 			<const name="DOCKER_BIN">/usr/bin/podman</const>
-			<!-- TODO: modify path to conda environments that will be mounted within the docker container -->
+			<!-- TODO: use docker://conda/miniconda3 if you use singularity -->
+			<const name="DOCKER_IMAGE">conda/miniconda3</const>
+			<!-- TODO: modify the path where conda environments will be stored by Watchdog; it will also be mounted within the docker container -->
 			<const name="CONDA_ENV_PATH">/mnt/store/conda_watchdog_env/</const>
 		</constants>
-		<!-- TODO: remove comments if you want to use docker and conda -->
-		<!--<wrappers>
-			<docker name="docker" path2docker="${DOCKER_BIN}" image="conda/miniconda3">
+		<wrappers>
+			<docker name="docker" path2docker="${DOCKER_BIN}" image="${DOCKER_IMAGE}">
 				<blacklist pattern="/usr/local/storage/" />
 				<blacklist pattern="/tmp/" />
 				<mount>
@@ -27,7 +28,7 @@
 				</mount>
 			</docker>
 			<conda name="conda" path2conda="/usr/local/" path2environments="${CONDA_ENV_PATH}"/>
-		</wrappers>-->
+		</wrappers>
 		<!-- execute workflow on the local system with a maximum of 4 tasks running at the same time TODO: adjust that if you want to run the workflow on distributed hardware -->
 		<executors>
 			<local name="localhost" default="true" maxRunning="4" color="0xffff00ff" />
