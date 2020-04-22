@@ -24,12 +24,15 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 
 	public static final String SPACE = " ";
 	public static final String MOUNT_PARAM = "-v";
+	public static final String MOUNT_PARAM_SINGULARITY = "-B";
 	public static final String MOUNT_PARAM_SEP = ":";
+	public static final String ADDITIONAL_PARAPMS_SINGULARITY = "--containall --vm-err";
 	
 	public static final String DEFAULT_EXEC_KEYWORD = "run";
 	
 	private final String WATCHDOG_BASE_DIR;
 	private final String DOCKER_PATH;
+	private final String BINARY_NAME;
 	private final String IMAGE;
 	private final String EXEC_KEYWORD;
 	private final String ADD_PARAMS;
@@ -37,6 +40,21 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	private final HashMap<String, String> MOUNTS;
 	private final HashMap<String, Pattern> BLACKLIST = new HashMap<>();
 	private final ArrayList<String> CONSTANTS_PATH = new ArrayList<>();
+	
+	@SuppressWarnings("unused")
+	private static final String BIN_DOCKER = "docker";
+	@SuppressWarnings("unused")
+	private static final String BIN_PODMAN = "podman";
+	private static final String BIN_SINGULARITY = "singularity";
+		
+	private static final HashMap<String, String> CUSTOM_MOUNT_PARAM = new HashMap<>();
+	private static final HashMap<String, String> CUSTOM_ADD_PARAM = new HashMap<>();
+
+	// add some static settings
+	static {
+		CUSTOM_MOUNT_PARAM.put(BIN_SINGULARITY, MOUNT_PARAM_SINGULARITY);
+		CUSTOM_ADD_PARAM.put(BIN_SINGULARITY, ADDITIONAL_PARAPMS_SINGULARITY);
+	}
 	
 	public DockerExecutionWrapper(String name, String watchdogBaseDir, String path2docker, String image, String execKeyword, String addParams, boolean disableAutoDetection, HashMap<String, String> mounts, ArrayList<String> blacklist, ArrayList<String> constants) {
 		super(name, watchdogBaseDir);
@@ -47,6 +65,7 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 		this.ADD_PARAMS = addParams;
 		this.DISABLE_AUTO_DETECT = disableAutoDetection;
 		this.MOUNTS = mounts;
+		this.BINARY_NAME = new File(this.DOCKER_PATH).getName();
 		
 		for(String p : blacklist) {
 			String pp = p;
@@ -201,6 +220,10 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 		HashMap<String, String> mounts = new HashMap<>(m);
 		mounts.put(this.getWatchdogBaseDir(), this.getWatchdogBaseDir());
 		
+		String mountParam = MOUNT_PARAM;
+		if(CUSTOM_MOUNT_PARAM.containsKey(this.getBinaryName()))
+			mountParam = CUSTOM_MOUNT_PARAM.get(this.getBinaryName());
+		
 		for(String h : mounts.keySet()) {
 			// check if some pattern matches
 			if(applyBlacklist && !this.getWatchdogBaseDir().equals(h)) {
@@ -208,10 +231,14 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 					continue;
 			}	
 			b.append(SPACE);
-			b.append(MOUNT_PARAM);
+			b.append(mountParam);
 			b.append(SPACE);
 			b.append(this.quote(h + MOUNT_PARAM_SEP + mounts.get(h)));
 		}
+	}
+
+	protected String getBinaryName() {
+		return this.BINARY_NAME;
 	}
 
 	/**
@@ -237,6 +264,14 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 		com.append(SPACE);
 		com.append(this.getExecKeyword());
 		com.append(SPACE);
+		
+		// test if there are some custom params for the binary
+		if(CUSTOM_ADD_PARAM.containsKey(this.getBinaryName())) {
+			com.append(CUSTOM_ADD_PARAM.get(this.getBinaryName()));
+			com.append(SPACE);
+		}
+		
+		// add additional parameters that were set by the user
 		com.append(this.getAdditionalCallParams());
 		
 		// add explicit set mounts
