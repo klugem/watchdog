@@ -33,6 +33,7 @@
 		<executors>
 			<local name="localhost" default="true" maxRunning="4" color="0xffff00ff" />
 			<!-- TODO: use this executor for docker and conda support -->
+			<!-- Please note that downloading and installing the required packages with conda may take a while when the conda environments are used for the first time. -->
 			<!--<local name="localhost" default="true" maxRunning="4" color="0xffff00ff" container="docker" packageManagers="conda"/> -->
 		</executors>
 		<processBlock>
