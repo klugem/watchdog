@@ -15,6 +15,7 @@ import de.lmu.ifi.bio.watchdog.task.Task;
  */
 public class WatchdogErrorCatcher extends ErrorChecker implements Serializable {
 
+	private static final String SINGULARITY_FATAL = "\u001B[31mFATAL";
 	private static final long serialVersionUID = 3931343051645318056L;
 	public static final String ERROR_START = "[ERROR]";
 	public static final String ERROR_CHECKER_START = ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>";
@@ -61,7 +62,7 @@ public class WatchdogErrorCatcher extends ErrorChecker implements Serializable {
 			try {
 				BufferedReader br = new BufferedReader(new FileReader(f));
 				while((line = br.readLine()) != null) { // TODO: add dedicated error checker for docker
-					if(line.startsWith(ERROR_START) || line.startsWith("Error:"))
+					if(line.startsWith(ERROR_START) || line.startsWith("Error:") || line.startsWith(SINGULARITY_FATAL))
 						buffer.append(line);
 					else if(line.contains(ERROR_CHECKER_START))
 						errorMode = true;
