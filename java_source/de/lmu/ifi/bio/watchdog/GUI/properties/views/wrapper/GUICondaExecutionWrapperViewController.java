@@ -3,6 +3,7 @@ package de.lmu.ifi.bio.watchdog.GUI.properties.views.wrapper;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginPropertyViewController;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginViewController;
 import de.lmu.ifi.bio.watchdog.executionWrapper.packageManager.CondaExecutionWrapper;
@@ -28,6 +29,10 @@ public class GUICondaExecutionWrapperViewController extends PluginViewController
 		// add event handler for GUI validation
 		this.path2conda.textProperty().addListener(event -> propertyViewController.validate());
 		this.path2environments.textProperty().addListener(event -> propertyViewController.validate());
+		
+		// add suggest constants support
+		@SuppressWarnings("unused") SuggestPopup p1 = new SuggestPopup(this.path2conda);
+		@SuppressWarnings("unused") SuggestPopup p2 = new SuggestPopup(this.path2environments);
 	}
 
 	@Override

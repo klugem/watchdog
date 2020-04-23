@@ -203,7 +203,7 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	}
 
 	@Override
-	public Object[] getDataToLoadOnGUI() { return new Object[] { this.getDockerPath(), this.getName(), this.getExecKeyword(), this.getAdditionalCallParams(), this.isAutoMountDetectionDisabled(), this.getMounts(), this.getBlacklist() }; }
+	public Object[] getDataToLoadOnGUI() { return new Object[] { this.getDockerPath(), this.getImageName(), this.getExecKeyword(), this.getAdditionalCallParams(), this.isAutoMountDetectionDisabled(), this.getMounts(), this.getBlacklist() }; }
 
 	@Override
 	public boolean canBeAppliedOnTask(Task t) {

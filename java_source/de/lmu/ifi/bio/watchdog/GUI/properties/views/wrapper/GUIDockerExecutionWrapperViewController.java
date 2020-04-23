@@ -12,6 +12,7 @@ import de.lmu.ifi.bio.watchdog.GUI.datastructure.DeleteButton;
 import de.lmu.ifi.bio.watchdog.GUI.datastructure.MountPath;
 import de.lmu.ifi.bio.watchdog.GUI.helper.Inform;
 import de.lmu.ifi.bio.watchdog.GUI.helper.InputRequest;
+import de.lmu.ifi.bio.watchdog.GUI.helper.SuggestPopup;
 import de.lmu.ifi.bio.watchdog.GUI.png.ImageLoader;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginPropertyViewController;
 import de.lmu.ifi.bio.watchdog.GUI.properties.views.PluginViewController;
@@ -103,6 +104,14 @@ public class GUIDockerExecutionWrapperViewController extends PluginViewControlle
 		// call change handler
 		this.newMount.setText("");
 		this.newBlacklist.setText("");
+		
+		// add suggest constants support
+		@SuppressWarnings("unused") SuggestPopup p1 = new SuggestPopup(this.path2docker);
+		@SuppressWarnings("unused") SuggestPopup p2 = new SuggestPopup(this.image);
+		@SuppressWarnings("unused") SuggestPopup p3 = new SuggestPopup(this.execKeyword);
+		@SuppressWarnings("unused") SuggestPopup p4 = new SuggestPopup(this.addCallParams);
+		@SuppressWarnings("unused") SuggestPopup p5 = new SuggestPopup(this.newMount);
+		@SuppressWarnings("unused") SuggestPopup p6 = new SuggestPopup(this.newBlacklist);				
 	}
 	
 	private void validateInput(TextField f, Button b, Predicate<TextField> checker) {
