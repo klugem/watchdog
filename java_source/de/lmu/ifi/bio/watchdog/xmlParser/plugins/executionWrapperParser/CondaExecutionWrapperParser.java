@@ -43,17 +43,17 @@ public class CondaExecutionWrapperParser extends XMLExecutionWrapperParser<Conda
 	@Override
 	public CondaExecutionWrapper parseElement(Element el, String watchdogBaseDir, Object[] additionalData) {
 		String name = XMLParser.getAttribute(el, XMLParser.NAME);
-		String path = XMLParser.getAttribute(el, PATH2CONDA);
+		String binaryPath = XMLParser.getAttribute(el, PATH2CONDA);
 		String evnPath = XMLParser.getAttribute(el, PATH2ENV);
 
 		// set default conda env path
 		if(evnPath == null || evnPath.length() == 0)
 			evnPath = watchdogBaseDir + File.separator + XMLParser.TMP_FOLDER + File.separator + DEFAULT_CONDA_ENV_NAME;
-		// relative paths are relative to watchdo's install dir
+		// relative paths are relative to watchdog's install dir
 		else if(!evnPath.startsWith(File.separator))
-			evnPath = watchdogBaseDir + File.separator + evnPath;
+			evnPath = watchdogBaseDir + File.separator + XMLParser.TMP_FOLDER + File.separator + evnPath;
 		
-		CondaExecutionWrapper w = new CondaExecutionWrapper(name, watchdogBaseDir, path, evnPath);		
+		CondaExecutionWrapper w = new CondaExecutionWrapper(name, watchdogBaseDir, binaryPath, evnPath);		
 		return w;
 	}
 

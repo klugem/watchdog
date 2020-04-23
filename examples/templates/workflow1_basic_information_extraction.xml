@@ -27,7 +27,7 @@
 					<host>${CONDA_ENV_PATH}</host>
 				</mount>
 			</docker>
-			<conda name="conda" path2conda="/usr/local/" path2environments="${CONDA_ENV_PATH}"/>
+			<conda name="conda" path2conda="/usr/local/bin/conda" path2environments="${CONDA_ENV_PATH}"/>
 		</wrappers>
 		<!-- execute workflow on the local system with a maximum of 4 tasks running at the same time TODO: adjust that if you want to run the workflow on distributed hardware -->
 		<executors>

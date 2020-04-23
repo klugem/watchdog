@@ -38,7 +38,7 @@
 					<host>${CONDA_ENV_PATH}</host>
 				</mount>
 			</docker>
-			<conda name="conda" path2conda="/usr/local/" path2environments="${CONDA_ENV_PATH}"/>
+			<conda name="conda" path2conda="/usr/local/bin/conda" path2environments="${CONDA_ENV_PATH}"/>
 		</wrappers>
 		<!-- executors with different resource requirements; TODO: adjust that on your environment -->
 		<executors>

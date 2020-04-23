@@ -4,7 +4,7 @@
 	<x:complexType name="condaWrapperType">
 		<x:complexContent>
 			<x:extension base="executionwrapperAbstractType">
-				<x:attribute name="path2conda" type="absolutePathType" use="required" />
+				<x:attribute name="path2conda" type="absoluteFileType" use="required" />
 				<x:attribute name="path2environments" type="absoluteOrRelativePathType" default="" />
 			</x:extension>
 		</x:complexContent>

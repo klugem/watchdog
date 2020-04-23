@@ -22,7 +22,7 @@ public class GUICondaExecutionWrapperViewController extends PluginViewController
 	@Override
 	public void addPropertyViewControllerToValidate(PluginPropertyViewController<CondaExecutionWrapper> propertyViewController, String condition) {
 		// add checker
-		propertyViewController.addValidateToControl(this.path2conda, "conda path", f -> propertyViewController.isAbsoluteFolder((TextField) f, "An absolute path to a conda installation must be given."), condition);
+		propertyViewController.addValidateToControl(this.path2conda, "conda binary path", f -> propertyViewController.isAbsoluteFile((TextField) f, "An absolute path to a conda binary must be given."), condition);
 		propertyViewController.addValidateToControl(this.path2environments, "conda environment path", f -> propertyViewController.isAbsoluteOrRelativeFolder((TextField) f, "An absolute or relative path where conda environments should be installed must be given.", true), condition);
 
 		// add event handler for GUI validation

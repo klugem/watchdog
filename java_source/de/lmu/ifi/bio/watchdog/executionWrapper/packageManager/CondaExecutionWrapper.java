@@ -24,7 +24,6 @@ import de.lmu.ifi.bio.watchdog.xmlParser.plugins.executionWrapperParser.CondaExe
 public class CondaExecutionWrapper extends FileBasedPackageManger {
 
 	private static final long serialVersionUID = -7837779548673768374L;
-	private static final String CONDA_BIN = File.separator + "bin" + File.separator;
 	private static final String CONDA_YML = ".conda.yml";
 	private static final String BEFORE_SCRIPT_PATH = "conda.before.sh";
 	private static final String AFTER_SCRIPT_PATH = "conda.after.sh";
@@ -37,39 +36,32 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 	public static String CONDA_PATH_TO_ENV = "CONDA_PATH_TO_ENV";
 	public static String CONDA_PATH_TO_YML = "CONDA_PATH_TO_YML";
 	
-	private final String CONDA_PATH;
+	private final String CONDA_BIN_PATH;
+	private final String CONDA_BIN_DIR;
 	private final String CONDA_ENV_PREFIX_PATH;
 	
 	private final ConcurrentHashMap<File, File> CONDA_DEF_FILES = new ConcurrentHashMap<>();
 
-	public CondaExecutionWrapper(String name, String watchdogBaseDir, String path2condaBasedir, String path2condaEnvironmentDir) {
+	public CondaExecutionWrapper(String name, String watchdogBaseDir, String path2condaBinary, String path2condaEnvironmentDir) {
 		super(name, watchdogBaseDir);
-		this.CONDA_PATH = path2condaBasedir;
+		this.CONDA_BIN_PATH = path2condaBinary;
+		this.CONDA_BIN_DIR = new File(path2condaBinary).getParentFile().getAbsolutePath();
 		this.CONDA_ENV_PREFIX_PATH = path2condaEnvironmentDir;
 	}
 	
 	/**
-	 * @return path to conda base directory
-	 */
-	protected String getCondaPath() {
-		return this.CONDA_PATH;
-	}
-	
-	/**
-	 * returns the path to a conda binary
-	 * @param bin
-	 * @return
-	 */
-	protected String getPathToBinary(String bin) {
-		return this.getCondaBinaryPath() + File.separator + bin;
-	}
-	
-	/**
-	 * returns the path to the conda binary
+	 * path to conda binary
 	 * @return
 	 */
 	protected String getCondaBinaryPath() {
-		return this.CONDA_PATH + CONDA_BIN;
+		return this.CONDA_BIN_PATH;
+	}
+	
+	/**
+	 * @return path to conda bin directory
+	 */
+	protected String getCondaBinDir() {
+		return this.CONDA_BIN_DIR;
 	}
 	
 	/**
@@ -88,7 +80,7 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 		
 		// add attribute values
 		x.addQuotedAttribute(XMLParser.NAME, this.getName());
-		x.addQuotedAttribute(CondaExecutionWrapperParser.PATH2CONDA, this.getCondaPath());
+		x.addQuotedAttribute(CondaExecutionWrapperParser.PATH2CONDA, this.getCondaBinaryPath());
 		if(this.getCondaEnvironmentPrefixPath() != null && this.getCondaEnvironmentPrefixPath().length() > 0 && !this.getCondaEnvironmentPrefixPath().endsWith(CondaExecutionWrapperParser.DEFAULT_CONDA_ENV_NAME)) 
 			x.addQuotedAttribute(CondaExecutionWrapperParser.PATH2ENV, this.getCondaEnvironmentPrefixPath());
 		
@@ -98,7 +90,7 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 	}
 
 	@Override
-	public Object[] getDataToLoadOnGUI() { return new Object[] { this.getCondaPath(), this.getCondaEnvironmentPrefixPath() }; }
+	public Object[] getDataToLoadOnGUI() { return new Object[] { this.getCondaBinaryPath(), this.getCondaEnvironmentPrefixPath() }; }
 	
 	/**
 	 * tests if a conda environment definition file is there 
@@ -185,7 +177,7 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 			// create the list of vars
 			LinkedHashMap<String, String> vars = new LinkedHashMap<>();
 			vars.put(CONDA_PATH_PLUGIN, this.getPluginScriptFolder());
-			vars.put(CONDA_PATH_TO_BIN, this.getCondaBinaryPath());
+			vars.put(CONDA_PATH_TO_BIN, this.getCondaBinDir());
 			vars.put(CONDA_PATH_TO_ENV, path2env);
 			vars.put(CONDA_PATH_TO_YML, this.getPathToYmlFile(t).getAbsolutePath());
 			return vars;
