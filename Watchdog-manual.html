@@ -2073,7 +2073,7 @@ executes the example described in <a href="#basic_xml_structure">3.2</a> and for
 <br /><br />
 Alternatively, it is possible to run a workflow that is stored on the host system as described in <a href="#docker_share">8.2</a>. Ensure that all files used in the workflow are made accessible within the Docker image.
 <br /><br />
-To start the workflow designer GUI, run docker in interactive mode and allow it to connect to the local X server. A unix socket located in <pre class="name">/tmp/.X11-unix</pre> is used to communicate with the X-server. Moreover, it might be required to allow the container to access the display using {N%xhost + local:}. The command allows all local processes to connect to the X server. 
+To start the workflow designer GUI, run docker in interactive mode and allow it to connect to the local X server. A unix socket located in <pre class="name">/tmp/.X11-unix</pre> is used to communicate with the X-server. Moreover, it might be required to allow the container to access the display using <pre class="name">xhost + local:</pre>. The command allows all local processes to connect to the X server. 
 <br /><br />
 <pre class="name">docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -it klugem/watchdog-wms /bin/bash</pre>
 <br /><br />
