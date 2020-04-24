@@ -4,11 +4,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 Changelog started with version 1.2.0
 
 ## [Unreleased]
+
+## [2.0.6] - 2020-04-24
 ### Fixed 
 - [PLUGIN] Watchdog's base directory is only added once when Docker virtualizer is used
+- [PLUGIN] Singularity expects different parameters than docker and podman.
+- [GUI] Improved layout of process blocks properties
+- [GUI] Added missing constant suggestions for conda and docker wrapper
+- [GUI] Attribute 'image' of docker wrapper was not loaded correctly from a workflow file
 
 ### Changed
 - [PLUGIN] Streams instead of constants are now also used to detect path that are automatically mounted when Docker virtualizer is used
+- [] Prepared example workflows to work with docker and conda
+- [] Updated docker and conda documentation and tutorials
+- [PLUGIN] Attribute 'path2conda' must now specify an absolute path to the conda binary
+- [GUI] Replaced cancel/ok with no/yes in confirmation dialogs
 
 ## [2.0.5] - 2020-04-17
 ### Added
