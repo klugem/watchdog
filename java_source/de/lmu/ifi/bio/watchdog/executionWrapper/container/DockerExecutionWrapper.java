@@ -26,7 +26,8 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	public static final String MOUNT_PARAM = "-v";
 	public static final String MOUNT_PARAM_SINGULARITY = "-B";
 	public static final String MOUNT_PARAM_SEP = ":";
-	public static final String ADDITIONAL_PARAPMS_SINGULARITY = "--containall --vm-err";
+	public static final String ADDITIONAL_PARAMS_SINGULARITY = "--containall --vm-err";
+	public static final String ADDITIONAL_PARAMS_DOCKER_PODMAN = "--rm";
 	
 	public static final String DEFAULT_EXEC_KEYWORD = "run";
 	
@@ -53,7 +54,9 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	// add some static settings
 	static {
 		CUSTOM_MOUNT_PARAM.put(BIN_SINGULARITY, MOUNT_PARAM_SINGULARITY);
-		CUSTOM_ADD_PARAM.put(BIN_SINGULARITY, ADDITIONAL_PARAPMS_SINGULARITY);
+		CUSTOM_ADD_PARAM.put(BIN_SINGULARITY, ADDITIONAL_PARAMS_SINGULARITY);
+		CUSTOM_ADD_PARAM.put(BIN_DOCKER, ADDITIONAL_PARAMS_DOCKER_PODMAN);
+		CUSTOM_ADD_PARAM.put(BIN_PODMAN, ADDITIONAL_PARAMS_DOCKER_PODMAN);	
 	}
 	
 	public DockerExecutionWrapper(String name, String watchdogBaseDir, String path2docker, String image, String execKeyword, String addParams, boolean disableAutoDetection, HashMap<String, String> mounts, ArrayList<String> blacklist, ArrayList<String> constants) {
