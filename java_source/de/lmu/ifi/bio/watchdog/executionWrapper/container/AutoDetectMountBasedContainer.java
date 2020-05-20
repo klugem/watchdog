@@ -21,7 +21,7 @@ import de.lmu.ifi.bio.watchdog.task.Task;
  */
 public abstract class AutoDetectMountBasedContainer extends ExecutionWrapper {
 	
-	private static final Logger LOGGER = new Logger();
+	public static final Logger LOGGER = new Logger();
 	private static final String PATTERN = "^[\"']?(" + ReplaceSpecialConstructs.REGEX_PATH + ")[\"']?$";
 	private static final Pattern PATH_PATTERN = Pattern.compile(PATTERN);
 	private static final long serialVersionUID = 7099505020419438171L;

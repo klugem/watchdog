@@ -5,10 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import de.lmu.ifi.bio.watchdog.executionWrapper.FindVersionedFile;
 import de.lmu.ifi.bio.watchdog.executionWrapper.OS;
 import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
@@ -27,8 +24,6 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 	private static final String CONDA_YML = ".conda.yml";
 	private static final String BEFORE_SCRIPT_PATH = "conda.before.sh";
 	private static final String AFTER_SCRIPT_PATH = "conda.after.sh";
-	private static final String MOD_VERSION_SUFFIX = (".v([0-9])+" + CONDA_YML).replaceAll("\\.", "\\\\.");
-	private static final Pattern MOD_VERSION_PATTERN = Pattern.compile(".+" + MOD_VERSION_SUFFIX);
 	
 	/** names for the variables used in conda scripts */
 	public static String CONDA_PATH_PLUGIN = "CONDA_PATH_PLUGIN";
@@ -40,7 +35,7 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 	private final String CONDA_BIN_DIR;
 	private final String CONDA_ENV_PREFIX_PATH;
 	
-	private final ConcurrentHashMap<File, File> CONDA_DEF_FILES = new ConcurrentHashMap<>();
+	private static final FindVersionedFile FIND_VERSIONED_FILE = new FindVersionedFile(x -> x.getName().endsWith(CONDA_YML), CONDA_YML);
 
 	public CondaExecutionWrapper(String name, String watchdogBaseDir, String path2condaBinary, String path2condaEnvironmentDir) {
 		super(name, watchdogBaseDir);
@@ -98,38 +93,7 @@ public class CondaExecutionWrapper extends FileBasedPackageManger {
 	 * @return
 	 */
 	public File findCondaEnvDefinitionFile(File folder, Integer moduleVersion) {
-		if(folder != null && !this.CONDA_DEF_FILES.containsKey(folder)) {
-			File[] yml = folder.listFiles(x -> x.getName().endsWith(CONDA_YML));
-			int ok = 0;
-			int okNoVersion = 0;
-			File lastOK = null;
-			File lastNoVersion = null;
-			for(File y : yml) {
-				Matcher m = MOD_VERSION_PATTERN.matcher(y.getName());
-				
-				// try to find specific file depending on module version 
-				if(moduleVersion != null) {
-					if(m.matches() && Integer.parseInt(m.group(1)) == moduleVersion) {
-						lastOK = y;
-						ok++;
-					}
-					else if(!m.matches()) {
-						lastNoVersion = y;
-						okNoVersion++;
-					}
-				} // generic file
-				else if(!m.matches()) {
-					lastNoVersion = y;
-					okNoVersion++;
-				}
-			}
-			// found one specific hit
-			if(moduleVersion != null && ok == 1) 
-				this.CONDA_DEF_FILES.put(folder, lastOK);
-			else if(okNoVersion == 1)
-				this.CONDA_DEF_FILES.put(folder, lastNoVersion);
-		}
-		return this.CONDA_DEF_FILES.get(folder);
+		return FIND_VERSIONED_FILE.find(folder, moduleVersion);
 	}
 
 	@Override

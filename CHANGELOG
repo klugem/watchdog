@@ -5,7 +5,8 @@ Changelog started with version 1.2.0
 
 ## [Unreleased]
 ### Changed 
-- [PLUGIN] Added '--rm' flag to delete docker/podman containers after an task is completed.
+- [PLUGIN] Added 'loadModuleSpecificImage' attribute to docker wrapper to support loading of module specific images
+- [PLUGIN] Added '--rm' flag to delete docker/podman containers after an task is completed
 
 ## [2.0.6] - 2020-04-24
 ### Fixed 
