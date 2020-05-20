@@ -100,10 +100,10 @@ public class SuggestPopup {
 			// offer some variables if a process block is set
 			if(b != null) {
 				ArrayList<String> availParams = new ArrayList<>();
-				if(grid != null && key != null)
+				if(grid != null && key != null) 
 					availParams = grid.getAvailReturnParams(key);
-				else
-					this.getChoisePopup(b.getOfferedVariables(availParams), false);
+				
+				this.getChoisePopup(b.getOfferedVariables(availParams), false);
 			}
 		}
 		// get constants
@@ -193,8 +193,8 @@ public class SuggestPopup {
 				ListView<Label> l = new ListView<>(o);
 				p.getChildren().add(l);
 				// set size of popup
-				l.setMinWidth(300);
-				l.setMaxWidth(300);
+				l.setMinWidth(600);
+				l.setMaxWidth(600);
 				l.setMinHeight(150);
 				l.setMaxHeight(150);
 				
