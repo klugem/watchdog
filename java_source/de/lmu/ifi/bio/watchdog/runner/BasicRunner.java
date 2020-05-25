@@ -17,7 +17,7 @@ public abstract class BasicRunner {
 	public static final Logger LOGGER = new Logger();
 	public static final String XSD_PATH = XMLParser.XSD + File.separator + "watchdog.xsd";
 	private static final String TOOL_NAME = "Watchdog";  
-	private static final String VERSION = "version: 2.0.6";
+	private static final String VERSION = "version: 2.0.7";
 	private static final String REVISION = getRevisionNumber();    
 	private static final String DEV_DIR = "watchdog";
 	private static final String DIST_DIR = "..";
