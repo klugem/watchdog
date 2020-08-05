@@ -82,9 +82,8 @@ public abstract class AutoDetectMountBasedContainer extends ExecutionWrapper {
 		if(s.matches(".+" + PATH_END)) {
 			return s;
 		}
-		else if(s.matches(".+" + FILE_ENDING)) {
-			s = s.replaceFirst(FILE_ENDING, "") + File.separator;
-			return s;
+		else {
+			s = s.replaceFirst(NOT_PATH_SEP_CAHRS + "+$", ""); 
 		}
 		return s + File.separator;
 	}
