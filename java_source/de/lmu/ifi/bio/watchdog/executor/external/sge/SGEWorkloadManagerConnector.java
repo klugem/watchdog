@@ -27,7 +27,7 @@ public class SGEWorkloadManagerConnector extends BinaryCallBasedExternalWorkflow
 	public static final String EXECUTOR_NAME = "sge";
 	private static final String HOSTNAME_REGEX = ".*<JG_qhostname>(.+)</JG_qhostname>.*";
 	private static final String ID_REGEX = "Your job ([0-9]+) \\(\".+\"\\) has been submitted";
-	private static final String STATE_QSTAT = "^([0-9]+)\\W+.+\\W+(\\S+)\\W+([0-9]{2})/([0-9]{2})/([0-9]{4})\\W+.*";
+	private static final String STATE_QSTAT = "^\\W*([0-9]+)\\W+.+\\W+(\\S+)\\W+([0-9]{2})/([0-9]{2})/([0-9]{4})\\W+.*";
 	private static final Pattern SPLIT_PATTERN = Pattern.compile("\\W+");
 	private static final String RUNNING = "r";
 	private static final String TRANSFERING = "t";

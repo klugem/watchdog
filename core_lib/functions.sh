@@ -595,16 +595,14 @@ function executeCommand() {
 	COMMAND=$1
 	LOGFILE=$2
 	NAME=$3
-	MESSAGE=$(eval "$COMMAND" 2>&1)
+	eval "$COMMAND" 2>&1 | tee "$LOGFILE"
 	CODE=$?
-	echo -e "$MESSAGE" > "$LOGFILE"
 
 	# check exit code
 	if [ $CODE -ne 0 ]; then
-		echoError "$NAME run failed with exit code '$CODE'.!"
-		echoAError "Output: $MESSAGE"
-		echoAError "Log file ($LOGFILE):" 
-		#cat $LOGFILE 
+		echoError "$NAME run failed with exit code '$CODE'!"
+		echoAError "Output: "$(cat "$LOGFILE")
+		echoAError "Log file: '$LOGFILE'"
 		exit $EXIT_FAILED
 	else
 		#check, if we can find an default error message in the return code
@@ -614,7 +612,7 @@ function executeCommand() {
 		if [ $CODE_ERROR -ne 0 ]; then
 			echoError "Error checker found some errors, see found errors below"
 			echoError "$MESSAGE_ERROR"
-			echoAError "Original output: $MESSAGE"
+			echoAError "Original output: "$(cat "$LOGFILE")
 			exit $EXIT_FAILED
 		fi
 	fi
