@@ -6,6 +6,8 @@ Changelog started with version 1.2.0
 ## [Unreleased]
 ### Fixed 
 - [PLUGIN] Filename in path was not replaced completely during mount point detection when using docker
+- [BASH] Excessive memory usage when a command with large stdout/stderr output was executed 
+- [SGE] Small sge job ids were not matched by the regex pattern
 
 ## [2.0.7] - 2020-05-25
 ### Fixed 
