@@ -28,7 +28,7 @@ public class ProcessTable extends ProcessMultiParam {
 	private boolean wasRead = false;
 	private final ArrayList<String> BUFFER = new ArrayList<>();
 	private final LinkedHashMap<String, String> RES = new LinkedHashMap<>();
-	private static final Logger LOGGER = new Logger(LogLevel.ERROR);
+	private static final Logger LOGGER = new Logger(LogLevel.WARNING);
 	private final String KEY_COLUMN;
 	private static final LinkedHashMap<String, String> OFFER_VAR = new LinkedHashMap<>();
 	
@@ -105,8 +105,7 @@ public class ProcessTable extends ProcessMultiParam {
 				}
 				else {
 					if(this.BUFFER.size() == 1) {
-						LOGGER.error("Process table file '" + table.getAbsolutePath() + "' does only contain a header line!");
-						if(!XMLParser.isNoExit()) System.exit(1);
+						LOGGER.warn("Process table file '" + table.getAbsolutePath() + "' does only contain a header line!");
 					}
 					
 					String[] names =  this.BUFFER.remove(0).split(ReplaceSpecialConstructs.TAB);
@@ -227,5 +226,10 @@ public class ProcessTable extends ProcessMultiParam {
 	@Override
 	public Object[] getDataToLoadOnGUI() { 
 		return new Object[] { this.gui_table, this.gui_compareColum, !this.gui_disableExistanceCheck }; 
+	}
+
+	@Override
+	public boolean allowsReturnValueVerification() {
+		return this.wasRead;
 	}
 }

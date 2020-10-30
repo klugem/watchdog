@@ -113,4 +113,9 @@ public class ProcessInput extends ProcessReturnValueAdder {
 	public Object clone() {
 		return new ProcessInput(this.getName(), this.getReturnValueSeperator(), this.getReplaceDefaultGroup());
 	}
+	
+	@Override
+	public boolean allowsReturnValueVerification() {
+		return true;
+	}
 }

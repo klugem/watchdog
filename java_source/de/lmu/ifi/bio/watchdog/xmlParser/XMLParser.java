@@ -237,6 +237,7 @@ public class XMLParser {
 	public static final String AFTER_SCRIPTS = "afterScripts";
 	public static final String PACKAGE_MANAGERS = "packageManagers";
 	public static final String CONTAINER = "container";
+	public static final String CONDITION = "condition";
 	
 	/* values for the return param */
 	private static final String X_EXTENSION = "x:extension";
@@ -818,6 +819,7 @@ public class XMLParser {
 								String confirmParam = XMLParser.getAttribute(task, CONFIRM_PARAM);
 								int maxRunning = Integer.parseInt(XMLParser.getAttribute(task, MAX_RUNNING));
 								int version = task.hasAttribute(VERSION) ? Integer.parseInt(XMLParser.getAttribute(task, VERSION)) : 1;
+								String condition = XMLParser.getAttribute(task, CONDITION); // TODO
 								String versionSetName = XMLParser.getAttribute(task, MODULE_VERSION_PARAM_NAME_TO_SET);
 								String moduleFolder = new File(moduleName2Path.get(taskType)).getAbsoluteFile().getParent();
 								
@@ -1691,16 +1693,19 @@ public class XMLParser {
 		
 		if(x.hasProcessBlock() && x.getProcessBlock() instanceof ProcessMultiParam) {
 			ProcessMultiParam mp = (ProcessMultiParam) x.getProcessBlock();
-			Matcher m = ReplaceSpecialConstructs.PATTERN_TABLE_COL_NAME.matcher(value);
-			// test, if a var inputProcess block var is set
-			if(m.matches()) {
-				String usedReturnName = m.group(3);
-				if(!x.isReturnVariableAvail(usedReturnName) && !mp.getNameMapping().containsKey(usedReturnName)) {
-					LOGGER.error("ProcessInput block does not contain a return variable with name '"+usedReturnName+"' for task with id '"+x.getXMLID()+"'.");
-					if(!noExit) System.exit(1);
-				}
-				else {
-					return usedReturnName;
+			// test if mp does already provide the names of the return values
+			if(mp.allowsReturnValueVerification()) {
+				Matcher m = ReplaceSpecialConstructs.PATTERN_TABLE_COL_NAME.matcher(value);
+				// test, if a var inputProcess block var is set
+				if(m.matches()) {
+					String usedReturnName = m.group(3);
+					if(!x.isReturnVariableAvail(usedReturnName) && !mp.getNameMapping().containsKey(usedReturnName)) {
+						LOGGER.error(mp.getClass().getSimpleName() + " block with name '" +mp.getName()+ "' does not contain a return variable with name '"+usedReturnName+"' for task with id '"+x.getXMLID()+"'.");
+						if(!noExit) System.exit(1);
+					}
+					else {
+						return usedReturnName;
+					}
 				}
 			}
 		}

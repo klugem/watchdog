@@ -36,4 +36,10 @@ public abstract class ProcessMultiParam extends ProcessBlock {
 	public boolean isResumeReattachValueAddingRequired() {
 		return false;
 	}
+	
+	/**
+	 * indicates if the names of return values can be verified during parsing of the XML file
+	 * @return
+	 */
+	public abstract boolean allowsReturnValueVerification();
 }

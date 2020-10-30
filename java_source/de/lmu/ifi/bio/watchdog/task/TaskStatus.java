@@ -8,7 +8,7 @@ package de.lmu.ifi.bio.watchdog.task;
  */
 public enum TaskStatus {
 	WAITING_QUEUE("is waiting on free execution host"), WAITING_RESTRICTIONS("is waiting for resource restrictions"), WAITING_DEPENDENCIES("is waiting on dependencies to be finished"), FAILED_SYNTAX("could not be executed on the executor"), BEFORE_ACTION_FAILED("before action failed"), AFTER_ACTION_FAILED("after action failed"), 
-	RUNNING("is currently running"), FAILED("has failed"), FAILED_ERROR_CHECK("error checker found some errors"), FAILED_SUCCESS_CHECK("sucess checker has failed"), FINISHED("has finished"), KILLED("was killed"), IGNORE("is ignored"), STATUS_CHECK("waiting for status check to finish"), TERMINATED("was terminated"), RESOLVED("was marked as resolved manually");
+	RUNNING("is currently running"), FAILED("has failed"), FAILED_ERROR_CHECK("error checker found some errors"), FAILED_SUCCESS_CHECK("sucess checker has failed"), FINISHED("has finished"), FINISHED_ON_SLAVE("has finished on slave"), KILLED("was killed"), IGNORE("is ignored"), STATUS_CHECK("waiting for status check to finish"), TERMINATED("was terminated"), RESOLVED("was marked as resolved manually");
 	
 	private final String MESSAGE;
 	
