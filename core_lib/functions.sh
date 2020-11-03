@@ -357,6 +357,8 @@ function abspath() {
         else
             echo "$(pwd)/$1"
         fi
+    else
+       echo "$(pwd)/$1"
     fi
 }
 
@@ -596,7 +598,7 @@ function executeCommand() {
 	LOGFILE=$2
 	NAME=$3
 	eval "$COMMAND" 2>&1 | tee "$LOGFILE"
-	CODE=$?
+	CODE=${PIPESTATUS[0]}
 
 	# check exit code
 	if [ $CODE -ne 0 ]; then
