@@ -131,8 +131,8 @@ public class ResumeInfo {
 	 * checks, if a task is unchanged regarding it's parameters
 	 * @return
 	 */
-	public boolean isResumeInfoValid(XMLTask x, Task t) {
-		return !this.isDirty() && this.ARG_HASH_CODE.equals(getArgHash(x, t.getBinaryCall(), t.getDetailedArguments()));
+	public boolean isResumeInfoValid(XMLTask x, Task t, boolean ignoreParamHash) {
+		return !this.isDirty() && (ignoreParamHash || this.ARG_HASH_CODE.equals(getArgHash(x, t.getBinaryCall(), t.getDetailedArguments())));
 	}
 	
 	public static ResumeInfo parseResumeInfo(String jsonString) {

@@ -4,6 +4,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
 Changelog started with version 1.2.0
 
 ## [Unreleased]
+### Added
+- [CMD] Added flag 'ignoreParamHashInResume' that allows to disable parameter hash validate in resume mode
+
 ### Fixed 
 - [PLUGIN] Filename in path was not replaced completely during mount point detection when using docker
 - [BASH] Excessive memory usage when a command with large stdout/stderr output was executed 

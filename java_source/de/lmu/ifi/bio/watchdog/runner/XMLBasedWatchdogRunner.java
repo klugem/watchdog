@@ -326,7 +326,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			// create a new watchdog object and xml2 thread stuff
 			watchdogThread = new WatchdogThread(params.simulate, null, xsdSchema, logFile); 
 			watchdogThread.setWebserver(control);
-			xml2taskThread = new XMLTask2TaskThread(watchdogThread, xmlTasks, mailer, retInfo, xmlPath, params.mailWaitTime, resumeInfo, runningInfo, resumeFile);
+			xml2taskThread = new XMLTask2TaskThread(watchdogThread, xmlTasks, mailer, retInfo, xmlPath, params.mailWaitTime, resumeInfo, runningInfo, resumeFile, params.ignoreParamHashInResume);
 			
 			WatchdogThread.addUpdateThreadtoQue(xml2taskThread, true);
 			Executor.setXml2Thread(xml2taskThread);

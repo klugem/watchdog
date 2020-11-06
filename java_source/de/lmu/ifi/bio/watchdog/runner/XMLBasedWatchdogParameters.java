@@ -57,6 +57,9 @@ public class XMLBasedWatchdogParameters {
 	@Parameter(names={"-resume"}, description="resumes workflow execution whereby tasks that were executed successfully (and parameters are unchanged) are ignored; expects a watchdog status log file from a previous watchdog run; can be used in combination with -start, -stop, -include and -exclude", required=false)
 	protected String resume;
 	
+	@Parameter(names={"-ignoreParamHashInResume"}, description="do not validate parameter hash in resume mode", required=false)
+	protected boolean ignoreParamHashInResume;
+	
 	@Parameter(names={"-autoDetach"}, description="stops the execution of Watchdog whenever possible (running tasks on an external executor will not be terminated on detach); status of previously running tasks is checked when Watchdog is started with the -restart and -attachInfo option;", required=false)
 	protected boolean autoDetach = false;
 	

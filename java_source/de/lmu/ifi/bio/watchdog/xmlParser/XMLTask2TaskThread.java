@@ -53,6 +53,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	private int loopCalls = 1;
 	private static final int LOOP_CHECK = 10;
 	private final File XML_PATH;
+	private boolean ignoreParamHashInResume = false;
 	private final int MAIL_WAIT_TIME;
 	public final static int SLEEP = 1000; // check every 1s if all tasks are finished!
 	private static final int MIN_SPAWN_CYCLES = 30; // minimum cycles of xml2task calls in automatic detach&attach mode
@@ -64,15 +65,15 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	* @param xmlTasks
 	* @param returnTypeInfo
 	*/
-	public XMLTask2TaskThread(WatchdogThread watchdog, ArrayList<XMLTask> xmlTasks, Mailer mailer, HashMap<String, Pair<HashMap<String, ReturnType>, String>> returnTypeInfo, File xmlPath, int mailWaitTime, HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo, ArrayList<Task> attachInfo, File resumeFile) {
+	public XMLTask2TaskThread(WatchdogThread watchdog, ArrayList<XMLTask> xmlTasks, Mailer mailer, HashMap<String, Pair<HashMap<String, ReturnType>, String>> returnTypeInfo, File xmlPath, int mailWaitTime, HashMap<Integer, HashMap<String, ResumeInfo>> resumeInfo, ArrayList<Task> attachInfo, File resumeFile, boolean ignoreParamHashInResume) {
 		super("XMLTask2Task");
 		this.WATCHDOG = watchdog;
 		this.MAILER = mailer;
 		this.RETURN_TYPE_INFO = returnTypeInfo;
 		this.MAIL_WAIT_TIME = mailWaitTime;
 		this.XML_PATH = xmlPath;
+		this.ignoreParamHashInResume = ignoreParamHashInResume;
 	
-		
 		// add the workflow resume logger task status update handler
 		this.addTaskStatusHandler(new WorkflowResumeLogger(resumeFile, true));
 		
@@ -272,7 +273,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					x.addExecutionTask(t);
 
 					// check, if resumeInfo is valid
-					if(resumeInfo != null && (!resumeInfo.isResumeInfoValid(x, t) || x.isDirty(true) || t.willRunOnSlave())) {
+					if(resumeInfo != null && (!resumeInfo.isResumeInfoValid(x, t, this.ignoreParamHashInResume) || x.isDirty(true) || t.willRunOnSlave())) {
 						if(x.isDirty(true) || resumeInfo.isDirty())
 							LOGGER.warn("Resume info was not used for task " + t.getID() + " (subtask param: '"+inputName+"') as a dependency was re-executed.");
 						else if(t.willRunOnSlave())
