@@ -418,7 +418,7 @@ public class Task implements Serializable {
 	public void setJobInfo(JobInfo info) {
 		this.info = info;
 		this.getExecutor().removeIDofRunningJob(this);
-		this.updateStatus();
+		this.updateStatus(info);
 	}
 	
 	/**
@@ -605,8 +605,8 @@ public class Task implements Serializable {
 	/**
 	 * updates the status of the task when it is finished
 	 */
-	private void updateStatus()  {
-		FileWatcherLockguard.addTask(this);
+	private void updateStatus(JobInfo status) {
+		FileWatcherLockguard.addTask(this, status);
 	}
 	
 	/********************************** CHECKER **********************************/

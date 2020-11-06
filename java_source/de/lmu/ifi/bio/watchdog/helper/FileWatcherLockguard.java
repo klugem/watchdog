@@ -8,11 +8,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.ggf.drmaa.DrmaaException;
+import org.ggf.drmaa.JobInfo;
 
 import de.lmu.ifi.bio.multithreading.StopableLoopRunnable;
 import de.lmu.ifi.bio.watchdog.executor.WatchdogThread;
+import de.lmu.ifi.bio.watchdog.resume.ResumeJobInfo;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.task.TaskStatusUpdate;
+
 
 /**
  * I don't use WatchService as many different directories might be of interest --> many single threads --> quite much overhead
@@ -101,22 +104,27 @@ public class FileWatcherLockguard extends StopableLoopRunnable {
 	 * adds a new task that should be monitored
 	 * @param t
 	 */
-	private void addToMonitor(Task t) { 
-		ArrayList<File> files = new ArrayList<>();
-		if(t.getStdOut(false) != null) files.add(t.getStdOut(false));
-		if(t.getStdErr(false) != null) files.add(t.getStdErr(false));
-		
-		int exitCode = 0;
-		try { exitCode = t.getJobInfo().getExitStatus(); } catch(DrmaaException e) {}
-		
-		// if task has failed we don't enforce that
-		if(exitCode == 0 && t.hasVersionQueryInfoFile())
-			files.add(t.getVersionQueryInfoFile());
-		
-		// add it to monitor if required or perform update instantly if possible
-		if(files.size() > 0) {
-			this.MONITOR.put(t, files);
-			this.INSERT_TIME.put(t.getID(), System.currentTimeMillis());
+	private void addToMonitor(Task t, JobInfo status) { 
+		// out and error streams don't have to be monitored if task was created in resume mode
+		if(status instanceof ResumeJobInfo == false) {
+			ArrayList<File> files = new ArrayList<>();
+			if(t.getStdOut(false) != null) files.add(t.getStdOut(false));
+			if(t.getStdErr(false) != null) files.add(t.getStdErr(false));
+			
+			int exitCode = 0;
+			try { exitCode = t.getJobInfo().getExitStatus(); } catch(DrmaaException e) {}
+			
+			// if task has failed we don't enforce that
+			if(exitCode == 0 && t.hasVersionQueryInfoFile())
+				files.add(t.getVersionQueryInfoFile());
+			
+			// add it to monitor if required or perform update instantly if possible
+			if(files.size() > 0) {
+				this.MONITOR.put(t, files);
+				this.INSERT_TIME.put(t.getID(), System.currentTimeMillis());
+			}
+			else
+				this.performUpdate(t);
 		}
 		else
 			this.performUpdate(t);
@@ -132,14 +140,14 @@ public class FileWatcherLockguard extends StopableLoopRunnable {
 	
 	/*********************** static methods ***********************/
 	
-	public static void addTask(Task t) {
+	public static void addTask(Task t, JobInfo status) {
 		// ensure that watcher is running
 		if(FileWatcherLockguard.lock == null) {
 			FileWatcherLockguard.lock = new FileWatcherLockguard();
 			WatchdogThread.addUpdateThreadtoQue(FileWatcherLockguard.lock, true);
 		}
 		// add the task 
-		FileWatcherLockguard.lock.addToMonitor(t);
+		FileWatcherLockguard.lock.addToMonitor(t, status);
 	}
 
 	@Override

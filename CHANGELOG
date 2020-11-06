@@ -10,6 +10,7 @@ Changelog started with version 1.2.0
 - [SGE] Small sge job ids were not matched by the regex pattern
 - [] Verify return value names of process tables during XML parsing if disableExistenceCheck is not true
 - [] Status of slave tasks was set to finished prematurely by status update events (-> depending tasks might not be scheduled)
+- [] Stdout and stderr files are now not monitored if a task was loaded from a resume file
 
 ### Changed 
 - [] Do not exit if process table contains only a header line (warn instead)

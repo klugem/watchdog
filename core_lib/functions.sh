@@ -1,6 +1,6 @@
 #!/bin/bash
 # add because later it will be checked if used tools are installed when checkUsedTools is called
-USED_TOOLS_FUNCTIONS='echo:head:tr:md5sum:touch:mkdir:mktemp:cut:printf:tee:sync'
+USED_TOOLS_FUNCTIONS='echo:head:tr:md5sum:touch:mkdir:mktemp:cut:printf:tee:sync:readlink'
 MESSAGE_SIZE=100
 
 printPrimaryCaller() {
@@ -358,7 +358,7 @@ function abspath() {
             echo "$(pwd)/$1"
         fi
     else
-       echo "$(pwd)/$1"
+	echo $(readlink -m "$1" 2>/dev/null || readlink "$1" || echo "$1")
     fi
 }
 
