@@ -5,6 +5,8 @@ SLEEP_TIME="60s"
 
 # capture STRG+C signals
 trap 'handle_int' SIGINT
+# redirect stdin status
+REDIRECT_STDIN=0
 
 # auto-configure examples if environment variable WATCHDOG_HOME is set and WATCHDOG_AUTO_CONFIG is set to 1
 if [ "$WATCHDOG_AUTO_CONFIG" == "1" ] && [ ! -z "$WATCHDOG_HOME" ]; then
@@ -29,10 +31,16 @@ if [ $AUTO_DETACH_COUNT -eq 1 ]; then
 	RET=123
 	while [ $RET -eq 123 ]; do
 		set -m
-		java -jar $SCRIPT_FOLDER/jars/watchdog.jar $@ $APPEND_PARAM </dev/stdin &
+		startRedirectStdin
+		if [ $REDIRECT_STDIN -eq 1 ]; then 
+			java -jar $SCRIPT_FOLDER/jars/watchdog.jar $@ $APPEND_PARAM <&3 &
+		else
+			java -jar $SCRIPT_FOLDER/jars/watchdog.jar $@ $APPEND_PARAM &
+		fi
 		BACKGROUND_PID=$!
 		set +m
 		waitForCommandToFinish ${BACKGROUND_PID}
+		endRedirectStdin
 		RET=${BACKGROUND_EXIT_CODE}
 
 		if [ $RET -eq 123 ]; then
@@ -46,14 +54,16 @@ if [ $AUTO_DETACH_COUNT -eq 1 ]; then
 	exit $RET
 else
 	set -m
-	if [ -e "/dev/stdin" ]; then
-		java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" $@ </dev/stdin &
+	startRedirectStdin
+	if [ $REDIRECT_STDIN -eq 1 ]; then 
+		java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" $@ <&3 &
 	else
 		java -jar "$SCRIPT_FOLDER/jars/watchdog.jar" $@ &
 	fi
 	BACKGROUND_PID=$!
 	set +m
 	waitForCommandToFinish ${BACKGROUND_PID}
+	endRedirectStdin
 	exit $BACKGROUND_EXIT_CODE
 fi
 exit $?

@@ -50,9 +50,7 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	private final static String FILE_NAME_PATTERN = ("docker.image(" + FindVersionedFile.MOD_VERSION + ")?" + DOCKER_ENDING).replaceAll("\\.", "\\\\.");
 	private final static FindVersionedFile FIND_VERSIONED_FILE = new FindVersionedFile(x -> x.getName().matches(FILE_NAME_PATTERN), DOCKER_ENDING);
 	
-	@SuppressWarnings("unused")
 	private static final String BIN_DOCKER = "docker";
-	@SuppressWarnings("unused")
 	private static final String BIN_PODMAN = "podman";
 	private static final String BIN_SINGULARITY = "singularity";
 		

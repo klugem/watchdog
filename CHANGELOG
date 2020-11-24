@@ -11,9 +11,11 @@ Changelog started with version 1.2.0
 - [PLUGIN] Filename in path was not replaced completely during mount point detection when using docker
 - [BASH] Excessive memory usage when a command with large stdout/stderr output was executed 
 - [SGE] Small sge job ids were not matched by the regex pattern
-- [] Verify return value names of process tables during XML parsing if disableExistenceCheck is not true
+- [] Verify return value names of process tables during XML parsing if disableExistenceCheck is not true (TODO: update documentation)
 - [] Status of slave tasks was set to finished prematurely by status update events (-> depending tasks might not be scheduled)
 - [] Stdout and stderr files are now not monitored if a task was loaded from a resume file
+- [] Attribute 'shebang' of executor was not set correctly
+- [CMD] Redirection of stdin was not working in all cases
 
 ### Changed 
 - [] Do not exit if process table contains only a header line (warn instead)

@@ -648,6 +648,20 @@ function handle_int() {
 	fi
 }
 
+function startRedirectStdin() {
+	if [ -e "/dev/stdin" ]; then 
+		REDIRECT_STDIN=1
+		exec 3< <(cat "/dev/stdin") 
+	fi
+}
+
+function endRedirectStdin() {
+	if [ $REDIRECT_STDIN -eq 1 ]; then 
+		exec 3<&-;
+	fi
+	REDIRECT_STDIN=0
+}
+
 function waitForCommandToFinish() {
 	BACKGROUND_PID=$1
 	BACKGROUND_EXIT_CODE=130
