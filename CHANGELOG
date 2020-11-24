@@ -16,6 +16,7 @@ Changelog started with version 1.2.0
 - [] Stdout and stderr files are now not monitored if a task was loaded from a resume file
 - [] Attribute 'shebang' of executor was not set correctly
 - [CMD] Redirection of stdin was not working in all cases
+- [CMD] Tasks with two or more global dependencies on process blocks of type 'processInput' were never scheduled
 
 ### Changed 
 - [] Do not exit if process table contains only a header line (warn instead)

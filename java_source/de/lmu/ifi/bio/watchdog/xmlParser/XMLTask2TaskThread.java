@@ -441,8 +441,11 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					
 					// add the global dependency, but only, if it does not depend on any other separate task
 					if(noSeparate) {
+						// ensure that the key is there
+						if(!finishedDep.containsKey(""))
+							finishedDep.put("", new ArrayList<Task>());
+						
 						// add the task
-						finishedDep.put("", new ArrayList<Task>());
 						finishedDep.get("").add(t);
 					}
 				}
