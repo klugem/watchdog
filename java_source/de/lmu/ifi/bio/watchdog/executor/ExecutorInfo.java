@@ -89,6 +89,7 @@ public abstract class ExecutorInfo implements XMLDataStore, Cloneable, XMLPlugin
 		this.AFTER_SCRIPT = afterScripts;
 		this.PACKAGE_MANAGERS = packageManager;
 		this.CONTAINER = container;
+		this.shebang = shebang;
 		
 		// set slave mode stuff
 		if(isStick2Host)
