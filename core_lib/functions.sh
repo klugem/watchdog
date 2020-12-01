@@ -5,7 +5,7 @@ MESSAGE_SIZE=100
 
 printPrimaryCaller() {
 	if [ "${PRIMARY_CALLER}" != "" ]; then
-		printf "[$PRIMARY_CALLER]"
+		printf " [$PRIMARY_CALLER]"
 	fi 
 	printf "\n";
 }
@@ -259,7 +259,7 @@ createOutputFile() {
 
 verifyFileExistence() {
 	FILE=$1
-	if [ ! -e "$FILE" ]; then
+	if [ ! -f "$FILE" ]; then
 		echoError "Input file '$FILE' does not exist."
 		exit $EXIT_MISSING_INPUT_FILES
 	fi
@@ -707,6 +707,7 @@ function getRPackageVersion() {
 function getBinaryVersion() {
 	BIN_CMD=$1
 	PARAM=$2
+	POST=$3
 
 	# try to locate the binary
 	BIN_PATH=$({ which "${BIN_CMD}"; } 2>&1)
@@ -719,7 +720,11 @@ function getBinaryVersion() {
 		FAILED=1
 	else
 		# call the command with the version parameter
-		RET=$({ ${BIN_CMD} ${PARAM}; } 2>&1)
+		if [ ! -z "$POST" ]; then
+			RET=$({ eval "${BIN_CMD} ${PARAM} | ${POST}"; } 2>&1)
+		else
+			RET=$({ ${BIN_CMD} ${PARAM}; } 2>&1)
+		fi
 		CODE=$?
 		if [ $CODE -ne 0 ] ; then
 			RET_VER="NO_SUCH_PARAMETER"
@@ -788,4 +793,13 @@ function downloadFile() {
 		echoError "Download file function requires exactly 2 parameters."
 	fi
 	return 1
+}
+
+function enforceMandatoryParameter() {
+	NAME=$1
+	VARNAME="FLAGS_${NAME}"
+	if [ -z "${!VARNAME}" ]; then
+		echoError "Parameter --${NAME} must be set. (see --help for details)";
+		exit $EXIT_MISSING_ARGUMENTS
+	fi
 }
