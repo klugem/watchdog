@@ -165,7 +165,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						continue;
 					}
 				}
-				LinkedHashMap<String, ArrayList<String>> argumentLists = this.getArgumentLists(x);
+				HashSet<String> argumentLists = this.getArgumentLists(x);
 				// do not further process this task as the last cached getValues() call of the process block failed --> try later again
 				if(argumentLists == null)
 					continue;
@@ -174,7 +174,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					completeArguments.putAll(x.getProcessBlock().getValues(true));
 
 				// check each of the files separately if there are any dependencies left
-				for(String inputName : argumentLists.keySet()) {
+				for(String inputName : argumentLists) {
 					// if the task is blocked, ignore it
 					if(x.isBlocked()) 
 						continue;
@@ -350,11 +350,11 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	 * @param x
 	 * @return
 	 */
-	public LinkedHashMap<String, ArrayList<String>> getArgumentLists(XMLTask x) {
-		LinkedHashMap<String, ArrayList<String>> list = new LinkedHashMap<>();
+	public HashSet<String> getArgumentLists(XMLTask x) {
+		HashSet<String> list = new HashSet<>();
 		// single file mode
 		if(x.getProcessBlock() == null) {
-			list.put("", Task.parseArguments(x.getXMLID(), "", x.getArguments()));
+			list.add("");
 		}
 		// process group block! :-)
 		else {
@@ -370,7 +370,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 			// check, which type of process block it is
 			if(isMultiParam) {
 				for(String input : v.keySet()) {
-					list.put(input, Task.parseArguments(x.getXMLID(), input, x.getArguments(v.get(input), ((ProcessMultiParam) pr).getNameMapping())));
+					list.add(input);
 				}
 			}
 			else {
@@ -383,7 +383,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 				}
 				
 				for(String input : vv) {
-					list.put(input, Task.parseArguments(x.getXMLID(), input, x.getArguments(input, null)));
+					list.add(input);
 				}
 			}
 		}
