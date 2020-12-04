@@ -13,7 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TaskStore {
 	private static final Map<Integer, Integer> GLOBAL_TASK_IDS = new ConcurrentHashMap<>();
 	private static final Map<String, Task> TASKS = new ConcurrentHashMap<>(); 
-	private static final Map<Integer, ArrayList<String>> CACHE = new ConcurrentHashMap<>();
+	private static final Map<String, ArrayList<String>> CACHE = new ConcurrentHashMap<>();
+	public static final char CACHE_KEY_SEP = '^';
 	
 	/**
 	 * cleans all the data stored in this class
@@ -40,16 +41,16 @@ public class TaskStore {
 		return GLOBAL_TASK_IDS.containsKey(taskID);
 	}
 
-	public synchronized static boolean cacheContainsKey(int hashCode) {
-		return CACHE.containsKey(hashCode);
+	public synchronized static boolean cacheContainsKey(String hashKey) {
+		return CACHE.containsKey(hashKey);
 	}
 
-	public synchronized static ArrayList<String> cacheGet(int hashCode) {
-		return CACHE.get(hashCode);
+	public synchronized static ArrayList<String> cacheGet(String hashKey) {
+		return CACHE.get(hashKey);
 	}
 
-	public synchronized static void cachePut(int hashCode, ArrayList<String> ret) {
-		CACHE.put(hashCode, ret);
+	public synchronized static void cachePut(String hashKey, ArrayList<String> ret) {
+		CACHE.put(hashKey, ret);
 	}
 
 	public synchronized static void taskRemove(String id) {

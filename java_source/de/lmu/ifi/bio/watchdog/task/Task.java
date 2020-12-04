@@ -128,8 +128,24 @@ public class Task implements Serializable {
 		this.MODULE_FOLDER = moduleFolder;
 		this.executor = executor;
 		this.DETAIL_ARGUMENTS = detailArguments;
-		String[] tmp = command.split(" ");
 		
+		this.GROUP_FILE_NAME = groupFileName;
+		// update the sub task ID
+		if(this.GROUP_FILE_NAME != null && this.GROUP_FILE_NAME.length() > 0) {
+			if(!TaskStore.globalContainsKey(this.TASK_ID)) 
+				TaskStore.globalPut(this.TASK_ID, 0);
+			
+			// increase the sub task id
+			int subTaskID = TaskStore.globalGet(this.TASK_ID) + 1;
+			TaskStore.globalPut(this.TASK_ID, subTaskID);
+			
+			this.SUB_TASK_ID = subTaskID;
+		}
+		else {
+			this.SUB_TASK_ID = -1;
+		}
+		
+		String[] tmp = command.split(" ");
 		if(tmp.length > 1)
 			command = tmp[0];
 		for(int i = 1; i < tmp.length; i++)
@@ -137,13 +153,11 @@ public class Task implements Serializable {
 		
 		this.COMMAND = command;
 		if(detailArguments != null)
-			this.ARGUMENTS.addAll(Task.parseArguments(detailArguments));
+			this.ARGUMENTS.addAll(Task.parseArguments(this.getTaskID(), this.GROUP_FILE_NAME, detailArguments));
 		if(errorChecker != null) 
 			this.ERROR_CHECKER.addAll(errorChecker);
 		if(successChecker != null)
 			this.SUCCESS_CHECKER.addAll(successChecker);
-
-		this.GROUP_FILE_NAME = groupFileName;
 		
 		// add dependencies
 		if(dependencies != null) {
@@ -180,35 +194,22 @@ public class Task implements Serializable {
 			// get the list and add the entry
 			this.TASK_ACTIONS.get(t).add(a);
 		}
-		
-		// update the sub task ID
-		if(this.GROUP_FILE_NAME != null && this.GROUP_FILE_NAME.length() > 0) {
-			if(!TaskStore.globalContainsKey(this.TASK_ID)) 
-				TaskStore.globalPut(this.TASK_ID, 0);
-			
-			// increase the sub task id
-			int subTaskID = TaskStore.globalGet(this.TASK_ID) + 1;
-			TaskStore.globalPut(this.TASK_ID, subTaskID);
-			
-			this.SUB_TASK_ID = subTaskID;
-		}
-		else {
-			this.SUB_TASK_ID = -1;
-		}
-		
+
 		// save task in the global list
 		TaskStore.addTask(this);
 	} 
 	
 	/**
 	 * converts the detailed list to an arraylist
+	 * @param taskID as partial key for cache
+	 * @param groupName as partial key for cache
 	 * @param detailArguments
 	 * @return
 	 */
-	public static ArrayList<String> parseArguments(LinkedHashMap<String, Pair<Pair<String, String>, String>> detailArguments) {
+	public static ArrayList<String> parseArguments(int taskID, String groupName, LinkedHashMap<String, Pair<Pair<String, String>, String>> detailArguments) {
 		// test if stuff is cached
-		int hashCode = detailArguments.hashCode();
-		if(!TaskStore.cacheContainsKey(hashCode)) {
+		String cacheKey = taskID + TaskStore.CACHE_KEY_SEP + (groupName == null ? "" : groupName);
+		if(!TaskStore.cacheContainsKey(cacheKey)) {
 			ArrayList<String> ret = new ArrayList<>();
 			for(String name : detailArguments.keySet()) {
 				Pair<Pair<String, String>, String> p = detailArguments.get(name);
@@ -226,15 +227,15 @@ public class Task implements Serializable {
 					ret.add(prefix+name);
 				// it is not a option!
 				if(value != null) {
-					if(quote != null  && !quote.isEmpty() && !okNumeric) // do not quote numierc arguments!
+					if(quote != null  && !quote.isEmpty() && !okNumeric) // do not quote numeric arguments!
 						ret.add(quote + value + quote);
 					else
 						ret.add(value);
 				}
 			}
-			TaskStore.cachePut(hashCode, ret);
+			TaskStore.cachePut(cacheKey, ret);
 		}
-		return TaskStore.cacheGet(hashCode);
+		return TaskStore.cacheGet(cacheKey);
 	}
 
 	public static Task getShutdownTask(ArrayList<TaskAction> shutdownActions, ExecutorInfo e) {

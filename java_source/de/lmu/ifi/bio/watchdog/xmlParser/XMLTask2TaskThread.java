@@ -215,7 +215,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						if(completeArguments.containsKey(inputName))
 							completeRawargumentList = completeArguments.get(inputName);
 						
-						t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled(), x.getModuleFolder());
+						t = new Task(x.getXMLID(), x.getTaskName(), x.getExecutor(), x.getBinaryCall(), x.getArguments(completeRawargumentList, nameMapping, true), null, null, null, inputName, x.getStdIn(completeRawargumentList), x.getStdOut(completeRawargumentList), x.getStdErr(completeRawargumentList), x.isOutputAppended(), x.isErrorAppended(), x.getWorkingDir(completeRawargumentList), x.getProcessBlock() !=null ? x.getProcessBlock().getClass() : null, nameMapping, x.getEnvironment(), x.getTaskActions(x.getXMLID()+"", completeRawargumentList, nameMapping), x.isSaveResourceUsageEnabled(), x.getModuleFolder());					
 						t.setMaxRunning(x.getMaxRunning());
 						t.setProject(x.getProjectName());
 						t.addErrorChecker(new WatchdogErrorCatcher(t));
@@ -354,7 +354,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		LinkedHashMap<String, ArrayList<String>> list = new LinkedHashMap<>();
 		// single file mode
 		if(x.getProcessBlock() == null) {
-			list.put("", Task.parseArguments(x.getArguments()));
+			list.put("", Task.parseArguments(x.getXMLID(), "", x.getArguments()));
 		}
 		// process group block! :-)
 		else {
@@ -370,7 +370,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 			// check, which type of process block it is
 			if(isMultiParam) {
 				for(String input : v.keySet()) {
-					list.put(input, Task.parseArguments(x.getArguments(v.get(input), ((ProcessMultiParam) pr).getNameMapping())));
+					list.put(input, Task.parseArguments(x.getXMLID(), input, x.getArguments(v.get(input), ((ProcessMultiParam) pr).getNameMapping())));
 				}
 			}
 			else {
@@ -383,7 +383,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 				}
 				
 				for(String input : vv) {
-					list.put(input, Task.parseArguments(x.getArguments(input, null)));
+					list.put(input, Task.parseArguments(x.getXMLID(), input, x.getArguments(input, null)));
 				}
 			}
 		}
