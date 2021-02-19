@@ -120,7 +120,7 @@ public class ReplaceSpecialConstructs {
 						int col = nameMapping.get(name);
 
 						// recursive call
-						String[] split = inputReplacement.split(TAB);
+						String[] split = inputReplacement.split(TAB, -1);
 						if(split.length < col) {
 							LOGGER.error("'"+inputReplacement+"' does not contain enough values.");
 							LOGGER.error(StringUtils.join(nameMapping, " "));

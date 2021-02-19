@@ -134,7 +134,7 @@ public class ProcessTable extends ProcessMultiParam {
 					int mustHave = this.NAME_MAPPING.size();
 					for(String v : this.BUFFER) {
 						// ensure that all lines have the same number of elements
-						e = v.split(ReplaceSpecialConstructs.TAB);
+						e = v.split(ReplaceSpecialConstructs.TAB, -1);
 						if(e.length != mustHave) {
 							LOGGER.error("Line " + c + " of file '"+table.getAbsolutePath()+"' has " + e.length + " columns but " + mustHave + " are expected!");
 							LOGGER.error("content of line: '"+v+"'");
