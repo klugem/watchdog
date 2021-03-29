@@ -23,7 +23,7 @@ fi
 
 ERROR_FILES=$(echo $1 | sed 's|~|'$HOME'|g')
 KEY_WORDS=$DEFAULT_KEY_WORDS
-if [ "$#" -eq 2 ]; then
+if [ "$#" -ge 2 ]; then
 	if [ "$#" -eq 3 ]; then
 		KEY_WORDS=$2
 	else
