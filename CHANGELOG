@@ -17,9 +17,14 @@ Changelog started with version 1.2.0
 - [] Attribute 'shebang' of executor was not set correctly
 - [CMD] Redirection of stdin was not working in all cases
 - [CMD] Tasks with two or more global dependencies on process blocks of type 'processInput' were never scheduled
-
+- [CMD] Fixed rare null pointer exception during startup
+- [CMD] Sometimes tasks were prematurely marked as finished and hence not all subtasks were scheduled 
+- [CMD] Fixed non-reachable condition in error checker
+ 
 ### Changed 
 - [] Do not exit if process table contains only a header line (warn instead)
+- [CMD] Allow empty values ('\t\t') in process table
+- [CMD] Add 'slots' attribute in sge executor only if a value greater than 1 is set
 
 ## [2.0.7] - 2020-05-25
 ### Fixed 
