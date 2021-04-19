@@ -57,6 +57,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	private final int MAIL_WAIT_TIME;
 	public final static int SLEEP = 1000; // check every 1s if all tasks are finished!
 	private static final int MIN_SPAWN_CYCLES = 30; // minimum cycles of xml2task calls in automatic detach&attach mode
+	private final HashSet<Integer> RESOLVED_TASKS = new HashSet<>(); // stores the IDs of tasks that were finished in the current iteration
 	
 	/**
 	* Adds a new watchdog to which the tasks are added, if some are available
@@ -142,12 +143,15 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 	* @return
 	*/
 	public synchronized boolean createAndAddTasks() {
-		boolean noResume = true;
-		int newTasks = 0;
+		this.RESOLVED_TASKS.clear();
+		boolean resume = false;
+		
 		// test if some the the xml tasks can be converted
 		for(XMLTask x : new ArrayList<XMLTask>(this.XML_TASKS.values())) {
 			// check, if this task is already fully processed
 			if(x.hasXMLTaskSpawnedAllTasks() == false && x.isIgnoredBecauseOfIgnoredDependencies() == false) {
+				boolean someScheduleBreakerExist = true;
+				
 				// check, if some global dependencies can be resolved
 				x.checkForGlobalResolvedDependencies();
 				if(x.hasGlobalDependencies())
@@ -165,6 +169,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						continue;
 					}
 				}
+
 				HashSet<String> argumentLists = this.getArgumentLists(x);
 				// do not further process this task as the last cached getValues() call of the process block failed --> try later again
 				if(argumentLists == null)
@@ -174,18 +179,27 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 					completeArguments.putAll(x.getProcessBlock().getValues(true));
 
 				// check each of the files separately if there are any dependencies left
+				someScheduleBreakerExist = false;
 				for(String inputName : argumentLists) {
-					// if the task is blocked, ignore it
-					if(x.isBlocked()) 
-						continue;
-					// check, if this task was already spawned or has any not resolved separate dependencies
+					// check, if this task was already spawned
 					if(x.hasTaskAlreayBeenSpawned(inputName))
 						continue;
-					if(x.hasSeparateDependencies(inputName))
-						continue;
+					
+					// if the task is blocked, ignore it
+					if(x.isBlocked()) { 
+						someScheduleBreakerExist = true;
+						continue; 
+					}
+					// if it has any not resolved separate dependencies, ignore it
+					if(x.hasSeparateDependencies(inputName)) { 
+						someScheduleBreakerExist = true;
+						continue; 
+					}
 					// check, if x is in reschedule mode --> the task itself must be in the reschedule side --> null is required for confirm of block tasks
-					if(x.isRescheduled() && !(x.isRescheduled(inputName) || x.isRescheduled(null)))
-						continue;
+					if(x.isRescheduled() && !(x.isRescheduled(inputName) || x.isRescheduled(null))) { 
+						someScheduleBreakerExist = true;
+						continue; 
+					}
 					
 					// check, if it is in resume mode
 					ResumeInfo resumeInfo = null;
@@ -200,12 +214,15 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						this.MAILER.notifyParamConfirmation(x);
 						x.setConfirmParam(ActionType.PERFORMED);
 						x.block();
+						someScheduleBreakerExist = true;
 						continue;
 					}
 					
 					// do not spawn new tasks
-					if(this.isSchedulingPaused())
+					if(this.isSchedulingPaused()) {
+						someScheduleBreakerExist = true;
 						continue;
+					}
 
 					// task can be scheduled and is new one
 					Task t = null;
@@ -300,11 +317,10 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 						}
 						// remove the resume info
 						x.removeResumeInfo(inputName);
+						resume = true;
 					}
-					noResume = false;
-					newTasks++;
 				}
-				if(!x.isBlocked() && !x.hasRunningTasks())
+				if(!x.isBlocked() && !x.hasRunningTasks() && !someScheduleBreakerExist)
 					this.checkSeparateDep(x);
 				
 				// delete, tasks which should be rescheduled.
@@ -318,7 +334,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 			}
 			x.schedulingWasPerformed();
 		}
-		return newTasks > 0 && noResume;
+		return !resume;
 	}
 	
 	/**
@@ -330,7 +346,7 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		// check if some separate dependencies are not completely finished --> some new jobs might be spawned later
 		for(int xmlID : x.getSeparateDependencies()) {
 			XMLTask sepDep = XMLTask.getXMLTask(xmlID);
-			if(!sepDep.isCompleteTaskReady()) {
+			if(this.RESOLVED_TASKS.contains(xmlID) || !sepDep.isCompleteTaskReady()) {
 				allSeparateDependenciesAreReady = false;
 				return;
 			}
@@ -340,8 +356,9 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 			// no new values were added --> end checking
 			if(!this.addDependingReturnModifingProcessBlocks(x)) {
 				x.endCheckingForNewTasks();
+				this.RESOLVED_TASKS.add(x.getXMLID());
 			}
-		}
+		} 
 	}
 
 	
