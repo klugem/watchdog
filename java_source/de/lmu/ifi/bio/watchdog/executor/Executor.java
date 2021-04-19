@@ -335,7 +335,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 	 * sets a new watchdog base in order to spawn new slaves!
 	 * @param watchdogBase
 	 */
-	public static void setWatchdogBase(File watchdogBase, File customTmpDir) {
+	public synchronized static void setWatchdogBase(File watchdogBase, File customTmpDir) {
 		Executor.watchdogBase = watchdogBase;
 		if(customTmpDir == null)
 			customTmpDir = watchdogBase;

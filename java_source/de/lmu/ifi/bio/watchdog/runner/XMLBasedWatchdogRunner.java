@@ -63,7 +63,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 	public static final String ENV_WATCHDOG_HOME_NAME = "WATCHDOG_HOME";
 	public static final String ENV_WATCHDOG_WORKING_DIR = "WATCHDOG_WORKING_DIR";
 	public static final int RESTART_EXIT_INDICATOR = 123; // exit code that indicates normal termination caused by detach of Watchdog
-	public static final int FAILED_WRITE_DETACH_FILE = 124;
+	public static final int FAILED_WRITE_DETACH_FILE = 124; 
 	public static final int FAILED_READ_ATTACH_FILE = 125;
 	public static final String DETACH_LOG_ENDING = WorkflowResumeLogger.LOG_ENDING.replace(WorkflowResumeLogger.LAST_PART_OF_ENDING, "attach");
 	private static WatchdogThread watchdogThread = null;
@@ -301,6 +301,7 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			}
 		
 			File watchdogBase = xsdSchema.getParentFile().getParentFile();
+			Executor.setWatchdogBase(watchdogBase, params.tmpFolder == null ? null : new File(params.tmpFolder));
 			// create thread that listens to the HTTP server
 			HTTPListenerThread control = new HTTPListenerThread(params.port, xmlTasks, watchdogBase.getAbsolutePath());
 			try {
@@ -330,7 +331,6 @@ public class XMLBasedWatchdogRunner extends BasicRunner implements SignalHandler
 			
 			WatchdogThread.addUpdateThreadtoQue(xml2taskThread, true);
 			Executor.setXml2Thread(xml2taskThread);
-			Executor.setWatchdogBase(watchdogBase, params.tmpFolder == null ? null : new File(params.tmpFolder));
 			watchdogThread.start();
 			
 			int exitCode = 0;
