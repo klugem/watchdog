@@ -128,9 +128,11 @@ public class SGEExecutorInfo extends ExternalExecutorInfo {
 				b.add(M2 + this.getMemory());
 			}
 			// add slot
-			b.add(PE1);
-			b.add(PE2);
-			b.add(Integer.toString(this.getSlots()));
+			if(this.getSlots() > 1) {
+				b.add(PE1);
+				b.add(PE2);
+				b.add(Integer.toString(this.getSlots()));
+			}
 		}
 		if(this.hasCustomParametersSet()) {
 			b.add(this.getCustomParameters());
