@@ -29,7 +29,6 @@ public class Functions {
 	
 	private static final String DATE_FORMAT = "MM/dd/YY-HH:mm:ss";
 	private static final String UTF8 = "UTF-8";
-	public static MessageDigest MD;
 	private static final Logger LOGGER = new Logger(LogLevel.WARNING);
 	private static final String ONE = "1";
 	private static final String TRUE= "true";
@@ -39,10 +38,11 @@ public class Functions {
 	private static final String WORKING_DIR_WATCHDOG = "watchdogWork_";
 	private static final String JAVA_FX = "javafx.runtime.version"; 
 	private static boolean hasJavaFX = false;
+	public static final String HASH_FUN = "SHA-256";
 	
 	static {
 		try {
-			MD = MessageDigest.getInstance("SHA-256");
+			MessageDigest.getInstance(HASH_FUN);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			LOGGER.error("Can not find sha-256");
@@ -251,9 +251,18 @@ public class Functions {
 	}
 	
 	public static String getHash(byte[] dataToHash) {
-		return Hex.encodeHexString(Functions.MD.digest(dataToHash));
+		return Hex.encodeHexString(getDigest().digest(dataToHash));
 	}
 	
+	public static MessageDigest getDigest() {
+		try {
+			return MessageDigest.getInstance(HASH_FUN);
+		} 
+		// should not happen as tested in static 
+		catch(NoSuchAlgorithmException e) { }
+		return null;
+	}
+
 	public static String getFileHash(File filename) throws IOException {
 		return getHash(Files.readAllBytes(filename.toPath()));
 	}
