@@ -39,7 +39,7 @@
 	<x:complexType name="paramWait_sleep">
 		<x:simpleContent>
 			<x:restriction base="paramString">
-				<x:assertion test="matches($value, '(\$\{[A-Za-z_][A-Za-z_0-9]*\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or matches($value, '^[0-9]+[smhd]{0,1}$')" xerces:message="Parameter with name '{$tag}' must match [0-9]+[smhd]{0,1}." />
+				<x:assertion test="matches($value, '(\$\{[A-Za-z_][A-Za-z_0-9]*\})|(\$\(.+\))|([\[\(\{](\$[A-Za-z_]+(,\s*){0,1}){0,1}([0-9]+(,\S*){0,1}){0,1}[\]\)\}])') or matches($value, '^[0-9]+[smhd]{0,1}$')" xerces:message="Parameter with name 'wait' must match [0-9]+[smhd]{0,1}." />
 			</x:restriction>
 		</x:simpleContent>
 	</x:complexType>
