@@ -25,6 +25,9 @@ Changelog started with version 1.2.0
 - [] Do not exit if process table contains only a header line (warn instead)
 - [CMD] Allow empty values ('\t\t') in process table
 - [CMD] Add 'slots' attribute in sge executor only if a value greater than 1 is set
+- [PLUGIN] Ensure that podman/docker commands are killed on SIGTERM. Disable with 'disableTerminateWrapper' attribute of docker wrapper.
+- [CMD] Updated external libraries to newest available version
+- [DOCKER] Mount Watchdog's tmp directory automatically if it is a symbolic link
 
 ## [2.0.7] - 2020-05-25
 ### Fixed 

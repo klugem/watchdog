@@ -26,6 +26,7 @@
 				<x:attribute name="addCallParams" type="x:string" default="" />
 				<x:attribute name="disableAutodetectMount" type="x:boolean" default="false"/>
 				<x:attribute name="loadModuleSpecificImage" type="x:boolean" default="true"/>
+				<x:attribute name="disableTerminateWrapper" type="x:boolean" default="false"/>
 			</x:extension>
 		</x:complexContent>
 	</x:complexType>

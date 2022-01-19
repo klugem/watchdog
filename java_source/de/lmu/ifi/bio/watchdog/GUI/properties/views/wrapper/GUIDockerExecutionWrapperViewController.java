@@ -34,6 +34,7 @@ public class GUIDockerExecutionWrapperViewController extends PluginViewControlle
 	@FXML private TextField addCallParams;
 	@FXML private CheckBox disableAutodetectMount;
 	@FXML private CheckBox loadModuleSpecificImage;
+	@FXML private CheckBox disableTerminateWrapper;
 	
 	// for mount points
 	@FXML private TableView<MountPath> mounts;
@@ -65,6 +66,7 @@ public class GUIDockerExecutionWrapperViewController extends PluginViewControlle
 		
 		// activate default value
 		this.loadModuleSpecificImage.setSelected(true);
+		this.disableTerminateWrapper.setSelected(false);
 		
 		// set column size
 		this.mounts.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
@@ -188,7 +190,7 @@ public class GUIDockerExecutionWrapperViewController extends PluginViewControlle
 		String name = (String) data[0];
 		HashMap<String, String> mounts = this.getMounts();
 		ArrayList<String> blacklist = this.getBlacklist();
-		return new DockerExecutionWrapper(name, null, this.path2docker.getText(), this.image.getText(), this.execKeyword.getText(), this.addCallParams.getText(), this.disableAutodetectMount.isSelected(), mounts, blacklist, new ArrayList<String>(), this.loadModuleSpecificImage.isSelected());
+		return new DockerExecutionWrapper(name, null, this.path2docker.getText(), this.image.getText(), this.execKeyword.getText(), this.addCallParams.getText(), this.disableAutodetectMount.isSelected(), mounts, blacklist, new ArrayList<String>(), this.loadModuleSpecificImage.isSelected(), this.disableTerminateWrapper.isSelected());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -206,6 +208,7 @@ public class GUIDockerExecutionWrapperViewController extends PluginViewControlle
 		this.loadBlacklist(blacklist);
 		
 		this.loadModuleSpecificImage.setSelected((Boolean) data[7]);
+		this.disableTerminateWrapper.setSelected((Boolean) data[8]);
 	}
 	
 	private HashMap<String, String> getMounts() {

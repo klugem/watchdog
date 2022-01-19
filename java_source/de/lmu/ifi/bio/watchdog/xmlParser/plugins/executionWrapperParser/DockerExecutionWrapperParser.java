@@ -36,6 +36,7 @@ public class DockerExecutionWrapperParser extends XMLExecutionWrapperParser<Dock
 	public static final String BLACKLIST = "blacklist";
 	public static final String PATTERN = "pattern";
 	public static final String LOAD_MODULE_SPECIFIC_IMAGE = "loadModuleSpecificImage";
+	public static final String DISABLE_TERMINATE_WRAPPER = "disableTerminateWrapper";
 	
 	static {
 		// register the execution wrapper plugins shipped with watchdog on GUI
@@ -64,6 +65,7 @@ public class DockerExecutionWrapperParser extends XMLExecutionWrapperParser<Dock
 		String addParams = XMLParser.getAttribute(el, ADD_PARAMS);
 		boolean loadModuleSpecificImage = Boolean.parseBoolean(XMLParser.getAttribute(el, LOAD_MODULE_SPECIFIC_IMAGE));
 		boolean disableAutoD = Boolean.parseBoolean(XMLParser.getAttribute(el, DISABLE_AUTODETECT_MOUNT));
+		boolean disableTerminateWrapper = Boolean.parseBoolean(XMLParser.getAttribute(el, DISABLE_TERMINATE_WRAPPER));
 		HashMap<String, String> mounts = new HashMap<>();
 		
 		// get mapping
@@ -102,7 +104,7 @@ public class DockerExecutionWrapperParser extends XMLExecutionWrapperParser<Dock
 			blackList.add(p);
 		}
 
-		DockerExecutionWrapper w = new DockerExecutionWrapper(name, watchdogBaseDir, path, image, execKeyword, addParams, disableAutoD, mounts, blackList, constants, loadModuleSpecificImage);		
+		DockerExecutionWrapper w = new DockerExecutionWrapper(name, watchdogBaseDir, path, image, execKeyword, addParams, disableAutoD, mounts, blackList, constants, loadModuleSpecificImage, disableTerminateWrapper);		
 		return w;
 	}
 

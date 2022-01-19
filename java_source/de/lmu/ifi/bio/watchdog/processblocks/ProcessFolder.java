@@ -167,17 +167,16 @@ public class ProcessFolder extends ProcessBlock {
 	
 	@Override
 	public LinkedHashMap<String, String> getValues(boolean cachedCall) {
-		ArrayList<File> files = new ArrayList<>();
 		if(!cachedCall) {
 			// find all matching files for all different process folders
 			for(int i = 0; i < this.ROOT_PATH.size(); i++) {
-				boolean wasCallOK = this.findMatchingFiles(this.ROOT_PATH.get(i), this.PATTERN.get(i), this.IGNORE.get(i), this.MAX_DEPTH.get(i), files, false, 0);
+				boolean wasCallOK = this.findMatchingFiles(this.ROOT_PATH.get(i), this.PATTERN.get(i), this.IGNORE.get(i), this.MAX_DEPTH.get(i), new ArrayList<>(), false, 0);
 				// if call was not ok --> return null in order to indicate that
 				if(!wasCallOK)
 					return null;
 			}
 		}
-		File[] fs = files.toArray(new File[0]);
+		File[] fs = this.FOUND_FILES.toArray(new File[0]);
 		Arrays.sort(fs, NameFileComparator.NAME_COMPARATOR);
 		LinkedHashMap<String, String> v = new LinkedHashMap<>();
 		for(File f : fs) {

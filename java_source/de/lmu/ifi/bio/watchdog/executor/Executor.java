@@ -41,6 +41,9 @@ public abstract class Executor<A extends ExecutorInfo> {
 	public static final String ZERO_SEP = "\0";
 	protected static String MAIN_COMMAND_RETURN="MAIN_COMMAND_RETURN=$?";
 	protected static String EXIT_MAIN_COMMAND_RETURN="exit ${MAIN_COMMAND_RETURN}";
+	public static final String SIGTERM_TRAP = "trap 'echo \"SIGINT/SIGTERM\" && kill -SIGTERM $PID && wait $PID' SIGTERM";
+	public static final String WAIT = "PID=$! && wait $PID";
+	public static final String BACKGROUND = " &";
 	
 	public static String default_working_dir;
 	private static XMLTask2TaskThread xml2taskThread;
@@ -237,7 +240,7 @@ public abstract class Executor<A extends ExecutorInfo> {
 			return c.toArray(new String[0]);
 		}
 		// write the stuff to a file
-		else {
+		else {		
 			ExecutionWrapper w = null;
 			ExecutionWrapper container = null;
 			// process package manager
@@ -295,12 +298,14 @@ public abstract class Executor<A extends ExecutorInfo> {
 			// test, if we need to wrap that into a container
 			if(container != null) {
 				ArrayList<String> conCom = new ArrayList<>();
+				conCom.add(SIGTERM_TRAP);
 				conCom.addAll(container.getInitCommands(this.TASK));
 				
 				// update the last command
 				String lastCommand = conCom.remove(conCom.size()-1);
 				lastCommand = lastCommand + Executor.QUOTE + tmpCommandFile + Executor.QUOTE;
-				conCom.add(lastCommand);
+				conCom.add(lastCommand + BACKGROUND);
+				conCom.add(WAIT);
 				
 				// add return exit code and clean up stuff
 				conCom.add(MAIN_COMMAND_RETURN);

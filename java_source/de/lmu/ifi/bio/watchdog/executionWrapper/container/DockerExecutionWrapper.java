@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import de.lmu.ifi.bio.watchdog.executionWrapper.FindVersionedFile;
 import de.lmu.ifi.bio.watchdog.executionWrapper.OS;
 import de.lmu.ifi.bio.watchdog.executor.Executor;
+import de.lmu.ifi.bio.watchdog.helper.Functions;
 import de.lmu.ifi.bio.watchdog.helper.XMLBuilder;
 import de.lmu.ifi.bio.watchdog.task.Task;
 import de.lmu.ifi.bio.watchdog.xmlParser.XMLParser;
@@ -31,6 +32,7 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	public static final String MOUNT_PARAM_SEP = ":";
 	public static final String ADDITIONAL_PARAMS_SINGULARITY = "--containall --vm-err";
 	public static final String ADDITIONAL_PARAMS_DOCKER_PODMAN = "--rm";
+	public static final String TERMINATE_WRAPPER = "core_lib"+ File.separator +"plugins" + File.separator + "docker_terminate_wrapper.sh";
 	
 	public static final String DEFAULT_EXEC_KEYWORD = "run";
 	
@@ -41,6 +43,7 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	private final String EXEC_KEYWORD;
 	private final String ADD_PARAMS;
 	private final boolean DISABLE_AUTO_DETECT;
+	private final boolean DISABLE_TERMINATE_WRAPPER;
 	private final HashMap<String, String> MOUNTS;
 	private final HashMap<String, Pattern> BLACKLIST = new HashMap<>();
 	private final ArrayList<String> CONSTANTS_PATH = new ArrayList<>();
@@ -65,7 +68,7 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 		CUSTOM_ADD_PARAM.put(BIN_PODMAN, ADDITIONAL_PARAMS_DOCKER_PODMAN);	
 	}
 	
-	public DockerExecutionWrapper(String name, String watchdogBaseDir, String path2docker, String image, String execKeyword, String addParams, boolean disableAutoDetection, HashMap<String, String> mounts, ArrayList<String> blacklist, ArrayList<String> constants, boolean loadModuleSpecificImage) {
+	public DockerExecutionWrapper(String name, String watchdogBaseDir, String path2docker, String image, String execKeyword, String addParams, boolean disableAutoDetection, HashMap<String, String> mounts, ArrayList<String> blacklist, ArrayList<String> constants, boolean loadModuleSpecificImage, boolean disableTerminateWrapper) {
 		super(name, watchdogBaseDir);
 		this.WATCHDOG_BASE_DIR = watchdogBaseDir;
 		this.DOCKER_PATH = path2docker;
@@ -76,6 +79,7 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 		this.DISABLE_AUTO_DETECT = disableAutoDetection;
 		this.MOUNTS = mounts;
 		this.BINARY_NAME = new File(this.DOCKER_PATH).getName();
+		this.DISABLE_TERMINATE_WRAPPER = disableTerminateWrapper;
 		
 		for(String p : blacklist) {
 			String pp = p;
@@ -151,6 +155,14 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	}
 	
 	/**
+	 * if true, the podman terminate wrapper script is NOT used
+	 * @return
+	 */
+	protected boolean disableTerminateWrapper() {
+		return this.DISABLE_TERMINATE_WRAPPER;
+	}
+	
+	/**
 	 * additional parameters that are passed to the command
 	 * @return
 	 */
@@ -210,6 +222,8 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 			x.addQuotedAttribute(DockerExecutionWrapperParser.DISABLE_AUTODETECT_MOUNT, true);
 		if(!this.loadModuleSpecificImage()) 
 			x.addQuotedAttribute(DockerExecutionWrapperParser.LOAD_MODULE_SPECIFIC_IMAGE, false);
+		if(this.disableTerminateWrapper())
+			x.addQuotedAttribute(DockerExecutionWrapperParser.DISABLE_TERMINATE_WRAPPER, true);
 		x.endOpeningTag();
 			
 		// write mount part
@@ -249,7 +263,7 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	}
 
 	@Override
-	public Object[] getDataToLoadOnGUI() { return new Object[] { this.getDockerPath(), this.getImageName(), this.getExecKeyword(), this.getAdditionalCallParams(), this.isAutoMountDetectionDisabled(), this.getMounts(), this.getBlacklist(), this.loadModuleSpecificImage() }; }
+	public Object[] getDataToLoadOnGUI() { return new Object[] { this.getDockerPath(), this.getImageName(), this.getExecKeyword(), this.getAdditionalCallParams(), this.isAutoMountDetectionDisabled(), this.getMounts(), this.getBlacklist(), this.loadModuleSpecificImage(), this.disableTerminateWrapper() }; }
 
 	@Override
 	public boolean canBeAppliedOnTask(Task t) {
@@ -261,10 +275,15 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	 * @param b
 	 * @param mounts
 	 */
-	protected void addMounts(StringBuilder b, HashMap<String, String> m, boolean applyBlacklist) {	
+	protected void addMounts(StringBuilder b, HashMap<String, String> m, boolean applyBlacklist) {
+		String watchdogBaseDir = this.getWatchdogBaseDir();
 		// add watchdog mount
 		HashMap<String, String> mounts = new HashMap<>(m);
-		mounts.put(this.getWatchdogBaseDir(), this.getWatchdogBaseDir());
+		mounts.put(watchdogBaseDir, watchdogBaseDir);
+		// add tmp dir if it is a symlink
+		String tmpPath = Functions.getRealTemporaryFolder();
+		if(!tmpPath.startsWith(watchdogBaseDir))
+			mounts.put(tmpPath, tmpPath);
 		
 		String mountParam = MOUNT_PARAM;
 		if(CUSTOM_MOUNT_PARAM.containsKey(this.getBinaryName()))
@@ -306,6 +325,10 @@ public class DockerExecutionWrapper extends AutoDetectMountBasedContainer {
 	public ArrayList<String> getInitCommands(Task t) {
 		// build the command
 		StringBuilder com = new StringBuilder();
+		if(!this.disableTerminateWrapper()) {
+			com.append(this.getWatchdogBaseDir() + TERMINATE_WRAPPER);
+			com.append(SPACE);
+		}
 		com.append(this.getDockerPath());
 		com.append(SPACE);
 		com.append(this.getExecKeyword());

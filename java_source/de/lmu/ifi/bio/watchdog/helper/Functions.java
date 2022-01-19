@@ -159,6 +159,20 @@ public class Functions {
 	public static void setTemporaryFolder(String tmpBaseFolder) {
 		temporaryFolder = tmpBaseFolder;
 	}
+	
+	/**
+	 * resolves a potential symbolic link in the tmp dir path
+	 * (required for automatic mounting of this dir in docker)
+	 * @return
+	 */
+	public static String getRealTemporaryFolder() {
+		Path p = Path.of(temporaryFolder);
+		try { return p.toRealPath().toString(); }
+		catch(Exception IOException) { 
+			LOGGER.warn("Failed to resolve potential symbolic link: '"+ temporaryFolder + "'.");
+			return temporaryFolder;
+		}
+	}
 	 
 	/**
 	 * generates a temporary file
