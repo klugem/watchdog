@@ -1,8 +1,9 @@
 #!/bin/bash
 # inspired by https:/github.com/travis-ci/travis-ci/issues/8031
 
-VIRUS_DB_CACHE="${HOME}/cache/clamav"
-VIRUS_DB="${HOME}/clamav"
+[ $# -ne 1 ] && exit 1
+
+VIRUS_DB="/tmp/clamav_db"
 WHO=$(whoami)
 
 # install clamav 
@@ -12,23 +13,18 @@ sudo apt-get install -qq clamav > /dev/null 2>&1
 
 # try to update virus definition
 echo "updating virus definition..."
-mkdir "${VIRUS_DB}"
-if [ -d "${VIRUS_DB_CACHE}" ]; then cp -r "${VIRUS_DB_CACHE}/" "${VIRUS_DB}/"; fi
-chown -R "${WHO}:${WHO}" "${VIRUS_DB}"
-freshclam --quiet --datadir="${VIRUS_DB}" --user="${WHO}" --log="/tmp/clamAV_update.log"
+freshclam  --quiet --datadir="${VIRUS_DB}" --user="${WHO}" --log="/tmp/clamAV_update.log"
 RET=$?
 
 # check, if no error occurred
 if [ $RET -ne 0 ]; then
 	echo "[ERROR] Faild to update virus definition database (exit code: $RET)!"
 	exit 2
-else 
-	cp -r "${VIRUS_DB}/" "${VIRUS_DB_CACHE}/"
 fi
 
 echo "starting virus scan..."
 # scan home for virus
-sudo clamscan -r "${TRAVIS_BUILD_DIR}" --max-filesize=128M --database="${VIRUS_DB}" --quiet --infected --log='/var/log/scan.log'
+sudo clamscan -r "${1}" --max-filesize=128M --database="${VIRUS_DB}" --quiet --infected --log='/var/log/scan.log'
 RET=$?
 # check, if no error occurred
 if [ $RET -ne 0 ] && [ $RET -ne 1 ]; then
