@@ -3,6 +3,7 @@ package de.lmu.ifi.bio.watchdog.executor.external.slurm;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -35,11 +36,15 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 	private boolean isInitComplete = false;
 	private static int MAX_WAIT_CYLCES = 3; // wait 3 cycles after job submission
 	private final static int LONG_WAIT = 5000; // don't query to often
-	private static final String STATE_SACCT = "^([0-9]+)\\|(.+)\\|(.+)";
+	private static final String STATE_SACCT = "^([0-9]+)\\|(.+)\\|(.+)\\|$";
 	private static final String CLUSTER_SEP = "@";
 	private final Pattern STATE_SACCT_PATTERN = Pattern.compile(STATE_SACCT); 
 	private String start_date_for_query = Functions.getCurrentDateAndTime();
 	private static final String SEPARATOR = "=";
+	private String username;
+	private String used_clusters = "";
+	private final HashSet<String> USED_CLUSTERS = new HashSet<>();
+	private static final String CL_SEP = ",";
 	
 	public SlurmWorkloadManagerConnector(Logger l) {
 		super(l);
@@ -116,6 +121,12 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		// BUG
 		args.add("--job-name"); args.add(task.getProjectShortCut() + " " + task.getName() + " " + task.getID());
 		args.addAll(execinfo.getCommandsForGrid());
+		if(execinfo.hasClusterSet() && !this.USED_CLUSTERS.contains(execinfo.getCluster())) {
+			String cl = execinfo.getCluster();
+			this.USED_CLUSTERS.add(cl);
+			if(this.used_clusters.length() == 0) this.used_clusters = cl;
+			else this.used_clusters = this.used_clusters + CL_SEP + cl;
+		}
 		
 		// set the environment variables that should not be set by an external command
 		if(ex.hasInternalEnvVars()) {
@@ -251,12 +262,42 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		return RUNNING.equals(this.CACHED_JOB_STATUS.get(id));
 	}
 	
+	/**
+	 * get info on jobs that are currently on hold (== PENDING)
+	 * @return
+	 */
+	protected String getHoldInfo() {
+		if(this.used_clusters.length() == 0) return "";
+		
+		ArrayList<String> args = new ArrayList<>();
+		args.add("-a"); // get info from all partitions
+		args.add("-O");
+		args.add("jobid,state,cluster");
+		args.add("-t"); // show only info about pending jobs
+		args.add("PENDING");
+		args.add("-h"); // omit header
+		args.add("-M");
+		args.add(this.used_clusters); // get info from all cluster
+		args.add("-u"); // filter by username
+		args.add(this.username);
+		
+		QacctBinaryCallInfo info = new QacctBinaryCallInfo("generic", this.executeCommand("squeue", args));
+		if(info.exit != 0) {
+			info.printInfo(this.LOGGER, true);
+			System.exit(1);
+		}
+		String str = info.out;
+		return str.replaceAll(" +", "|");
+	}
+	
 	@Override
 	protected void updateJobStatusCache() {
 		ArrayList<String> args = new ArrayList<>();
+		this.addDateInfoToArguments(args);
 		args.add("-L"); // get info from all cluster
 		args.add("--format=jobid,state,cluster");
-		args.add("-P"); // seperated by sa'|' 
+		args.add("-p"); // seperated by '|' with '|' at end
+		args.add("-n"); // print no header
 		
 		QacctBinaryCallInfo info = new QacctBinaryCallInfo("generic", this.executeCommand("sacct", args));
 		if(info.exit != 0) {
@@ -264,8 +305,12 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 			System.exit(1);
 		}
 		else {
+			String holdInfo = getHoldInfo();
+			Scanner s = null;
+			if(holdInfo.length() > 0) s = new Scanner(holdInfo + info.out);
+			else s = new Scanner(holdInfo + info.out);
+			
 			// try to find ids
-			Scanner s = new Scanner(info.out);
 			String id, status, cluster;
 			while(s.hasNextLine()) {
 				Matcher m = STATE_SACCT_PATTERN.matcher(s.nextLine());
@@ -347,6 +392,15 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		if(AttachInfo.hasLoadedData(AttachInfo.ATTACH_INITIAL_START_TIME)) {
 			this.setStartDateForQuery(AttachInfo.getLoadedData(AttachInfo.ATTACH_INITIAL_START_TIME).toString());
 		}
+		ArrayList<String> args = new ArrayList<>();
+		args.add("-un");
+		BinaryCallInfo info = this.executeCommand("id", args);
+		if(info.exit != 0) {
+			info.printInfo(this.LOGGER, true);
+			System.exit(1);
+		}
+		else this.username = info.out.replaceFirst("\n", "").replaceFirst("\r", "");
+		this.LOGGER.info("Username: '" + this.username + "'");
 		
 		executeCommand("sinfo"); // test, if sinfo works
 		this.isInitComplete = true;
@@ -395,9 +449,8 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 			
 			s.close();
 			if(header == null || values == null) {
-				this.LOGGER.error("Failed to get detailed job info from sacct command!");
+				this.LOGGER.warn("Failed to get detailed job info from sacct command!");
 				info.printInfo(this.LOGGER, true);
-				System.exit(1);
 			}
 			return values.split("\\|")[0];
 		}

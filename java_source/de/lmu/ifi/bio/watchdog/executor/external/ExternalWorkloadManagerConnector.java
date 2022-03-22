@@ -161,7 +161,7 @@ public abstract class ExternalWorkloadManagerConnector<A extends ExternalSchedul
 	protected abstract void updateJobStatusCache();
 	
 	/**
-	 * is called periodically to ensure that the cache is updated regulary
+	 * is called periodically to ensure that the cache is updated regularly
 	 * @throws TryLaterException 
 	 */
 	public synchronized boolean ensureThatJobStatusIsUpToDate(boolean enforceUpdate) throws TryLaterException {
