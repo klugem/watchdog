@@ -449,8 +449,9 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 			
 			s.close();
 			if(header == null || values == null) {
-				this.LOGGER.warn("Failed to get detailed job info from sacct command!");
-				info.printInfo(this.LOGGER, true);
+				this.LOGGER.warn("Failed to get the name of the execution host from the sacct command for '"+id+"'.");
+				if(header == null) info.printInfo(this.LOGGER, true);
+				return null;
 			}
 			return values.split("\\|")[0];
 		}

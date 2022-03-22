@@ -20,6 +20,7 @@ Changelog started with version 1.2.0
 - [CMD] Fixed rare null pointer exception during startup
 - [CMD] Sometimes tasks were prematurely marked as finished and hence not all subtasks were scheduled 
 - [CMD] Fixed non-reachable condition in error checker
+- [SLURM] Information on hold jobs was not obtained by sacct
  
 ### Changed 
 - [] Do not exit if process table contains only a header line (warn instead)
