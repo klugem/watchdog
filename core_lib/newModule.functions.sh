@@ -1,7 +1,7 @@
 function addArgument() {
 	TEMPLATE=$1
 	NAME=$(checkNameExistance "$2" 1 "name")
-	SHORT_NAME=$(checkNameExistance "$3" 2 "shortcut")
+	SHORT_NAME=$3
 	PARAM_TYPE="param${4}"
 	SH_TYPE=$5
 	ARGUMENT_MIN=$6
@@ -29,7 +29,7 @@ function addArgument() {
 
 		if [ $ARGUMENT_MIN -gt 0 ]; then
 			# add check
-			REPLACE_CHECK=$(cat $SCRIPT_FOLDER/../xsd/template/mandatory_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e 's/"/\\"/g')"${REPLACE_CHECK}${SPACER}"
+			REPLACE_CHECK=$(cat $SCRIPT_FOLDER/../xsd/template/mandatory_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e 's/"/\\"/g')"${SPACER}${REPLACE_CHECK}"
 		fi
 	fi
 	if [ "$SHORT_NAME" != "!" ]; then 
@@ -67,8 +67,7 @@ function addFlag() {
 }
 
 function addReturn() {
-	RETURN_NAME=$(checkNameExistance "RETURN_$1" 1 "return value")
-	RETURN_NAME=${RETURN_NAME/RETURN_/}
+	RETURN_NAME=$1
 	RETURN_TYPE=$2
 
 	# replace the return value
@@ -111,46 +110,39 @@ function getMinMax() {
 	NAME=$2
 	SHORT_NAME=$3
 	L_TYPE=$(echo $TYPE | tr '[:upper:]' '[:lower:]')
+	SH_SCRIPT_PREFIX_NAME="integer"
+	if [ "$TYPE" == "Double" ]; then SH_SCRIPT_PREFIX_NAME="double"; fi
 	# set range for integer or double
 	confirm "Should the ${L_TYPE} be restricted to a certain range? "
 	if [ $CONFIRM_RETURN -eq 1 ]; then
 		MIN_VALUE_V=$(getInputNumber "Minimum allowed number: ")
 		MAX_VALUE_V=$(getInputNumber "Maximum allowed number: ")
-		if [ "$TYPE" == "Double" ]; then
-			MIN_VALUE_V=$(printf "%.*f\n" 10 $MIN_VALUE_V)
-			MAX_VALUE_V=$(printf "%.*f\n" 10 $MAX_VALUE_V)
-		fi
 
 		XSD_TEMPLATE="integer_range.template.xsd"
 		ARGUMENT_TYPE_XSD="${TYPE}Range_${NAME}_${FLAGS_name}"
 
 		# add check
-		REPLACE_CHECK="${REPLACE_CHECK}${SPACER}"$(cat $SCRIPT_FOLDER/../xsd/template/integer_range_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e 's/'${VAR_MIN}'/'${MIN_VALUE_V}'/g' -e 's/'${VAR_MAX}'/'${MAX_VALUE_V}'/g' -e 's/"/\\"/g')
-		SPACER="\n"
+		REPLACE_CHECK="${REPLACE_CHECK}${SPACER}"$(cat $SCRIPT_FOLDER/../xsd/template/${SH_SCRIPT_PREFIX_NAME}_range_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e 's/'${VAR_MIN}'/'${MIN_VALUE_V}'/g' -e 's/'${VAR_MAX}'/'${MAX_VALUE_V}'/g' -e 's/"/\\"/g')
 	else 
 		confirm "Should the ${TYPE} be greater or less than a specific value? "
 		if [ $CONFIRM_RETURN -eq 1 ]; then
 			VALUE_V=$(getInputNumber "Inclusive restriction value: ")
-			if [ "$TYPE" == "Double" ]; then
-				VALUE_V=$(printf "%.*f\n" $VALUE_V)
-			fi
 			MIN_VALUE_V=$VALUE_V
 			MAX_VALUE_V=$VALUE_V
 			confirm "Should the ${TYPE} be greater or equal than '$VALUE_V'? "
 
 			# add check
 			if [ $CONFIRM_RETURN -eq 1 ]; then
-				REPLACE_CHECK="${REPLACE_CHECK}${SPACER}"$(cat $SCRIPT_FOLDER/../xsd/template/integer_greater_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e's/'${VAR_VALUE}'/'${VALUE_V}'/g' -e 's/"/\\"/g')
+				REPLACE_CHECK="${REPLACE_CHECK}${SPACER}"$(cat $SCRIPT_FOLDER/../xsd/template/${SH_SCRIPT_PREFIX_NAME}_greater_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e's/'${VAR_VALUE}'/'${VALUE_V}'/g' -e 's/"/\\"/g')
 
 				XSD_TEMPLATE="integer_greater.template.xsd"
-				ARGUMENT_TYPE_XSD="${L_TYPE}Greater_${NAME}_${FLAGS_name}"
+				ARGUMENT_TYPE_XSD="${TYPE}Greater_${NAME}_${FLAGS_name}"
 			else
-				REPLACE_CHECK="${REPLACE_CHECK}${SPACER}"$(cat $SCRIPT_FOLDER/../xsd/template/integer_lower_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e 's/'${VAR_VALUE}'/'${VALUE_V}'/g' -e 's/"/\\"/g')
+				REPLACE_CHECK="${REPLACE_CHECK}${SPACER}"$(cat $SCRIPT_FOLDER/../xsd/template/${SH_SCRIPT_PREFIX_NAME}_lower_argument_check.template.sh | sed -e 's/'${VAR_NAME_REPLACE}'/'${NAME}'/g' -e 's/'${VAR_NAME_SHORT_REPLACE}'/'${SHORT_NAME}'/g' -e 's/'${VAR_VALUE}'/'${VALUE_V}'/g' -e 's/"/\\"/g')
 			
 				XSD_TEMPLATE="integer_lower.template.xsd"
-				ARGUMENT_TYPE_XSD="${L_TYPE}Lower_${NAME}_${FLAGS_name}"
+				ARGUMENT_TYPE_XSD="${TYPE}Lower_${NAME}_${FLAGS_name}"
 			fi
-			SPACER="\n"
 		fi
 	fi
 

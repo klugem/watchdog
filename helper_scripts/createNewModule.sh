@@ -151,6 +151,7 @@ if [ ! -e "$SCRIPT_FOLDER/../${MODULE_FOLDER}/$FLAGS_name" ]; then
 	while [ $CONFIRM_RETURN -eq 1 ]; do
 		ARGUMENT_NAME=$(getInputName "Please enter a name for the argument: ")
 		ARGUMENT_NAME_SHORT=$(echo "$ARGUMENT_NAME" | head -c 1)
+		ARGUMENT_NAME_SHORT=$(checkNameExistance "${ARGUMENT_NAME_SHORT}" 2 "shortcut")
 
 		# get min occurs value
 		confirm "Is the argument optional? "
@@ -261,6 +262,8 @@ if [ ! -e "$SCRIPT_FOLDER/../${MODULE_FOLDER}/$FLAGS_name" ]; then
 	FIRST_RET=1
 	while [ $CONFIRM_RETURN -eq 1 ]; do
 		RETURN_NAME=$(getInputName "Please enter the name for the return variable: ")
+		RETURN_NAME=$(checkNameExistance "RETURN_${RETURN_NAME}" 1 "return value")
+		RETURN_NAME=${RETURN_NAME/RETURN_/}
 		
 		RET_TYPE=$(getInputReturnType "Please enter a type for the return value (string (s), double (d), integer (i) or boolean (b)): ")
 		case "$RET_TYPE" in
