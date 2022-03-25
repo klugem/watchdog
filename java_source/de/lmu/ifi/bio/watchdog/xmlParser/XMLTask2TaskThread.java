@@ -675,7 +675,6 @@ public class XMLTask2TaskThread extends StopableLoopRunnable {
 		ArrayList<Task> runningInfo = MonitorThread.getMappingsForDetachableTasksFromAllMonitorThreads();
 		AttachInfo.setValue(AttachInfo.ATTACH_RESUME_FILE, resumeFile.getAbsolutePath());
 		AttachInfo.setValue(AttachInfo.ATTACH_RUNNING_TASKS, runningInfo);
-		AttachInfo.setValue(AttachInfo.ATTACH_INITIAL_START_TIME, runningInfo);
 
 		// get the filename were the attach info should be saved
 		String outFile = attachInfo;

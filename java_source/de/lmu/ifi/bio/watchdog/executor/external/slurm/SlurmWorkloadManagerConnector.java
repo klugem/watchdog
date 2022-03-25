@@ -45,6 +45,7 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 	private String used_clusters = "";
 	private final HashSet<String> USED_CLUSTERS = new HashSet<>();
 	private static final String CL_SEP = ",";
+	public static final String ATTACH_USED_CLUSTERS = "ATTACH_USED_CLUSTERS";
 	
 	public SlurmWorkloadManagerConnector(Logger l) {
 		super(l);
@@ -124,8 +125,7 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		if(execinfo.hasClusterSet() && !this.USED_CLUSTERS.contains(execinfo.getCluster())) {
 			String cl = execinfo.getCluster();
 			this.USED_CLUSTERS.add(cl);
-			if(this.used_clusters.length() == 0) this.used_clusters = cl;
-			else this.used_clusters = this.used_clusters + CL_SEP + cl;
+			this.addCluserInUse(cl);
 		}
 		
 		// set the environment variables that should not be set by an external command
@@ -166,6 +166,15 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		return null;
 	}
 		
+	/**
+	 * adds a cluster that is used by at least one job
+	 * @param cl
+	 */
+	private void addCluserInUse(String cl) {
+		if(this.used_clusters.length() == 0) this.used_clusters = cl;
+		else this.used_clusters = this.used_clusters + CL_SEP + cl;
+	}
+
 	/**
 	 * appends the cluster info to the id
 	 * @param id
@@ -294,7 +303,8 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 	protected void updateJobStatusCache() {
 		ArrayList<String> args = new ArrayList<>();
 		this.addDateInfoToArguments(args);
-		args.add("-L"); // get info from all cluster
+		args.add("-M");
+		args.add(this.used_clusters);
 		args.add("--format=jobid,state,cluster");
 		args.add("-p"); // seperated by '|' with '|' at end
 		args.add("-n"); // print no header
@@ -344,6 +354,8 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		args.add("-o");
 		args.add(INFO_FIELDS);
 		args.add("-P");
+		args.add("-M");
+		args.add(this.used_clusters);
 		args.add("--job");
 		args.add(this.removeClusterInfoFromID(id));
 		// get exit code and resource info
@@ -392,6 +404,16 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		if(AttachInfo.hasLoadedData(AttachInfo.ATTACH_INITIAL_START_TIME)) {
 			this.setStartDateForQuery(AttachInfo.getLoadedData(AttachInfo.ATTACH_INITIAL_START_TIME).toString());
 		}
+		// set used clusters
+		if(AttachInfo.hasLoadedData(ATTACH_USED_CLUSTERS)) {
+			@SuppressWarnings("unchecked")
+			HashSet<String> usedClusters = (HashSet<String>) AttachInfo.getLoadedData(ATTACH_USED_CLUSTERS);
+			for(String cl : usedClusters) {
+				this.addCluserInUse(cl);
+			}
+		}
+		AttachInfo.setValue(ATTACH_USED_CLUSTERS, this.USED_CLUSTERS);
+		
 		ArrayList<String> args = new ArrayList<>();
 		args.add("-un");
 		BinaryCallInfo info = this.executeCommand("id", args);
@@ -428,6 +450,8 @@ public class SlurmWorkloadManagerConnector extends BinaryCallBasedExternalWorkfl
 		args.add("-P");
 		args.add("-o");
 		args.add("NodeList");
+		args.add("-M");
+		args.add(this.used_clusters);
 		args.add("--job");
 		args.add(this.removeClusterInfoFromID(id));
 
